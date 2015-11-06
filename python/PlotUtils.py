@@ -1,7 +1,7 @@
 import ROOT
 from CrombieVars import packdir
 
-ROOT.gROOT.LoadMacro(packdir + '/PlotTools/PlotUtils.cc+')
+ROOT.gROOT.LoadMacro(packdir + '/PlotTools/src/PlotUtils.cc+')
 
 GetRatioToPoint = ROOT.GetRatioToPoint
 GetRatioToLine  = ROOT.GetRatioToLine

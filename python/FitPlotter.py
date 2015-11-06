@@ -1,7 +1,7 @@
 import ROOT
 from CrombieVars import packdir
 
-ROOT.gROOT.LoadMacro(packdir + '/PlotTools/PlotBase.cc+')
-ROOT.gROOT.LoadMacro(packdir + '/PlotTools/PlotFitParameters.cc+')
+ROOT.gROOT.LoadMacro(packdir + '/PlotTools/src/PlotBase.cc+')
+ROOT.gROOT.LoadMacro(packdir + '/PlotTools/src/PlotFitParameters.cc+')
 
 fitPlotter = ROOT.PlotFitParameters()
