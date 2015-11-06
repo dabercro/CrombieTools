@@ -25,7 +25,7 @@ namespace mithep
     void                         SetExprX                ( TString expr )                                 { fInExprX = expr;                         }
     void                         AddExprX                ( TString expr )                                 { fInExprXs.push_back(expr);               }
     void                         SetParameterLimits      ( Int_t param, Double_t low, Double_t high );
-    void                         SetFunctionString       ( TString function )                             { fFunctionString = function;              }
+    void                         SetFunction             ( TString function )                             { fFunctionString = function;              }
     void                         AddFunctionComponent    ( TString function )                             { fFunctionComponents.push_back(function); }
     void                         SetLooseFit             ( TString function )                             { fLooseFunction = function;               }
     void                         SetLooseLimits          ( Int_t param, Double_t low, Double_t high );
