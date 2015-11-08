@@ -7,10 +7,6 @@ ClassImp(PlotBase)
 //--------------------------------------------------------------------
 PlotBase::PlotBase() :
   fPlotCounter(0),
-  fCanvasName("canvas"),
-  fDefaultLineWidth(2),
-  fDefaultLineStyle(1),
-  fIncludeErrorBars(false),
   fDefaultTree(0),
   fDefaultCut(""),
   fDefaultExpr(""),
@@ -18,7 +14,14 @@ PlotBase::PlotBase() :
   l2(0.7),
   l3(0.9),
   l4(0.9),
-  fLegendBorderSize(0)
+  fLegendBorderSize(0),
+  fIncludeErrorBars(false),
+  fDataIndex(-1),
+  fMakeRatio(false),
+  fRatioIndex(-1),
+  fCanvasName("canvas"),
+  fDefaultLineWidth(2),
+  fDefaultLineStyle(1)
 {
   fInTrees.resize(0);
   fInCuts.resize(0);
@@ -147,13 +150,4 @@ PlotBase::AddLegendEntry(TString LegendEntry, Color_t ColorEntry, Int_t LineWidt
   fLineColors.push_back(ColorEntry);
   fLineWidths.push_back(LineWidth);
   fLineStyles.push_back(LineStyle);
-}
-
-//--------------------------------------------------------------------
-void
-PlotBase::ConvertToArray(Int_t NumXBins, Double_t MinX, Double_t MaxX, Double_t *XBins)
-{
-  Double_t binWidth = (MaxX - MinX)/NumXBins;
-  for (Int_t i0 = 0; i0 < NumXBins + 1; i0++)
-    XBins[i0] = MinX + i0 * binWidth;
 }

@@ -72,29 +72,13 @@ PlotHists::MakeHists(Int_t NumXBins, Double_t MinX, Double_t MaxX)
   return MakeHists(NumXBins,XBins);
 }
 
-// //--------------------------------------------------------------------
-// std::vector<TH1D*>
-// PlotHists::MakeHists(Int_t NumXBins, Double_t MinX, Double_t MaxX, Int_t DataNum)
-// {
-//   std::vector<TH1D*> theHists = MakeHists(NumXBins,MinX,MaxX);
-//   Float_t DataInt = theHists[DataNum]->Integral();
-//   for (UInt_t iHist = 0; iHist < theHists.size(); iHist++) {
-//     theHists[iHist]->Scale(DataInt/theHists[iHist]->Integral());
-//     std::cout << "chi2 test: " << fLegendEntries[iHist] << " " << theHists[DataNum]->Chi2Test(theHists[iHist],"UW") << std::endl;
-//   }
-
-//   theHists[DataNum]->SetMarkerStyle(8);
-//   theHists[DataNum]->Sumw2();
-//   return theHists;
-// }
-
 //--------------------------------------------------------------------
 void
 PlotHists::MakeCanvas(Int_t NumXBins, Double_t *XBins, TString FileBase,
                       TString XLabel, TString YLabel, Bool_t logY)
 {
   std::vector<TH1D*> hists = MakeHists(NumXBins,XBins);
-  BaseCanvas<TH1D>(hists,FileBase,XLabel,YLabel,logY);
+  BaseCanvas(hists,FileBase,XLabel,YLabel,logY);
 
   for (UInt_t i0 = 0; i0 < hists.size(); i0++)
     delete hists[i0];

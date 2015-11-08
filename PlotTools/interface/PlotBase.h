@@ -6,8 +6,11 @@
 #include <iostream>
 #include "TTree.h"
 #include "TString.h"
+#include "TObject.h"
+#include "TAxis.h"
 
 #include "TH1.h"
+#include "TGraphErrors.h"
 #include "TStyle.h"
 #include "TCanvas.h"
 #include "TLegend.h"
@@ -44,15 +47,14 @@ class PlotBase
   void                   AddLegendEntry           ( TString LegendEntry, Color_t ColorEntry );    // Uses default line width and style
   void                   AddLegendEntry           ( TString LegendEntry, Color_t ColorEntry, Int_t LineWidth, Int_t LineStyle );
   void                   SetLegendBorderSize      ( Int_t size )                                  { fLegendBorderSize = size;    }
+
+  void                   SetDataIndex             ( Int_t data )                                  { fDataIndex = data;           }
+  void                   SetMakeRatio             ( Bool_t ratio )                                { fMakeRatio = ratio;          }
+  void                   SetRatioIndex            ( Int_t ratio )                                 { fRatioIndex = ratio;         }
   
  protected:
   
   UInt_t                     fPlotCounter;        // This is used so that making scratch plots does not overlap
-  
-  TString                    fCanvasName;         // The name of the output canvas
-  Int_t                      fDefaultLineWidth;   // Line width to make all plots
-  Int_t                      fDefaultLineStyle;   // Line style to use on all plots
-  Bool_t                     fIncludeErrorBars;   // Option to include error bars
   
   TTree*                     fDefaultTree;        // Default Tree if needed
   TString                    fDefaultCut;         // Default cut if needed
@@ -68,16 +70,69 @@ class PlotBase
   std::vector<TString>       fInCuts;             // Holds the cuts for the trees if needed
   std::vector<TString>       fInExpr;             // Holds multiple resolution expressions if needed
   
+  Bool_t                     fIncludeErrorBars;   // Option to include error bars
+
+  Int_t                      fDataIndex;
+  Bool_t                     fMakeRatio;
+  Int_t                      fRatioIndex;
+
+  void                       ConvertToArray       ( Int_t NumXBins, Double_t MinX, Double_t MaxX, Double_t *XBins );
+
+  void                       Division             ( TH1* PlotHist, TH1* RatioHist );
+  void                       Division             ( TGraphErrors* PlotGraph, TGraph* RatioGraph );
+
+  template<class T>  void    BaseCanvas           ( std::vector<T*> theLines, TString FileBase,
+						    TString XLabel, TString YLabel, Bool_t logY );
+ private:
+
+  TString                    fCanvasName;         // The name of the output canvas
+  Int_t                      fDefaultLineWidth;   // Line width to make all plots
+  Int_t                      fDefaultLineStyle;   // Line style to use on all plots
+  
   std::vector<TString>       fLegendEntries;      // Number of legend entries should match number of lines
   std::vector<Color_t>       fLineColors;         // Number of colors should match number of lines
   std::vector<Int_t>         fLineWidths;         // Will be filled with defaults unless
   std::vector<Int_t>         fLineStyles;         //   set explicitly with overloaded function
 
-  void                       ConvertToArray       ( Int_t NumXBins, Double_t MinX, Double_t MaxX, Double_t *XBins );
-
-  template<class T>  void    BaseCanvas           ( std::vector<T*> theLines, TString FileBase,
-						    TString XLabel, TString YLabel, Bool_t logY );
 };
+
+//--------------------------------------------------------------------
+void
+PlotBase::ConvertToArray(Int_t NumXBins, Double_t MinX, Double_t MaxX, Double_t *XBins)
+{
+  Double_t binWidth = (MaxX - MinX)/NumXBins;
+  for (Int_t i0 = 0; i0 < NumXBins + 1; i0++)
+    XBins[i0] = MinX + i0 * binWidth;
+}
+
+//--------------------------------------------------------------------
+void
+PlotBase::Division(TH1 *PlotHist, TH1 *RatioHist)
+{
+    for (Int_t iBin = 0; iBin != RatioHist->GetXaxis()->GetNbins(); ++iBin)
+      RatioHist->SetBinError(iBin + 1, 0);
+
+  PlotHist->Divide(RatioHist);
+}
+
+//--------------------------------------------------------------------
+void
+PlotBase::Division(TGraphErrors *PlotGraph, TGraph *RatioGraph)
+{
+  Double_t *GraphX = PlotGraph->GetX();
+  Double_t *GraphY = PlotGraph->GetY();
+  Double_t *GraphYErrors = PlotGraph->GetEY();
+  Int_t NumPoints = RatioGraph->GetN();
+  Double_t *RatioY = RatioGraph->GetY();
+  for (Int_t i1 = 0; i1 < NumPoints; i1++) {
+    if (PlotGraph->GetN() != NumPoints) {
+      std::cout << "Messed up graph size... Check that out" << std::endl;
+      exit(1);
+    }
+    PlotGraph->SetPoint(i1,GraphX[i1],GraphY[i1]/RatioY[i1]);
+    PlotGraph->SetPointError(i1,0,GraphYErrors[i1]/RatioY[i1]);
+  }
+}
 
 //--------------------------------------------------------------------
 template<class T>
@@ -85,6 +140,14 @@ void
 PlotBase::BaseCanvas(std::vector<T*> theLines, TString FileBase, TString XLabel, TString YLabel, Bool_t logY)
 {
   gStyle->SetOptStat(0);
+
+  Float_t fontSize  = 0.04;
+  Float_t ratioFrac = 0.7;
+
+  if (fRatioIndex != -1)
+    fMakeRatio = true;
+  else if (fMakeRatio)
+    fRatioIndex = fDataIndex;
 
   UInt_t NumPlots = theLines.size();
   TCanvas *theCanvas = new TCanvas(fCanvasName,fCanvasName);
@@ -95,9 +158,12 @@ PlotBase::BaseCanvas(std::vector<T*> theLines, TString FileBase, TString XLabel,
   UInt_t plotFirst = 0;
   for (UInt_t i0 = 0; i0 != NumPlots; ++i0) {
     theLines[i0]->SetTitle(";"+XLabel+";"+YLabel);
-    theLines[i0]->SetLineWidth(fLineWidths[i0]);
-    theLines[i0]->SetLineStyle(fLineStyles[i0]);
-    theLines[i0]->SetLineColor(fLineColors[i0]);
+    if (int(i0) != fDataIndex) {
+      theLines[i0]->SetLineWidth(fLineWidths[i0]);
+      theLines[i0]->SetLineStyle(fLineStyles[i0]);
+      theLines[i0]->SetLineColor(fLineColors[i0]);
+    }
+
     theLegend->AddEntry(theLines[i0],fLegendEntries[i0],"lp");
 
     Double_t checkMax = -999;
@@ -110,6 +176,19 @@ PlotBase::BaseCanvas(std::vector<T*> theLines, TString FileBase, TString XLabel,
     }
   }
 
+  if (fMakeRatio) {
+    TPad *pad1 = new TPad("pad1", "pad1", 0, 1.0 - ratioFrac, 1, 1.0);
+    pad1->SetBottomMargin(0.025);
+    pad1->Draw();
+    pad1->cd();
+    for (UInt_t i0 = 0; i0 < NumPlots; i0++) {
+      theLines[i0]->GetYaxis()->SetTitleSize(fontSize/ratioFrac);
+      theLines[i0]->GetYaxis()->SetLabelSize(fontSize/ratioFrac);
+      theLines[i0]->GetXaxis()->SetTitleSize(0);
+      theLines[i0]->GetXaxis()->SetLabelSize(0);
+    }
+  }
+
   theLines[plotFirst]->Draw();
   for (UInt_t i0 = 0; i0 != NumPlots; ++i0)
     theLines[i0]->Draw("same");
@@ -117,6 +196,48 @@ PlotBase::BaseCanvas(std::vector<T*> theLines, TString FileBase, TString XLabel,
   theLegend->Draw();
   if (logY)
     theCanvas->SetLogy();
+
+  if (fMakeRatio) {
+    theCanvas->cd();
+    TPad *pad2 = new TPad("pad2", "pad2", 0, 0, 1, 1 - ratioFrac);
+    pad2->SetTopMargin(0.035);
+    pad2->SetBottomMargin(0.4);
+    pad2->Draw();
+    pad2->cd();
+
+    Int_t divisions = 506;
+
+    T *ratioLine = (T*) theLines[fRatioIndex]->Clone("ValueHolder");
+
+    // Draw first the line that is through 1
+    T *newLine  = (T*) theLines[fRatioIndex]->Clone();
+    Division(newLine,ratioLine);
+    newLine->SetTitle(";"+XLabel+";Ratio");
+    newLine->GetXaxis()->SetTitleSize(fontSize/(1 - ratioFrac));
+    newLine->GetYaxis()->SetTitleSize(fontSize/(1 - ratioFrac));
+    newLine->GetXaxis()->SetLabelSize(fontSize/(1 - ratioFrac));
+    newLine->GetYaxis()->SetLabelSize(fontSize/(1 - ratioFrac));
+    newLine->GetXaxis()->SetTitleOffset(1.1);
+    newLine->GetYaxis()->SetTitleOffset((1 - ratioFrac)/ratioFrac);
+    newLine->GetYaxis()->SetNdivisions(divisions);
+    newLine->Draw();
+
+    // Then Draw everything else
+    for (UInt_t iLines = 0; iLines < theLines.size(); iLines++) {
+      if (int(iLines) == fRatioIndex)
+        continue;
+      newLine  = (T*) theLines[fRatioIndex]->Clone();
+      Division(newLine,ratioLine);
+      newLine->GetXaxis()->SetTitleSize(fontSize/(1 - ratioFrac));
+      newLine->GetYaxis()->SetTitleSize(fontSize/(1 - ratioFrac));
+      newLine->GetXaxis()->SetLabelSize(fontSize/(1 - ratioFrac));
+      newLine->GetYaxis()->SetLabelSize(fontSize/(1 - ratioFrac));
+      newLine->GetXaxis()->SetTitleOffset(1.1);
+      newLine->GetYaxis()->SetTitleOffset((1 - ratioFrac)/ratioFrac);
+      newLine->GetYaxis()->SetNdivisions(divisions);
+      newLine->Draw("same");
+    }
+  }
 
   theCanvas->SaveAs(FileBase+".C");
   theCanvas->SaveAs(FileBase+".png");
@@ -126,126 +247,5 @@ PlotBase::BaseCanvas(std::vector<T*> theLines, TString FileBase, TString XLabel,
   delete theCanvas;
 
 }
-
-// //--------------------------------------------------------------------
-// TCanvas*
-// PlotHists::MakeCanvas(std::vector<TH1D*> theHists,
-//                       TString CanvasTitle, TString XLabel, TString YLabel,
-//                       Bool_t logY, Int_t ratPlot)
-// {
-//   gStyle->SetOptStat(0);
-
-//   Float_t fontSize  = 0.04;
-//   Float_t ratioFrac = 0.7;
-
-//   UInt_t NumPlots = theHists.size();
-//   TCanvas *theCanvas = new TCanvas(fCanvasName,fCanvasName);
-//   theCanvas->SetTitle(CanvasTitle+";"+XLabel+";"+YLabel);
-//   TLegend *theLegend = new TLegend(l1,l2,l3,l4);
-//   theLegend->SetBorderSize(fLegendBorderSize);
-//   float maxValue = 0.;
-//   UInt_t plotFirst = 0;
-//   for (UInt_t i0 = 0; i0 < NumPlots; i0++) {
-//     theHists[i0]->SetTitle(CanvasTitle+";"+XLabel+";"+YLabel);
-//     theHists[i0]->SetLineWidth(fLineWidths[i0]);
-//     theHists[i0]->SetLineStyle(fLineStyles[i0]);
-//     theHists[i0]->SetLineColor(fLineColors[i0]);
-//     theLegend->AddEntry(theHists[i0],fLegendEntries[i0],"lp");
-
-//     // std::cout << fLegendEntries[i0] << " -> Mean: " << theHists[i0]->GetMean() << "+-" << theHists[i0]->GetMeanError();
-//     // std::cout                           << " RMS: " << theHists[i0]->GetRMS() << "+-" << theHists[i0]->GetRMSError() << std::endl;
-
-//     // for (UInt_t i1 = 0; i1 < NumPlots; i1++) {
-//     //   if (i1 == i0)
-//     //     continue;
-//     //   std::cout << "Test with " << fLegendEntries[i1] << " KS: " << theHists[i0]->KolmogorovTest(theHists[i1]);
-//     //   std::cout << " AD: " << theHists[i0]->AndersonDarlingTest(theHists[i1]) << std::endl;
-//     // }
-
-//     Double_t checkMax = 0;
-//     if (fNormalizedHists)
-//       checkMax = theHists[i0]->GetMaximum()/theHists[i0]->Integral("width");
-//     else
-//       checkMax = theHists[i0]->GetMaximum();
-      
-//     if (checkMax > maxValue) {
-//       maxValue = checkMax;
-//       plotFirst = i0;
-//     }
-//   }
-
-//   if (ratPlot != -1) {
-//     TPad *pad1 = new TPad("pad1", "pad1", 0, 1.0 - ratioFrac, 1, 1.0);
-//     pad1->SetBottomMargin(0.025);
-//     pad1->Draw();
-//     pad1->cd();
-//     for (UInt_t i0 = 0; i0 < NumPlots; i0++) {
-//       theHists[i0]->GetYaxis()->SetTitleSize(fontSize/ratioFrac);
-//       theHists[i0]->GetYaxis()->SetLabelSize(fontSize/ratioFrac);
-//       theHists[i0]->GetXaxis()->SetTitleSize(0);
-//       theHists[i0]->GetXaxis()->SetLabelSize(0);
-//     }
-//   }
-  
-//   if (fNormalizedHists) {
-//     theHists[plotFirst]->DrawNormalized();
-//     for (UInt_t i0 = 0; i0 < NumPlots; i0++)
-//       theHists[i0]->DrawNormalized("same");
-//   }
-//   else {
-//     theHists[plotFirst]->Draw();
-//     for (UInt_t i0 = 0; i0 < NumPlots; i0++) {
-//       theHists[i0]->Draw("same");
-//     }
-//   }
-
-//   theLegend->Draw();
-//   if (logY)
-//     theCanvas->SetLogy();
-
-//   if (ratPlot != -1) {
-//     theCanvas->cd();
-//     TPad *pad2 = new TPad("pad2", "pad2", 0, 0, 1, 1 - ratioFrac);
-//     pad2->SetTopMargin(0.035);
-//     pad2->SetBottomMargin(0.4);
-//     pad2->Draw();
-//     pad2->cd();
-
-//     TH1D *tempHist = (TH1D*) theHists[ratPlot]->Clone("ValueHolder");
-//     for (Int_t iBin = 0; iBin < tempHist->GetXaxis()->GetNbins(); ++iBin)
-//       tempHist->SetBinError(iBin + 1, 0);
-
-//     Int_t divisions = 506;
-
-//     TH1D *newHist  = (TH1D*) theHists[ratPlot]->Clone();
-//     newHist->Divide(tempHist);
-//     newHist->SetTitle(CanvasTitle+";"+XLabel+";Ratio");
-//     newHist->GetXaxis()->SetTitleSize(fontSize/(1 - ratioFrac));
-//     newHist->GetYaxis()->SetTitleSize(fontSize/(1 - ratioFrac));
-//     newHist->GetXaxis()->SetLabelSize(fontSize/(1 - ratioFrac));
-//     newHist->GetYaxis()->SetLabelSize(fontSize/(1 - ratioFrac));
-//     newHist->GetXaxis()->SetTitleOffset(1.1);
-//     newHist->GetYaxis()->SetTitleOffset((1 - ratioFrac)/ratioFrac);
-//     newHist->GetYaxis()->SetNdivisions(divisions);
-//     newHist->Draw();
-//     for (UInt_t iHists = 0; iHists < theHists.size(); iHists++) {
-//       if (int(iHists) == ratPlot)
-//         continue;
-//       newHist = (TH1D*) theHists[iHists]->Clone();
-//       newHist->SetTitle(CanvasTitle+";"+XLabel+";Ratio");
-//       newHist->GetXaxis()->SetTitleSize(fontSize/(1 - ratioFrac));
-//       newHist->GetYaxis()->SetTitleSize(fontSize/(1 - ratioFrac));
-//       newHist->GetXaxis()->SetLabelSize(fontSize/(1 - ratioFrac));
-//       newHist->GetYaxis()->SetLabelSize(fontSize/(1 - ratioFrac));
-//       newHist->GetXaxis()->SetTitleOffset(1.1);
-//       newHist->GetYaxis()->SetTitleOffset((1 - ratioFrac)/ratioFrac);
-//       newHist->GetYaxis()->SetNdivisions(divisions);
-//       newHist->Divide(tempHist);
-//       newHist->Draw("same,hist");
-//     }
-//   }
-  
-//   return theCanvas;
-// }
 
 #endif

@@ -6,7 +6,7 @@
 
 #include "PlotBase.h"
 
-class PlotHists : protected PlotBase
+class PlotHists : public PlotBase
 {
  public:
   PlotHists();
