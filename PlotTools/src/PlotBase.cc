@@ -1,8 +1,4 @@
 #include <iostream>
-#include "TGraph.h"
-#include "TF1.h"
-#include "TH2D.h"
-#include "TLegend.h"
 
 #include "PlotBase.h"
 
@@ -151,4 +147,13 @@ PlotBase::AddLegendEntry(TString LegendEntry, Color_t ColorEntry, Int_t LineWidt
   fLineColors.push_back(ColorEntry);
   fLineWidths.push_back(LineWidth);
   fLineStyles.push_back(LineStyle);
+}
+
+//--------------------------------------------------------------------
+void
+PlotBase::ConvertToArray(Int_t NumXBins, Double_t MinX, Double_t MaxX, Double_t *XBins)
+{
+  Double_t binWidth = (MaxX - MinX)/NumXBins;
+  for (Int_t i0 = 0; i0 < NumXBins + 1; i0++)
+    XBins[i0] = MinX + i0 * binWidth;
 }

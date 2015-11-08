@@ -21,6 +21,7 @@ GetRatioToLines(std::vector<TGraphErrors*> InGraphs, std::vector<TGraphErrors*> 
         exit(1);
       }
       tempGraph->SetPoint(i1,GraphX[i1],GraphY[i1]/RatioY[i1]);
+      tempGraph->SetPointError(i1,0,sqrt(pow(GraphYErrors[i1]/RatioY[i1],2) + pow((GraphY[i1])*(RatioYErrors[i1])/pow(RatioY[i1],2),2)));
     }
     outGraphs.push_back(tempGraph);
   }
@@ -39,12 +40,14 @@ GetRatioToLine(std::vector<TGraphErrors*> InGraphs, TGraphErrors *RatioGraph)
 
 //--------------------------------------------------------------------
 std::vector<TGraphErrors*>
-GetRatioToPoint(std::vector<TGraphErrors*> InGraphs, Double_t RatioPoint, Double_t PointError)
+GetRatioToPoint(std::vector<TGraphErrors*> InGraphs, Double_t RatioPoint, Double_t PointError = 0)
 {
   Int_t NumPoints = InGraphs[0]->GetN();
   Double_t *GraphX = InGraphs[0]->GetX();
   TGraphErrors *tempRatioGraph = new TGraphErrors(NumPoints);
-  for (Int_t i0 = 0; i0 < NumPoints; i0++)
+  for (Int_t i0 = 0; i0 < NumPoints; i0++) {
     tempRatioGraph->SetPoint(i0,GraphX[i0],RatioPoint);
+    tempRatioGraph->SetPointError(i0,0,PointError);
+  }
   return GetRatioToLine(InGraphs,tempRatioGraph);
 }

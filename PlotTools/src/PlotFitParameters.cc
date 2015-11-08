@@ -5,9 +5,7 @@
 
 #include "PlotFitParameters.h"
 
-using namespace mithep;
-
-ClassImp(mithep::PlotFitParameters)
+ClassImp(PlotFitParameters)
 
 //--------------------------------------------------------------------
 PlotFitParameters::PlotFitParameters() :
