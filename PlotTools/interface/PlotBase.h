@@ -127,7 +127,6 @@ PlotBase::BaseCanvas(std::vector<T*> theLines, TString FileBase, TString XLabel,
     theLegend->AddEntry(theLines[i0],fLegendEntries[i0],"lp");
 
     Double_t checkMax = -999;
-
     checkMax = theLines[i0]->GetMaximum();
       
     if (checkMax > maxValue) {
@@ -167,36 +166,23 @@ PlotBase::BaseCanvas(std::vector<T*> theLines, TString FileBase, TString XLabel,
 
     Int_t divisions = 506;
 
-    T *ratioLine = SetZeroError((T*) theLines[fRatioIndex]->Clone("ValueHolder"));
+    T *ratioLine = (T*) theLines[fRatioIndex]->Clone("ValueHolder");
+    SetZeroError(ratioLine);
 
-    // Draw first the line that is through 1
-    T *newLine  = (T*) theLines[fRatioIndex]->Clone();
-    Division(newLine,ratioLine);
-    newLine->SetTitle(";"+XLabel+";Ratio");
-    newLine->GetXaxis()->SetTitleSize(fontSize/(1 - ratioFrac));
-    newLine->GetYaxis()->SetTitleSize(fontSize/(1 - ratioFrac));
-    newLine->GetXaxis()->SetLabelSize(fontSize/(1 - ratioFrac));
-    newLine->GetYaxis()->SetLabelSize(fontSize/(1 - ratioFrac));
-    newLine->GetXaxis()->SetTitleOffset(1.1);
-    newLine->GetYaxis()->SetTitleOffset((1 - ratioFrac)/ratioFrac);
-    newLine->GetYaxis()->SetNdivisions(divisions);
-    newLine->Draw();
+    std::vector<T*> newLines = GetRatioToLine(theLines,ratioLine);
 
-    // Then Draw everything else
-    for (UInt_t iLines = 0; iLines < theLines.size(); iLines++) {
-      if (int(iLines) == fRatioIndex)
-        continue;
-      newLine  = (T*) theLines[fRatioIndex]->Clone();
-      Division(newLine,ratioLine);
-      newLine->GetXaxis()->SetTitleSize(fontSize/(1 - ratioFrac));
-      newLine->GetYaxis()->SetTitleSize(fontSize/(1 - ratioFrac));
-      newLine->GetXaxis()->SetLabelSize(fontSize/(1 - ratioFrac));
-      newLine->GetYaxis()->SetLabelSize(fontSize/(1 - ratioFrac));
-      newLine->GetXaxis()->SetTitleOffset(1.1);
-      newLine->GetYaxis()->SetTitleOffset((1 - ratioFrac)/ratioFrac);
-      newLine->GetYaxis()->SetNdivisions(divisions);
-      newLine->Draw("same");
+    for (UInt_t iLine = 0; iLine < theLines.size(); iLine++) {
+      newLines[iLine]->GetXaxis()->SetTitleSize(fontSize/(1 - ratioFrac));
+      newLines[iLine]->GetYaxis()->SetTitleSize(fontSize/(1 - ratioFrac));
+      newLines[iLine]->GetXaxis()->SetLabelSize(fontSize/(1 - ratioFrac));
+      newLines[iLine]->GetYaxis()->SetLabelSize(fontSize/(1 - ratioFrac));
+      newLines[iLine]->GetXaxis()->SetTitleOffset(1.1);
+      newLines[iLine]->GetYaxis()->SetTitleOffset((1 - ratioFrac)/ratioFrac);
+      newLines[iLine]->GetYaxis()->SetNdivisions(divisions);
     }
+    newLines[plotFirst];
+    for (UInt_t iLine = 0; iLine < theLines.size(); iLine++)
+      newLines[iLine]->Draw("same");
   }
 
   theCanvas->SaveAs(FileBase+".C");
