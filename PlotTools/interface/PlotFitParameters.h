@@ -28,23 +28,16 @@ class PlotFitParameters : public PlotBase
   void                         SetLooseFit             ( TString function )                             { fLooseFunction = function;               }
   void                         SetLooseLimits          ( Int_t param, Double_t low, Double_t high );
   void                         AddMapping              ( Int_t from, Int_t to )                         { fParamFrom.push_back(from); 
-    fParamTo.push_back(to);                  }
-  
-  std::vector<TGraphErrors*>   MakeFitGraphs           ( Int_t NumXBins, Double_t MinX, Double_t MaxX,  // This does the fitting
-							 Int_t NumYBins, Double_t MinY, Double_t MaxY,  // Specify which parameter of the function
-							 Int_t NumParam );                              //   that you want to plot
+                                                                                                          fParamTo.push_back(to);                  }
   
   std::vector<TGraphErrors*>   MakeFitGraphs           ( Int_t NumXBins, Double_t MinX, Double_t MaxX,
-							 Int_t NumYBins, Double_t MinY, Double_t MaxY,
-							 TString ParamExpr, TString ErrorExpr );
+							 Int_t NumYBins, Double_t MinY, Double_t MaxY );
   
   // The defaults are set up for resolution, but response can be gotten too
-  TCanvas*                     MakeCanvas              ( std::vector<TGraphErrors*> theGraphs,
-							 TString CanvasTitle, TString XLabel, TString YLabel,
+  void                         MakeCanvas              ( TString FileBase, TString ParameterExpr, TString XLabel, TString YLabel,
 							 Double_t YMin, Double_t YMax, Bool_t logY = false );
-  
-  void                         MakeCanvas              ( TString FileBase, std::vector<TGraphErrors*> theGraphs,
-							 TString CanvasTitle, TString XLabel, TString YLabel,
+
+  void                         MakeCanvas              ( TString FileBase, Int_t ParameterNum, TString XLabel, TString YLabel,
 							 Double_t YMin, Double_t YMax, Bool_t logY = false );
   
   void                         SetDumpingFits          ( Bool_t dump )                                  { fDumpingFits = dump;         }

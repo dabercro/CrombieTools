@@ -4,14 +4,16 @@
 #include <vector>
 
 #include <iostream>
+#include "TStyle.h"
 #include "TTree.h"
 #include "TString.h"
 
 #include "TH1.h"
 #include "TGraphErrors.h"
-#include "TStyle.h"
 #include "TCanvas.h"
 #include "TLegend.h"
+
+#include "PlotUtils.h"
 
 class PlotBase
 {
@@ -80,9 +82,6 @@ class PlotBase
 						    TString XLabel, TString YLabel, Bool_t logY );
 
  private:
-
-  void                       Division             ( TH1* PlotHist, TH1* RatioHist );
-  void                       Division             ( TGraphErrors* PlotGraph, TGraph* RatioGraph );
 
   TString                    fCanvasName;         // The name of the output canvas
   Int_t                      fDefaultLineWidth;   // Line width to make all plots
@@ -168,7 +167,7 @@ PlotBase::BaseCanvas(std::vector<T*> theLines, TString FileBase, TString XLabel,
 
     Int_t divisions = 506;
 
-    T *ratioLine = (T*) theLines[fRatioIndex]->Clone("ValueHolder");
+    T *ratioLine = SetZeroError((T*) theLines[fRatioIndex]->Clone("ValueHolder"));
 
     // Draw first the line that is through 1
     T *newLine  = (T*) theLines[fRatioIndex]->Clone();
