@@ -6,8 +6,6 @@
 #include <iostream>
 #include "TTree.h"
 #include "TString.h"
-#include "TObject.h"
-#include "TAxis.h"
 
 #include "TH1.h"
 #include "TGraphErrors.h"
@@ -78,12 +76,13 @@ class PlotBase
 
   void                       ConvertToArray       ( Int_t NumXBins, Double_t MinX, Double_t MaxX, Double_t *XBins );
 
-  void                       Division             ( TH1* PlotHist, TH1* RatioHist );
-  void                       Division             ( TGraphErrors* PlotGraph, TGraph* RatioGraph );
-
   template<class T>  void    BaseCanvas           ( std::vector<T*> theLines, TString FileBase,
 						    TString XLabel, TString YLabel, Bool_t logY );
+
  private:
+
+  void                       Division             ( TH1* PlotHist, TH1* RatioHist );
+  void                       Division             ( TGraphErrors* PlotGraph, TGraph* RatioGraph );
 
   TString                    fCanvasName;         // The name of the output canvas
   Int_t                      fDefaultLineWidth;   // Line width to make all plots
@@ -95,44 +94,6 @@ class PlotBase
   std::vector<Int_t>         fLineStyles;         //   set explicitly with overloaded function
 
 };
-
-//--------------------------------------------------------------------
-void
-PlotBase::ConvertToArray(Int_t NumXBins, Double_t MinX, Double_t MaxX, Double_t *XBins)
-{
-  Double_t binWidth = (MaxX - MinX)/NumXBins;
-  for (Int_t i0 = 0; i0 < NumXBins + 1; i0++)
-    XBins[i0] = MinX + i0 * binWidth;
-}
-
-//--------------------------------------------------------------------
-void
-PlotBase::Division(TH1 *PlotHist, TH1 *RatioHist)
-{
-    for (Int_t iBin = 0; iBin != RatioHist->GetXaxis()->GetNbins(); ++iBin)
-      RatioHist->SetBinError(iBin + 1, 0);
-
-  PlotHist->Divide(RatioHist);
-}
-
-//--------------------------------------------------------------------
-void
-PlotBase::Division(TGraphErrors *PlotGraph, TGraph *RatioGraph)
-{
-  Double_t *GraphX = PlotGraph->GetX();
-  Double_t *GraphY = PlotGraph->GetY();
-  Double_t *GraphYErrors = PlotGraph->GetEY();
-  Int_t NumPoints = RatioGraph->GetN();
-  Double_t *RatioY = RatioGraph->GetY();
-  for (Int_t i1 = 0; i1 < NumPoints; i1++) {
-    if (PlotGraph->GetN() != NumPoints) {
-      std::cout << "Messed up graph size... Check that out" << std::endl;
-      exit(1);
-    }
-    PlotGraph->SetPoint(i1,GraphX[i1],GraphY[i1]/RatioY[i1]);
-    PlotGraph->SetPointError(i1,0,GraphYErrors[i1]/RatioY[i1]);
-  }
-}
 
 //--------------------------------------------------------------------
 template<class T>

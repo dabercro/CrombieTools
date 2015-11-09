@@ -151,3 +151,41 @@ PlotBase::AddLegendEntry(TString LegendEntry, Color_t ColorEntry, Int_t LineWidt
   fLineWidths.push_back(LineWidth);
   fLineStyles.push_back(LineStyle);
 }
+
+//--------------------------------------------------------------------
+void
+PlotBase::ConvertToArray(Int_t NumXBins, Double_t MinX, Double_t MaxX, Double_t *XBins)
+{
+  Double_t binWidth = (MaxX - MinX)/NumXBins;
+  for (Int_t i0 = 0; i0 < NumXBins + 1; i0++)
+    XBins[i0] = MinX + i0 * binWidth;
+}
+
+//--------------------------------------------------------------------
+void
+PlotBase::Division(TH1 *PlotHist, TH1 *RatioHist)
+{
+    for (Int_t iBin = 0; iBin != RatioHist->GetXaxis()->GetNbins(); ++iBin)
+      RatioHist->SetBinError(iBin + 1, 0);
+
+  PlotHist->Divide(RatioHist);
+}
+
+//--------------------------------------------------------------------
+void
+PlotBase::Division(TGraphErrors *PlotGraph, TGraph *RatioGraph)
+{
+  Double_t *GraphX = PlotGraph->GetX();
+  Double_t *GraphY = PlotGraph->GetY();
+  Double_t *GraphYErrors = PlotGraph->GetEY();
+  Int_t NumPoints = RatioGraph->GetN();
+  Double_t *RatioY = RatioGraph->GetY();
+  for (Int_t i1 = 0; i1 < NumPoints; i1++) {
+    if (PlotGraph->GetN() != NumPoints) {
+      std::cout << "Messed up graph size... Check that out" << std::endl;
+      exit(1);
+    }
+    PlotGraph->SetPoint(i1,GraphX[i1],GraphY[i1]/RatioY[i1]);
+    PlotGraph->SetPointError(i1,0,GraphYErrors[i1]/RatioY[i1]);
+  }
+}
