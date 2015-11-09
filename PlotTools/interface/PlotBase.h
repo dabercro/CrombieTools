@@ -2,7 +2,6 @@
 #define MITPLOTS_PLOT_PLOTBASE_H
 
 #include <vector>
-
 #include <iostream>
 #include "TStyle.h"
 #include "TTree.h"
@@ -114,7 +113,7 @@ PlotBase::BaseCanvas(std::vector<T*> theLines, TString FileBase, TString XLabel,
   theCanvas->SetTitle(";"+XLabel+";"+YLabel);
   TLegend *theLegend = new TLegend(l1,l2,l3,l4);
   theLegend->SetBorderSize(fLegendBorderSize);
-  float maxValue = 0.;
+  float maxValue = 0;
   UInt_t plotFirst = 0;
   for (UInt_t i0 = 0; i0 != NumPlots; ++i0) {
     theLines[i0]->SetTitle(";"+XLabel+";"+YLabel);
@@ -126,8 +125,7 @@ PlotBase::BaseCanvas(std::vector<T*> theLines, TString FileBase, TString XLabel,
 
     theLegend->AddEntry(theLines[i0],fLegendEntries[i0],"lp");
 
-    Double_t checkMax = -999;
-    checkMax = theLines[i0]->GetMaximum();
+    Double_t checkMax = theLines[i0]->GetMaximum();
       
     if (checkMax > maxValue) {
       maxValue = checkMax;

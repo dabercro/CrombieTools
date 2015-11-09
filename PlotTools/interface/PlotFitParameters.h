@@ -11,6 +11,7 @@
 
 #include "TGraphErrors.h"
 #include "TCanvas.h"
+#include "TF1.h"
 
 #include "PlotBase.h"
 
@@ -30,7 +31,7 @@ class PlotFitParameters : public PlotBase
   void                         AddMapping              ( Int_t from, Int_t to )                         { fParamFrom.push_back(from); 
                                                                                                           fParamTo.push_back(to);                  }
   
-  std::vector<TGraphErrors*>   MakeFitGraphs           ( Int_t NumXBins, Double_t MinX, Double_t MaxX,
+  void                         MakeFitGraphs           ( Int_t NumXBins, Double_t MinX, Double_t MaxX,
 							 Int_t NumYBins, Double_t MinY, Double_t MaxY );
   
   // The defaults are set up for resolution, but response can be gotten too
@@ -44,6 +45,9 @@ class PlotFitParameters : public PlotBase
   
  private:
   
+  void                       ClearFits();
+  Int_t                      fFitXBins;           // Hold the number of XBins in fFits for cleaning
+  std::vector<TF1**>         fFits;
   std::vector<Int_t>         fParams;             // This is vector used for setting parameter limits for fits
   std::vector<Double_t>      fParamLows;          // Low values of these parameters
   std::vector<Double_t>      fParamHighs;         // High values of these parameters
@@ -64,6 +68,6 @@ class PlotFitParameters : public PlotBase
   Int_t                      fNumFitDumps;        // int to keep track of different number of fits
   
   ClassDef(PlotFitParameters,1)
-    };
+};
 
 #endif
