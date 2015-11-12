@@ -50,6 +50,7 @@ class PlotBase
   void                   SetDataIndex             ( Int_t data )                                  { fDataIndex = data;           }
   void                   SetMakeRatio             ( Bool_t ratio )                                { fMakeRatio = ratio;          }
   void                   SetRatioIndex            ( Int_t ratio )                                 { fRatioIndex = ratio;         }
+  void                   SetOnlyRatioWithData     ( Bool_t only )                                 { fOnlyRatioWithData = only;   }
   
  protected:
   
@@ -75,6 +76,8 @@ class PlotBase
   Bool_t                     fMakeRatio;
   Int_t                      fRatioIndex;
 
+  std::vector<TString>       fLegendEntries;      // Number of legend entries should match number of lines
+
   void                       ConvertToArray       ( Int_t NumXBins, Double_t MinX, Double_t MaxX, Double_t *XBins );
 
   template<class T>  void    BaseCanvas           ( std::vector<T*> theLines, TString FileBase,
@@ -86,10 +89,11 @@ class PlotBase
   Int_t                      fDefaultLineWidth;   // Line width to make all plots
   Int_t                      fDefaultLineStyle;   // Line style to use on all plots
   
-  std::vector<TString>       fLegendEntries;      // Number of legend entries should match number of lines
   std::vector<Color_t>       fLineColors;         // Number of colors should match number of lines
   std::vector<Int_t>         fLineWidths;         // Will be filled with defaults unless
   std::vector<Int_t>         fLineStyles;         //   set explicitly with overloaded function
+
+  Bool_t                     fOnlyRatioWithData;
 
 };
 
@@ -115,21 +119,25 @@ PlotBase::BaseCanvas(std::vector<T*> theLines, TString FileBase, TString XLabel,
   theLegend->SetBorderSize(fLegendBorderSize);
   float maxValue = 0;
   UInt_t plotFirst = 0;
-  for (UInt_t i0 = 0; i0 != NumPlots; ++i0) {
-    theLines[i0]->SetTitle(";"+XLabel+";"+YLabel);
-    if (int(i0) != fDataIndex) {
-      theLines[i0]->SetLineWidth(fLineWidths[i0]);
-      theLines[i0]->SetLineStyle(fLineStyles[i0]);
-      theLines[i0]->SetLineColor(fLineColors[i0]);
+  for (UInt_t iLine = 0; iLine != NumPlots; ++iLine) {
+    theLines[iLine]->SetTitle(";"+XLabel+";"+YLabel);
+    if (int(iLine) != fDataIndex) {
+      theLines[iLine]->SetLineWidth(fLineWidths[iLine]);
+      theLines[iLine]->SetLineStyle(fLineStyles[iLine]);
+      theLines[iLine]->SetLineColor(fLineColors[iLine]);
+    }
+    else {
+      theLines[iLine]->SetMarkerStyle(8);
+      theLines[iLine]->Sumw2();
     }
 
-    theLegend->AddEntry(theLines[i0],fLegendEntries[i0],"lp");
+    theLegend->AddEntry(theLines[iLine],fLegendEntries[iLine],"lpf");
 
-    Double_t checkMax = theLines[i0]->GetMaximum();
+    Double_t checkMax = theLines[iLine]->GetMaximum();
       
     if (checkMax > maxValue) {
       maxValue = checkMax;
-      plotFirst = i0;
+      plotFirst = iLine;
     }
   }
 
@@ -138,17 +146,17 @@ PlotBase::BaseCanvas(std::vector<T*> theLines, TString FileBase, TString XLabel,
     pad1->SetBottomMargin(0.025);
     pad1->Draw();
     pad1->cd();
-    for (UInt_t i0 = 0; i0 < NumPlots; i0++) {
-      theLines[i0]->GetYaxis()->SetTitleSize(fontSize/ratioFrac);
-      theLines[i0]->GetYaxis()->SetLabelSize(fontSize/ratioFrac);
-      theLines[i0]->GetXaxis()->SetTitleSize(0);
-      theLines[i0]->GetXaxis()->SetLabelSize(0);
+    for (UInt_t iLine = 0; iLine != NumPlots; ++iLine) {
+      theLines[iLine]->GetYaxis()->SetTitleSize(fontSize/ratioFrac);
+      theLines[iLine]->GetYaxis()->SetLabelSize(fontSize/ratioFrac);
+      theLines[iLine]->GetXaxis()->SetTitleSize(0);
+      theLines[iLine]->GetXaxis()->SetLabelSize(0);
     }
   }
 
   theLines[plotFirst]->Draw();
-  for (UInt_t i0 = 0; i0 != NumPlots; ++i0)
-    theLines[i0]->Draw("same");
+  for (UInt_t iLine = 0; iLine != NumPlots; ++iLine)
+    theLines[iLine]->Draw("same");
 
   theLegend->Draw();
   if (logY)
@@ -169,7 +177,7 @@ PlotBase::BaseCanvas(std::vector<T*> theLines, TString FileBase, TString XLabel,
 
     std::vector<T*> newLines = GetRatioToLine(theLines,ratioLine);
 
-    for (UInt_t iLine = 0; iLine < theLines.size(); iLine++) {
+    for (UInt_t iLine = 0; iLine != theLines.size(); ++iLine) {
       newLines[iLine]->GetXaxis()->SetTitleSize(fontSize/(1 - ratioFrac));
       newLines[iLine]->GetYaxis()->SetTitleSize(fontSize/(1 - ratioFrac));
       newLines[iLine]->GetXaxis()->SetLabelSize(fontSize/(1 - ratioFrac));
@@ -178,9 +186,16 @@ PlotBase::BaseCanvas(std::vector<T*> theLines, TString FileBase, TString XLabel,
       newLines[iLine]->GetYaxis()->SetTitleOffset((1 - ratioFrac)/ratioFrac);
       newLines[iLine]->GetYaxis()->SetNdivisions(divisions);
     }
-    newLines[plotFirst];
-    for (UInt_t iLine = 0; iLine < theLines.size(); iLine++)
-      newLines[iLine]->Draw("same");
+
+    if (fOnlyRatioWithData) {
+      newLines[fRatioIndex]->Draw();
+      newLines[fDataIndex]->Draw("same");
+    }
+    else {
+      newLines[plotFirst];
+      for (UInt_t iLine = 0; iLine < theLines.size(); iLine++)
+	newLines[iLine]->Draw("same");
+    }
   }
 
   theCanvas->SaveAs(FileBase+".C");

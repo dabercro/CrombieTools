@@ -1,8 +1,8 @@
 import ROOT
-from CrombieVars import packdir
+from CrombieVars import plotSrc
 
-ROOT.gROOT.LoadMacro(packdir + '/PlotTools/src/PlotBase.cc+')
-ROOT.gROOT.LoadMacro(packdir + '/PlotTools/src/PlotHists.cc+')
+ROOT.gROOT.LoadMacro(plotSrc + 'PlotBase.cc+')
+ROOT.gROOT.LoadMacro(plotSrc + 'PlotHists.cc+')
 
 newHistPlotter = ROOT.PlotHists
 histPlotter    = newHistPlotter()

@@ -21,7 +21,8 @@ PlotBase::PlotBase() :
   fRatioIndex(-1),
   fCanvasName("canvas"),
   fDefaultLineWidth(2),
-  fDefaultLineStyle(1)
+  fDefaultLineStyle(1),
+  fOnlyRatioWIthData(false)
 {
   fInTrees.resize(0);
   fInCuts.resize(0);

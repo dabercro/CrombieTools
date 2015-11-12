@@ -12,6 +12,7 @@
 #include "TGraphErrors.h"
 #include "TCanvas.h"
 #include "TF1.h"
+#include "TProfile.h"
 
 #include "PlotBase.h"
 
@@ -21,24 +22,32 @@ class PlotFitParameters : public PlotBase
   PlotFitParameters();
   virtual ~PlotFitParameters();
   
-  void                         SetExprX                ( TString expr )                                 { fInExprX = expr;                         }
-  void                         AddExprX                ( TString expr )                                 { fInExprXs.push_back(expr);               }
+  void                         SetExprX                ( TString expr )                                 { fInExprX = expr;             }
+  void                         AddExprX                ( TString expr )                                 { fInExprXs.push_back(expr);   }
   void                         SetParameterLimits      ( Int_t param, Double_t low, Double_t high );
-  void                         SetFunction             ( TString function )                             { fFunctionString = function;              }
-  void                         AddFunctionComponent    ( TString function )                             { fFunctionComponents.push_back(function); }
-  void                         SetLooseFit             ( TString function )                             { fLooseFunction = function;               }
+  void                         SetFunction             ( TString function )                             { fFunctionString = function;  }
+  void                         AddFunctionComponent    ( TString function )                 { fFunctionComponents.push_back(function); }
+  void                         SetLooseFit             ( TString function )                             { fLooseFunction = function;   }
   void                         SetLooseLimits          ( Int_t param, Double_t low, Double_t high );
   void                         AddMapping              ( Int_t from, Int_t to )                         { fParamFrom.push_back(from); 
-                                                                                                          fParamTo.push_back(to);                  }
+                                                                                                          fParamTo.push_back(to);      }
   
-  void                         MakeFitGraphs           ( Int_t NumXBins, Double_t MinX, Double_t MaxX,
+  void                         DoFits                  ( Int_t NumXBins, Double_t *XBins,
 							 Int_t NumYBins, Double_t MinY, Double_t MaxY );
   
-  // The defaults are set up for resolution, but response can be gotten too
-  void                         MakeCanvas              ( TString FileBase, TString ParameterExpr, TString XLabel, TString YLabel,
+  void                         DoFits                  ( Int_t NumXBins, Double_t MinX, Double_t MaxX,
+							 Int_t NumYBins, Double_t MinY, Double_t MaxY );
+  
+  std::vector<TGraphErrors*>   MakeGraphs              ( TString ParameterExpr );
+  std::vector<TGraphErrors*>   MakeGraphs              ( Int_t ParameterNum );
+
+  void                         MakeCanvas              ( std::vector<TGraphErrors*> theGraphs, TString FileBase, TString XLabel,
+							 TString YLabel, Double_t YMin, Double_t YMax, Bool_t logY = false );
+
+  void                         MakeCanvas              ( TString ParameterExpr, TString FileBase, TString XLabel, TString YLabel,
 							 Double_t YMin, Double_t YMax, Bool_t logY = false );
 
-  void                         MakeCanvas              ( TString FileBase, Int_t ParameterNum, TString XLabel, TString YLabel,
+  void                         MakeCanvas              ( Int_t ParameterNum, TString FileBase, TString XLabel, TString YLabel,
 							 Double_t YMin, Double_t YMax, Bool_t logY = false );
   
   void                         SetDumpingFits          ( Bool_t dump )                                  { fDumpingFits = dump;         }
@@ -47,7 +56,9 @@ class PlotFitParameters : public PlotBase
   
   void                       ClearFits();
   Int_t                      fFitXBins;           // Hold the number of XBins in fFits for cleaning
+  std::vector<TProfile*>     fMeans;
   std::vector<TF1**>         fFits;
+
   std::vector<Int_t>         fParams;             // This is vector used for setting parameter limits for fits
   std::vector<Double_t>      fParamLows;          // Low values of these parameters
   std::vector<Double_t>      fParamHighs;         // High values of these parameters

@@ -4,7 +4,7 @@
 #include "TSystem.h"
 #include "TList.h"
 #include "TSystemDirectory.h"
-#include "MitCrombie/Common/interface/TreeContainer.h"
+#include "TreeContainer.h"
 
 ClassImp(TreeContainer)
 
@@ -24,7 +24,6 @@ TreeContainer::TreeContainer(TString fileName) :
   fFileList.resize(0);
   fKeepBranches.resize(0);
   fFileNames.resize(0);
-
   if (fileName != "")
     AddFile(fileName);
 }
@@ -32,13 +31,14 @@ TreeContainer::TreeContainer(TString fileName) :
 //--------------------------------------------------------------------
 TreeContainer::~TreeContainer()
 {
+  for (UInt_t iTree = 0; iTree != fTreeList.size(); ++iTree) {
+    delete fTreeList[iTree];
+
   fTreeList.resize(0);
 
   for (UInt_t i0 = 0; i0 < fFileList.size(); i0++) {
     if (fFileList[i0]->IsOpen())
       fFileList[i0]->Close();
-
-    delete fFileList[i0];
   }
 }
 
@@ -63,8 +63,9 @@ TreeContainer::AddDirectory(TString directoryName,TString searchFor)
   TString tempName;
   TSystemDirectory *dir = new TSystemDirectory(directoryName,directoryName);
   TList *fileNameList = dir->GetListOfFiles();
-  for (Int_t i0 = 0; i0 < fileNameList->GetEntries(); i0++) {
-    TNamed *tempMember = (TNamed*) fileNameList->At(i0);
+
+  for (Int_t iFile = 0; iFile != fileNameList->GetEntries(); ++iFile) {
+    TNamed *tempMember = (TNamed*) fileNameList->At(iFile);
     TString tempName = TString(tempMember->GetName());
     if (tempName.Contains(searchFor)) {
       if (fPrinting)
@@ -86,8 +87,8 @@ TreeContainer::SkimTree(TTree *tree, Bool_t inFile)
 {
   if (fKeepBranches.size() > 0) {
     tree->SetBranchStatus("*",0);
-    for (UInt_t i0 = 0; i0 < fKeepBranches.size(); i0++)
-      tree->SetBranchStatus(fKeepBranches[i0],1);
+    for (UInt_t iBranch = 0; iBranch != fKeepBranches.size(); iBranch++)
+      tree->SetBranchStatus(fKeepBranches[iBranch],1);
   }
 
   if (not inFile)
@@ -153,6 +154,8 @@ TreeContainer::ReturnTreeList(TString Name)
   if (Name != "")
     SetTreeName(Name);
 
+  for (UInt_t iTree = 0; iTree != fTreeList.size(); ++iTree) {
+    delete fTreeList[iTree];
   fTreeList.resize(0);
 
   for (UInt_t i0 = 0; i0 < fFileList.size(); i0++) {
@@ -197,5 +200,4 @@ TreeContainer::MakeFile(TString fileName, TString treeName)
   outFile->cd();
   fTree->Write();
   outFile->Close();
-  delete outFile;
 }

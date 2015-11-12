@@ -35,7 +35,8 @@ class TreeContainer
   void                   SetSkimmingTrees    ( Bool_t skim )              { fSkimmingTrees = skim;          }
   void                   SetSkimmingCut      ( TString cut )              { fSkimmingCut = cut;             }
   
-  std::vector<TString>   ReturnFileList      ()                           { return fFileNames;              }
+  std::vector<TString>   ReturnFileNames     ()                           { return fFileNames;              }
+  std::vector<TFile*>    ReturnFileList      ()                           { return fFileList;               }
   
   void                   MakeFile            ( TString fileName = "", TString treeName = "");
   

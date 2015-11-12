@@ -1,7 +1,7 @@
 import ROOT
-from CrombieVars import packdir
+from CrombieVars import skimSrc
 
-ROOT.gROOT.LoadMacro(packdir + '/SkimmingTools/src/TreeContainer.cc+')
+ROOT.gROOT.LoadMacro(skimSrc + 'TreeContainer.cc+')
 
 newTreeContainer = ROOT.TreeContainer
 treeContainer    = newTreeContainer()
