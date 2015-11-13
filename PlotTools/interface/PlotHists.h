@@ -18,10 +18,10 @@ class PlotHists : public PlotBase
   std::vector<TH1D*>     MakeHists                ( Int_t NumXBins, Double_t *XBins );                   // These just return vectors of
   std::vector<TH1D*>     MakeHists                ( Int_t NumXBins, Double_t MinX, Double_t MaxX );      //   histograms for other uses
   
-  void                   MakeCanvas               ( Int_t NumXBins, Double_t *XBins, TString FileBase,   
+  void                   MakeCanvas               ( TString FileBase, Int_t NumXBins, Double_t *XBins,  
                                                     TString XLabel, TString YLabel, Bool_t logY = false);
   
-  void                   MakeCanvas               ( Int_t NumXBins, Double_t MinX, Double_t MaxX, TString FileBase,
+  void                   MakeCanvas               ( TString FileBase, Int_t NumXBins, Double_t MinX, Double_t MaxX,
                                                     TString XLabel, TString YLabel, Bool_t logY = false);
 
  private:

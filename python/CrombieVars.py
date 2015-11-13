@@ -1,5 +1,9 @@
 import ROOT
 import os
+import tdrStyle
+
+tdrStyle.setTDRStyle()
+ROOT.gROOT.SetBatch(True)
 
 packdir = os.path.dirname(os.path.realpath(__file__))
 packdir = "/".join(packdir.split('/')[:-1])
