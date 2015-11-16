@@ -88,11 +88,11 @@ PlotHists::MakeHists(Int_t NumXBins, Double_t MinX, Double_t MaxX)
 
 //--------------------------------------------------------------------
 void
-PlotHists::MakeCanvas(Int_t NumXBins, Double_t *XBins, TString FileBase,
+PlotHists::MakeCanvas(TString FileBase, Int_t NumXBins, Double_t *XBins,
                       TString XLabel, TString YLabel, Bool_t logY)
 {
   std::vector<TH1D*> hists = MakeHists(NumXBins,XBins);
-  BaseCanvas(hists,FileBase,XLabel,YLabel,logY);
+  BaseCanvas(FileBase,hists,XLabel,YLabel,logY);
 
   for (UInt_t i0 = 0; i0 < hists.size(); i0++)
     delete hists[i0];
@@ -100,10 +100,10 @@ PlotHists::MakeCanvas(Int_t NumXBins, Double_t *XBins, TString FileBase,
 
 //--------------------------------------------------------------------
 void
-PlotHists::MakeCanvas(Int_t NumXBins, Double_t MinX, Double_t MaxX, TString FileBase,
+PlotHists::MakeCanvas(TString FileBase, Int_t NumXBins, Double_t MinX, Double_t MaxX,
                       TString XLabel, TString YLabel, Bool_t logY)
 {
   Double_t XBins[NumXBins+1];
   ConvertToArray(NumXBins,MinX,MaxX,XBins);
-  MakeCanvas(NumXBins,XBins,FileBase,XLabel,YLabel,logY);
+  MakeCanvas(FileBase,NumXBins,XBins,XLabel,YLabel,logY);
 }

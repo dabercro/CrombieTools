@@ -242,7 +242,7 @@ PlotFitParameters::MakeGraphs(Int_t ParameterNum)
 
 //--------------------------------------------------------------------
 void
-PlotFitParameters::MakeCanvas(std::vector<TGraphErrors*> theGraphs, TString FileBase, TString XLabel, TString YLabel, 
+PlotFitParameters::MakeCanvas(TString FileBase, std::vector<TGraphErrors*> theGraphs, TString XLabel, TString YLabel, 
 			      Double_t YMin, Double_t YMax, Bool_t logY)
 {
   for (UInt_t iGraph = 0; iGraph != theGraphs.size(); ++iGraph)
@@ -252,7 +252,7 @@ PlotFitParameters::MakeCanvas(std::vector<TGraphErrors*> theGraphs, TString File
 
 //--------------------------------------------------------------------
 void
-PlotFitParameters::MakeCanvas(TString ParameterExpr, TString FileBase, TString XLabel, TString YLabel, 
+PlotFitParameters::MakeCanvas(TString FileBase, TString ParameterExpr, TString XLabel, TString YLabel, 
 			      Double_t YMin, Double_t YMax, Bool_t logY)
 {
   std::vector<TGraphErrors*> theGraphs = MakeGraphs(ParameterExpr);
@@ -263,7 +263,7 @@ PlotFitParameters::MakeCanvas(TString ParameterExpr, TString FileBase, TString X
 
 //--------------------------------------------------------------------
 void
-PlotFitParameters::MakeCanvas(Int_t ParameterNum, TString FileBase, TString XLabel, TString YLabel,
+PlotFitParameters::MakeCanvas(TString FileBase, Int_t ParameterNum, TString XLabel, TString YLabel,
 			      Double_t YMin, Double_t YMax, Bool_t logY)
 {
   TString ParameterExpr = "";
