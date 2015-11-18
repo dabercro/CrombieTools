@@ -51,6 +51,14 @@ PlotFitParameters::ClearFits()
 
 //--------------------------------------------------------------------
 void
+PlotFitParameters::SetParameterGuess(Int_t param, Double_t guess)
+{
+  fGuessParams.push_back(param);
+  fGuesses.push_back(guess);
+}
+
+//--------------------------------------------------------------------
+void
 PlotFitParameters::SetParameterLimits(Int_t param, Double_t low, Double_t high)
 {
   fParams.push_back(param);
@@ -151,9 +159,12 @@ PlotFitParameters::DoFits(Int_t NumXBins, Double_t *XBins,
 
     for (Int_t iXBin = 0; iXBin < NumXBins; iXBin++) {
       TCanvas *tempCanvas = new TCanvas();
+      for (UInt_t iParam = 0; iParam != fGuessParams.size(); ++iParam)
+	fitFunc->SetParameter(fGuessParams[iParam],fGuesses[iParam]);
+
       if (fLooseFunction != "") {
         tempHist->ProjectionY(tempName+"_py",iXBin+1,iXBin+1)->Fit(looseFunc,"","",MinY,MaxY);
-        for (UInt_t iParam = 0; iParam < fParamFrom.size(); iParam++)
+        for (UInt_t iParam = 0; iParam != fParamFrom.size(); ++iParam)
           fitFunc->SetParameter(fParamTo[iParam],looseFunc->GetParameter(fParamFrom[iParam]));
       }
       tempHist->ProjectionY(tempName+"_py",iXBin+1,iXBin+1)->Fit(fitFunc,"","",MinY,MaxY);

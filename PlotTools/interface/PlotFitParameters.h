@@ -24,6 +24,7 @@ class PlotFitParameters : public PlotBase
   
   void                         SetExprX                ( TString expr )                                 { fInExprX = expr;             }
   void                         AddExprX                ( TString expr )                                 { fInExprXs.push_back(expr);   }
+  void                         SetInitialGuess         ( Int_t param, Double_t guess );
   void                         SetParameterLimits      ( Int_t param, Double_t low, Double_t high );
   void                         SetFunction             ( TString function )                             { fFunctionString = function;  }
   void                         AddFunctionComponent    ( TString function )                 { fFunctionComponents.push_back(function); }
@@ -60,6 +61,9 @@ class PlotFitParameters : public PlotBase
   Int_t                      fFitXBins;           // Hold the number of XBins in fFits for cleaning
   std::vector<TProfile*>     fMeans;
   std::vector<TF1**>         fFits;
+
+  std::vector<Int_t>         fGuessParams;
+  std::vector<Double_t>      fGuesses;
 
   std::vector<Int_t>         fParams;             // This is vector used for setting parameter limits for fits
   std::vector<Double_t>      fParamLows;          // Low values of these parameters

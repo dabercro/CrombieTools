@@ -343,6 +343,7 @@ PlotBase::BaseCanvas(TString FileBase, std::vector<T*> theLines, TString XLabel,
       newLines[iLine]->GetXaxis()->SetTitleOffset(1.1);
       newLines[iLine]->GetYaxis()->SetTitleOffset((1 - ratioFrac)/ratioFrac);
       newLines[iLine]->GetYaxis()->SetNdivisions(divisions);
+      newLines[iLine]->GetYaxis()->SetTitle("Ratio");
     }
 
     if (fOnlyRatioWithData) {
