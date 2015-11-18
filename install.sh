@@ -17,14 +17,27 @@ fi
 
 source $profile
 
+target=`pwd`/python
 case ":$PYTHONPATH:" in
-    *:`pwd`/python:*)
+    *:$target:*)
         echo "Python already is included." 
 	;;
     *)
 	echo "" >> $profile
-	echo "# Variables for CrombieTools" >> $profile
-	echo "export PYTHONPATH=\$PYTHONPATH:"`pwd`/python >> $profile
+	echo "# Python objects for CrombieTools" >> $profile
+	echo "export PYTHONPATH=\$PYTHONPATH:"$target >> $profile
+	;;
+esac
+
+target=`pwd`/scripts
+case ":$PATH:" in
+    *:$target:*)
+        echo "Scripts are already included." 
+	;;
+    *)
+	echo "" >> $profile
+	echo "# Scripts for CrombieTools" >> $profile
+	echo "export PATH=\$PATH:"$target >> $profile
 	;;
 esac
 
