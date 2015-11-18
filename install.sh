@@ -24,19 +24,19 @@ case ":$PYTHONPATH:" in
 	;;
     *)
 	echo "" >> $profile
-	echo "# Python objects for CrombieTools" >> $profile
+	echo "# Python objects in CrombieTools" >> $profile
 	echo "export PYTHONPATH=\$PYTHONPATH:"$target >> $profile
 	;;
 esac
 
-target=`pwd`/scripts
+target=`pwd`/bin
 case ":$PATH:" in
     *:$target:*)
-        echo "Scripts are already included." 
+        echo "Executables are already included." 
 	;;
     *)
 	echo "" >> $profile
-	echo "# Scripts for CrombieTools" >> $profile
+	echo "# Executables in CrombieTools" >> $profile
 	echo "export PATH=\$PATH:"$target >> $profile
 	;;
 esac
