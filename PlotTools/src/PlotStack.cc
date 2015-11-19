@@ -82,6 +82,7 @@ PlotStack::Plot(TString FileBase, Int_t NumXBins, Double_t *XBins,
   std::vector<TH1D*> theHists;
   SetRatioIndex(0);
   SetOnlyRatioWithData(true);
+  SetLegendFill(true);
 
   TH1D *DataHist = (TH1D*) DataHists[0]->Clone("DataHist");
   DataHist->Reset("M");
@@ -97,7 +98,9 @@ PlotStack::Plot(TString FileBase, Int_t NumXBins, Double_t *XBins,
   for (UInt_t iHist = 0; iHist != MCHists.size(); ++iHist) {
     if (fStackEntries[iHist] != previousEntry) {
       previousEntry = fStackEntries[iHist];
-      tempMCHist = (TH1D*) MCHists[iHist]->Clone();
+      TString tempName;
+      tempName.Format("StackedHist_%d",iHist);
+      tempMCHist = (TH1D*) MCHists[iHist]->Clone(tempName);
       tempHistHolder = new HistHolder(tempMCHist,fStackEntries[iHist],fStackColors[iHist]);
       HistHolders.push_back(tempHistHolder);
     }
@@ -116,9 +119,10 @@ PlotStack::Plot(TString FileBase, Int_t NumXBins, Double_t *XBins,
     AddLegendEntry(HistHolders[iLarger]->fEntry,HistHolders[iLarger]->fColor,0,1);
   }
 
+  AddLegendEntry("Data",1);
+  SetDataIndex(int(AllHists.size()));
   DataHist->Sumw2();
   AllHists.push_back(DataHist);
-  SetDataIndex(int(AllHists.size()));
 
   BaseCanvas(FileBase,AllHists,XLabel,YLabel,logY);
 

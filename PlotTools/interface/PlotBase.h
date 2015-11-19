@@ -56,6 +56,7 @@ class PlotBase
   void                   SetMakeRatio             ( Bool_t ratio )                                { fMakeRatio = ratio;          }
   void                   SetRatioIndex            ( Int_t ratio )                                 { fRatioIndex = ratio;         }
   void                   SetOnlyRatioWithData     ( Bool_t only )                                 { fOnlyRatioWithData = only;   }
+  void                   SetLegendFill            ( Bool_t fill )                                 { fLegendFill = fill;          }
   
  protected:
   
@@ -99,6 +100,7 @@ class PlotBase
   std::vector<Int_t>         fLineStyles;         //   set explicitly with overloaded function
 
   Bool_t                     fOnlyRatioWithData;
+  Bool_t                     fLegendFill;
 
 };
 
@@ -305,6 +307,7 @@ PlotBase::BaseCanvas(TString FileBase, std::vector<T*> theLines, TString XLabel,
   theLegend->SetBorderSize(fLegendBorderSize);
   float maxValue = 0;
   UInt_t plotFirst = 0;
+
   for (UInt_t iLine = 0; iLine != NumPlots; ++iLine) {
     theLines[iLine]->SetTitle(";"+XLabel+";"+YLabel);
     if (int(iLine) != fDataIndex) {
@@ -315,8 +318,11 @@ PlotBase::BaseCanvas(TString FileBase, std::vector<T*> theLines, TString XLabel,
     else
       theLines[iLine]->SetMarkerStyle(8);
 
-    theLegend->AddEntry(theLines[iLine],fLegendEntries[iLine],"lp");
-
+    if (fLegendFill && int(iLine) != fDataIndex)
+      theLegend->AddEntry(theLines[iLine],fLegendEntries[iLine],"lpf");
+    else
+      theLegend->AddEntry(theLines[iLine],fLegendEntries[iLine],"lp");
+      
     Double_t checkMax = theLines[iLine]->GetMaximum();
       
     if (checkMax > maxValue) {

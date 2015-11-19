@@ -59,6 +59,7 @@ PlotHists::MakeHists(Int_t NumXBins, Double_t *XBins)
     tempHist = new TH1D(tempName,tempName,NumXBins,XBins);
     if (fIncludeErrorBars || int(iPlot) == fDataIndex)
       tempHist->Sumw2();
+
     inTree->Draw(inExpr+">>"+tempName,inCut);
 
     theHists.push_back(tempHist);
