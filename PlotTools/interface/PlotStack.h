@@ -1,5 +1,5 @@
-#ifndef MITPLOTS_PLOT_PLOTSTACK_H
-#define MITPLOTS_PLOT_PLOTSTACK_H
+#ifndef CROMBIETOOLS_PLOTTOOLS_PLOTSTACK_H
+#define CROMBIETOOLS_PLOTTOOLS_PLOTSTACK_H
 
 #include "TreeContainer.h"
 #include "PlotHists.h"

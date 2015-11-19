@@ -1,5 +1,5 @@
-#ifndef MITPLOTS_PLOT_PLOTBASE_H
-#define MITPLOTS_PLOT_PLOTBASE_H
+#ifndef CROMBIETOOLS_PLOTTOOLS_PLOTBASE_H
+#define CROMBIETOOLS_PLOTTOOLS_PLOTBASE_H
 
 #include <vector>
 #include <iostream>

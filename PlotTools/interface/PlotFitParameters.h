@@ -6,8 +6,8 @@
 //
 // Authors: D.Abercrombie
 //--------------------------------------------------------------------------------------------------
-#ifndef MITPLOTS_PLOT_PLOTFITPARAMETERS_H
-#define MITPLOTS_PLOT_PLOTFITPARAMETERS_H
+#ifndef CROMBIETOOLS_PLOTTOOLS_PLOTFITPARAMETERS_H
+#define CROMBIETOOLS_PLOTTOOLS_PLOTFITPARAMETERS_H
 
 #include "TGraphErrors.h"
 #include "TCanvas.h"

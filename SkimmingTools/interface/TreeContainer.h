@@ -6,8 +6,8 @@
 // Authors: D.Abercrombie
 //--------------------------------------------------------------------------------------------------
 
-#ifndef MITCROMBIE_COMMON_TREECONTAINER_H
-#define MITCROMBIE_COMMON_TREECONTAINER_H
+#ifndef CROMBIETOOLS_SKIMMINGTOOLS_TREECONTAINER_H
+#define CROMBIETOOLS_SKIMMINGTOOLS_TREECONTAINER_H
 
 #include <vector>
 
@@ -62,6 +62,6 @@ class TreeContainer
   std::vector<TString>   fFileNames;                              // Used to track names of files where tree list come from
   
   ClassDef(TreeContainer,1)
-    };
+};
 
 #endif
