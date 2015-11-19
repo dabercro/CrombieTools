@@ -29,7 +29,7 @@ then
         mv $dir/*$sigExpr* $dir/SIGNAL--DONT_LOOK/.
     fi
 
-    CrombieMakeWebPage.sh $dir/SIGNAL--DONT_LOOK $row
+    CrombieMakeWebPage $dir/SIGNAL--DONT_LOOK $row
 fi
     
 F=Display.html
