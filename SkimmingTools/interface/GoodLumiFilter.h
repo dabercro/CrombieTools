@@ -7,7 +7,7 @@
 class GoodLumiFilter
 {
  public:
-  GoodLumiFilter()
+  GoodLumiFilter();
   virtual ~GoodLumiFilter() {}
 
   void         AddLumi   ( UInt_t run, UInt_t lumi )      { fGoodLumis[run].insert(lumi); }
@@ -22,3 +22,5 @@ class GoodLumiFilter
 
   ClassDef(GoodLumiFilter,1)
 };
+
+#endif

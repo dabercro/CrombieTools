@@ -4,13 +4,13 @@ ClassImp(GoodLumiFilter)
 
 //--------------------------------------------------------------------
 GoodLumiFilter::GoodLumiFilter() :
-  fLastRun(0),
-  fLastLumi(0),
-  fLastGood(false)
+  fCurrRun(0),
+  fCurrLumi(0),
+  fCurrGood(false)
 {}
 
 //--------------------------------------------------------------------
-void
+Bool_t
 GoodLumiFilter::IsGood(UInt_t run, UInt_t lumi)
 {
   if (run == 1)
@@ -23,9 +23,8 @@ GoodLumiFilter::IsGood(UInt_t run, UInt_t lumi)
   fCurrLumi = lumi;
   fCurrGood = false;
 
-  auto theRun = fGoodLumis.find(fCurrRun)
-  if (theRun != fGoodLumis.end())
-    if (theRun.find(fCurrLumi) != theRun.end())
+  if (fGoodLumis.find(fCurrRun) != fGoodLumis.end())
+    if (fGoodLumis[fCurrRun].find(fCurrLumi) != fGoodLumis[fCurrRun].end())
       fCurrGood = true;
 
   return fCurrGood;
