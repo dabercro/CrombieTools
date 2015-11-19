@@ -42,6 +42,11 @@ class PlotBase
   void                   SetDefaultLineWidth      ( Int_t width )                                 { fDefaultLineWidth = width;   }
   void                   SetDefaultLineStyle      ( Int_t style )                                 { fDefaultLineStyle = style;   }
   void                   SetIncludeErrorBars      ( Bool_t include )                              { fIncludeErrorBars = include; }
+
+  enum LegendY { kUpper = 0, kLower };
+  enum LegendX { kLeft  = 0, kRight };
+
+  void                   SetLegendLocation        ( LegendY yLoc, LegendX xLoc, Double_t xWidth = 0.3, Double_t yWidth = 0.2 );
   void                   SetLegendLimits          ( Double_t lim1, Double_t lim2, Double_t lim3, Double_t lim4 );
   void                   AddLegendEntry           ( TString LegendEntry, Color_t ColorEntry );    // Uses default line width and style
   void                   AddLegendEntry           ( TString LegendEntry, Color_t ColorEntry, Int_t LineWidth, Int_t LineStyle );
@@ -217,6 +222,29 @@ PlotBase::AddWeightExpr(TString cut, TString expr)
 
 //--------------------------------------------------------------------
 void
+PlotBase::SetLegendLocation(LegendY yLoc, LegendX xLoc, Double_t xWidth, Double_t yWidth)
+{
+  if (xLoc == kLeft) {
+    l1 = 0.15;
+    l3 = 0.15 + xWidth;
+  }
+  else {
+    l3 = 0.9;
+    l1 = 0.9 - xWidth;
+  }
+
+  if (yLoc == kUpper) {
+    l4 = 0.9;
+    l2 = 0.9 - yWidth;
+  }
+  else {
+    l2 = 0.15;
+    l4 = 0.15 + yWidth;
+  }
+}
+
+//--------------------------------------------------------------------
+void
 PlotBase::SetLegendLimits(Double_t lim1, Double_t lim2, Double_t lim3, Double_t lim4)
 {
   l1 = lim1;
@@ -284,12 +312,10 @@ PlotBase::BaseCanvas(TString FileBase, std::vector<T*> theLines, TString XLabel,
       theLines[iLine]->SetLineStyle(fLineStyles[iLine]);
       theLines[iLine]->SetLineColor(fLineColors[iLine]);
     }
-    else {
+    else
       theLines[iLine]->SetMarkerStyle(8);
-      theLines[iLine]->Sumw2();
-    }
 
-    theLegend->AddEntry(theLines[iLine],fLegendEntries[iLine],"lpf");
+    theLegend->AddEntry(theLines[iLine],fLegendEntries[iLine],"lp");
 
     Double_t checkMax = theLines[iLine]->GetMaximum();
       

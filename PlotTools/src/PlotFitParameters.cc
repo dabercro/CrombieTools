@@ -40,18 +40,13 @@ PlotFitParameters::~PlotFitParameters()
 void
 PlotFitParameters::ClearFits()
 {
-  for (UInt_t iPlot = 0; iPlot != fFits.size(); ++iPlot) {
-    delete fMeans[iPlot];
-    for (Int_t iXBin = 0; iXBin != fFitXBins; ++iXBin) {
-      delete fFits[iPlot][iXBin];
-    }
-  }
+  fMeans.resize(0);
   fFits.resize(0);
 }
 
 //--------------------------------------------------------------------
 void
-PlotFitParameters::SetParameterGuess(Int_t param, Double_t guess)
+PlotFitParameters::SetInitialGuess(Int_t param, Double_t guess)
 {
   fGuessParams.push_back(param);
   fGuesses.push_back(guess);
@@ -157,20 +152,22 @@ PlotFitParameters::DoFits(Int_t NumXBins, Double_t *XBins,
 
     holdFits = new TF1*[NumXBins];
 
-    for (Int_t iXBin = 0; iXBin < NumXBins; iXBin++) {
+    for (Int_t iXBin = 0; iXBin != NumXBins; ++iXBin) {
       TCanvas *tempCanvas = new TCanvas();
       for (UInt_t iParam = 0; iParam != fGuessParams.size(); ++iParam)
 	fitFunc->SetParameter(fGuessParams[iParam],fGuesses[iParam]);
 
       if (fLooseFunction != "") {
-        tempHist->ProjectionY(tempName+"_py",iXBin+1,iXBin+1)->Fit(looseFunc,"","",MinY,MaxY);
+        tempHist->ProjectionY(tempName+"_py",iXBin+1,iXBin+1)->Fit(looseFunc,"MLEQ","",MinY,MaxY);
         for (UInt_t iParam = 0; iParam != fParamFrom.size(); ++iParam)
           fitFunc->SetParameter(fParamTo[iParam],looseFunc->GetParameter(fParamFrom[iParam]));
       }
-      tempHist->ProjectionY(tempName+"_py",iXBin+1,iXBin+1)->Fit(fitFunc,"","",MinY,MaxY);
+      tempHist->ProjectionY(tempName+"_py",iXBin+1,iXBin+1)->Fit(fitFunc,"MLEQ","",MinY,MaxY);
       if (fDumpingFits) {
         TString dumpName;
-        dumpName.Form("DumpFit_%d",fNumFitDumps);
+        Int_t lower = XBins[iXBin];
+        Int_t upper = XBins[iXBin + 1];
+        dumpName.Form("DumpFit_%04d_%dTo%d",fNumFitDumps,lower,upper);
         std::vector<TF1*> components;
         for (UInt_t iFunc = 0; iFunc < fFunctionComponents.size(); iFunc++) {
           TF1 *tempComponent = new TF1(dumpName,fFunctionComponents.size(),MinY,MaxY);
@@ -219,8 +216,11 @@ PlotFitParameters::MakeGraphs(TString ParameterExpr)
 
     for (Int_t iXBin = 0; iXBin != fFitXBins; ++iXBin) {
 
-      for (Int_t iParam = 0; iParam != parameterHolder.GetNpar(); ++iParam)
-	parameterHolder.SetParameter(iParam,fFits[iLine][iXBin]->GetParameter(parameterHolder.GetParName(iParam)));
+      for (Int_t iParam = 0; iParam != parameterHolder.GetNpar(); ++iParam) {
+	Int_t parNumInFit = fFits[iLine][iXBin]->GetParNumber(parameterHolder.GetParName(iParam));
+	parameterHolder.SetParameter(iParam,fFits[iLine][iXBin]->GetParameter(parNumInFit));
+	parameterHolder.SetParError(iParam,fFits[iLine][iXBin]->GetParError(parNumInFit));
+      }
 
       tempGraph->SetPoint(iXBin,fMeans[iLine]->GetBinContent(iXBin + 1),parameterHolder.Eval(0));
       Double_t error2 = 0;
@@ -230,7 +230,7 @@ PlotFitParameters::MakeGraphs(TString ParameterExpr)
 	TF1 errorFunc("errorFunc",replaceExpr);
 	for (Int_t jParam = 0; jParam != errorFunc.GetNpar(); ++jParam)
 	  errorFunc.SetParameter(jParam,parameterHolder.GetParameter(errorFunc.GetParName(jParam)));
-	Double_t error = errorFunc.Derivative(parameterHolder.GetParameter(iParam));
+	Double_t error = errorFunc.Derivative(parameterHolder.GetParameter(iParam)) * parameterHolder.GetParError(iParam);
 	error2 += error*error;
       }
 
@@ -258,7 +258,7 @@ PlotFitParameters::MakeCanvas(TString FileBase, std::vector<TGraphErrors*> theGr
 {
   for (UInt_t iGraph = 0; iGraph != theGraphs.size(); ++iGraph)
     theGraphs[iGraph]->GetYaxis()->SetRangeUser(YMin,YMax);
-  BaseCanvas(theGraphs,FileBase,XLabel,YLabel,logY);
+  BaseCanvas(FileBase,theGraphs,XLabel,YLabel,logY);
 }
 
 //--------------------------------------------------------------------
@@ -267,7 +267,7 @@ PlotFitParameters::MakeCanvas(TString FileBase, TString ParameterExpr, TString X
 			      Double_t YMin, Double_t YMax, Bool_t logY)
 {
   std::vector<TGraphErrors*> theGraphs = MakeGraphs(ParameterExpr);
-  MakeCanvas(theGraphs,FileBase,XLabel,YLabel,YMin,YMax,logY);
+  MakeCanvas(FileBase,theGraphs,XLabel,YLabel,YMin,YMax,logY);
   for (UInt_t iGraph = 0; iGraph != theGraphs.size(); ++iGraph)
     delete theGraphs[iGraph];
 }
@@ -279,5 +279,5 @@ PlotFitParameters::MakeCanvas(TString FileBase, Int_t ParameterNum, TString XLab
 {
   TString ParameterExpr = "";
   ParameterExpr.Form("[%d]",ParameterNum);
-  MakeCanvas(ParameterExpr,FileBase,XLabel,YLabel,YMin,YMax,logY);
+  MakeCanvas(FileBase,ParameterExpr,XLabel,YLabel,YMin,YMax,logY);
 }
