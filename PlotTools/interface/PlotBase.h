@@ -342,6 +342,8 @@ PlotBase::BaseCanvas(TString FileBase, std::vector<T*> theLines, TString XLabel,
       theLines[iLine]->GetXaxis()->SetTitleSize(0);
       theLines[iLine]->GetXaxis()->SetLabelSize(0);
     }
+    if (logY)
+      pad1->SetLogy();
   }
 
   theLines[plotFirst]->Draw();
