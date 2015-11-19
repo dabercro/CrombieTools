@@ -41,4 +41,11 @@ case ":$PATH:" in
 	;;
 esac
 
-source $profile
+echo "-------------------------------------------------------------"
+echo " Now execute the following command:"
+echo ""
+echo "> source $profile"
+echo ""
+echo " Or just log out and log back in or open a new bash shell."
+echo "-------------------------------------------------------------"
+echo ""

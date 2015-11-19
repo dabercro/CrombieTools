@@ -1,4 +1,5 @@
 #include <iostream>
+#include <algorithm>
 
 #include "TFile.h"
 #include "TLegend.h"
