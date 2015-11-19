@@ -351,7 +351,7 @@ PlotBase::BaseCanvas(TString FileBase, std::vector<T*> theLines, TString XLabel,
     theLines[iLine]->Draw("same");
 
   theLegend->Draw();
-  if (logY)
+  if (logY && !fMakeRatio)
     theCanvas->SetLogy();
 
   if (fMakeRatio) {
