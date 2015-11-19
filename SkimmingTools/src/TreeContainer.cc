@@ -11,34 +11,34 @@ ClassImp(TreeContainer)
 //--------------------------------------------------------------------
 TreeContainer::TreeContainer(TString fileName) :
   fPrinting(false),
-  tempFile(0),
-  tempTree(0),
+  tempFile(NULL),
+  tempTree(NULL),
   fTreeName("events"),
-  fTree(0),
+  fTree(NULL),
   fOutputFileName("output.root"),
-  fSkimmingTrees(false),
   fSkimmingCut("")
 {
-  // Constructor
   fFriendNames.resize(0);
   fFileList.resize(0);
   fKeepBranches.resize(0);
   fFileNames.resize(0);
-  if (fileName != "")
-    AddFile(fileName);
+  if (fileName != "") {
+    if (fileName.Contains(".root"))
+      AddFile(fileName);
+    else
+      AddDirectory(fileName);
+  }
 }
 
 //--------------------------------------------------------------------
 TreeContainer::~TreeContainer()
 {
-  for (UInt_t iTree = 0; iTree != fTreeList.size(); ++iTree)
-    delete fTreeList[iTree];
+  if (fTree)
+    delete fTree;
 
-  fTreeList.resize(0);
-
-  for (UInt_t i0 = 0; i0 < fFileList.size(); i0++) {
-    if (fFileList[i0]->IsOpen())
-      fFileList[i0]->Close();
+  for (UInt_t iFile = 0; iFile != fFileList.size(); ++iFile) {
+    if (fFileList[iFile]->IsOpen())
+      fFileList[iFile]->Close();
   }
 }
 
@@ -83,7 +83,7 @@ TreeContainer::AddDirectory(TString directoryName,TString searchFor)
 
 //--------------------------------------------------------------------
 TTree*
-TreeContainer::SkimTree(TTree *tree, Bool_t inFile)
+TreeContainer::SkimTree(TTree *tree, TFile *inFile)
 {
   if (fKeepBranches.size() > 0) {
     tree->SetBranchStatus("*",0);
@@ -91,10 +91,12 @@ TreeContainer::SkimTree(TTree *tree, Bool_t inFile)
       tree->SetBranchStatus(fKeepBranches[iBranch],1);
   }
 
-  if (not inFile)
+  if (inFile)
+    inFile->cd();
+  else
     gROOT->cd();
 
-  TTree *outTree;
+  TTree *outTree = 0;
   if (fSkimmingCut == "")
     outTree = tree->CloneTree(-1,"fast");
   else
@@ -105,19 +107,22 @@ TreeContainer::SkimTree(TTree *tree, Bool_t inFile)
 
 //--------------------------------------------------------------------
 TTree*
-TreeContainer::ReturnTree(TString Name, Bool_t inFile)
+TreeContainer::ReturnTree(TString Name, TFile* inFile)
 {
-  delete fTree;
+  if (fTree)
+    return fTree;
 
   if (Name != "")
     SetTreeName(Name);
 
   TList *treeList = new TList;
   ReturnTreeList();
-  for (UInt_t i0 = 0; i0 < fTreeList.size(); i0++)
+  for (UInt_t i0 = 0; i0 != fTreeList.size(); ++i0)
     treeList->Add(fTreeList[i0]);
 
-  if (!inFile)
+  if (inFile)
+    inFile->cd();
+  else
     gROOT->cd();
 
   if (treeList->GetEntries() > 1)
@@ -132,31 +137,14 @@ TreeContainer::ReturnTree(TString Name, Bool_t inFile)
 }
 
 //--------------------------------------------------------------------
-TTree*
-TreeContainer::ReturnTreeWithEvent(TString Name, Bool_t inFile)
-{
-  ReturnTree(Name, inFile);
-  if (!fTree->GetBranch("event")) {
-    Int_t event = 0;
-    TBranch *eventBranch = fTree->Branch("event", &event, "event/I");
-    for (Int_t iEntry = 0; iEntry < fTree->GetEntries(); iEntry++) {
-      event = iEntry;
-      eventBranch->Fill();      
-    }
-  }
-  return fTree;
-}
-
-//--------------------------------------------------------------------
 std::vector<TTree*>
 TreeContainer::ReturnTreeList(TString Name)
 {
+  if (fTreeList.size() != 0)
+    return fTreeList;
+
   if (Name != "")
     SetTreeName(Name);
-
-  for (UInt_t iTree = 0; iTree != fTreeList.size(); ++iTree)
-    delete fTreeList[iTree];
-  fTreeList.resize(0);
 
   for (UInt_t i0 = 0; i0 < fFileList.size(); i0++) {
     if (fTreeName.Contains("/"))
@@ -176,8 +164,9 @@ TreeContainer::ReturnTreeList(TString Name)
       tempTree->AddFriend(tempFriend);
     }
     
-    if(fSkimmingTrees)
-      tempTree = SkimTree(tempTree,false);
+    if ((fSkimmingCut != "") || (fKeepBranches.size() != 0))
+      tempTree = SkimTree(tempTree,0);
+
     fTreeList.push_back(tempTree);
   }
   return fTreeList;
@@ -195,9 +184,10 @@ TreeContainer::MakeFile(TString fileName, TString treeName)
 
   TFile *outFile = new TFile(fOutputFileName,"RECREATE");
   if (!fTree)
-    ReturnTree(fTreeName,true);
+    ReturnTree(fTreeName,outFile);
 
   outFile->cd();
   fTree->Write();
   outFile->Close();
+  delete outFile;
 }

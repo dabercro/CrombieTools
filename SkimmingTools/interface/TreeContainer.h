@@ -25,14 +25,12 @@ class TreeContainer
   void                   AddDirectory        ( TString directoryName, TString searchFor = ".root" );
   void                   SetTreeName         ( TString TreeName )         { fTreeName = TreeName;           }
   void                   AddFriendName       ( TString name )             { fFriendNames.push_back(name);   }
-  TTree*                 ReturnTree          ( TString Name = "", Bool_t inFile = false );
-  TTree*                 ReturnTreeWithEvent ( TString Name = "", Bool_t inFile = false );
+  TTree*                 ReturnTree          ( TString Name = "", TFile *inFile = NULL );
   std::vector<TTree*>    ReturnTreeList      ( TString Name = "" );
   void                   SetPrinting         ( Bool_t printing )          { fPrinting = printing;           }
   
   void                   AddKeepBranch       ( TString name )             { fKeepBranches.push_back(name);  }
   void                   SetOutputFileName   ( TString name )             { fOutputFileName = name;         }
-  void                   SetSkimmingTrees    ( Bool_t skim )              { fSkimmingTrees = skim;          }
   void                   SetSkimmingCut      ( TString cut )              { fSkimmingCut = cut;             }
   
   std::vector<TString>   ReturnFileNames     ()                           { return fFileNames;              }
@@ -42,7 +40,7 @@ class TreeContainer
   
  private:
   
-  TTree*                 SkimTree            ( TTree *tree, Bool_t inFile );
+  TTree*                 SkimTree            ( TTree *tree, TFile *inFile );
   
   Bool_t                 fPrinting;                               // Printer for debugging
   TFile*                 tempFile;                                // Pointer to File
@@ -56,7 +54,6 @@ class TreeContainer
   
   std::vector<TString>   fKeepBranches;                           // Branches kept in the event of skimming
   TString                fOutputFileName;                         // Potential output file name of skim
-  Bool_t                 fSkimmingTrees;                          // Bool to determine if skimming is happening
   TString                fSkimmingCut;                            // Cut to return only branches meeting given conditions
   
   std::vector<TString>   fFileNames;                              // Used to track names of files where tree list come from
