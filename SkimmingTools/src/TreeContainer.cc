@@ -31,7 +31,7 @@ TreeContainer::TreeContainer(TString fileName) :
 //--------------------------------------------------------------------
 TreeContainer::~TreeContainer()
 {
-  for (UInt_t iTree = 0; iTree != fTreeList.size(); ++iTree) {
+  for (UInt_t iTree = 0; iTree != fTreeList.size(); ++iTree)
     delete fTreeList[iTree];
 
   fTreeList.resize(0);
@@ -154,7 +154,7 @@ TreeContainer::ReturnTreeList(TString Name)
   if (Name != "")
     SetTreeName(Name);
 
-  for (UInt_t iTree = 0; iTree != fTreeList.size(); ++iTree) {
+  for (UInt_t iTree = 0; iTree != fTreeList.size(); ++iTree)
     delete fTreeList[iTree];
   fTreeList.resize(0);
 

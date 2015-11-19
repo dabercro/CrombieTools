@@ -1,4 +1,3 @@
-
 #include <iostream>
 #include "TLegend.h"
 
@@ -25,9 +24,9 @@ PlotHists::MakeHists(Int_t NumXBins, Double_t *XBins)
   if (fNormalizeTo != -1)
     fNormalizedHists = true;
 
-  if (fInTrees.size() > 0)
+  if (fInTrees.size() != 0)
     NumPlots = fInTrees.size();
-  else if (fInCuts.size() > 0)
+  else if (fInCuts.size() != 0)
     NumPlots = fInCuts.size();
   else
     NumPlots = fInExpr.size();
@@ -45,20 +44,20 @@ PlotHists::MakeHists(Int_t NumXBins, Double_t *XBins)
 
   std::vector<TH1D*> theHists;
 
-  for (UInt_t i0 = 0; i0 < NumPlots; i0++) {
+  for (UInt_t iPlot = 0; iPlot != NumPlots; ++iPlot) {
 
     if (fInTrees.size() != 0)
-      inTree = fInTrees[i0];
+      inTree = fInTrees[iPlot];
     if (fInCuts.size()  != 0)
-      inCut  = fInCuts[i0];
+      inCut  = fInCuts[iPlot];
     if (fInExpr.size() != 0)
-      inExpr = fInExpr[i0];
+      inExpr = fInExpr[iPlot];
 
     TString tempName;
     tempName.Form("Hist_%d",fPlotCounter);
     fPlotCounter++;
     tempHist = new TH1D(tempName,tempName,NumXBins,XBins);
-    if (fIncludeErrorBars)
+    if (fIncludeErrorBars || int(iPlot) == fDataIndex)
       tempHist->Sumw2();
     inTree->Draw(inExpr+">>"+tempName,inCut);
 

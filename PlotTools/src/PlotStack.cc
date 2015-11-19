@@ -20,8 +20,8 @@ PlotStack::PlotStack() :
   fDataFiles.resize(0);
   fMCFiles.resize(0);
   fXSecs.resize(0);
-  fStackEntries(0);
-  fStackColors(0);
+  fStackEntries.resize(0);
+  fStackColors.resize(0);
 }
 
 //--------------------------------------------------------------------
@@ -42,6 +42,7 @@ PlotStack::GetHistList(std::vector<TString> FileList, Int_t NumXBins, Double_t *
     tempContainer->AddFile(FileList[iFile]);
 
   SetTreeList(tempContainer->ReturnTreeList());
+  std::vector<TFile*> theFiles = tempContainer->ReturnFileList();
   std::vector<TH1D*> theHists = MakeHists(NumXBins,XBins);
   for (UInt_t iFile = 0; iFile < theFiles.size(); iFile++) {
     if (isMC) {
@@ -70,8 +71,8 @@ PlotStack::Plot(TString FileBase, Int_t NumXBins, Double_t *XBins,
   fMCContainer = new TreeContainer();
   fMCContainer->SetTreeName(fTreeName);
   for (UInt_t iFriend = 0; iFriend != fFriends.size(); ++iFriend) {
-    fDataContainer->AddFriend(fFriends[iFriend]);
-    fMCContainer->AddFriend(fFriends[iFriend]);
+    fDataContainer->AddFriendName(fFriends[iFriend]);
+    fMCContainer->AddFriendName(fFriends[iFriend]);
   }
 
   std::vector<TH1D*> DataHists = GetHistList(fDataFiles,NumXBins,XBins,false);
@@ -88,19 +89,19 @@ PlotStack::Plot(TString FileBase, Int_t NumXBins, Double_t *XBins,
     DataHist->Add(DataHists[iHist]);
 
   TString previousEntry = "";
-  TH1D *tempMCHist;
-  HistHolder *tempHistHolder;
+  TH1D *tempMCHist = 0;
+  HistHolder *tempHistHolder = 0;
   std::vector<HistHolder*> HistHolders;
   HistHolders.resize(0);
   for (UInt_t iHist = 0; iHist != MCHists.size(); ++iHist) {
     if (fStackEntries[iHist] != previousEntry) {
       previousEntry = fStackEntries[iHist];
-      tempMCHist = MCHists[iHist]->Clone();
+      tempMCHist = (TH1D*) MCHists[iHist]->Clone();
       tempHistHolder = new HistHolder(tempMCHist,fStackEntries[iHist],fStackColors[iHist]);
       HistHolders.push_back(tempHistHolder);
     }
     else
-      tempMCHist->Add(MCHists[iHist])
+      tempMCHist->Add(MCHists[iHist]);
   }
 
   std::sort(HistHolders.begin(),HistHolders.end(),SortHistHolders);
@@ -138,6 +139,6 @@ PlotStack::Plot(TString FileBase, Int_t NumXBins, Double_t MinX, Double_t MaxX,
 {
   Double_t XBins[NumXBins+1];
   ConvertToArray(NumXBins,MinX,MaxX,XBins);
-  Plot(NumXBins,XBins,FileBase,CanvasTitle,XLabel,YLabel,logY);
+  Plot(FileBase,NumXBins,XBins,XLabel,YLabel,logY);
 }
 

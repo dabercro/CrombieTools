@@ -13,6 +13,12 @@ struct HistHolder
   TH1D *fHist;
   TString fEntry;
   Color_t fColor;
+};
+
+Bool_t
+SortHistHolders ( HistHolder *h1, HistHolder *h2 )
+{
+  return h1->fHist->Integral() > h2->fHist->Integral(); 
 }
 
 class PlotStack : private PlotHists
@@ -51,9 +57,6 @@ class PlotStack : private PlotHists
   std::vector<TH1D*>    GetHistList            ( std::vector<TString> FileList, 
                                                  Int_t NumXBins, Double_t *XBins, Bool_t isMC);
 
-  Bool_t                SortHistHolders        ( HistHolder *h1, HistHolder *h2 )
-                                         { return h1->fHist->Integral() > h2-fHist->Integral(); }
-  
   TString               fTreeName;
   std::vector<TString>  fFriends;
   TString               fAllHist;
