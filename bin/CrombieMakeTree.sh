@@ -2,6 +2,20 @@
 
 TreeName=$1
 
+if [ "$TreeName" = "" ]
+then
+    echo ""
+    echo " +------------------------------------------------------------+"
+    echo " | First argument is the file <TreeName>.                     |"
+    echo " | This can be with or without the extension (it's stripped). |"
+    echo " | This script then looks for <TreeName>.txt to make a class. |"
+    echo " +------------------------------------------------------------+"
+    echo ""
+    exit
+fi
+
+TreeName=${TreeName%%.*}
+
 def=`echo $TreeName | tr "[a-z]" "[A-Z]"`
 
 inVarsFile=$TreeName.txt
@@ -16,7 +30,8 @@ echo "#include \"TFile.h\"" >> $h
 echo "#include \"TTree.h\"" >> $h
 
 declare -a otherTypes=()
-for branch in `cat $inVarsFile`; do
+for branch in `cat $inVarsFile`
+do
     after="${branch##*/}"
     varLetter="${after%=*}"
     if [ "$varLetter" != "F" -a "$varLetter" != "I" -a "$varLetter" != "O" -a "$varLetter" != "VF" -a "$varLetter" != "VI" -a "$varLetter" != "VO" ]; then
@@ -29,7 +44,8 @@ for branch in `cat $inVarsFile`; do
     fi
 done
 
-for objType in `echo "${otherTypes[@]}" | tr ' ' '\n' | sort -u`; do
+for objType in `echo "${otherTypes[@]}" | tr ' ' '\n' | sort -u`
+do
     echo "#include \""$objType".h\"" >> $h
 done
 
@@ -41,7 +57,8 @@ echo "  $TreeName( const char *name, TString outFileName );" >> $h
 echo "  virtual ~$TreeName();" >> $h
 echo "" >> $h
 
-for branch in `cat $inVarsFile`; do
+for branch in `cat $inVarsFile`
+do
     varType=""
     varName="${branch%/*}"
     after="${branch##*/}"
@@ -96,7 +113,8 @@ echo "  fFile = new TFile(outFileName,\"RECREATE\");" >> $s
 echo "  fFile->cd();" >> $s
 echo "  t = new TTree(name,name);" >> $s
 echo "" >> $s
-for branch in `cat $inVarsFile`; do
+for branch in `cat $inVarsFile`
+do
     varName="${branch%/*}"
     after="${branch##*/}"
     varLetter="${after%=*}"
@@ -124,7 +142,8 @@ echo "//------------------------------------------------------------------------
 echo "void" >> $s
 echo "$TreeName::Reset()" >> $s
 echo "{" >> $s
-for branch in `cat $inVarsFile`; do
+for branch in `cat $inVarsFile`
+do
     varName="${branch%/*}"
     after="${branch##*/}"
     varLetter="${after%=*}"
