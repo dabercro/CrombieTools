@@ -1,0 +1,5 @@
+#! /bin/bash
+
+# A very simple script for now
+
+find . -name '*~' | xargs rm
