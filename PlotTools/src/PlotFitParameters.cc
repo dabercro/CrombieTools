@@ -3,6 +3,7 @@
 #include "TFitResult.h"
 #include "TMath.h"
 #include "TH2D.h"
+#include "TMatrixDSym.h"
 
 #include "PlotFitParameters.h"
 
@@ -34,14 +35,42 @@ PlotFitParameters::ClearFits()
   fCovs.resize(0);
 }
 
-// //// Means should be done separately
+//--------------------------------------------------------------------
+void
+PlotFitParameters::GetMeans(Int_t NumXBins, const Double_t *XBins)
+{
+  UInt_t NumPlots = 0;
 
-//   TString tempName = histToFit->GetName();
+  if (fInTrees.size() > 0)
+    NumPlots = fInTrees.size();
+  else if (fInCuts.size() > 0)
+    NumPlots = fInCuts.size();
+  else
+    NumPlots = fInExpr.size();
 
-//   TProfile *tempProfile = new TProfile(tempName+"prof",tempName+"prof",NumXBins,XBins);
-//   inTree->Draw(fInExprX+":"+fInExprX+">>"+tempName+"prof",inCut);
-//   fMeans.push_back(tempProfile);
+  TTree *inTree = fDefaultTree;
+  TString inCut = fDefaultCut;
+  TString inExpr = fDefaultExpr;
 
+  for (UInt_t iPlot = 0; iPlot != NumPlots; ++iPlot) {
+    TString tempName;
+    tempName.Form("Hist_%d",fPlotCounter);
+    fPlotCounter++;
+
+    if (fInTrees.size() != 0)
+      inTree = fInTrees[iPlot];
+    if (fInCuts.size()  != 0)
+      inCut  = fInCuts[iPlot];
+    if (fInExprXs.size() != 0)
+      fInExprX = fInExprXs[iPlot];
+
+    TProfile *tempProfile;
+
+    tempProfile = new TProfile(tempName+"prof",tempName+"prof",NumXBins,XBins);
+    inTree->Draw(fInExprX+":"+fInExprX+">>"+tempName+"prof",inCut);
+    fMeans.push_back(tempProfile);
+  }
+}
 
 //--------------------------------------------------------------------
 void
@@ -51,14 +80,16 @@ PlotFitParameters::DoFit(TF1* fitFunc, TF1* looseFunc, TH2D* histToFit,
   Int_t NumXBins = histToFit->GetXaxis()->GetNbins();
   const Double_t *XBins = histToFit->GetXaxis()->GetXbins()->GetArray();
 
-  Int_t NumYBins = histToFit->GetYaxis()->GetNbins();
-  const Double_t *YBins = histToFit->GetYaxis()->GetXbins()->GetArray();
-  Double_t MinY = YBins[0];
-  Double_t MaxY = YBins[NumYBins - 1];
-
   TString tempName = histToFit->GetName();
 
+  if (fMeans.size() == 0)
+    GetMeans(NumXBins, XBins);
+
+  Double_t MinY = histToFit->GetYaxis()->GetBinLowEdge(1);
+  Double_t MaxY = histToFit->GetYaxis()->GetBinUpEdge(histToFit->GetYaxis()->GetNbins());
+
   fitHolder = new TF1*[NumXBins];
+  covHolder = new TMatrixDSym*[NumXBins];
 
   for (Int_t iXBin = 0; iXBin != NumXBins; ++iXBin) {
     TCanvas *tempCanvas = new TCanvas();
@@ -70,7 +101,7 @@ PlotFitParameters::DoFit(TF1* fitFunc, TF1* looseFunc, TH2D* histToFit,
       for (UInt_t iParam = 0; iParam != fParamFrom.size(); ++iParam)
         fitFunc->SetParameter(fParamTo[iParam],looseFunc->GetParameter(fParamFrom[iParam]));
     }
-    TFitResultPtr fitResult = histToFit->ProjectionY(tempName+"_py",iXBin+1,iXBin+1)->Fit(fitFunc,"MLEQ","",MinY,MaxY);
+    TFitResultPtr fitResult = histToFit->ProjectionY(tempName+"_py",iXBin+1,iXBin+1)->Fit(fitFunc,"MLESQ","",MinY,MaxY);
     if (fDumpingFits) {
       TString dumpName;
       Int_t lower = XBins[iXBin];
@@ -94,6 +125,7 @@ PlotFitParameters::DoFit(TF1* fitFunc, TF1* looseFunc, TH2D* histToFit,
       fNumFitDumps++;
     }
     fitHolder[iXBin] = (TF1*) fitFunc->Clone();
+    covHolder[iXBin] = new TMatrixDSym(fitFunc->GetNpar());
     *covHolder[iXBin] = fitResult->GetCovarianceMatrix();
   }
 }

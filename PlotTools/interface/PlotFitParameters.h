@@ -41,6 +41,7 @@ class PlotFitParameters : public Plot2D
   
  private:
   
+  void                       GetMeans                  ( Int_t NumXBins, const Double_t *XBins );
   void                       DoFit                     ( TF1* fitFunc, TF1* looseFunc, TH2D* histToFit, 
                                                          TF1** fitHolder, TMatrixDSym** covHolder );
 
