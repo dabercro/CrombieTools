@@ -42,7 +42,7 @@ class Plot2D : public PlotBase
   
   void                       MapTo                     ( TF1* fitFunc, TF1* looseFunc );
   virtual    void            DoFit                     ( TF1* fitFunc, TF1* looseFunc, TH2D* histToFit, 
-                                                         TF1** fitHolder, TMatrixDSym** covHolder );
+                                                         TF1**& fitHolder, TMatrixDSym**& covHolder );
 
   virtual    TF1*            MakeFunction              ( TString function, Double_t MinX, Double_t MaxX, 
                                                          Double_t MinY, Double_t MaxY )

@@ -78,7 +78,7 @@ Plot2D::MapTo(TF1* fitFunc, TF1* looseFunc)
 //--------------------------------------------------------------------
 void
 Plot2D::DoFit(TF1* fitFunc, TF1* looseFunc, TH2D* histToFit, 
-              TF1** fitHolder, TMatrixDSym** covHolder)
+              TF1**& fitHolder, TMatrixDSym**& covHolder)
 {
   fitHolder = new TF1*[1];
   covHolder = new TMatrixDSym*[1];

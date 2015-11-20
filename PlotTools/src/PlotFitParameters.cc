@@ -39,6 +39,7 @@ PlotFitParameters::ClearFits()
 void
 PlotFitParameters::GetMeans(Int_t NumXBins, const Double_t *XBins)
 {
+  fFitXBins = NumXBins;
   UInt_t NumPlots = 0;
 
   if (fInTrees.size() > 0)
@@ -75,7 +76,7 @@ PlotFitParameters::GetMeans(Int_t NumXBins, const Double_t *XBins)
 //--------------------------------------------------------------------
 void
 PlotFitParameters::DoFit(TF1* fitFunc, TF1* looseFunc, TH2D* histToFit, 
-                         TF1** fitHolder, TMatrixDSym** covHolder)
+                         TF1**& fitHolder, TMatrixDSym**& covHolder)
 {
   Int_t NumXBins = histToFit->GetXaxis()->GetNbins();
   const Double_t *XBins = histToFit->GetXaxis()->GetXbins()->GetArray();
@@ -143,7 +144,6 @@ PlotFitParameters::MakeGraphs(TString ParameterExpr)
     tempGraph = new TGraphErrors(fFitXBins);
 
     for (Int_t iXBin = 0; iXBin != fFitXBins; ++iXBin) {
-
       for (Int_t iParam = 0; iParam != parameterHolder.GetNpar(); ++iParam) {
 	Int_t parNumInFit = fFits[iLine][iXBin]->GetParNumber(parameterHolder.GetParName(iParam));
 	parameterHolder.SetParameter(iParam,fFits[iLine][iXBin]->GetParameter(parNumInFit));
