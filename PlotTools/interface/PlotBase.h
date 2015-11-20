@@ -122,7 +122,8 @@ PlotBase::PlotBase() :
   fCanvasName("canvas"),
   fDefaultLineWidth(2),
   fDefaultLineStyle(1),
-  fOnlyRatioWithData(false)
+  fOnlyRatioWithData(false),
+  fLegendFill(false)  
 {
   fInTrees.resize(0);
   fInCuts.resize(0);
