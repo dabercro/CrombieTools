@@ -37,11 +37,11 @@ reportFreq   = args.reportFreq
 
 if inDir == outDir:
     print ""
-    print "################################################################"
-    print "#                                                              #"
-    print "#  You have to specify at least an input or output directory!  #"
-    print "#                                                              #"
-    print "################################################################"
+    print " ################################################################"
+    print " #                                                              #"
+    print " #  You have to specify at least an input or output directory!  #"
+    print " #                                                              #"
+    print " ################################################################"
     print ""
     parser.print_help()
     print ""
