@@ -1,0 +1,105 @@
+#! /usr/bin/python
+
+import ROOT
+import os, argparse
+from multiprocessing import Process, Queue
+from time import time
+import GoodLumiFilter
+from CrombieVars import skimSrc
+
+ROOT.gROOT.LoadMacro(skimSrc + 'FlatSlimmer.cc+')
+
+parser = argparse.ArgumentParser(description = 'Slims the contents of one directory into another one')
+
+parser.add_argument('--numproc', '-n', metavar = 'NUM', type = int, dest = 'numMaxProcesses', default = 1, help = 'Number of processes that FlatSlimmer will spawn.')
+parser.add_argument('--indir', '-i', metavar = 'DIR', type = str, dest = 'inDir', default = '.', help = 'Directory that contains input files to be slimmed.')
+parser.add_argument('--outdir', '-o', metavar = 'DIR', type = str, dest = 'outDir', default = '.', help = 'Directory where slimmed stuff will be placed.')
+parser.add_argument('--json','-j', metavar = 'FILE', type = str, dest = 'GoodRunsFile', default = '', help = 'Good runs json file location to be used.')
+parser.add_argument('--cut','-c', metavar = 'CUT', type = str, dest = 'cut', default = '1', help = 'Cut used in slimming.')
+parser.add_argument('--tree','-t', metavar = 'NAME', type = str, dest = 'treeName', default = 'events', help = 'Name of tree that will be slimmed.')
+parser.add_argument('--copy', metavar = 'NAMES', nargs = '*', dest = 'copyObjects', default = [], help = 'List other object names to copy into the slimmed file.')
+parser.add_argument('--run', '-r', metavar = 'EXPR', dest = 'runExpr', default = 'runNum', help = 'Set the expression for Run Number.')
+parser.add_argument('--lumi', '-l', metavar = 'EXPR', dest = 'lumiExpr', default = 'lumiNum', help = 'Set the expression for Lumi Number.')
+parser.add_argument('--freq', '-f', metavar = 'NUM', dest = 'reportFreq', type = int, default = 100000, help = 'Set the reporting frequency.')
+
+args = parser.parse_args()
+
+numMaxProcesses = args.numMaxProcesses
+GoodRunsFile = args.GoodRunsFile
+copyObjects  = args.copyObjects
+inDir        = args.inDir
+outDir       = args.outDir
+treeName     = args.treeName
+runNum       = args.runExpr
+lumiNum      = args.lumiExpr
+theCut       = args.cut
+reportFreq   = args.reportFreq
+
+if inDir == outDir:
+    print ""
+    print "################################################################"
+    print "#                                                              #"
+    print "#  You have to specify at least an input or output directory!  #"
+    print "#                                                              #"
+    print "################################################################"
+    print ""
+    parser.print_help()
+    print ""
+    exit(-1)
+##
+
+def skim(inQueue):
+    running = True
+    goodRunFilter = GoodLumiFilter.MakeFilter(GoodRunsFile)
+    slimmer = ROOT.FlatSlimmer()
+    slimmer.SetInDirectory(inDir)
+    slimmer.SetOutDirectory(outDir)
+    slimmer.SetGoodLumiFilter(goodRunFilter)
+    slimmer.SetTreeName(treeName)
+    slimmer.SetRunExpr(runNum)
+    slimmer.SetLumiExpr(lumiNum)
+    slimmer.SetCut(theCut)
+    slimmer.SetReportFrequency(reportFreq)
+
+    for obj in copyObjects:
+        slimmer.AddCopyObject(obj)
+    ##
+    while running:
+        try:
+            inFileName = inQueue.get(True,1)
+            print "About to process " + inFileName
+            if not os.path.isfile(outDir + "/" + inFileName):
+                startTime = time()
+                slimmer.Slim(inFileName)
+                print "Finished " + inFileName + " ... Elapsed time: " + str(time() - startTime) + " seconds"
+            ##
+            else:
+                print inFileName + " already processed!"
+        except:
+            print "Worker finished..."
+            running = False
+        ##
+    ##
+    del slimmer
+    del goodRunFilter
+##
+
+theQueue     = Queue()
+theProcesses = []
+
+for inFileName in os.listdir(inDir):
+    if inFileName.endswith(".root"):
+        theQueue.put(inFileName)
+##
+
+for worker in range(numMaxProcesses):
+    aProcess = Process(target=skim, args=(theQueue,))
+    aProcess.start()
+    theProcesses.append(aProcess)
+##
+
+for aProccess in theProcesses:
+    aProccess.join()
+##
+
+print "All done!"
