@@ -1,6 +1,16 @@
 #include <iostream>
+#include "TF1.h"
+#include "TH1D.h"
 #include "TH1.h"
 #include "TGraphErrors.h"
+
+//--------------------------------------------------------------------
+void
+SetZeroError(TF1* theFunc)
+{ 
+  for (Int_t iParam = 0; iParam != theFunc->GetNpar(); ++iParam) 
+    theFunc->SetParError(iParam, 0);
+}
 
 //--------------------------------------------------------------------
 void
@@ -20,24 +30,42 @@ SetZeroError(TGraphErrors* theGraph)
 
 //--------------------------------------------------------------------
 void
-Division(TH1 *PlotHist, TH1 *RatioHist)
+Division(TF1*& PlotFunc, TF1* RatioFunc)
 {
-  for (Int_t iBin = 0; iBin != RatioHist->GetXaxis()->GetNbins(); ++iBin)
-    RatioHist->SetBinError(iBin + 1, 0);
+  TString plotString = TString("(") + PlotFunc->GetExpFormula() + TString(")");
+  TString ratString = TString("(") + RatioFunc->GetExpFormula().ReplaceAll('p','q') + TString(")");
+  TF1 *tempFunc = new TF1("divided",plotString + TString("/") + ratString);
+  for (Int_t iParam = 0; iParam != PlotFunc->GetNpar() + RatioFunc->GetNpar(); ++iParam) {
+    if (iParam < PlotFunc->GetNpar()) {
+      tempFunc->SetParameter(iParam, PlotFunc->GetParameter(iParam));
+      tempFunc->SetParError(iParam, PlotFunc->GetParError(iParam));
+    }
+    else {
+      tempFunc->SetParameter(iParam, RatioFunc->GetParameter(iParam - PlotFunc->GetNpar()));
+      tempFunc->SetParError(iParam, RatioFunc->GetParError(iParam - PlotFunc->GetNpar()));
+    }
+  }
+  delete PlotFunc;
+  PlotFunc = tempFunc;
+}
 
+//--------------------------------------------------------------------
+void
+Division(TH1* PlotHist, TH1* RatioHist)
+{
   PlotHist->Divide(RatioHist);
 }
 
 //--------------------------------------------------------------------
 void
-Division(TGraphErrors *PlotGraph, TGraphErrors *RatioGraph)
+Division(TGraphErrors* PlotGraph, TGraphErrors* RatioGraph)
 {
-  Double_t *GraphX = PlotGraph->GetX();
-  Double_t *GraphY = PlotGraph->GetY();
-  Double_t *GraphYErrors = PlotGraph->GetEY();
+  Double_t* GraphX = PlotGraph->GetX();
+  Double_t* GraphY = PlotGraph->GetY();
+  Double_t* GraphYErrors = PlotGraph->GetEY();
   Int_t NumPoints = RatioGraph->GetN();
-  Double_t *RatioY = RatioGraph->GetY();
-  Double_t *RatioYErrors = RatioGraph->GetEY();
+  Double_t* RatioY = RatioGraph->GetY();
+  Double_t* RatioYErrors = RatioGraph->GetEY();
   for (Int_t i1 = 0; i1 < NumPoints; i1++) {
     if (PlotGraph->GetN() != NumPoints) {
       std::cout << "Messed up graph size... Check that out" << std::endl;
@@ -53,7 +81,7 @@ template<class T>
 std::vector<T*>
 GetRatioToLines(std::vector<T*> InLines, std::vector<T*> RatioLines)
 {
-  T *tempLine;
+  T* tempLine;
   std::vector<T*> outLines;
   for (UInt_t i0 = 0; i0 != InLines.size(); ++i0) {
     tempLine = (T*) InLines[i0]->Clone();
@@ -66,7 +94,7 @@ GetRatioToLines(std::vector<T*> InLines, std::vector<T*> RatioLines)
 //--------------------------------------------------------------------
 template<class T>
 std::vector<T*>
-GetRatioToLine(std::vector<T*> InLines, T *RatioGraph)
+GetRatioToLine(std::vector<T*> InLines, T* RatioGraph)
 {
   std::vector<T*> tempRatioLines;
   for (UInt_t i0 = 0; i0 != InLines.size(); ++i0)
@@ -79,26 +107,34 @@ std::vector<TGraphErrors*>
 GetRatioToPoint(std::vector<TGraphErrors*> InGraphs, Double_t RatioPoint, Double_t PointError = 0)
 {
   Int_t NumPoints = InGraphs[0]->GetN();
-  Double_t *GraphX = InGraphs[0]->GetX();
-  TGraphErrors *tempRatioGraph = new TGraphErrors(NumPoints);
+  Double_t* GraphX = InGraphs[0]->GetX();
+  TGraphErrors tempRatioGraph(NumPoints);
   for (Int_t i0 = 0; i0 != NumPoints; ++i0) {
-    tempRatioGraph->SetPoint(i0,GraphX[i0],RatioPoint);
-    tempRatioGraph->SetPointError(i0,0,PointError);
+    tempRatioGraph.SetPoint(i0,GraphX[i0],RatioPoint);
+    tempRatioGraph.SetPointError(i0,0,PointError);
   }
-  return GetRatioToLine(InGraphs,tempRatioGraph);
-  delete tempRatioGraph;
+  return GetRatioToLine(InGraphs,&tempRatioGraph);
 }
 
 //--------------------------------------------------------------------
-std::vector<TH1*>
-GetRatioToPoint(std::vector<TH1*> InHists, Double_t RatioPoint, Double_t PointError = 0)
+std::vector<TH1D*>
+GetRatioToPoint(std::vector<TH1D*> InHists, Double_t RatioPoint, Double_t PointError = 0)
 {
-  TH1 *tempRatioHist = (TH1*) InHists[0]->Clone();
-  tempRatioHist->Reset();
-  for (Int_t i0 = 0; i0 != tempRatioHist->GetXaxis()->GetNbins(); i0++) {
-    tempRatioHist->SetBinContent(i0 + 1,RatioPoint);
-    tempRatioHist->SetBinError(i0 + 1,PointError);
+  TH1D tempRatioHist = *(InHists[0]);
+  tempRatioHist.Reset();
+  for (Int_t i0 = 0; i0 != tempRatioHist.GetXaxis()->GetNbins(); i0++) {
+    tempRatioHist.SetBinContent(i0 + 1,RatioPoint);
+    tempRatioHist.SetBinError(i0 + 1,PointError);
   }
-  return GetRatioToLine(InHists,tempRatioHist);
-  delete tempRatioHist;
+  return GetRatioToLine(InHists,&tempRatioHist);
+}
+
+//--------------------------------------------------------------------
+std::vector<TF1*>
+GetRatioToPoint(std::vector<TF1*> InFuncs, Double_t RatioPoint, Double_t PointError = 0)
+{
+  TF1 tempRatioFunc("ratio","[0]");
+  tempRatioFunc.SetParameter(0,RatioPoint);
+  tempRatioFunc.SetParError(0,PointError);
+  return GetRatioToLine(InFuncs,&tempRatioFunc);
 }

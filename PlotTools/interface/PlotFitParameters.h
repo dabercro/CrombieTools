@@ -37,8 +37,6 @@ class PlotFitParameters : public Plot2D
   void                         MakeCanvas              ( TString FileBase, Int_t ParameterNum, TString XLabel, TString YLabel,
 							 Double_t YMin, Double_t YMax, Bool_t logY = false );
   
-  void                         SetDumpingFits          ( Bool_t dump )                                  { fDumpingFits = dump;         }
-  
  private:
   
   void                       GetMeans                  ( Int_t NumXBins, const Double_t *XBins );
@@ -54,9 +52,6 @@ class PlotFitParameters : public Plot2D
   std::vector<TProfile*>     fMeans;
 
   std::vector<TString>       fFunctionComponents;
-  
-  Bool_t                     fDumpingFits;        // Bool used to dump .png files if you want to check fits
-  Int_t                      fNumFitDumps;        // int to keep track of different number of fits
   
   ClassDef(PlotFitParameters,1)
 };

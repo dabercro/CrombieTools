@@ -12,9 +12,7 @@ ClassImp(PlotFitParameters)
 //--------------------------------------------------------------------
 PlotFitParameters::PlotFitParameters() :
   fFitXBins(0),
-  fMeans(0),
-  fDumpingFits(false),
-  fNumFitDumps(0)
+  fMeans(0)
 {
   fMeans.resize(0);
   fFunctionComponents.resize(0);

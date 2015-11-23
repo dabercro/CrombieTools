@@ -12,10 +12,16 @@ ClassImp(Plot2D)
 Plot2D::Plot2D() :
   fInExprX(""),
   fFunctionString(""),
-  fLooseFunction("")
+  fLooseFunction(""),
+  fDumpingFits(false),
+  fNumFitDumps(0)
 {
   fFits.resize(0);
   fCovs.resize(0);
+  fGuessParams.resize(0);
+  fGuesses.resize(0);
+  fLooseGuessParams.resize(0);
+  fLooseGuesses.resize(0);
   fParamFrom.resize(0);
   fParamTo.resize(0);
   fParams.resize(0);
@@ -39,14 +45,6 @@ Plot2D::ClearFits()
 {
   fFits.resize(0);
   fCovs.resize(0);
-}
-
-//--------------------------------------------------------------------
-void
-Plot2D::SetInitialGuess(Int_t param, Double_t guess)
-{
-  fGuessParams.push_back(param);
-  fGuesses.push_back(guess);
 }
 
 //--------------------------------------------------------------------
@@ -82,13 +80,23 @@ Plot2D::DoFit(TF1* fitFunc, TF1* looseFunc, TH2D* histToFit,
 {
   fitHolder = new TF1*[1];
   covHolder = new TMatrixDSym*[1];
+  TCanvas *tempCanvas = new TCanvas();
   if (fLooseFunction != "") {
     histToFit->Fit(looseFunc,"MLESQ");
     MapTo(fitFunc,looseFunc);
   }
-  TFitResultPtr fitResult = histToFit->Fit(fitFunc,"MLESQ");
+  TFitResultPtr fitResult = histToFit->Fit(fitFunc,"MLES");
   fitHolder[0] = (TF2*) fitFunc->Clone();
+  covHolder[0] = new TMatrixDSym(fitFunc->GetNpar());
   *covHolder[0] = fitResult->GetCovarianceMatrix();
+  if (fDumpingFits) {
+    TString dumpName;
+    dumpName.Form("DumpFit_%04d_2D",fNumFitDumps);
+    ++fNumFitDumps;
+    tempCanvas->SaveAs(dumpName+".png");
+    tempCanvas->SaveAs(dumpName+".pdf");
+    tempCanvas->SaveAs(dumpName+".C");
+  }
 }
 
 //--------------------------------------------------------------------
@@ -97,7 +105,7 @@ Plot2D::DoFits(Int_t NumXBins, Double_t *XBins,
                Int_t NumYBins, Double_t MinY, Double_t MaxY)
 {
   ClearFits();
-
+  
   UInt_t NumPlots = 0;
 
   if (fFunctionString == "") {
@@ -110,9 +118,9 @@ Plot2D::DoFits(Int_t NumXBins, Double_t *XBins,
     exit(1);
   }
 
-  if (fInTrees.size() > 0)
+  if (fInTrees.size() != 0)
     NumPlots = fInTrees.size();
-  else if (fInCuts.size() > 0)
+  else if (fInCuts.size() != 0)
     NumPlots = fInCuts.size();
   else
     NumPlots = fInExpr.size();
@@ -129,23 +137,26 @@ Plot2D::DoFits(Int_t NumXBins, Double_t *XBins,
   TH2D *tempHist;
   TProfile *tempProfile;
 
-  TF1 *looseFunc = MakeFunction(fLooseFunction,XBins[0],XBins[NumXBins - 1],MinY,MaxY);
+  TF1 *looseFunc = 0;
+  if (fLooseFunction != "")
+    looseFunc = MakeFunction(fLooseFunction,XBins[0],XBins[NumXBins - 1],MinY,MaxY);
+  for (UInt_t iGuess = 0; iGuess != fLooseGuessParams.size(); ++iGuess)
+    looseFunc->SetParameter(fLooseGuessParams[iGuess],fLooseGuesses[iGuess]);
+  for (UInt_t iParam = 0; iParam != fLooseParams.size(); ++iParam)
+    looseFunc->SetParLimits(fLooseParams[iParam],fLooseParamLows[iParam],fLooseParamHighs[iParam]);
+
   TF1 *fitFunc = MakeFunction(fFunctionString,XBins[0],XBins[NumXBins - 1],MinY,MaxY);
-
-  for (UInt_t i0 = 0; i0 < fLooseParams.size(); i0++)
-    looseFunc->SetParLimits(fLooseParams[i0],fLooseParamLows[i0],fLooseParamHighs[i0]);
-
-  for (UInt_t i0 = 0; i0 < fParams.size(); i0++)
-    fitFunc->SetParLimits(fParams[i0],fParamLows[i0],fParamHighs[i0]);
-
-  std::cout <<  NumPlots << " lines will be made." << std::endl;
-
+  for (UInt_t iGuess = 0; iGuess != fGuessParams.size(); ++iGuess)
+    fitFunc->SetParameter(fGuessParams[iGuess],fGuesses[iGuess]);
+  for (UInt_t iParam = 0; iParam != fParams.size(); ++iParam)
+    fitFunc->SetParLimits(fParams[iParam],fParamLows[iParam],fParamHighs[iParam]);
+  
   TF1 **holdFits;
   TMatrixDSym **holdCovs;
-
+  
   for (UInt_t iPlot = 0; iPlot < NumPlots; iPlot++) {
     std::cout << NumPlots - iPlot << " more to go." << std::endl;
-
+    
     if (fInTrees.size() != 0)
       inTree = fInTrees[iPlot];
     if (fInCuts.size()  != 0)
@@ -163,7 +174,9 @@ Plot2D::DoFits(Int_t NumXBins, Double_t *XBins,
     inTree->Draw(inExpr+":"+fInExprX+">>"+tempName,inCut);
 
     TString dumpTitle = fLegendEntries[iPlot] + ";" + inExpr + ";Num Events";
-    looseFunc->SetTitle(dumpTitle);
+    if (fLooseFunction != "")
+      looseFunc->SetTitle(dumpTitle);
+
     fitFunc->SetTitle(dumpTitle);
     tempHist->SetTitle(fLegendEntries[iPlot] + ";" + fInExprX + ";" + inExpr + ";Num Events");
 
@@ -185,13 +198,37 @@ Plot2D::DoFits(Int_t NumXBins, Double_t MinX, Double_t MaxX,
   DoFits(NumXBins,XBins,NumYBins,MinY,MaxY);
 }
 
-// //--------------------------------------------------------------------
-// void
-// Plot2D::MakeCanvas(TString FileBase, TString ParameterExpr, TString XLabel, TString YLabel, 
-//                    Double_t YMin, Double_t YMax, Bool_t logY)
-// {
-//   std::vector<TGraphErrors*> theGraphs = MakeGraphs(ParameterExpr);
-//   MakeCanvas(FileBase,theGraphs,XLabel,YLabel,YMin,YMax,logY);
-//   for (UInt_t iGraph = 0; iGraph != theGraphs.size(); ++iGraph)
-//     delete theGraphs[iGraph];
-// }
+//--------------------------------------------------------------------
+std::vector<TF1*>
+Plot2D::MakeFuncs(TString ParameterExpr)
+{
+  TF1 *tempGraph;
+  std::vector<TF1*> theGraphs;
+
+  for (UInt_t iLine = 0; iLine != fFits.size(); ++iLine) {
+    tempGraph = new TF1("parameterHolder",ParameterExpr);
+
+    for (Int_t iParam = 0; iParam != tempGraph->GetNpar(); ++iParam) {
+      Int_t parNumInFit = fFits[iLine][0]->GetParNumber(tempGraph->GetParName(iParam));
+      tempGraph->SetParameter(iParam,fFits[iLine][0]->GetParameter(parNumInFit));
+      tempGraph->SetParError(iParam,fFits[iLine][0]->GetParError(parNumInFit));
+    }
+    theGraphs.push_back(tempGraph);
+  }
+
+  return theGraphs;
+}
+
+//--------------------------------------------------------------------
+void
+Plot2D::MakeCanvas(TString FileBase, TString ParameterExpr, TString XLabel, TString YLabel,
+                   Double_t YMin, Double_t YMax, Bool_t logY)
+{
+  std::vector<TF1*> theGraphs = MakeFuncs(ParameterExpr);
+  for (UInt_t iGraph = 0; iGraph != theGraphs.size(); ++iGraph)
+    theGraphs[iGraph]->GetYaxis()->SetRangeUser(YMin,YMax);
+  
+  BaseCanvas(FileBase,theGraphs,XLabel,YLabel,logY);
+  for (UInt_t iGraph = 0; iGraph != theGraphs.size(); ++iGraph)
+    delete theGraphs[iGraph];
+}
