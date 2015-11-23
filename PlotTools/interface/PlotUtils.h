@@ -66,14 +66,22 @@ Division(TGraphErrors* PlotGraph, TGraphErrors* RatioGraph)
   Int_t NumPoints = RatioGraph->GetN();
   Double_t* RatioY = RatioGraph->GetY();
   Double_t* RatioYErrors = RatioGraph->GetEY();
+  Double_t RangeMin = 1000.;
+  Double_t RangeMax = 0.;
   for (Int_t i1 = 0; i1 < NumPoints; i1++) {
     if (PlotGraph->GetN() != NumPoints) {
       std::cout << "Messed up graph size... Check that out" << std::endl;
       exit(1);
     }
-    PlotGraph->SetPoint(i1,GraphX[i1],GraphY[i1]/RatioY[i1]);
+    Double_t point = GraphY[i1]/RatioY[i1];
+    PlotGraph->SetPoint(i1,GraphX[i1],point);
     PlotGraph->SetPointError(i1,0,sqrt(pow(GraphYErrors[i1]/RatioY[i1],2) + pow((GraphY[i1])*(RatioYErrors[i1])/pow(RatioY[i1],2),2)));
+    if (point < RangeMin)
+      RangeMin = point;
+    if (point > RangeMax)
+      RangeMax = point;
   }
+  PlotGraph->GetYaxis()->SetRangeUser(RangeMin,RangeMax);
 }
 
 //--------------------------------------------------------------------
@@ -83,9 +91,9 @@ GetRatioToLines(std::vector<T*> InLines, std::vector<T*> RatioLines)
 {
   T* tempLine;
   std::vector<T*> outLines;
-  for (UInt_t i0 = 0; i0 != InLines.size(); ++i0) {
-    tempLine = (T*) InLines[i0]->Clone();
-    Division(tempLine,RatioLines[i0]);
+  for (UInt_t iLine = 0; iLine != InLines.size(); ++iLine) {
+    tempLine = (T*) InLines[iLine]->Clone();
+    Division(tempLine,RatioLines[iLine]);
     outLines.push_back(tempLine);
   }
   return outLines;
