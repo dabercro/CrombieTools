@@ -9,8 +9,6 @@
 #ifndef CROMBIETOOLS_PLOTTOOLS_PLOTFITPARAMETERS_H
 #define CROMBIETOOLS_PLOTTOOLS_PLOTFITPARAMETERS_H
 
-#include "TGraphErrors.h"
-#include "TF1.h"
 #include "TProfile.h"
 
 #include "Plot2D.h"
@@ -21,32 +19,33 @@ class PlotFitParameters : public Plot2D
   PlotFitParameters();
   virtual ~PlotFitParameters();
   
-  void                         AddFunctionComponent    ( TString function )                 { fFunctionComponents.push_back(function); }
+  void                         AddFunctionComponent  ( TString function )                 { fFunctionComponents.push_back(function); }
   
-  std::vector<TGraphErrors*>   MakeGraphs              ( TString ParameterExpr );
-  std::vector<TGraphErrors*>   MakeGraphs              ( Int_t ParameterNum );
+  std::vector<TGraphErrors*>   MakeGraphs            ( TString ParameterExpr );
+  std::vector<TGraphErrors*>   MakeGraphs            ( Int_t ParameterNum );
 
-  void                         MakeCanvas              ( TString FileBase, std::vector<TGraphErrors*> theGraphs, 
-							 TString XLabel, TString YLabel, Double_t YMin, Double_t YMax,
-							 Bool_t logY = false );
+  //// 'using' doesn't seem to work for some reason
+  void                         MakeCanvas            ( TString FileBase, std::vector<TGraphErrors*> theGraphs,
+                                                       TString XLabel, TString YLabel, Double_t YMin, Double_t YMax, Bool_t logY = false )
+                                                                { Plot2D::MakeCanvas(FileBase,theGraphs,XLabel,YLabel,YMin,YMax,logY); }
+  void                         MakeCanvas            ( TString FileBase, TString ParameterExpr, TString XLabel, TString YLabel, 
+                                                       Double_t YMin, Double_t YMax, Bool_t logY = false )
+                                                            { Plot2D::MakeCanvas(FileBase,ParameterExpr,XLabel,YLabel,YMin,YMax,logY); }
+  ////
 
-  void                         MakeCanvas              ( TString FileBase, TString ParameterExpr,
-							 TString XLabel, TString YLabel, Double_t YMin, Double_t YMax,
-							 Bool_t logY = false );
-
-  void                         MakeCanvas              ( TString FileBase, Int_t ParameterNum, TString XLabel, TString YLabel,
+  void                         MakeCanvas            ( TString FileBase, Int_t ParameterNum, TString XLabel, TString YLabel,
 							 Double_t YMin, Double_t YMax, Bool_t logY = false );
-  
+
  private:
   
-  void                       GetMeans                  ( Int_t NumXBins, const Double_t *XBins );
-  void                       DoFit                     ( TF1* fitFunc, TF1* looseFunc, TH2D* histToFit, 
-                                                         TF1**& fitHolder, TMatrixDSym**& covHolder );
+  void                       GetMeans                ( Int_t NumXBins, const Double_t *XBins );
+  void                       DoFit                   ( TF1* fitFunc, TF1* looseFunc, TH2D* histToFit, 
+                                                       TF1**& fitHolder, TMatrixDSym**& covHolder );
 
-  TF1*                       MakeFunction              ( TString function, Double_t /* MinX */, Double_t /* MaxX */, 
-                                                         Double_t MinY, Double_t MaxY )
+  TF1*                       MakeFunction            ( TString function, Double_t /* MinX */, Double_t /* MaxX */, 
+                                                       Double_t MinY, Double_t MaxY )
                                                                                           { return new TF1("func",function,MinY,MaxY); }
-  void                       ClearFits();
+  void                       ClearFits               ();
 
   Int_t                      fFitXBins;           // Hold the number of XBins in fFits for cleaning
   std::vector<TProfile*>     fMeans;

@@ -179,27 +179,6 @@ PlotFitParameters::MakeGraphs(Int_t ParameterNum)
 
 //--------------------------------------------------------------------
 void
-PlotFitParameters::MakeCanvas(TString FileBase, std::vector<TGraphErrors*> theGraphs, TString XLabel, TString YLabel, 
-			      Double_t YMin, Double_t YMax, Bool_t logY)
-{
-  for (UInt_t iGraph = 0; iGraph != theGraphs.size(); ++iGraph)
-    theGraphs[iGraph]->GetYaxis()->SetRangeUser(YMin,YMax);
-  BaseCanvas(FileBase,theGraphs,XLabel,YLabel,logY);
-}
-
-//--------------------------------------------------------------------
-void
-PlotFitParameters::MakeCanvas(TString FileBase, TString ParameterExpr, TString XLabel, TString YLabel, 
-			      Double_t YMin, Double_t YMax, Bool_t logY)
-{
-  std::vector<TGraphErrors*> theGraphs = MakeGraphs(ParameterExpr);
-  MakeCanvas(FileBase,theGraphs,XLabel,YLabel,YMin,YMax,logY);
-  for (UInt_t iGraph = 0; iGraph != theGraphs.size(); ++iGraph)
-    delete theGraphs[iGraph];
-}
-
-//--------------------------------------------------------------------
-void
 PlotFitParameters::MakeCanvas(TString FileBase, Int_t ParameterNum, TString XLabel, TString YLabel,
 			      Double_t YMin, Double_t YMax, Bool_t logY)
 {

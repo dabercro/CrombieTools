@@ -220,15 +220,33 @@ Plot2D::MakeFuncs(TString ParameterExpr)
 }
 
 //--------------------------------------------------------------------
+std::vector<TGraphErrors*>
+Plot2D::MakeGraphs(TString ParameterExpr)
+{
+  std::vector<TF1*> theFuncs = MakeFuncs(ParameterExpr);
+  std::vector<TGraphErrors*> theGraphs;
+  for(UInt_t iFunc = 0; iFunc != theFuncs.size(); ++iFunc)
+    delete theFuncs[iFunc];
+  return theGraphs;
+}
+
+//--------------------------------------------------------------------
 void
-Plot2D::MakeCanvas(TString FileBase, TString ParameterExpr, TString XLabel, TString YLabel,
+Plot2D::MakeCanvas(TString FileBase, std::vector<TGraphErrors*> theGraphs, TString XLabel, TString YLabel, 
                    Double_t YMin, Double_t YMax, Bool_t logY)
 {
-  std::vector<TF1*> theGraphs = MakeFuncs(ParameterExpr);
   for (UInt_t iGraph = 0; iGraph != theGraphs.size(); ++iGraph)
     theGraphs[iGraph]->GetYaxis()->SetRangeUser(YMin,YMax);
-  
   BaseCanvas(FileBase,theGraphs,XLabel,YLabel,logY);
+}
+
+//--------------------------------------------------------------------
+void
+Plot2D::MakeCanvas(TString FileBase, TString ParameterExpr, TString XLabel, TString YLabel, 
+                   Double_t YMin, Double_t YMax, Bool_t logY)
+{
+  std::vector<TGraphErrors*> theGraphs = MakeGraphs(ParameterExpr);
+  MakeCanvas(FileBase,theGraphs,XLabel,YLabel,YMin,YMax,logY);
   for (UInt_t iGraph = 0; iGraph != theGraphs.size(); ++iGraph)
     delete theGraphs[iGraph];
 }
