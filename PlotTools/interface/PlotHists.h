@@ -12,11 +12,15 @@ class PlotHists : public PlotBase
   PlotHists();
   virtual ~PlotHists();
   
-  void                   SetNormalizedHists       ( Bool_t b )        { fNormalizedHists = b;  }
-  void                   SetNormalizeTo           ( Int_t to )        { fNormalizeTo = to;     }
+  void                   SetNormalizedHists       ( Bool_t b )                           { fNormalizedHists = b;  }
+  void                   SetNormalizeTo           ( Int_t to )                           { fNormalizeTo = to;     }
   
   std::vector<TH1D*>     MakeHists                ( Int_t NumXBins, Double_t *XBins );                   // These just return vectors of
   std::vector<TH1D*>     MakeHists                ( Int_t NumXBins, Double_t MinX, Double_t MaxX );      //   histograms for other uses
+  
+  void                   MakeCanvas               ( TString FileBase, std::vector<TH1D*> theHists,
+                                                    TString XLabel, TString YLabel, Bool_t logY = false)
+                                                              { BaseCanvas(FileBase,theHists,XLabel,YLabel,logY); }
   
   void                   MakeCanvas               ( TString FileBase, Int_t NumXBins, Double_t *XBins,  
                                                     TString XLabel, TString YLabel, Bool_t logY = false);

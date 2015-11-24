@@ -11,7 +11,7 @@ then
     echo " | First argument is the directory to put the page. (Can be '.') |"
     echo " | Second argument is number of images per row.                  |"
     echo " | The optional third argument is an expression to be matched    |"
-    echo " | for plots to blind. (They will not appear on the webpage.     |"
+    echo " | for plots to blind. (They will not appear on the webpage.)    |"
     echo " +---------------------------------------------------------------+"
     echo ""
     exit
@@ -78,4 +78,7 @@ echo '</table>' >> $F
 echo "</center>" >> $F
 echo "</html>" >> $F
 
-mv $F $dir/$F
+if [ "$dir" != "." ]
+then
+    mv $F $dir/$F
+fi
