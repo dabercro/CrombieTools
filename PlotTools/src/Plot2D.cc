@@ -14,7 +14,8 @@ Plot2D::Plot2D() :
   fFunctionString(""),
   fLooseFunction(""),
   fDumpingFits(false),
-  fNumFitDumps(0)
+  fNumFitDumps(0),
+  fNumPoints(100)
 {
   fFits.resize(0);
   fCovs.resize(0);
@@ -105,14 +106,12 @@ Plot2D::DoFits(Int_t NumXBins, Double_t *XBins,
                Int_t NumYBins, Double_t MinY, Double_t MaxY)
 {
   ClearFits();
-  
   UInt_t NumPlots = 0;
 
   if (fFunctionString == "") {
     std::cout << "You haven't set a function!" << std::endl;
     exit(1);
   }
-
   if (fInExprX == "" && fInExprXs.size() == 0) {
     std::cout << "You haven't initialized an x expression yet!" << std::endl;
     exit(1);
@@ -200,32 +199,73 @@ Plot2D::DoFits(Int_t NumXBins, Double_t MinX, Double_t MaxX,
 
 //--------------------------------------------------------------------
 std::vector<TF1*>
-Plot2D::MakeFuncs(TString ParameterExpr)
+Plot2D::MakeFuncs(TString ParameterExpr, Double_t MinX, Double_t MaxX)
 {
-  TF1 *tempGraph;
-  std::vector<TF1*> theGraphs;
+  TF1 *tempFunc;
+  std::vector<TF1*> theFuncs;
 
   for (UInt_t iLine = 0; iLine != fFits.size(); ++iLine) {
-    tempGraph = new TF1("parameterHolder",ParameterExpr);
+    tempFunc = new TF1("parameterHolder",ParameterExpr,MinX,MaxX);
 
-    for (Int_t iParam = 0; iParam != tempGraph->GetNpar(); ++iParam) {
-      Int_t parNumInFit = fFits[iLine][0]->GetParNumber(tempGraph->GetParName(iParam));
-      tempGraph->SetParameter(iParam,fFits[iLine][0]->GetParameter(parNumInFit));
-      tempGraph->SetParError(iParam,fFits[iLine][0]->GetParError(parNumInFit));
+    for (Int_t iParam = 0; iParam != tempFunc->GetNpar(); ++iParam) {
+      Int_t parNumInFit = fFits[iLine][0]->GetParNumber(tempFunc->GetParName(iParam));
+      tempFunc->SetParameter(iParam,fFits[iLine][0]->GetParameter(parNumInFit));
+      tempFunc->SetParError(iParam,fFits[iLine][0]->GetParError(parNumInFit));
     }
-    theGraphs.push_back(tempGraph);
+    theFuncs.push_back(tempFunc);
   }
 
-  return theGraphs;
+  return theFuncs;
 }
 
 //--------------------------------------------------------------------
 std::vector<TGraphErrors*>
 Plot2D::MakeGraphs(TString ParameterExpr)
 {
-  std::vector<TF1*> theFuncs = MakeFuncs(ParameterExpr);
+  Double_t MinX = 0.0;
+  Double_t MaxX = 0.0;
+  fFits[0][0]->GetRange(MinX,MaxX);
+  std::vector<TF1*> theFuncs = MakeFuncs(ParameterExpr,MinX,MaxX);
   std::vector<TGraphErrors*> theGraphs;
-  for(UInt_t iFunc = 0; iFunc != theFuncs.size(); ++iFunc)
+  TGraphErrors* tempGraph;
+  Double_t width = (MaxX - MinX)/fNumPoints;
+  for (UInt_t iFunc = 0; iFunc != theFuncs.size(); ++iFunc) {
+    std::vector<TF1*> holdFuncs;
+    for (Int_t iParam = 0; iParam != theFuncs[iFunc]->GetNpar(); ++iParam) {
+      TString parToReplace = TString('[') + theFuncs[iFunc]->GetParName(iParam) + TString(']');
+      TF1* holdFunc = new TF1("holding",theFuncs[iFunc]->GetExpFormula().ReplaceAll('x',"[x0]").ReplaceAll(parToReplace,'x'));
+      for (Int_t jParam = 0; jParam != holdFunc->GetNpar(); ++jParam) {
+        TString paramName = holdFunc->GetParName(jParam);
+        if (paramName == "x0")
+          continue;
+        holdFunc->SetParameter(jParam,theFuncs[iFunc]->GetParameter(paramName));
+      }
+      holdFuncs.push_back(holdFunc);
+    }
+    tempGraph = new TGraphErrors(fNumPoints);
+    Double_t xVal = MinX;
+    for (Int_t iPoint = 0; iPoint != fNumPoints + 1; ++iPoint) {
+      tempGraph->SetPoint(iPoint,xVal,theFuncs[iFunc]->Eval(xVal));
+      Double_t error2 = 0;
+      for (Int_t iParam = 0; iParam != theFuncs[iFunc]->GetNpar(); ++iParam) {
+        holdFuncs[iParam]->SetParameter("x0",xVal);
+        for (Int_t jParam = 0; jParam != iParam + 1; ++jParam) {
+          Double_t factor = 2.0;
+          if (iParam == jParam)
+            factor = 1.0;
+          Double_t toAdd = holdFuncs[iParam]->Derivative(theFuncs[iFunc]->GetParameter(iParam)) * ((*(fCovs[iFunc][0]))(iParam,jParam));
+          error2 += toAdd*toAdd;
+        }
+      }
+      tempGraph->SetPointError(iPoint,0,TMath::Sqrt(error2));
+      xVal += width;
+    }
+    theGraphs.push_back(tempGraph);
+    for (UInt_t iParam = 0; iParam != holdFuncs.size(); ++iParam)
+      delete holdFuncs[iParam];
+  }
+
+  for (UInt_t iFunc = 0; iFunc != theFuncs.size(); ++iFunc)
     delete theFuncs[iFunc];
   return theGraphs;
 }
@@ -249,4 +289,14 @@ Plot2D::MakeCanvas(TString FileBase, TString ParameterExpr, TString XLabel, TStr
   MakeCanvas(FileBase,theGraphs,XLabel,YLabel,YMin,YMax,logY);
   for (UInt_t iGraph = 0; iGraph != theGraphs.size(); ++iGraph)
     delete theGraphs[iGraph];
+}
+
+//--------------------------------------------------------------------
+void
+Plot2D::MakeCanvas(TString FileBase, Int_t ParameterNum, TString XLabel, TString YLabel,
+                   Double_t YMin, Double_t YMax, Bool_t logY)
+{
+  TString ParameterExpr = "";
+  ParameterExpr.Form("[%d]",ParameterNum);
+  MakeCanvas(FileBase,ParameterExpr,XLabel,YLabel,YMin,YMax,logY);
 }

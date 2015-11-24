@@ -47,11 +47,15 @@ class Plot2D : public PlotBase
   void                         MakeCanvas              ( TString FileBase, TString ParameterExpr, TString XLabel, TString YLabel, 
                                                          Double_t YMin, Double_t YMax, Bool_t logY = false );
 
+  void                         MakeCanvas              ( TString FileBase, Int_t ParameterNum, TString XLabel, TString YLabel,
+                                                         Double_t YMin, Double_t YMax, Bool_t logY = false );
+
   void                         SetDumpingFits          ( Bool_t dump )                               { fDumpingFits = dump;               }
+  void                         SetNumPoints            ( Int_t num )                                 { fNumPoints = num;                  }
 
  protected:
   
-  std::vector<TF1*>            MakeFuncs               ( TString ParameterExpr );
+  std::vector<TF1*>          MakeFuncs               ( TString ParameterExpr, Double_t MinX, Double_t MaxX );
   
   void                       MapTo                     ( TF1* fitFunc, TF1* looseFunc );
   virtual    void            DoFit                     ( TF1* fitFunc, TF1* looseFunc, TH2D* histToFit, 
@@ -89,6 +93,10 @@ class Plot2D : public PlotBase
   Bool_t                     fDumpingFits;           // Bool used to dump .png files if you want to check fits
   Int_t                      fNumFitDumps;           // int to keep track of different number of fits
   
+ private:
+
+  Int_t                      fNumPoints; 
+
   ClassDef(Plot2D,1)
 };
 

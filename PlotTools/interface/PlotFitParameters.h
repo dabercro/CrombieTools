@@ -24,18 +24,6 @@ class PlotFitParameters : public Plot2D
   std::vector<TGraphErrors*>   MakeGraphs            ( TString ParameterExpr );
   std::vector<TGraphErrors*>   MakeGraphs            ( Int_t ParameterNum );
 
-  //// 'using' doesn't seem to work for some reason
-  void                         MakeCanvas            ( TString FileBase, std::vector<TGraphErrors*> theGraphs,
-                                                       TString XLabel, TString YLabel, Double_t YMin, Double_t YMax, Bool_t logY = false )
-                                                                { Plot2D::MakeCanvas(FileBase,theGraphs,XLabel,YLabel,YMin,YMax,logY); }
-  void                         MakeCanvas            ( TString FileBase, TString ParameterExpr, TString XLabel, TString YLabel, 
-                                                       Double_t YMin, Double_t YMax, Bool_t logY = false )
-                                                            { Plot2D::MakeCanvas(FileBase,ParameterExpr,XLabel,YLabel,YMin,YMax,logY); }
-  ////
-
-  void                         MakeCanvas            ( TString FileBase, Int_t ParameterNum, TString XLabel, TString YLabel,
-							 Double_t YMin, Double_t YMax, Bool_t logY = false );
-
  private:
   
   void                       GetMeans                ( Int_t NumXBins, const Double_t *XBins );

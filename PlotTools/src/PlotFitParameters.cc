@@ -176,13 +176,3 @@ PlotFitParameters::MakeGraphs(Int_t ParameterNum)
   ParameterExpr.Form("[%d]",ParameterNum);
   return MakeGraphs(ParameterExpr);
 }
-
-//--------------------------------------------------------------------
-void
-PlotFitParameters::MakeCanvas(TString FileBase, Int_t ParameterNum, TString XLabel, TString YLabel,
-			      Double_t YMin, Double_t YMax, Bool_t logY)
-{
-  TString ParameterExpr = "";
-  ParameterExpr.Form("[%d]",ParameterNum);
-  MakeCanvas(FileBase,ParameterExpr,XLabel,YLabel,YMin,YMax,logY);
-}
