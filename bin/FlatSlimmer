@@ -5,9 +5,8 @@ import os, argparse
 from multiprocessing import Process, Queue
 from time import time
 import GoodLumiFilter
+import FlatSlimmer
 from CrombieVars import skimSrc
-
-ROOT.gROOT.LoadMacro(skimSrc + 'FlatSlimmer.cc+')
 
 parser = argparse.ArgumentParser(description = 'Slims the contents of one directory into another one')
 
@@ -51,7 +50,7 @@ if inDir == outDir:
 def skim(inQueue):
     running = True
     goodRunFilter = GoodLumiFilter.MakeFilter(GoodRunsFile)
-    slimmer = ROOT.FlatSlimmer()
+    slimmer = FlatSlimmer.newFlatSlimmer()
     slimmer.SetInDirectory(inDir)
     slimmer.SetOutDirectory(outDir)
     slimmer.SetGoodLumiFilter(goodRunFilter)
