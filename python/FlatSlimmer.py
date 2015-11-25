@@ -1,8 +1,10 @@
 import ROOT
 from CrombieVars import skimSrc
 
-ROOT.gROOT.LoadMacro(skimSrc + 'GoodLumiFilter.cc+')
-ROOT.gROOT.LoadMacro(skimSrc + 'FlatSlimmer.cc+')
+if not 'GoodLumiFilter' in dir(ROOT):
+    ROOT.gROOT.LoadMacro(skimSrc + 'GoodLumiFilter.cc+')
+if not 'FlatSlimmer' in dir(ROOT):
+    ROOT.gROOT.LoadMacro(skimSrc + 'FlatSlimmer.cc+')
 
 newFlatSlimmer = ROOT.FlatSlimmer
 flatSlimmer = newFlatSlimmer()

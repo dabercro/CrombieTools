@@ -3,12 +3,12 @@
 # Creates all .so, .pcm, and .pyc files that could possibly be needed
 
 import CrombieVars
+import GoodLumiFilter
+import FlatSlimmer
+import TreeContainer
+import HistPlotter
+import StackPlotter
 import Fit2DPlotter
 import FitPlotter
-import FlatSlimmer
-import GoodLumiFilter
-import HistPlotter
 import ResolutionPlotter
-import StackPlotter
-import TreeContainer
 import tdrStyle      ## I should really write my own style thing for CMS

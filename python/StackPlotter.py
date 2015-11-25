@@ -1,9 +1,12 @@
 import ROOT
 from CrombieVars import plotSrc, skimSrc
 
-ROOT.gROOT.LoadMacro(skimSrc + 'TreeContainer.cc+')
-ROOT.gROOT.LoadMacro(plotSrc + 'PlotHists.cc+')
-ROOT.gROOT.LoadMacro(plotSrc + 'PlotStack.cc+')
+if not 'TreeContainer' in dir(ROOT):
+    ROOT.gROOT.LoadMacro(skimSrc + 'TreeContainer.cc+')
+if not 'PlotHists' in dir(ROOT):
+    ROOT.gROOT.LoadMacro(plotSrc + 'PlotHists.cc+')
+if not 'PlotStack' in dir(ROOT):
+    ROOT.gROOT.LoadMacro(plotSrc + 'PlotStack.cc+')
 
 newStackPlotter = ROOT.PlotStack
 stackPlotter    = newStackPlotter()
