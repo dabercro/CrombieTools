@@ -30,8 +30,8 @@ class Plot2D : public PlotBase
   void                         SetFunction             ( TString function )                         { fFunctionString = function;         }
   void                         SetLooseFit             ( TString function )                         { fLooseFunction = function;          }
   void                         SetLooseLimits          ( Int_t param, Double_t low, Double_t high );
-  void                         AddMapping              ( Int_t from, Int_t to )                     { fParamFrom.push_back(from); 
-                                                                                                      fParamTo.push_back(to);             }
+  void                         AddMapping              ( Int_t from, Int_t to, Double_t fact = 1.0 );
+
   virtual  std::vector<TGraphErrors*>  MakeGraphs      ( TString ParameterExpr );
 
   void                         DoFits                  ( Int_t NumXBins, Double_t *XBins,
@@ -52,6 +52,7 @@ class Plot2D : public PlotBase
 
   void                         SetDumpingFits          ( Bool_t dump )                               { fDumpingFits = dump;               }
   void                         SetNumPoints            ( Int_t num )                                 { fNumPoints = num;                  }
+  void                         SetFitOptions           ( TString opts )                              { fFitOptions = opts;                }
 
  protected:
   
@@ -89,9 +90,11 @@ class Plot2D : public PlotBase
   TString                    fLooseFunction;
   std::vector<Int_t>         fParamFrom;
   std::vector<Int_t>         fParamTo;
+  std::vector<Double_t>      fParamFactor;
 
   Bool_t                     fDumpingFits;           // Bool used to dump .png files if you want to check fits
   Int_t                      fNumFitDumps;           // int to keep track of different number of fits
+  TString                    fFitOptions;
   
  private:
 

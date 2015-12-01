@@ -57,6 +57,7 @@ class PlotBase
   void                   SetRatioIndex            ( Int_t ratio )                                 { fRatioIndex = ratio;         }
   void                   SetOnlyRatioWithData     ( Bool_t only )                                 { fOnlyRatioWithData = only;   }
   void                   SetLegendFill            ( Bool_t fill )                                 { fLegendFill = fill;          }
+  void                   SetDrawFirst             ( Int_t first )                                 { fDrawFirst = first;          }
   
  protected:
   
@@ -101,6 +102,7 @@ class PlotBase
 
   Bool_t                     fOnlyRatioWithData;
   Bool_t                     fLegendFill;
+  Int_t                      fDrawFirst;
 
 };
 
@@ -123,7 +125,8 @@ PlotBase::PlotBase() :
   fDefaultLineWidth(2),
   fDefaultLineStyle(1),
   fOnlyRatioWithData(false),
-  fLegendFill(false)  
+  fLegendFill(false),
+  fDrawFirst(-1)
 {
   fInTrees.resize(0);
   fInCuts.resize(0);
@@ -324,11 +327,13 @@ PlotBase::BaseCanvas(TString FileBase, std::vector<T*> theLines, TString XLabel,
     else
       theLegend->AddEntry(theLines[iLine],fLegendEntries[iLine],"lp");
       
-    Double_t checkMax = theLines[iLine]->GetMaximum();
+    if (fDrawFirst == -1) {
+      Double_t checkMax = theLines[iLine]->GetMaximum();
       
-    if (checkMax > maxValue) {
-      maxValue = checkMax;
-      plotFirst = iLine;
+      if (checkMax > maxValue) {
+        maxValue = checkMax;
+        plotFirst = iLine;
+      }
     }
   }
 
@@ -348,7 +353,10 @@ PlotBase::BaseCanvas(TString FileBase, std::vector<T*> theLines, TString XLabel,
       pad1->SetLogy();
   }
 
-  theLines[plotFirst]->Draw();
+  if (fDrawFirst == -1)
+    theLines[plotFirst]->Draw();
+  else
+    theLines[fDrawFirst]->Draw();
   for (UInt_t iLine = 0; iLine != NumPlots; ++iLine)
     theLines[iLine]->Draw("same");
 

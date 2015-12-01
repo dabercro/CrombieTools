@@ -96,11 +96,11 @@ PlotFitParameters::DoFit(TF1* fitFunc, TF1* looseFunc, TH2D* histToFit,
       fitFunc->SetParameter(fGuessParams[iParam],fGuesses[iParam]);
     
     if (fLooseFunction != "") {
-      histToFit->ProjectionY(tempName+"_py",iXBin+1,iXBin+1)->Fit(looseFunc,"MLEQ","",MinY,MaxY);
+      histToFit->ProjectionY(tempName+"_py",iXBin+1,iXBin+1)->Fit(looseFunc,fFitOptions,"",MinY,MaxY);
       for (UInt_t iParam = 0; iParam != fParamFrom.size(); ++iParam)
         fitFunc->SetParameter(fParamTo[iParam],looseFunc->GetParameter(fParamFrom[iParam]));
     }
-    TFitResultPtr fitResult = histToFit->ProjectionY(tempName+"_py",iXBin+1,iXBin+1)->Fit(fitFunc,"MLESQ","",MinY,MaxY);
+    TFitResultPtr fitResult = histToFit->ProjectionY(tempName+"_py",iXBin+1,iXBin+1)->Fit(fitFunc,fFitOptions + "S","",MinY,MaxY);
     if (fDumpingFits) {
       TString dumpName;
       Int_t lower = XBins[iXBin];
@@ -108,7 +108,7 @@ PlotFitParameters::DoFit(TF1* fitFunc, TF1* looseFunc, TH2D* histToFit,
       dumpName.Form("DumpFit_%04d_%dTo%d",fNumFitDumps,lower,upper);
       std::vector<TF1*> components;
       for (UInt_t iFunc = 0; iFunc < fFunctionComponents.size(); iFunc++) {
-        TF1 *tempComponent = new TF1(dumpName,fFunctionComponents.size(),MinY,MaxY);
+        TF1 *tempComponent = new TF1(dumpName,fFunctionComponents[iFunc],MinY,MaxY);
         for (Int_t iParam = 0; iParam != tempComponent->GetNpar(); ++iParam)
           tempComponent->SetParameter(tempComponent->GetParName(iParam),
                                       fitFunc->GetParameter(tempComponent->GetParName(iParam)));

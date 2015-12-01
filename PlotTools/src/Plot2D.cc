@@ -15,7 +15,8 @@ Plot2D::Plot2D() :
   fLooseFunction(""),
   fDumpingFits(false),
   fNumFitDumps(0),
-  fNumPoints(100)
+  fNumPoints(100),
+  fFitOptions("MLEQ")
 {
   fFits.resize(0);
   fCovs.resize(0);
@@ -68,10 +69,19 @@ Plot2D::SetLooseLimits(Int_t param, Double_t low, Double_t high)
 
 //--------------------------------------------------------------------
 void
+Plot2D::AddMapping(Int_t from, Int_t to, Double_t fact)
+{
+  fParamFrom.push_back(from);
+  fParamTo.push_back(to);
+  fParamFactor.push_back(fact);
+}
+
+//--------------------------------------------------------------------
+void
 Plot2D::MapTo(TF1* fitFunc, TF1* looseFunc)
 {
   for (UInt_t iParam = 0; iParam != fParamFrom.size(); ++iParam)
-    fitFunc->SetParameter(fParamTo[iParam],looseFunc->GetParameter(fParamFrom[iParam]));
+    fitFunc->SetParameter(fParamTo[iParam],looseFunc->GetParameter(fParamFrom[iParam]) * fParamFactor[iParam]);
 }
 
 //--------------------------------------------------------------------
@@ -83,10 +93,10 @@ Plot2D::DoFit(TF1* fitFunc, TF1* looseFunc, TH2D* histToFit,
   covHolder = new TMatrixDSym*[1];
   TCanvas *tempCanvas = new TCanvas();
   if (fLooseFunction != "") {
-    histToFit->Fit(looseFunc,"MLESQ");
+    histToFit->Fit(looseFunc,fFitOptions);
     MapTo(fitFunc,looseFunc);
   }
-  TFitResultPtr fitResult = histToFit->Fit(fitFunc,"MLES");
+  TFitResultPtr fitResult = histToFit->Fit(fitFunc,fFitOptions + "S");
   fitHolder[0] = (TF2*) fitFunc->Clone();
   covHolder[0] = new TMatrixDSym(fitFunc->GetNpar());
   *covHolder[0] = fitResult->GetCovarianceMatrix();
@@ -137,14 +147,17 @@ Plot2D::DoFits(Int_t NumXBins, Double_t *XBins,
   TProfile *tempProfile;
 
   TF1 *looseFunc = 0;
-  if (fLooseFunction != "")
+  if (fLooseFunction != "") {
     looseFunc = MakeFunction(fLooseFunction,XBins[0],XBins[NumXBins - 1],MinY,MaxY);
+    looseFunc->SetLineColor(kGreen);
+  }
   for (UInt_t iGuess = 0; iGuess != fLooseGuessParams.size(); ++iGuess)
     looseFunc->SetParameter(fLooseGuessParams[iGuess],fLooseGuesses[iGuess]);
   for (UInt_t iParam = 0; iParam != fLooseParams.size(); ++iParam)
     looseFunc->SetParLimits(fLooseParams[iParam],fLooseParamLows[iParam],fLooseParamHighs[iParam]);
 
   TF1 *fitFunc = MakeFunction(fFunctionString,XBins[0],XBins[NumXBins - 1],MinY,MaxY);
+  fitFunc->SetLineColor(kBlue);
   for (UInt_t iGuess = 0; iGuess != fGuessParams.size(); ++iGuess)
     fitFunc->SetParameter(fGuessParams[iGuess],fGuesses[iGuess]);
   for (UInt_t iParam = 0; iParam != fParams.size(); ++iParam)
