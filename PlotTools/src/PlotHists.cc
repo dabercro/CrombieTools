@@ -8,7 +8,8 @@ ClassImp(PlotHists)
 //--------------------------------------------------------------------
 PlotHists::PlotHists() :
   fNormalizedHists(false),
-  fNormalizeTo(-1)
+  fNormalizeTo(-1),
+  fPrintTests(false)
 {}
 
 //--------------------------------------------------------------------
@@ -63,6 +64,24 @@ PlotHists::MakeHists(Int_t NumXBins, Double_t *XBins)
     inTree->Draw(inExpr+">>"+tempName,inCut);
 
     theHists.push_back(tempHist);
+  }
+
+  if (fPrintTests) {
+    for (UInt_t iHist = 0; iHist < theHists.size(); iHist++) {
+
+      if (fDataIndex != -1)
+        std::cout << "chi2 test: " << fLegendEntries[iHist] << " " << theHists[fDataIndex]->Chi2Test(theHists[iHist],"UW") << std::endl;
+
+      std::cout << fLegendEntries[iHist] << " -> Mean: " << theHists[iHist]->GetMean() << "+-" << theHists[iHist]->GetMeanError();
+      std::cout                           << " RMS: " << theHists[iHist]->GetRMS() << "+-" << theHists[iHist]->GetRMSError() << std::endl;
+
+      for (UInt_t i1 = 0; i1 < NumPlots; i1++) {
+        if (i1 == iHist)
+          continue;
+        std::cout << "Test with " << fLegendEntries[i1] << " KS: " << theHists[iHist]->KolmogorovTest(theHists[i1]);
+        std::cout << " AD: " << theHists[iHist]->AndersonDarlingTest(theHists[i1]) << std::endl;
+      }
+    }
   }
 
   if (fNormalizedHists) {

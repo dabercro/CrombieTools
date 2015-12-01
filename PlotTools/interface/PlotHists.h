@@ -28,10 +28,12 @@ class PlotHists : public PlotBase
   void                   MakeCanvas               ( TString FileBase, Int_t NumXBins, Double_t MinX, Double_t MaxX,
                                                     TString XLabel, TString YLabel, Bool_t logY = false);
 
+  void                   SetPrintTests            ( Bool_t b )                            { fPrintTests = b;      }
  private:
   
   Bool_t    fNormalizedHists;                     // Can normalize histograms in order to compare shapes
   Int_t     fNormalizeTo;                         // If not specified, normalized to 1
+  Bool_t    fPrintTests;
   
   ClassDef(PlotHists,1)
 };
