@@ -51,6 +51,15 @@ Plot2D::ClearFits()
 
 //--------------------------------------------------------------------
 void
+Plot2D::ResetParameterLimits()
+{
+  fParams.resize(0);
+  fParamLows.resize(0);
+  fParamHighs.resize(0);
+}
+
+//--------------------------------------------------------------------
+void
 Plot2D::SetParameterLimits(Int_t param, Double_t low, Double_t high)
 {
   fParams.push_back(param);
@@ -104,9 +113,13 @@ Plot2D::DoFit(TF1* fitFunc, TF1* looseFunc, TH2D* histToFit,
     TString dumpName;
     dumpName.Form("DumpFit_%04d_2D",fNumFitDumps);
     ++fNumFitDumps;
-    tempCanvas->SaveAs(dumpName+".png");
-    tempCanvas->SaveAs(dumpName+".pdf");
-    tempCanvas->SaveAs(dumpName+".C");
+
+    if (bC)
+      tempCanvas->SaveAs(dumpName+".C");
+    if (bPNG)
+      tempCanvas->SaveAs(dumpName+".png");
+    if (bPDF)
+      tempCanvas->SaveAs(dumpName+".pdf");
   }
 }
 

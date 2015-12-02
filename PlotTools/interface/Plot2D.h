@@ -21,11 +21,14 @@ class Plot2D : public PlotBase
   
   void                         SetExprX                ( TString expr )                             { fInExprX = expr;                    }
   void                         AddExprX                ( TString expr )                             { fInExprXs.push_back(expr);          }
+  void                         ResetInitialGuess       ()                                           { fGuessParams.resize(0);
+                                                                                                      fGuesses.resize(0);                 }
   void                         SetInitialGuess         ( Int_t param, Double_t guess )              { fGuessParams.push_back(param);
                                                                                                       fGuesses.push_back(guess);          }
 
   void                         SetLooseGuess           ( Int_t param, Double_t guess )              { fLooseGuessParams.push_back(param);
                                                                                                       fLooseGuesses.push_back(guess);     }
+  void                         ResetParameterLimits    ();
   void                         SetParameterLimits      ( Int_t param, Double_t low, Double_t high );
   void                         SetFunction             ( TString function )                         { fFunctionString = function;         }
   void                         SetLooseFit             ( TString function )                         { fLooseFunction = function;          }

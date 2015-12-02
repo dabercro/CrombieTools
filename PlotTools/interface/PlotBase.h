@@ -3,6 +3,7 @@
 
 #include <vector>
 #include <iostream>
+#include "TObject.h"
 #include "TStyle.h"
 #include "TTree.h"
 #include "TString.h"
@@ -32,8 +33,10 @@ class PlotBase
   void                   AddTree                  ( TTree *tree )                                 { fInTrees.push_back(tree);    }
   void                   AddWeight                ( TString cut )                                 { fInCuts.push_back(cut);      }
   void                   AddExpr                  ( TString expr )                                { fInExpr.push_back(expr);     }
-  void                   ResetExpr                ()                                              { fInExpr.resize(0);           }
+  void                   ResetTree                ()                                              { fInTrees.resize(0);          }
   void                   ResetWeight              ()                                              { fInCuts.resize(0);           }
+  void                   ResetExpr                ()                                              { fInExpr.resize(0);           }
+
   // Two parts at once. Only use if the other part of a line already has a default set.
   void                   AddTreeWeight            ( TTree *tree, TString cut );           // These are used to set multiple values at
   void                   AddTreeExpr              ( TTree *tree, TString expr );          //  the same time. It may be simpler to
@@ -58,6 +61,9 @@ class PlotBase
   void                   SetOnlyRatioWithData     ( Bool_t only )                                 { fOnlyRatioWithData = only;   }
   void                   SetLegendFill            ( Bool_t fill )                                 { fLegendFill = fill;          }
   void                   SetDrawFirst             ( Int_t first )                                 { fDrawFirst = first;          }
+
+  void                   OnlyPDF                  ()                                              { bPNG = false; bC = false;    }
+  void                   OnlyPNG                  ()                                              { bPDF = false; bC = false;    }
   
  protected:
   
@@ -90,6 +96,10 @@ class PlotBase
   template<class T>  void    BaseCanvas           ( TString FileBase, std::vector<T*> theLines,
 						    TString XLabel, TString YLabel, Bool_t logY );
 
+  Bool_t                     bPDF;
+  Bool_t                     bPNG;
+  Bool_t                     bC;
+
  private:
 
   TString                    fCanvasName;         // The name of the output canvas
@@ -121,6 +131,9 @@ PlotBase::PlotBase() :
   fDataIndex(-1),
   fMakeRatio(false),
   fRatioIndex(-1),
+  bPDF(true),
+  bPNG(true),
+  bC(true),
   fCanvasName("canvas"),
   fDefaultLineWidth(2),
   fDefaultLineStyle(1),
@@ -402,9 +415,12 @@ PlotBase::BaseCanvas(TString FileBase, std::vector<T*> theLines, TString XLabel,
     }
   }
 
-  theCanvas->SaveAs(FileBase+".C");
-  theCanvas->SaveAs(FileBase+".png");
-  theCanvas->SaveAs(FileBase+".pdf");
+  if (bC)
+    theCanvas->SaveAs(FileBase+".C");
+  if (bPNG)
+    theCanvas->SaveAs(FileBase+".png");
+  if (bPDF)
+    theCanvas->SaveAs(FileBase+".pdf");
 
   delete theLegend;
   delete theCanvas;

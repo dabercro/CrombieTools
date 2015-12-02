@@ -115,9 +115,13 @@ PlotFitParameters::DoFit(TF1* fitFunc, TF1* looseFunc, TH2D* histToFit,
         tempComponent->Draw("SAME");
         components.push_back(tempComponent);
       }
-      tempCanvas->SaveAs(dumpName+".png");
-      tempCanvas->SaveAs(dumpName+".pdf");
-      tempCanvas->SaveAs(dumpName+".C");
+
+      if (bC)
+        tempCanvas->SaveAs(dumpName+".C");
+      if (bPNG)
+        tempCanvas->SaveAs(dumpName+".png");
+      if (bPDF)
+        tempCanvas->SaveAs(dumpName+".pdf");
       for (UInt_t iComp = 0; iComp < components.size(); iComp++)
         delete components[iComp];
       components.clear();

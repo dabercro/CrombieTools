@@ -21,7 +21,7 @@ SortHistHolders ( HistHolder *h1, HistHolder *h2 )
   return h1->fHist->Integral() > h2->fHist->Integral(); 
 }
 
-class PlotStack : private PlotHists
+class PlotStack : public PlotHists
 {
  public:
   PlotStack();
@@ -41,13 +41,10 @@ class PlotStack : private PlotHists
                                           fStackEntries.push_back(LegendEntry); 
                                           fStackColors.push_back(ColorEntry);                   }
   
-  void PlaceLegend   ( Double_t lim1, Double_t lim2, Double_t lim3, Double_t lim4 )
-                                                  { SetLegendLimits(lim1, lim2, lim3, lim4);    }
-  
-  void Plot          ( TString FileBase, Int_t NumXBins, Double_t *XBins,
+  void MakeCanvas    ( TString FileBase, Int_t NumXBins, Double_t *XBins,
                        TString XLabel, TString YLabel, Bool_t logY = false );
   
-  void Plot          ( TString FileBase, Int_t NumXBins, Double_t MinX, Double_t MaxX,
+  void MakeCanvas    ( TString FileBase, Int_t NumXBins, Double_t MinX, Double_t MaxX,
                        TString XLabel, TString YLabel, Bool_t logY = false );
   
   void SetDebug      ( Bool_t debug )              { fDebug = debug;                            }

@@ -64,8 +64,8 @@ PlotStack::GetHistList(std::vector<TString> FileList, Int_t NumXBins, Double_t *
 
 //--------------------------------------------------------------------
 void
-PlotStack::Plot(TString FileBase, Int_t NumXBins, Double_t *XBins,
-                TString XLabel, TString YLabel, Bool_t logY)
+PlotStack::MakeCanvas(TString FileBase, Int_t NumXBins, Double_t *XBins,
+                      TString XLabel, TString YLabel, Bool_t logY)
 {
   fDataContainer = new TreeContainer();
   fDataContainer->SetTreeName(fTreeName);
@@ -139,11 +139,11 @@ PlotStack::Plot(TString FileBase, Int_t NumXBins, Double_t *XBins,
 
 //--------------------------------------------------------------------
 void
-PlotStack::Plot(TString FileBase, Int_t NumXBins, Double_t MinX, Double_t MaxX,
-                TString XLabel, TString YLabel, Bool_t logY)
+PlotStack::MakeCanvas(TString FileBase, Int_t NumXBins, Double_t MinX, Double_t MaxX,
+                      TString XLabel, TString YLabel, Bool_t logY)
 {
   Double_t XBins[NumXBins+1];
   ConvertToArray(NumXBins,MinX,MaxX,XBins);
-  Plot(FileBase,NumXBins,XBins,XLabel,YLabel,logY);
+  MakeCanvas(FileBase,NumXBins,XBins,XLabel,YLabel,logY);
 }
 

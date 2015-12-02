@@ -22,10 +22,10 @@ class PlotHists : public PlotBase
                                                     TString XLabel, TString YLabel, Bool_t logY = false)
                                                               { BaseCanvas(FileBase,theHists,XLabel,YLabel,logY); }
   
-  void                   MakeCanvas               ( TString FileBase, Int_t NumXBins, Double_t *XBins,  
+  virtual   void         MakeCanvas               ( TString FileBase, Int_t NumXBins, Double_t *XBins,  
                                                     TString XLabel, TString YLabel, Bool_t logY = false);
   
-  void                   MakeCanvas               ( TString FileBase, Int_t NumXBins, Double_t MinX, Double_t MaxX,
+  virtual   void         MakeCanvas               ( TString FileBase, Int_t NumXBins, Double_t MinX, Double_t MaxX,
                                                     TString XLabel, TString YLabel, Bool_t logY = false);
 
   void                   SetPrintTests            ( Bool_t b )                            { fPrintTests = b;      }
