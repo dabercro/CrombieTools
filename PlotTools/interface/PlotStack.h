@@ -30,14 +30,13 @@ class PlotStack : public PlotHists
   void SetTreeName   ( TString name )             { fTreeName = name;                           }
   void AddFriend     ( TString name )             { fFriends.push_back(name);                   }
   
-  void SetWeight     ( TString weight )           { SetDefaultWeight(weight);                   }
   void SetAllHist    ( TString name )             { fAllHist = name;                            }
-  void SetVariable   ( TString var )              { SetDefaultExpr(var);                        }
   void SetLuminosity ( Double_t lum )             { fLuminosity = lum;                          }
   
   void AddDataFile   ( TString FileName )         { fDataFiles.push_back(FileName);             }
   void AddMCFile     ( TString FileName, Double_t XSec, TString LegendEntry, Color_t ColorEntry )
-                                        { fMCFiles.push_back(FileName); fXSecs.push_back(XSec); 
+                                        { fMCFiles.push_back(FileName); 
+                                          fXSecs.push_back(XSec); 
                                           fStackEntries.push_back(LegendEntry); 
                                           fStackColors.push_back(ColorEntry);                   }
   
@@ -56,7 +55,7 @@ class PlotStack : public PlotHists
 
   TString               fTreeName;
   std::vector<TString>  fFriends;
-  TString               fAllHist;
+  TString               fAllHist;                   // Used to get the number of events in MC sample for normalization
   Double_t              fLuminosity;
   std::vector<TString>  fDataFiles;
   std::vector<TString>  fMCFiles;

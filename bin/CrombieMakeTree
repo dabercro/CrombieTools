@@ -53,6 +53,7 @@ echo "" >> $h
 echo "class $TreeName" >> $h
 echo "{" >> $h
 echo "public:" >> $h
+echo "  $TreeName( const char *name );" >> $h
 echo "  $TreeName( const char *name, TString outFileName );" >> $h
 echo "  virtual ~$TreeName();" >> $h
 echo "" >> $h
@@ -87,15 +88,18 @@ done
 echo "" >> $h
 echo "  TTree  *ReturnTree()                { return t;                             }" >> $h
 echo "  void    Fill()                      { t->Fill(); Reset();                   }" >> $h
+echo "  void    WriteToFile   ( TFile *f )  { f->WriteTObject(t, t->GetName());     }" >> $h
 echo "  void    Write()                     { fFile->WriteTObject(t, t->GetName());"   >> $h
 echo "                                        fFile->Close();                       }" >> $h
 echo "" >> $h
 
 echo "protected:" >> $h
-echo "" >> $h
 echo "  TFile *fFile;" >> $h
 echo "  TTree *t;" >> $h
 echo "  void   Reset();" >> $h
+echo "" >> $h
+echo "private:" >> $h
+echo "  void   SetupTree(const char *name);" >> $h
 echo "" >> $h
 echo "  ClassDef($TreeName,1)" >> $h
 echo "};" >> $h
@@ -107,26 +111,19 @@ echo "ClassImp($TreeName)" >> $s
 echo "" >> $s
 
 echo "//--------------------------------------------------------------------------------------------------" >> $s
+echo "$TreeName::$TreeName(const char *name) :" >> $s
+echo "  fFile(0)" >> $s
+echo "{" >> $s
+echo "  SetupTree(name);" >> $s
+echo "}" >> $s
+echo "" >> $s
+
+echo "//--------------------------------------------------------------------------------------------------" >> $s
 echo "$TreeName::$TreeName(const char *name, TString outFileName)" >> $s
-echo "{ " >> $s
+echo "{" >> $s
 echo "  fFile = new TFile(outFileName,\"RECREATE\");" >> $s
 echo "  fFile->cd();" >> $s
-echo "  t = new TTree(name,name);" >> $s
-echo "" >> $s
-for branch in `cat $inVarsFile`
-do
-    varName="${branch%/*}"
-    after="${branch##*/}"
-    varLetter="${after%=*}"
-    varDefault="${after##*=}"
-    if [ "$varLetter" = "I" -o "$varLetter" = "F" -o "$varLetter" = "O" ]; then
-        echo "  t->Branch(\"$varName\",&$varName,\"$varName/$varLetter\");" >> $s
-    else
-        echo "  t->Branch(\"$varName\",&$varName);" >> $s
-    fi
-done
-echo "" >> $s
-echo "  Reset();" >> $s
+echo "  SetupTree(name);" >> $s
 echo "}" >> $s
 echo "" >> $s
 
@@ -151,3 +148,28 @@ do
     echo "  $varName = $varDefault;" >> $s
 done
 echo "}" >> $s
+echo "" >> $s
+
+
+echo "//--------------------------------------------------------------------------------------------------" >> $s
+echo "void" >> $s
+echo "$TreeName::SetupTree(const char *name)" >> $s
+echo "{" >> $s
+echo "  t = new TTree(name,name);" >> $s
+echo "" >> $s
+for branch in `cat $inVarsFile`
+do
+    varName="${branch%/*}"
+    after="${branch##*/}"
+    varLetter="${after%=*}"
+    varDefault="${after##*=}"
+    if [ "$varLetter" = "I" -o "$varLetter" = "F" -o "$varLetter" = "O" ]; then
+        echo "  t->Branch(\"$varName\",&$varName,\"$varName/$varLetter\");" >> $s
+    else
+        echo "  t->Branch(\"$varName\",&$varName);" >> $s
+    fi
+done
+echo "" >> $s
+echo "  Reset();" >> $s
+echo "}" >> $s
+
