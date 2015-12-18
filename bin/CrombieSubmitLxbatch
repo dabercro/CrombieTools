@@ -1,0 +1,31 @@
+#! /bin/bash
+
+fresh=$1
+
+if [ "$CMSSW_BASE" = "" ]
+then
+    echo "CMSSW_BASE not set. Make sure to cmsenv someplace that you want the jobs to use"
+    exit
+fi
+
+source CrombieConfig
+
+CrombieDumpFileList eos
+
+rootNames=`ls $CrombieTempDir/monojet_*_*.txt | sed 's/.txt/.root/'`
+    
+for outFile in $rootNames
+do
+    if [ ! -f $outFile -o "$fresh" = "fresh" ]
+    then
+        echo Making: $outFile
+        bsub -q $CrombieQueue -n $CrombieNumberProcs -o bout/out.%J CrombieDoJob $CMSSW_BASE $PWD $outFile $CrombieNumberProcs $CrombieSlimmerScript $CrombieJobScriptList
+        ranOnFile=1
+    fi
+done
+
+if [ "$ranOnFile" -eq 0 ]
+then
+    cat $haddFile | xargs -n2 -P6 ./haddArgs.sh 
+    echo "All files merged!"
+fi

@@ -1,0 +1,49 @@
+#! /bin/bash
+
+fresh=$1
+
+source CrombieConfig
+
+if [ "$fresh" = "fresh" ]
+then
+    rm $CrombieTempDir/*.root
+    if [ -d $CrombieTempDir/TerminalRunning ]
+    then
+        rm $CrombieTempDir/TerminalRunning/*
+    fi
+fi
+
+running=0
+
+countFiles=`ls $CrombieTempDir/TerminalRunning/*.txt.running | wc -l`
+
+if [ "$countFiles" -eq "0" ]
+then
+    CrombieDumpFileList
+    ./$CrombieSlimmerScript
+fi
+
+for inFile in `ls $CrombieTempDir/monojet_*.txt`
+do
+    inFile="${inFile##*/}"
+    inRoot="${inFile%%.txt}"
+    if [ -f $CrombieTempDir/$inRoot.root ]
+    then
+        continue
+    elif [ ! -f $CrombieTempDir/TerminalRunning/$inFile.running ]
+    then
+        touch $CrombieTempDir/TerminalRunning/$inFile.running
+        echo "Running on "$inFile
+        cat $CrombieTempDir/$inFile | xargs -n2 -P$CrombieNLocalProcs ./runSlimmer.py
+        hadd $CrombieTempDir/$inRoot.root $CrombieTempDir/TerminalRunning/$inRoot\_*.root
+        rm $CrombieTempDir/TerminalRunning/$inRoot\_*.root
+        rm $CrombieTempDir/TerminalRunning/$inFile.running
+    fi
+    running=1
+done
+
+if [ "$running" -eq 0 ]
+then
+    rmdir $CrombieTempDir/TerminalRunning
+    cat $CrombieTempDir/myHadd.txt | xargs -n2 -P$CrombieNLocalProcs ./haddArgs.sh
+fi
