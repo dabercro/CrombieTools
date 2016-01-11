@@ -4,6 +4,8 @@ fresh=$1
 
 source CrombieConfig
 
+export haddFile=$CrombieTempDir/myHadd.txt
+
 if [ "$fresh" = "fresh" ]
 then
     rm $CrombieTempDir/*.root
@@ -19,8 +21,8 @@ countFiles=`ls $CrombieTempDir/TerminalRunning/*.txt.running | wc -l`
 
 if [ "$countFiles" -eq "0" ]
 then
-    CrombieDumpFileList
-    ./$CrombieSlimmerScript
+    $CROMBIEPATH/scripts/./CrombieDumpFileList.sh
+    ./$CrombieSlimmerScript compile
 fi
 
 for inFile in `ls $CrombieTempDir/monojet_*.txt`
@@ -45,5 +47,5 @@ done
 if [ "$running" -eq 0 ]
 then
     rmdir $CrombieTempDir/TerminalRunning
-    cat $CrombieTempDir/myHadd.txt | xargs -n2 -P$CrombieNLocalProcs $CROMBIEPATH/scripts/./haddArgs.sh
+    cat $haddFile | xargs -n2 -P$CrombieNLocalProcs $CROMBIEPATH/scripts/./haddArgs.sh
 fi

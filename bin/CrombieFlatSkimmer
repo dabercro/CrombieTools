@@ -89,7 +89,11 @@ def skim(inQueue):
 theQueue     = Queue()
 theProcesses = []
 
-for inFileName in os.listdir(inDir):
+def GetSize(name):
+    return os.path.getsize(inDir + '/' + name)
+##
+
+for inFileName in sorted(os.listdir(inDir), key=GetSize, reverse=True):
     if inFileName.endswith(".root"):
         theQueue.put(inFileName)
 ##

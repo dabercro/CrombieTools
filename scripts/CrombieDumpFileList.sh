@@ -42,8 +42,6 @@ then
     ./makeTree.sh
 fi
 
-haddFile=$CrombieTempDir/myHadd.txt
-
 > $haddFile
 
 ranOnFile=0
