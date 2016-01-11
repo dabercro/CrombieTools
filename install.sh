@@ -45,7 +45,7 @@ target=`pwd`
 if [ "$CROMBIEPATH" = "" ]
 then
     echo "" >> $profile
-    echo "# Location of CrombieTools"
+    echo "# Location of CrombieTools" >> $profile
     echo "export CROMBIEPATH="$target >> $profile
 fi
 
