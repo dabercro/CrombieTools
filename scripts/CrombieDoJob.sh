@@ -1,9 +1,9 @@
 #! /bin/bash
 
-  outFile=$1
-   NCORES=$2
-  cmsbase=$3
- macroDir=$4
+  cmsbase=$1
+ macroDir=$2
+  outFile=$3
+   NCORES=$4
   slimmer=$5
 macroList=$6
 
