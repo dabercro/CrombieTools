@@ -14,7 +14,7 @@ then
     cp $CROMBIEPATH/templates/$SlimmerName .
 fi
 
-ScriptList=CrombieScriptList.txt
+ScriptList=CrombieJobScriptList.txt
 
 if [ ! -f $ScriptList ]
 then
