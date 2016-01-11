@@ -20,3 +20,10 @@ if [ ! -f $ScriptList ]
 then
     cp $CROMBIEPATH/templates/$ScriptList .
 fi
+
+FlatSkimmer=FlatSkimmer.sh
+
+if [ ! -f $FlatSkimmer ]
+then
+    cp $CROMBIEPATH/templates/$FlatSkimmer .
+fi
