@@ -45,5 +45,5 @@ done
 if [ "$running" -eq 0 ]
 then
     rmdir $CrombieTempDir/TerminalRunning
-    cat $CrombieTempDir/myHadd.txt | xargs -n2 -P$CrombieNLocalProcs ./haddArgs.sh
+    cat $CrombieTempDir/myHadd.txt | xargs -n2 -P$CrombieNLocalProcs $CROMBIEPATH/scripts/./haddArgs.sh
 fi

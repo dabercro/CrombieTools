@@ -36,6 +36,6 @@ done
 
 if [ "$ranOnFile" -eq 0 ]
 then
-    cat $haddFile | xargs -n2 -P6 ./haddArgs.sh 
+    cat $haddFile | xargs -n2 -P6 $CROMBIEPATH/scripts/./haddArgs.sh 
     echo "All files merged!"
 fi
