@@ -1,0 +1,22 @@
+#! /bin/bash
+
+ConfigName=CrombieConfig.sh
+
+if [ ! -f $ConfigName ]
+then
+    cp $CROMBIEPATH/templates/$ConfigName .
+fi
+
+SlimmerName=runSlimmer.py
+
+if [ ! -f $SlimmerName ]
+then
+    cp $CROMBIEPATH/templates/$SlimmerName .
+fi
+
+ScriptList=CrombieScriptList.txt
+
+if [ ! -f $ScriptList ]
+then
+    cp $CROMBIEPATH/templates/$ScriptList .
+fi

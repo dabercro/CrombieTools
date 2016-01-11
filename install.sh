@@ -41,6 +41,14 @@ case ":$PATH:" in
 	;;
 esac
 
+target=`pwd`
+if [ "$CROMBIEPATH" = "" ]
+then
+    echo "" >> $profile
+    echo "# Location of CrombieTools"
+    echo "export CROMBIEPATH="$target >> $profile
+fi
+
 python bin/CompileCrombieTools
 
 echo "-------------------------------------------------------------"

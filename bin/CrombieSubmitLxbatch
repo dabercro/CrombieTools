@@ -10,7 +10,7 @@ fi
 
 source CrombieConfig
 
-CrombieDumpFileList eos
+$CROMBIEPATH/scripts/./CrombieDumpFileList.sh eos
 
 rootNames=`ls $CrombieTempDir/monojet_*_*.txt | sed 's/.txt/.root/'`
     
@@ -19,7 +19,7 @@ do
     if [ ! -f $outFile -o "$fresh" = "fresh" ]
     then
         echo Making: $outFile
-        bsub -q $CrombieQueue -n $CrombieNumberProcs -o bout/out.%J CrombieDoJob $CMSSW_BASE $PWD $outFile $CrombieNumberProcs $CrombieSlimmerScript $CrombieJobScriptList
+        bsub -q $CrombieQueue -n $CrombieNumberProcs -o bout/out.%J $CROMBIEPATH/scripts/CrombieDoJob.sh $CMSSW_BASE $PWD $outFile $CrombieNumberProcs $CrombieSlimmerScript $CrombieJobScriptList
         ranOnFile=1
     fi
 done
