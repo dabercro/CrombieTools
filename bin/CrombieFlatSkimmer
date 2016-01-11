@@ -9,7 +9,7 @@ import FlatSkimmer
 
 parser = argparse.ArgumentParser(description = 'Slims the contents of one directory into another one')
 
-parser.add_argument('--numproc', '-n', metavar = 'NUM', type = int, dest = 'numMaxProcesses', default = 1, help = 'Number of processes that FlatSlimmer will spawn.')
+parser.add_argument('--numproc', '-n', metavar = 'NUM', type = int, dest = 'numMaxProcesses', default = 1, help = 'Number of processes that FlatSkimmer will spawn.')
 parser.add_argument('--indir', '-i', metavar = 'DIR', type = str, dest = 'inDir', default = '.', help = 'Directory that contains input files to be slimmed.')
 parser.add_argument('--outdir', '-o', metavar = 'DIR', type = str, dest = 'outDir', default = '.', help = 'Directory where slimmed stuff will be placed.')
 parser.add_argument('--json','-j', metavar = 'FILE', type = str, dest = 'GoodRunsFile', default = '', help = 'Good runs json file location to be used.')
@@ -49,18 +49,18 @@ if inDir == outDir:
 def skim(inQueue):
     running = True
     goodRunFilter = GoodLumiFilter.MakeFilter(GoodRunsFile)
-    slimmer = FlatSlimmer.newFlatSlimmer()
-    slimmer.SetInDirectory(inDir)
-    slimmer.SetOutDirectory(outDir)
-    slimmer.SetGoodLumiFilter(goodRunFilter)
-    slimmer.SetTreeName(treeName)
-    slimmer.SetRunExpr(runNum)
-    slimmer.SetLumiExpr(lumiNum)
-    slimmer.SetCut(theCut)
-    slimmer.SetReportFrequency(reportFreq)
+    skimmer = FlatSkimmer.newFlatSkimmer()
+    skimmer.SetInDirectory(inDir)
+    skimmer.SetOutDirectory(outDir)
+    skimmer.SetGoodLumiFilter(goodRunFilter)
+    skimmer.SetTreeName(treeName)
+    skimmer.SetRunExpr(runNum)
+    skimmer.SetLumiExpr(lumiNum)
+    skimmer.SetCut(theCut)
+    skimmer.SetReportFrequency(reportFreq)
 
     for obj in copyObjects:
-        slimmer.AddCopyObject(obj)
+        skimmer.AddCopyObject(obj)
     ##
     while running:
         try:
@@ -68,7 +68,7 @@ def skim(inQueue):
             print "About to process " + inFileName
             if not os.path.isfile(outDir + "/" + inFileName):
                 startTime = time()
-                slimmer.Slim(inFileName)
+                skimmer.Slim(inFileName)
                 print "Finished " + inFileName + " ... Elapsed time: " + str(time() - startTime) + " seconds"
             ##
             else:
@@ -78,7 +78,7 @@ def skim(inQueue):
             running = False
         ##
     ##
-    del slimmer
+    del skimmer
     del goodRunFilter
 ##
 
