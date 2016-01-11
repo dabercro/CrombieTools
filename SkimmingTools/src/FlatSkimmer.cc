@@ -5,12 +5,12 @@
 #include "TObject.h"
 #include "TTreeFormula.h"
 
-#include "FlatSlimmer.h"
+#include "FlatSkimmer.h"
 
-ClassImp(FlatSlimmer)
+ClassImp(FlatSkimmer)
 
 //--------------------------------------------------------------------
-FlatSlimmer::FlatSlimmer() :
+FlatSkimmer::FlatSkimmer() :
   fGoodLumiFilter(NULL),
   fInDirectory("."),
   fOutDirectory("."),
@@ -25,7 +25,7 @@ FlatSlimmer::FlatSlimmer() :
 
 //--------------------------------------------------------------------
 void
-FlatSlimmer::Slim(TString fileName)
+FlatSkimmer::Slim(TString fileName)
 {
   TFile *inFile = TFile::Open(fInDirectory + "/" + fileName);
   TTree *inTree = (TTree*) inFile->Get(fTreeName);

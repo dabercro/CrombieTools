@@ -5,8 +5,7 @@ import os, argparse
 from multiprocessing import Process, Queue
 from time import time
 import GoodLumiFilter
-import FlatSlimmer
-from CrombieVars import skimSrc
+import FlatSkimmer
 
 parser = argparse.ArgumentParser(description = 'Slims the contents of one directory into another one')
 

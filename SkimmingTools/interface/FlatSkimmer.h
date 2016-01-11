@@ -1,5 +1,5 @@
-#ifndef CROMBIETOOLS_SKIMMINGTOOLS_FLATSLIMMER_H
-#define CROMBIETOOLS_SKIMMINGTOOLS_FLATSLIMMER_H
+#ifndef CROMBIETOOLS_SKIMMINGTOOLS_FLATSKIMMER_H
+#define CROMBIETOOLS_SKIMMINGTOOLS_FLATSKIMMER_H
 
 #include <vector>
 
@@ -7,11 +7,11 @@
 
 #include "GoodLumiFilter.h"
 
-class FlatSlimmer
+class FlatSkimmer
 {
  public:
-  FlatSlimmer();
-  virtual ~FlatSlimmer()  {}
+  FlatSkimmer();
+  virtual ~FlatSkimmer()  {}
   
   void        SetGoodLumiFilter    ( GoodLumiFilter *filter )   { fGoodLumiFilter = filter;     }
   void        SetInDirectory       ( TString dir )              { fInDirectory = dir;           }
@@ -36,7 +36,7 @@ class FlatSlimmer
   Int_t                fReportFreq;
   std::vector<TString> fCopyObjects;
   
-  ClassDef(FlatSlimmer,1)
+  ClassDef(FlatSkimmer,1)
 };
 
 #endif

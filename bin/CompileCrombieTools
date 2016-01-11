@@ -4,7 +4,7 @@
 
 import CrombieVars
 import GoodLumiFilter
-import FlatSlimmer
+import FlatSkimmer
 import TreeContainer
 import HistPlotter
 import StackPlotter
