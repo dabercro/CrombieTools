@@ -46,6 +46,10 @@ if inDir == outDir:
     exit(-1)
 ##
 
+if not os.path.exists(outDir):
+    os.makedirs(outDir)
+##
+
 def skim(inQueue):
     running = True
     goodRunFilter = GoodLumiFilter.MakeFilter(GoodRunsFile)

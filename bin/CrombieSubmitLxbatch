@@ -8,6 +8,11 @@ then
     exit
 fi
 
+if [ ! -d bout ]
+then
+    mkdir bout
+fi
+
 source CrombieConfig
 
 $CROMBIEPATH/scripts/./CrombieDumpFileList.sh eos
@@ -19,7 +24,12 @@ do
     if [ ! -f $outFile -o "$fresh" = "fresh" ]
     then
         echo Making: $outFile
-        bsub -q $CrombieQueue -n $CrombieNumberProcs -o bout/out.%J $CROMBIEPATH/scripts/CrombieDoJob.sh $CMSSW_BASE $PWD $outFile $CrombieNumberProcs $CrombieSlimmerScript $CrombieJobScriptList
+        if [ "$fresh" = "test" ]
+        then
+            echo bsub -q $CrombieQueue -n $CrombieNumberProcs -o bout/out.%J $CROMBIEPATH/scripts/CrombieDoJob.sh $CMSSW_BASE $PWD $outFile $CrombieNumberProcs $CrombieSlimmerScript $CrombieJobScriptList
+        else
+            bsub -q $CrombieQueue -n $CrombieNumberProcs -o bout/out.%J $CROMBIEPATH/scripts/CrombieDoJob.sh $CMSSW_BASE $PWD $outFile $CrombieNumberProcs $CrombieSlimmerScript $CrombieJobScriptList
+        fi
         ranOnFile=1
     fi
 done

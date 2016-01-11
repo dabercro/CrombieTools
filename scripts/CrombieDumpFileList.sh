@@ -23,12 +23,12 @@ fi
 
 if [ ! -d $CrombieFullDir ]
 then
-    mkdir $CrombieFullDir
+    mkdir -p $CrombieFullDir
 fi
 
 if [ ! -d $CrombieTempDir ]
 then
-    mkdir $CrombieTempDir
+    mkdir -p $CrombieTempDir
 else
     rm $CrombieTempDir/*.txt
     if [ "$fresh" = "fresh" ]
