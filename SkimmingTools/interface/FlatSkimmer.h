@@ -20,6 +20,7 @@ class FlatSkimmer
   void        SetTreeName          ( TString name )             { fTreeName = name;             }
   void        SetRunExpr           ( TString expr )             { fRunExpr = expr;              }
   void        SetLumiExpr          ( TString expr )             { fLumiExpr = expr;             }
+  void        SetEventExpr         ( TString expr )             { fEventExpr = expr;            }
   void        SetReportFrequency   ( Int_t freq )               { fReportFreq = freq;           }
   void        AddCopyObject        ( TString name )             { fCopyObjects.push_back(name); }
   void        Slim                 ( TString fileName );
@@ -33,6 +34,7 @@ class FlatSkimmer
   TString              fTreeName;
   TString              fRunExpr;
   TString              fLumiExpr;
+  TString              fEventExpr;
   Int_t                fReportFreq;
   std::vector<TString> fCopyObjects;
   
