@@ -2,7 +2,7 @@
 
 isEOS=$1
 
-source CrombieConfig
+source CrombieSlimmingConfig.sh
 
 if [ "$CrombieDirList" = "" ]
 then

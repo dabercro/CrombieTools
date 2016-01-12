@@ -2,7 +2,7 @@
 
 fresh=$1
 
-source CrombieConfig
+source CrombieSlimmingConfig.sh
 
 export haddFile=$CrombieTempDir/myHadd.txt
 

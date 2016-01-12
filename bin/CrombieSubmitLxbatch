@@ -13,7 +13,7 @@ then
     mkdir bout
 fi
 
-source CrombieConfig
+source CrombieSlimmingConfig.sh
 
 export haddFile=$CrombieTempDir/myHadd.txt
 

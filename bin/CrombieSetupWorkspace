@@ -1,6 +1,6 @@
 #! /bin/bash
 
-ConfigName=CrombieConfig
+ConfigName=CrombieSlimmingConfig.sh
 
 if [ ! -f $ConfigName ]
 then
