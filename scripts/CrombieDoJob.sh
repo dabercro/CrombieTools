@@ -41,6 +41,7 @@ echo "" > $CommandList
 
 for file in `cat "${outFile%.*}".txt`; do
     echo root://eoscms/$file $OutputBase\_$NUM.root >> $CommandList
+    NUM=$((NUM + 1))
 done
 
 cat $CommandList | xargs -n2 -P$NCORES ./$slimmer
