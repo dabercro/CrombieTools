@@ -9,6 +9,7 @@ ClassImp(PlotHists)
 PlotHists::PlotHists() :
   fNormalizedHists(false),
   fNormalizeTo(-1),
+  fEventsPer(0),
   fPrintTests(false)
 {}
 
@@ -66,14 +67,26 @@ PlotHists::MakeHists(Int_t NumXBins, Double_t *XBins)
     theHists.push_back(tempHist);
   }
 
+  if (fEventsPer > 0) {
+    TString tempName;
+    tempName.Form("Hist_%d",fPlotCounter);
+    fPlotCounter++;
+    tempHist = new TH1D(tempName,tempName,NumXBins,XBins);
+    for (Int_t iBin = 1; iBin != NumXBins + 1; ++iBin) {
+      tempHist->SetBinContent(iBin,tempHist->GetBinWidth(iBin)/fEventsPer);
+    }
+    for (UInt_t iHist = 0; iHist != theHists.size(); ++iHist)
+      Division(theHists[iHist],tempHist);
+  }
+
   if (fPrintTests) {
-    for (UInt_t iHist = 0; iHist < theHists.size(); iHist++) {
+    for (UInt_t iHist = 0; iHist != theHists.size(); ++iHist) {
 
       if (fDataIndex != -1)
         std::cout << "chi2 test: " << fLegendEntries[iHist] << " " << theHists[fDataIndex]->Chi2Test(theHists[iHist],"UW") << std::endl;
 
       std::cout << fLegendEntries[iHist] << " -> Mean: " << theHists[iHist]->GetMean() << "+-" << theHists[iHist]->GetMeanError();
-      std::cout                           << " RMS: " << theHists[iHist]->GetRMS() << "+-" << theHists[iHist]->GetRMSError() << std::endl;
+      std::cout                          << " RMS: " << theHists[iHist]->GetRMS() << "+-" << theHists[iHist]->GetRMSError() << std::endl;
 
       for (UInt_t i1 = 0; i1 < NumPlots; i1++) {
         if (i1 == iHist)

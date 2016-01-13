@@ -14,7 +14,8 @@ class PlotHists : public PlotBase
   
   void                   SetNormalizedHists       ( Bool_t b )                           { fNormalizedHists = b;  }
   void                   SetNormalizeTo           ( Int_t to )                           { fNormalizeTo = to;     }
-  
+  void                   SetEventsPer             ( Double_t per )                       { fEventsPer = per;      }
+
   std::vector<TH1D*>     MakeHists                ( Int_t NumXBins, Double_t *XBins );                   // These just return vectors of
   std::vector<TH1D*>     MakeHists                ( Int_t NumXBins, Double_t MinX, Double_t MaxX );      //   histograms for other uses
   
@@ -33,6 +34,7 @@ class PlotHists : public PlotBase
   
   Bool_t    fNormalizedHists;                     // Can normalize histograms in order to compare shapes
   Int_t     fNormalizeTo;                         // If not specified, normalized to 1
+  Double_t  fEventsPer;
   Bool_t    fPrintTests;
   
   ClassDef(PlotHists,1)

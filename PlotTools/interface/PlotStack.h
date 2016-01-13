@@ -7,8 +7,8 @@
 struct HistHolder
 {
   HistHolder         ( TH1D *hist, TString entry, Color_t color )
-                                      { fHist = hist; fEntry = entry; fColor = color; 
-                                        fHist->SetFillColor(fColor); fHist->SetFillStyle(1001); }
+                                      { fHist = hist; fEntry = entry; fColor = color;
+                                        fHist->SetFillColor(fColor); fHist->SetMarkerSize(0);   }
   virtual ~HistHolder()               {}
   TH1D *fHist;
   TString fEntry;
@@ -39,6 +39,7 @@ class PlotStack : public PlotHists
                                           fXSecs.push_back(XSec); 
                                           fStackEntries.push_back(LegendEntry); 
                                           fStackColors.push_back(ColorEntry);                   }
+  void ReadMCConfig  ( TString config, TString fileDir = "" );
   
   void MakeCanvas    ( TString FileBase, Int_t NumXBins, Double_t *XBins,
                        TString XLabel, TString YLabel, Bool_t logY = false );

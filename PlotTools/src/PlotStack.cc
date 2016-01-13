@@ -1,3 +1,4 @@
+#include <fstream>
 #include <iostream>
 #include <algorithm>
 
@@ -30,6 +31,26 @@ PlotStack::~PlotStack()
 {}
 
 //--------------------------------------------------------------------
+void
+PlotStack::ReadMCConfig(TString config, TString fileDir)
+{
+  if (fileDir != "" && !fileDir.EndsWith("/"))
+      fileDir = fileDir + "/";
+
+  std::ifstream configFile;
+  configFile.open(config.Data());
+  TString FileName;
+  TString XSec;
+  TString LegendEntry;
+  TString ColorEntry;
+  while (!configFile.eof()) {
+    configFile >> FileName >> XSec >> LegendEntry >> ColorEntry;
+    if (ColorEntry != "")
+      AddMCFile(fileDir + FileName, XSec.Atof(), LegendEntry, ColorEntry.Atoi());
+  }
+}
+
+//--------------------------------------------------------------------
 std::vector<TH1D*>
 PlotStack::GetHistList(std::vector<TString> FileList, Int_t NumXBins, Double_t *XBins, Bool_t isMC)
 {
@@ -53,6 +74,7 @@ PlotStack::GetHistList(std::vector<TString> FileList, Int_t NumXBins, Double_t *
         std::cout << "Scale factor " << fLuminosity*fXSecs[iFile]/allHist->GetBinContent(1) << std::endl;
       }
       theHists[iFile]->Scale(fLuminosity*fXSecs[iFile]/allHist->GetBinContent(1));
+      SetZeroError(theHists[iFile]);
       if (fDebug)
         std::cout << "Integral after " << theHists[iFile]->Integral() << std::endl;
     }
@@ -116,12 +138,11 @@ PlotStack::MakeCanvas(TString FileBase, Int_t NumXBins, Double_t *XBins,
       HistHolders[iLarger]->fHist->Add(HistHolders[iSmaller]->fHist);
 
     AllHists.push_back(HistHolders[iLarger]->fHist);
-    AddLegendEntry(HistHolders[iLarger]->fEntry,HistHolders[iLarger]->fColor,0,1);
+    AddLegendEntry(HistHolders[iLarger]->fEntry,HistHolders[iLarger]->fColor,1,1);
   }
 
   AddLegendEntry("Data",1);
   SetDataIndex(int(AllHists.size()));
-  DataHist->Sumw2();
   AllHists.push_back(DataHist);
 
   BaseCanvas(FileBase,AllHists,XLabel,YLabel,logY);

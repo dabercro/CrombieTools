@@ -336,7 +336,7 @@ PlotBase::BaseCanvas(TString FileBase, std::vector<T*> theLines, TString XLabel,
       theLines[iLine]->SetMarkerStyle(8);
 
     if (fLegendFill && int(iLine) != fDataIndex)
-      theLegend->AddEntry(theLines[iLine],fLegendEntries[iLine],"lpf");
+      theLegend->AddEntry(theLines[iLine],fLegendEntries[iLine],"lf");
     else
       theLegend->AddEntry(theLines[iLine],fLegendEntries[iLine],"lp");
       
@@ -351,7 +351,6 @@ PlotBase::BaseCanvas(TString FileBase, std::vector<T*> theLines, TString XLabel,
   }
 
   if (fMakeRatio) {
-    std::cout << "Making top pad." << std::endl;
     TPad *pad1 = new TPad("pad1", "pad1", 0, 1.0 - ratioFrac, 1, 1.0);
     pad1->SetBottomMargin(0.025);
     pad1->Draw();
@@ -378,7 +377,6 @@ PlotBase::BaseCanvas(TString FileBase, std::vector<T*> theLines, TString XLabel,
     theCanvas->SetLogy();
 
   if (fMakeRatio) {
-    std::cout << "Making bottom pad." << std::endl;
     theCanvas->cd();
     TPad *pad2 = new TPad("pad2", "pad2", 0, 0, 1, 1 - ratioFrac);
     pad2->SetTopMargin(0.035);
