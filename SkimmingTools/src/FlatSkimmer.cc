@@ -54,21 +54,21 @@ FlatSkimmer::Slim(TString fileName)
     if (iEntry % fReportFreq == 0)
       std::cout << float(iEntry)/inTree->GetEntriesFast() << std::endl;
     inTree->GetEntry(iEntry);
-    if (fGoodLumiFilter->IsGood(runNum,lumiNum)) {
-      if (cutter->EvalInstance()) {
-        testString = TString::Format("%i:%i:%i",runNum,lumiNum,eventNum);
-        if (eventsRecorded.find(testString) == eventsRecorded.end()) {
+    if (eventsRecorded.find(testString) == eventsRecorded.end()) {
+      if (fGoodLumiFilter->IsGood(runNum,lumiNum)) {
+        if (cutter->EvalInstance()) {
+          testString = TString::Format("%i:%i:%i",runNum,lumiNum,eventNum);
           outTree->Fill();
           eventsRecorded.insert(testString);
         }
         else
-          duplicates++;
+          cutevents++;
       }
       else
-        cutevents++;
+        badlumis++;
     }
     else
-      badlumis++;
+      duplicates++;
   }
   outFile->WriteTObject(outTree,fTreeName,"Overwrite");
   for (UInt_t iObj = 0; iObj != fCopyObjects.size(); ++iObj) {
@@ -82,7 +82,7 @@ FlatSkimmer::Slim(TString fileName)
   inFile->Close();
 
   std::cout << fileName << " events removed for" << std::endl;
+  std::cout << " Duplicates: " << duplicates << std::endl;
   std::cout << " Bad Runs:   " << badlumis << std::endl;
   std::cout << " Event Cut:  " << cutevents << std::endl;
-  std::cout << " Duplicates: " << duplicates << std::endl;
 }
