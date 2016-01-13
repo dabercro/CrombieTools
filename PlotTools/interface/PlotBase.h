@@ -371,6 +371,8 @@ PlotBase::BaseCanvas(TString FileBase, std::vector<T*> theLines, TString XLabel,
     theLines[fDrawFirst]->Draw();
   for (UInt_t iLine = 0; iLine != NumPlots; ++iLine)
     theLines[iLine]->Draw("same");
+  if (fDataIndex != -1)
+    theLines[fDataIndex]->Draw("PE,same");
 
   theLegend->Draw();
   if (logY && !fMakeRatio)
@@ -400,9 +402,11 @@ PlotBase::BaseCanvas(TString FileBase, std::vector<T*> theLines, TString XLabel,
       newLines[iLine]->GetYaxis()->SetTitleOffset((1 - ratioFrac)/ratioFrac);
       newLines[iLine]->GetYaxis()->SetNdivisions(divisions);
       newLines[iLine]->GetYaxis()->SetTitle("Ratio");
+      newLines[iLine]->SetFillColor(0);
     }
 
     if (fOnlyRatioWithData) {
+      newLines[fRatioIndex]->SetLineColor(1);
       newLines[fRatioIndex]->Draw();
       newLines[fDataIndex]->Draw("same");
     }

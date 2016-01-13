@@ -79,7 +79,7 @@ PlotStack::GetHistList(std::vector<TString> FileList, Int_t NumXBins, Double_t *
         std::cout << "Integral after " << theHists[iFile]->Integral() << std::endl;
     }
     else if (fDebug)
-        std::cout << "Data yield " << theHists[iFile]->Integral() << std::endl;
+      std::cout << "Data yield " << theHists[iFile]->Integral() << std::endl;
   }
   return theHists;
 }
