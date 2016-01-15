@@ -34,7 +34,7 @@ then
         echo "Something went wrong with File Dump. Exiting..."
         exit 1
     fi
-    $CrombieSlimmerScript compile
+    ./$CrombieSlimmerScript compile
 fi
 
 for inFile in `ls $CrombieTempDir/$CrombieFileBase\_*.txt 2> /dev/null`
@@ -48,7 +48,7 @@ do
     then
         touch $CrombieTempDir/TerminalRunning/$inFile.running
         echo "Running on "$inFile
-        cat $CrombieTempDir/$inFile | xargs -n2 -P$CrombieNLocalProcs runSlimmer.py
+        cat $CrombieTempDir/$inFile | xargs -n2 -P$CrombieNLocalProcs ./$CrombieSlimmerScript
         hadd $CrombieTempDir/$inRoot.root $CrombieTempDir/TerminalRunning/$inRoot\_*.root
         rm $CrombieTempDir/TerminalRunning/$inRoot\_*.root
         rm $CrombieTempDir/TerminalRunning/$inFile.running
