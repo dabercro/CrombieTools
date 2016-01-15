@@ -21,6 +21,10 @@ countFiles=`ls $CrombieTempDir/TerminalRunning/*.txt.running | wc -l`
 
 if [ "$countFiles" -eq "0" ]
 then
+    if [ ! -d $CrombieTempDir/TerminalRunning ]
+    then
+        mkdir $CrombieTempDir/TerminalRunning
+    fi
     $CROMBIEPATH/scripts/./CrombieDumpFileList.sh
     ./$CrombieSlimmerScript compile
 fi

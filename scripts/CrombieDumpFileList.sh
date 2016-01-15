@@ -94,7 +94,7 @@ do
             then
                 fileInCount=0
                 count=$((count + 1))
-                currentConfig=$outDir/monojet_$reasonableName\_$count.txt
+                currentConfig=$CrombieTempDir/monojet_$reasonableName\_$count.txt
                 > $currentConfig
             fi
             echo $inFile $CrombieTempDir/TerminalRunning/monojet_$reasonableName\_$count\_$indexFiles.root >> $currentConfig
