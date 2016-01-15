@@ -11,4 +11,5 @@ import StackPlotter
 import Fit2DPlotter
 import FitPlotter
 import ResolutionPlotter
-import tdrStyle      ## I should really write my own style thing for CMS
+import TmvaClassifier
+import tdrStyle
