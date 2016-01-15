@@ -19,7 +19,7 @@ export haddFile=$CrombieTempDir/myHadd.txt
 
 $CROMBIEPATH/scripts/CrombieDumpFileList.sh eos
 
-rootNames=`ls $CrombieTempDir/monojet_*_*.txt | sed 's/.txt/.root/'`
+rootNames=`ls $CrombieTempDir/$CrombieFileBase\_*_*.txt | sed 's/.txt/.root/'`
 ranOnFile=0
     
 for outFile in $rootNames

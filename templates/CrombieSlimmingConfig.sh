@@ -4,6 +4,7 @@ export CrombieQueue=8nh
 
 export CrombieNLocalProcs=`getconf _NPROCESSORS_ONLN`
 
+export CrombieFileBase=flat
 export CrombieEosDir=/store/user/dabercro
 export CrombieRegDir=/afs/cern.ch/work/d/dabercro/eos/cms$CrombieEosDir
 export CrombieTempDir=/afs/cern.ch/work/d/dabercro/public/TempOut

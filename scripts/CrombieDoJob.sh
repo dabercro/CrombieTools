@@ -28,7 +28,6 @@ cp "${outFile%.*}".txt .
 
 echo "Trying to make $outFile"
 echo ""
-echo "Using "$CrombieNumberProcs" cores!"
 
 RUNNING=0
 NUM=0
@@ -45,7 +44,7 @@ do
     NUM=$((NUM + 1))
 done
 
-cat $CommandList | xargs -n2 -P$CrombieNumberProcs $CrombieSlimmerScript
+cat $CommandList | xargs -n2 -P$LSB_DJOB_NUMPROC $CrombieSlimmerScript
 
 hadd $OutputBase.root $OutputBase\_*.root
 

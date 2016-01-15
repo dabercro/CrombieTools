@@ -37,7 +37,7 @@ then
     $CrombieSlimmerScript compile
 fi
 
-for inFile in `ls $CrombieTempDir/monojet_*.txt 2> /dev/null`
+for inFile in `ls $CrombieTempDir/$CrombieFileBase\_*.txt 2> /dev/null`
 do
     inFile="${inFile##*/}"
     inRoot="${inFile%%.txt}"

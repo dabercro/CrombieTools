@@ -61,7 +61,7 @@ do
     then 
         count=0
         lastDir=$reasonableName
-        echo "$CrombieFullDir/monojet_$reasonableName.root $CrombieTempDir/monojet_"$reasonableName"_*.root" >> $haddFile
+        echo "$CrombieFullDir/$CrombieFileBase\_$reasonableName.root $CrombieTempDir/$CrombieFileBase\_"$reasonableName"_*.root" >> $haddFile
     fi
 
     if [ "$isEOS" = "eos" ]
@@ -78,7 +78,7 @@ do
             then
                 fileInCount=0
                 count=$((count + 1))
-                currentConfig=$CrombieTempDir/monojet_$reasonableName\_$count.txt
+                currentConfig=$CrombieTempDir/$CrombieFileBase\_$reasonableName\_$count.txt
                 > $currentConfig
             fi
             echo $CrombieEosDir/$dir/$inFile >> $currentConfig
@@ -93,10 +93,10 @@ do
             then
                 fileInCount=0
                 count=$((count + 1))
-                currentConfig=$CrombieTempDir/monojet_$reasonableName\_$count.txt
+                currentConfig=$CrombieTempDir/$CrombieFileBase\_$reasonableName\_$count.txt
                 > $currentConfig
             fi
-            echo $inFile $CrombieTempDir/TerminalRunning/monojet_$reasonableName\_$count\_$indexFiles.root >> $currentConfig
+            echo $inFile $CrombieTempDir/TerminalRunning/$CrombieFileBase\_$reasonableName\_$count\_$indexFiles.root >> $currentConfig
             fileInCount=$((fileInCount + 1))
             indexFiles=$((indexFiles + 1))
         done
