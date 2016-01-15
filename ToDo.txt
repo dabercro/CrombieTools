@@ -1,5 +1,10 @@
 Clean up slimming scripts using lxbatch environment variables
 Add file check to see that slimming didn't crash before copying
-Make histogram weight applicator
+Make histogram weight applicator, maybe a histogram creator from text file
 Make spectrum reweight tool
+Add cutflow tool
+Add signal MC option to Stack plotter
+Add MC uncertainties to Stack plotter
+Make datacard tool, incorporate with Stack plotter, probably
+Make Plot Utils object
 Finish TMVA tools
