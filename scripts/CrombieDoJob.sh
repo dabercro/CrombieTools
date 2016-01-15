@@ -1,17 +1,17 @@
 #! /bin/bash
 
-  cmsbase=$1
- macroDir=$2
-  outFile=$3
-   NCORES=$4
-  slimmer=$5
-macroList=$6
+cmsbase=$1
+outFile=$2
+
+macroDir=$LS_SUBCWD
+
+source $macroDir/CrombieSlimmingConfig.sh
 
 cd $cmsbase/src
 eval `scram runtime -sh`
 cd -
 
-for file in `cat $macroDir/$macroList`
+for file in `cat $macroDir/$CrombieJobScriptList`
 do
     if [ "$file" != "${file/\//}" ]
     then
@@ -28,27 +28,48 @@ cp "${outFile%.*}".txt .
 
 echo "Trying to make $outFile"
 echo ""
-echo "Using "$NCORES" cores!"
+echo "Using "$CrombieNumberProcs" cores!"
 
 RUNNING=0
 NUM=0
 
-./$slimmer compile
+$CrombieSlimmerScript compile
 
 OutputBase="lxbatchTmpOutput"
 CommandList="ArgsForThisJob.txt"
 echo "" > $CommandList
 
-for file in `cat "${outFile%.*}".txt`; do
+for file in `cat "${outFile%.*}".txt`
+do
     echo root://eoscms/$file $OutputBase\_$NUM.root >> $CommandList
     NUM=$((NUM + 1))
 done
 
-cat $CommandList | xargs -n2 -P$NCORES ./$slimmer
+cat $CommandList | xargs -n2 -P$CrombieNumberProcs $CrombieSlimmerScript
 
-hadd hadded.root $OutputBase\_*.root
+hadd $OutputBase.root $OutputBase\_*.root
+
+ERRORLOG=$macroDir/LxbatchFileChecks.log
+ERRORFOUND=0
+for file in `ls $OutputBase\_*.root`
+do
+    python $CrombieCheckerScript $file
+    if [ "$?" -eq "1" ]
+    then
+        ERRORFOUND=1
+        echo "" >> $ERRORLOG
+        echo "Could not find acceptable output in $file" >> $ERRORLOG
+        echo "Check output in job bout/out.$LSB_JOBID" >> $ERRORLOG
+        echo "" >> $ERRORLOG
+    fi
+done
+
+if [ "$ERRORFOUND" -eq "1" ]
+then
+    exit 0
+fi
 
 echo ""
 echo "Copying to $outFile"
 
-cp hadded.root $outFile
+cp $OutputBase.root $outFile

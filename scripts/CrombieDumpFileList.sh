@@ -9,17 +9,21 @@ then
     CrombieDirList=$CrombieFullDir/CrombieDirList.txt
     if [ "$isEOS" = "eos" ]
     then
+        if [ ! -d bout ]
+        then
+            echo "Making log output directory as bout"
+            mkdir bout
+        fi 
         /afs/cern.ch/project/eos/installation/0.3.84-aquamarine/bin/eos.select ls $CrombieEosDir > $CrombieDirList
     else
+        if [ ! -d $CrombieRegDir ]
+        then
+            echo "$CrombieRegDir does not seem to exist. Maybe needs mounting."
+            exit 1
+        fi
         ls $CrombieRegDir > $CrombieDirList
     fi
 fi
-
-if [ ! -d bout ]
-then
-    echo "Making log output directory as ./bout"
-    mkdir bout
-fi 
 
 if [ ! -d $CrombieFullDir ]
 then
@@ -35,11 +39,6 @@ else
     then
         rm $CrombieTempDir/*.root
     fi
-fi
-
-if [ MonoJetTree.txt -nt MonoJetTree.h ]
-then
-    ./makeTree.sh
 fi
 
 > $haddFile
@@ -103,3 +102,5 @@ do
         done
     fi
 done
+
+exit 0
