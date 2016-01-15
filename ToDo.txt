@@ -1,4 +1,3 @@
-Clean up slimming scripts using lxbatch environment variables
 Add file check to see that slimming didn't crash before copying
 Make histogram weight applicator, maybe a histogram creator from text file
 Make spectrum reweight tool

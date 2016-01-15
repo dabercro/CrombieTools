@@ -1,17 +1,17 @@
 #! /bin/bash
 
-  cmsbase=$1
- macroDir=$2
-  outFile=$3
-   NCORES=$4
-  slimmer=$5
-macroList=$6
+cmsbase=$1
+outFile=$2
+
+macroDir=$LS_SUBCWD
+
+source $macroDir/CrombieSlimmingConfig.sh
 
 cd $cmsbase/src
 eval `scram runtime -sh`
 cd -
 
-for file in `cat $macroDir/$macroList`
+for file in `cat $macroDir/$CrombieJobScriptList`
 do
     if [ "$file" != "${file/\//}" ]
     then
@@ -28,12 +28,12 @@ cp "${outFile%.*}".txt .
 
 echo "Trying to make $outFile"
 echo ""
-echo "Using "$NCORES" cores!"
+echo "Using "$CrombieNumberProcs" cores!"
 
 RUNNING=0
 NUM=0
 
-./$slimmer compile
+./$CrombieSlimmerScript compile
 
 OutputBase="lxbatchTmpOutput"
 CommandList="ArgsForThisJob.txt"
@@ -44,11 +44,11 @@ for file in `cat "${outFile%.*}".txt`; do
     NUM=$((NUM + 1))
 done
 
-cat $CommandList | xargs -n2 -P$NCORES ./$slimmer
+cat $CommandList | xargs -n2 -P$CrombieNumberProcs ./$CrombieSlimmerScript
 
-hadd hadded.root $OutputBase\_*.root
+hadd $OutputBase.root $OutputBase\_*.root
 
 echo ""
 echo "Copying to $outFile"
 
-cp hadded.root $outFile
+cp $OutputBase.root $outFile

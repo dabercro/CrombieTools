@@ -27,11 +27,12 @@ do
     if [ ! -f $outFile -o "$fresh" = "fresh" ]
     then
         echo Making: $outFile
+        command="bsub -q $CrombieQueue -n $CrombieNumberProcs -o bout/out.%J $CROMBIEPATH/scripts/CrombieDoJob.sh $CMSSW_BASE $outFile"
         if [ "$fresh" = "test" ]
         then
-            echo bsub -q $CrombieQueue -n $CrombieNumberProcs -o bout/out.%J $CROMBIEPATH/scripts/CrombieDoJob.sh $CMSSW_BASE $PWD $outFile $CrombieNumberProcs $CrombieSlimmerScript $CrombieJobScriptList
+            echo $command
         else
-            bsub -q $CrombieQueue -n $CrombieNumberProcs -o bout/out.%J $CROMBIEPATH/scripts/CrombieDoJob.sh $CMSSW_BASE $PWD $outFile $CrombieNumberProcs $CrombieSlimmerScript $CrombieJobScriptList
+            $command
         fi
         ranOnFile=1
     fi

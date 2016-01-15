@@ -4,6 +4,12 @@ isEOS=$1
 
 source CrombieSlimmingConfig.sh
 
+if [ ! -d $CrombieRegDir ]
+then
+    echo "$CrombieRegDir does not seem to exist. Maybe needs mounting."
+    exit 1
+fi
+
 if [ "$CrombieDirList" = "" ]
 then
     CrombieDirList=$CrombieFullDir/CrombieDirList.txt
@@ -103,3 +109,5 @@ do
         done
     fi
 done
+
+exit 0

@@ -8,24 +8,32 @@ export haddFile=$CrombieTempDir/myHadd.txt
 
 if [ "$fresh" = "fresh" ]
 then
-    rm $CrombieTempDir/*.root
-    if [ -d $CrombieTempDir/TerminalRunning ]
+    if [ -d $CrombieTempDir ]
     then
-        rm $CrombieTempDir/TerminalRunning/*
+        rm $CrombieTempDir/*.root 2> /dev/null
+        if [ -d $CrombieTempDir/TerminalRunning ]
+        then
+            rm $CrombieTempDir/TerminalRunning/* 2> /dev/null
+        fi
     fi
 fi
 
 running=0
 
-countFiles=`ls $CrombieTempDir/TerminalRunning/*.txt.running | wc -l`
+countFiles=`ls $CrombieTempDir/TerminalRunning/*.txt.running  2> /dev/null | wc -l`
 
 if [ "$countFiles" -eq "0" ]
 then
     $CROMBIEPATH/scripts/./CrombieDumpFileList.sh
+    if [ "$?" -ne "0" ]
+    then
+        echo "Something went wrong with File Dump. Exiting..."
+        exit 1
+    fi
     ./$CrombieSlimmerScript compile
 fi
 
-for inFile in `ls $CrombieTempDir/monojet_*.txt`
+for inFile in `ls $CrombieTempDir/monojet_*.txt 2> /dev/null`
 do
     inFile="${inFile##*/}"
     inRoot="${inFile%%.txt}"
@@ -46,6 +54,9 @@ done
 
 if [ "$running" -eq 0 ]
 then
-    rmdir $CrombieTempDir/TerminalRunning
+    if [ -d $CrombieTempDir/TerminalRunning ]
+    then
+        rmdir $CrombieTempDir/TerminalRunning
+    fi
     cat $haddFile | xargs -n2 -P$CrombieNLocalProcs $CROMBIEPATH/scripts/./haddArgs.sh
 fi
