@@ -17,7 +17,7 @@ source CrombieSlimmingConfig.sh
 
 export haddFile=$CrombieTempDir/myHadd.txt
 
-$CROMBIEPATH/scripts/./CrombieDumpFileList.sh eos
+$CROMBIEPATH/scripts/CrombieDumpFileList.sh eos
 
 rootNames=`ls $CrombieTempDir/monojet_*_*.txt | sed 's/.txt/.root/'`
 ranOnFile=0
@@ -40,6 +40,6 @@ done
 
 if [ "$ranOnFile" -eq 0 ]
 then
-    cat $haddFile | xargs -n2 -P6 $CROMBIEPATH/scripts/./haddArgs.sh 
+    cat $haddFile | xargs -n2 -P6 $CROMBIEPATH/scripts/haddArgs.sh 
     echo "All files merged!"
 fi

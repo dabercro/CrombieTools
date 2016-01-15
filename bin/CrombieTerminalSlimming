@@ -24,13 +24,13 @@ countFiles=`ls $CrombieTempDir/TerminalRunning/*.txt.running  2> /dev/null | wc 
 
 if [ "$countFiles" -eq "0" ]
 then
-    $CROMBIEPATH/scripts/./CrombieDumpFileList.sh
+    $CROMBIEPATH/scripts/CrombieDumpFileList.sh
     if [ "$?" -ne "0" ]
     then
         echo "Something went wrong with File Dump. Exiting..."
         exit 1
     fi
-    ./$CrombieSlimmerScript compile
+    $CrombieSlimmerScript compile
 fi
 
 for inFile in `ls $CrombieTempDir/monojet_*.txt 2> /dev/null`
@@ -44,7 +44,7 @@ do
     then
         touch $CrombieTempDir/TerminalRunning/$inFile.running
         echo "Running on "$inFile
-        cat $CrombieTempDir/$inFile | xargs -n2 -P$CrombieNLocalProcs ./runSlimmer.py
+        cat $CrombieTempDir/$inFile | xargs -n2 -P$CrombieNLocalProcs runSlimmer.py
         hadd $CrombieTempDir/$inRoot.root $CrombieTempDir/TerminalRunning/$inRoot\_*.root
         rm $CrombieTempDir/TerminalRunning/$inRoot\_*.root
         rm $CrombieTempDir/TerminalRunning/$inFile.running
@@ -58,5 +58,5 @@ then
     then
         rmdir $CrombieTempDir/TerminalRunning
     fi
-    cat $haddFile | xargs -n2 -P$CrombieNLocalProcs $CROMBIEPATH/scripts/./haddArgs.sh
+    cat $haddFile | xargs -n2 -P$CrombieNLocalProcs $CROMBIEPATH/scripts/haddArgs.sh
 fi
