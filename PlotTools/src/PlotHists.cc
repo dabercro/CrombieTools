@@ -126,7 +126,7 @@ PlotHists::MakeCanvas(TString FileBase, Int_t NumXBins, Double_t *XBins,
   std::vector<TH1D*> hists = MakeHists(NumXBins,XBins);
   BaseCanvas(FileBase,hists,XLabel,YLabel,logY);
 
-  for (UInt_t i0 = 0; i0 < hists.size(); i0++)
+  for (UInt_t i0 = 0; i0 != hists.size(); ++i0)
     delete hists[i0];
 }
 

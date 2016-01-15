@@ -94,7 +94,7 @@ class PlotBase
   void                       ConvertToArray       ( Int_t NumXBins, Double_t MinX, Double_t MaxX, Double_t *XBins );
 
   template<class T>  void    BaseCanvas           ( TString FileBase, std::vector<T*> theLines,
-						    TString XLabel, TString YLabel, Bool_t logY );
+						    TString XLabel, TString YLabel, Bool_t logY, Bool_t logX = false );
 
   Bool_t                     bPDF;
   Bool_t                     bPNG;
@@ -305,7 +305,8 @@ PlotBase::ConvertToArray(Int_t NumXBins, Double_t MinX, Double_t MaxX, Double_t 
 //--------------------------------------------------------------------
 template<class T>
 void
-PlotBase::BaseCanvas(TString FileBase, std::vector<T*> theLines, TString XLabel, TString YLabel, Bool_t logY)
+PlotBase::BaseCanvas(TString FileBase, std::vector<T*> theLines,
+                     TString XLabel, TString YLabel, Bool_t logY, Bool_t logX)
 {
   gStyle->SetOptStat(0);
 
@@ -361,6 +362,8 @@ PlotBase::BaseCanvas(TString FileBase, std::vector<T*> theLines, TString XLabel,
       theLines[iLine]->GetXaxis()->SetTitleSize(0);
       theLines[iLine]->GetXaxis()->SetLabelSize(0);
     }
+    if (logX)
+      pad1->SetLogx();
     if (logY)
       pad1->SetLogy();
   }
@@ -375,6 +378,9 @@ PlotBase::BaseCanvas(TString FileBase, std::vector<T*> theLines, TString XLabel,
     theLines[fDataIndex]->Draw("PE,same");
 
   theLegend->Draw();
+
+  if (logX && !fMakeRatio)
+    theCanvas->SetLogx();
   if (logY && !fMakeRatio)
     theCanvas->SetLogy();
 
@@ -415,6 +421,9 @@ PlotBase::BaseCanvas(TString FileBase, std::vector<T*> theLines, TString XLabel,
       for (UInt_t iLine = 0; iLine < theLines.size(); iLine++)
 	newLines[iLine]->Draw("same");
     }
+
+    if (logX)
+      pad2->SetLogx();
   }
 
   if (bC)

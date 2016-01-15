@@ -8,6 +8,7 @@ import FlatSkimmer
 import TreeContainer
 import HistPlotter
 import StackPlotter
+import RocPlotter
 import Fit2DPlotter
 import FitPlotter
 import ResolutionPlotter
