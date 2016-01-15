@@ -1,0 +1,5 @@
+Clean up slimming scripts using lxbatch environment variables
+Add file check to see that slimming didn't crash before copying
+Make histogram weight applicator
+Make spectrum reweight tool
+Finish TMVA tools
