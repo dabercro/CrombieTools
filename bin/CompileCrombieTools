@@ -8,7 +8,9 @@ import FlatSkimmer
 import TreeContainer
 import HistPlotter
 import StackPlotter
+import RocPlotter
 import Fit2DPlotter
 import FitPlotter
 import ResolutionPlotter
-import tdrStyle      ## I should really write my own style thing for CMS
+import TmvaClassifier
+import tdrStyle

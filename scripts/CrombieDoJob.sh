@@ -52,7 +52,7 @@ ERRORLOG=$macroDir/LxbatchFileChecks.log
 ERRORFOUND=0
 for file in `ls $OutputBase\_*.root`
 do
-    python $CrombieCheckerScript $file
+    $CrombieCheckerScript $file
     if [ "$?" -eq "1" ]
     then
         ERRORFOUND=1

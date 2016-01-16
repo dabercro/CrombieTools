@@ -30,6 +30,11 @@ SetZeroError(TGraphErrors* theGraph)
 
 //--------------------------------------------------------------------
 void
+SetZeroError(TGraph*)
+{ }
+
+//--------------------------------------------------------------------
+void
 Division(TF1*& PlotFunc, TF1* RatioFunc)
 {
   TString plotString = TString("(") + PlotFunc->GetExpFormula() + TString(")");
@@ -54,6 +59,31 @@ void
 Division(TH1* PlotHist, TH1* RatioHist)
 {
   PlotHist->Divide(RatioHist);
+}
+
+//--------------------------------------------------------------------
+void
+Division(TGraph* PlotGraph, TGraph* RatioGraph)
+{
+  Double_t* GraphX = PlotGraph->GetX();
+  Double_t* GraphY = PlotGraph->GetY();
+  Int_t NumPoints = RatioGraph->GetN();
+  Double_t* RatioY = RatioGraph->GetY();
+  Double_t RangeMin = 1000.;
+  Double_t RangeMax = 0.;
+  for (Int_t i1 = 0; i1 < NumPoints; i1++) {
+    if (PlotGraph->GetN() != NumPoints) {
+      std::cout << "Messed up graph size... Check that out" << std::endl;
+      exit(1);
+    }
+    Double_t point = GraphY[i1]/RatioY[i1];
+    PlotGraph->SetPoint(i1,GraphX[i1],point);
+    if (point < RangeMin)
+      RangeMin = point;
+    if (point > RangeMax)
+      RangeMax = point;
+  }
+  PlotGraph->GetYaxis()->SetRangeUser(RangeMin,RangeMax);
 }
 
 //--------------------------------------------------------------------

@@ -97,7 +97,7 @@ class TmvaClassifier
   
   Int_t                fReportFrequency;
   
-  TmvaClassDef(TmvaClassifier,1)
+  ClassDef(TmvaClassifier,1)
 };
 
 #endif
