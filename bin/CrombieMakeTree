@@ -32,9 +32,13 @@ echo "#include \"TTree.h\"" >> $h
 declare -a otherTypes=()
 for branch in `cat $inVarsFile`
 do
+    if [ "${branch:0:1}" = "#" ]
+    then
+        continue
+    fi
     after="${branch##*/}"
     varLetter="${after%=*}"
-    if [ "$varLetter" != "F" -a "$varLetter" != "I" -a "$varLetter" != "O" -a "$varLetter" != "VF" -a "$varLetter" != "VI" -a "$varLetter" != "VO" ]; then
+    if [ "$varLetter" != "F" -a "$varLetter" != "I" -a "$varLetter" != "i" -a "$varLetter" != "O" -a "$varLetter" != "VF" -a "$varLetter" != "VI" -a "$varLetter" != "VO" -a "$varLetter" != "L" -a "$varLetter" != "l" ]; then
         if [ "${varLetter:0:1}" != "V" ]; then
             varType=$varLetter
         else
@@ -62,6 +66,10 @@ echo "" >> $h
 
 for branch in `cat $inVarsFile`
 do
+    if [ "${branch:0:1}" = "#" ]
+    then
+        continue
+    fi
     varType=""
     varName="${branch%/*}"
     after="${branch##*/}"
@@ -71,6 +79,12 @@ do
         varType="float"
     elif [ "$varLetter" = "I" ]; then
         varType="int  "
+    elif [ "$varLetter" = "i" ]; then
+        varType="unsigned int "
+    elif [ "$varLetter" = "L" ]; then
+        varType="long "
+    elif [ "$varLetter" = "l" ]; then
+        varType="unsigned long"
     elif [ "$varLetter" = "O" ]; then
         varType="bool "
     elif [ "$varLetter" = "VF" ]; then
@@ -164,6 +178,10 @@ echo "$TreeName::Reset()" >> $s
 echo "{" >> $s
 for branch in `cat $inVarsFile`
 do
+    if [ "${branch:0:1}" = "#" ]
+    then
+        continue
+    fi
     varName="${branch%/*}"
     after="${branch##*/}"
     varLetter="${after%=*}"
@@ -180,11 +198,15 @@ echo "$TreeName::SetupTree()" >> $s
 echo "{" >> $s
 for branch in `cat $inVarsFile`
 do
+    if [ "${branch:0:1}" = "#" ]
+    then
+        continue
+    fi
     varName="${branch%/*}"
     after="${branch##*/}"
     varLetter="${after%=*}"
     varDefault="${after##*=}"
-    if [ "$varLetter" = "I" -o "$varLetter" = "F" -o "$varLetter" = "O" ]; then
+    if [ "$varLetter" = "I" -o "$varLetter" = "i" -o "$varLetter" = "L" -o "$varLetter" = "l" -o "$varLetter" = "F" -o "$varLetter" = "O" ]; then
         echo "  t->Branch(\"$varName\",&$varName,\"$varName/$varLetter\");" >> $s
     else
         echo "  t->Branch(\"$varName\",&$varName);" >> $s
@@ -193,4 +215,3 @@ done
 echo "" >> $s
 echo "  Reset();" >> $s
 echo "}" >> $s
-

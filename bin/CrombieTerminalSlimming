@@ -49,7 +49,22 @@ do
         touch $CrombieTempDir/TerminalRunning/$inFile.running
         echo "Running on "$inFile
         cat $CrombieTempDir/$inFile | xargs -n2 -P$CrombieNLocalProcs ./$CrombieSlimmerScript
-        hadd $CrombieTempDir/$inRoot.root $CrombieTempDir/TerminalRunning/$inRoot\_*.root
+        ERRORFOUND=0
+        for file in `ls $CrombieTempDir/TerminalRunning/$inRoot\_*.root`
+        do
+            $CrombieCheckerScript $file
+            if [ "$?" -eq "1" ]
+            then
+                echo "Error found in $file"
+                ERRORFOUND=1
+            fi
+        done
+        if [ "$ERRORFOUND" -eq "0" ]
+        then
+            hadd $CrombieTempDir/$inRoot.root $CrombieTempDir/TerminalRunning/$inRoot\_*.root
+        else
+            echo "Not hadding $CrombieTempDir/$inRoot.root"
+        fi
         rm $CrombieTempDir/TerminalRunning/$inRoot\_*.root
         rm $CrombieTempDir/TerminalRunning/$inFile.running
     fi

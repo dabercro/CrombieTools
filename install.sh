@@ -49,8 +49,6 @@ then
     echo "export CROMBIEPATH="$target >> $profile
 fi
 
-python bin/CompileCrombieTools
-
 echo "-------------------------------------------------------------"
 echo " Now execute the following command:"
 echo ""
