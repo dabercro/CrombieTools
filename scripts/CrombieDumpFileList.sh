@@ -51,6 +51,11 @@ count=0
 
 for dir in `cat $CrombieDirList`
 do
+    if [ "${dir:0:1}" = "#" ]
+    then
+        continue
+    fi
+
     fileInCount=$CrombieFilesPerJob
 
     reasonableName="${dir%%/*}"
