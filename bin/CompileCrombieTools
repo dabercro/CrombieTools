@@ -3,6 +3,7 @@
 # Creates all .so, .pcm, and .pyc files that could possibly be needed
 
 import CrombieVars
+import CutflowMaker
 import GoodLumiFilter
 import FlatSkimmer
 import TreeContainer
