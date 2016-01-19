@@ -52,7 +52,7 @@ FlatSkimmer::Slim(TString fileName)
 
   for (Int_t iEntry = 0; iEntry != inTree->GetEntriesFast(); ++iEntry) {
     if (iEntry % fReportFreq == 0)
-      std::cout << float(iEntry)/inTree->GetEntriesFast() << std::endl;
+      std::cout << "Processing " << fileName << " ... " << float(iEntry*100)/inTree->GetEntriesFast() << "%" << std::endl;
 
     inTree->GetEntry(iEntry);
     testString = TString::Format("%i_%i_%llu",runNum,lumiNum,eventNum);
