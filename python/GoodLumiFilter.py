@@ -5,10 +5,10 @@ from CrombieVars import skimSrc
 if not 'GoodLumiFilter' in dir(ROOT):
     ROOT.gROOT.LoadMacro(skimSrc + 'GoodLumiFilter.cc+')
 
-newGoodLumiFilter = ROOT.GoodLumiFilter()
+newGoodLumiFilter = ROOT.GoodLumiFilter
 
 def MakeFilter(jsonFileName):
-    filter = newGoodLumiFilter
+    filter = newGoodLumiFilter()
     if jsonFileName != '':
         jsonFile = open(jsonFileName,'r')
         data = json.load(jsonFile)

@@ -53,13 +53,14 @@ FlatSkimmer::Slim(TString fileName)
   for (Int_t iEntry = 0; iEntry != inTree->GetEntriesFast(); ++iEntry) {
     if (iEntry % fReportFreq == 0)
       std::cout << float(iEntry)/inTree->GetEntriesFast() << std::endl;
+
     inTree->GetEntry(iEntry);
+    testString = TString::Format("%i_%i_%llu",runNum,lumiNum,eventNum);
     if (eventsRecorded.find(testString) == eventsRecorded.end()) {
+      eventsRecorded.insert(testString);
       if (fGoodLumiFilter->IsGood(runNum,lumiNum)) {
         if (cutter->EvalInstance()) {
-          testString = TString::Format("%i_%i_%llu",runNum,lumiNum,eventNum);
           outTree->Fill();
-          eventsRecorded.insert(testString);
         }
         else
           cutevents++;
