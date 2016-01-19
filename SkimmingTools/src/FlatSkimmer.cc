@@ -35,7 +35,7 @@ FlatSkimmer::Slim(TString fileName)
 
   Int_t runNum  = 0;
   Int_t lumiNum = 0;
-  Int_t eventNum = 0;
+  ULong64_t eventNum = 0;
   inTree->SetBranchAddress(fRunExpr,&runNum);
   inTree->SetBranchAddress(fLumiExpr,&lumiNum);
   inTree->SetBranchAddress(fEventExpr,&eventNum);
