@@ -57,7 +57,7 @@ FlatSkimmer::Slim(TString fileName)
     if (eventsRecorded.find(testString) == eventsRecorded.end()) {
       if (fGoodLumiFilter->IsGood(runNum,lumiNum)) {
         if (cutter->EvalInstance()) {
-          testString = TString::Format("%i_%i_%i",runNum,lumiNum,eventNum);
+          testString = TString::Format("%i_%i_%llu",runNum,lumiNum,eventNum);
           outTree->Fill();
           eventsRecorded.insert(testString);
         }
