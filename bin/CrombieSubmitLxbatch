@@ -19,24 +19,29 @@ export haddFile=$CrombieTempDir/myHadd.txt
 
 $CROMBIEPATH/scripts/CrombieDumpFileList.sh eos
 
-rootNames=`ls $CrombieTempDir/$CrombieFileBase\_*_*.txt | sed 's/.txt/.root/'`
 ranOnFile=0
     
-for outFile in $rootNames
-do
-    if [ ! -f $outFile -o "$fresh" = "fresh" ]
-    then
-        echo Making: $outFile
-        command="bsub -q $CrombieQueue -n $CrombieNumberProcs -o bout/out.%J $CROMBIEPATH/scripts/CrombieDoJob.sh $CMSSW_BASE $outFile"
-        if [ "$fresh" = "test" ]
+if [ "$fresh" != "hadd" ]
+then
+    rootNames=`ls $CrombieTempDir/$CrombieFileBase\_*_*.txt | sed 's/.txt/.root/'`
+    for outFile in $rootNames
+    do
+        if [ ! -f $outFile -o "$fresh" = "fresh" ]
         then
-            echo $command
-        else
-            $command
+            echo Making: $outFile
+            command="bsub -q $CrombieQueue -n $CrombieNumberProcs -o bout/out.%J $CROMBIEPATH/scripts/CrombieDoJob.sh $CMSSW_BASE $outFile"
+            if [ "$fresh" = "test" ]
+            then
+                echo $command
+            else
+                $command
+            fi
+            ranOnFile=1
         fi
-        ranOnFile=1
-    fi
-done
+    done
+else
+    echo "Going directly to hadd step."
+fi
 
 if [ "$ranOnFile" -eq 0 ]
 then

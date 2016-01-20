@@ -20,56 +20,61 @@ fi
 
 running=0
 
-countFiles=`ls $CrombieTempDir/TerminalRunning/*.txt.running  2> /dev/null | wc -l`
-
-if [ "$countFiles" -eq "0" ]
+if [ "$fresh" != "hadd" ]
 then
-    if [ ! -d $CrombieTempDir/TerminalRunning ]
-    then
-        mkdir $CrombieTempDir/TerminalRunning
-    fi
-    $CROMBIEPATH/scripts/CrombieDumpFileList.sh
-    if [ "$?" -ne "0" ]
-    then
-        echo "Something went wrong with File Dump. Exiting..."
-        exit 1
-    fi
-    ./$CrombieSlimmerScript compile
-fi
+    countFiles=`ls $CrombieTempDir/TerminalRunning/*.txt.running  2> /dev/null | wc -l`
 
-for inFile in `ls $CrombieTempDir/$CrombieFileBase\_*.txt 2> /dev/null`
-do
-    inFile="${inFile##*/}"
-    inRoot="${inFile%%.txt}"
-    if [ -f $CrombieTempDir/$inRoot.root ]
+    if [ "$countFiles" -eq "0" ]
     then
-        continue
-    elif [ ! -f $CrombieTempDir/TerminalRunning/$inFile.running ]
-    then
-        touch $CrombieTempDir/TerminalRunning/$inFile.running
-        echo "Running on "$inFile
-        cat $CrombieTempDir/$inFile | xargs -n2 -P$CrombieNLocalProcs ./$CrombieSlimmerScript
-        ERRORFOUND=0
-        for file in `ls $CrombieTempDir/TerminalRunning/$inRoot\_*.root`
-        do
-            $CrombieCheckerScript $file
-            if [ "$?" -eq "1" ]
-            then
-                echo "Error found in $file"
-                ERRORFOUND=1
-            fi
-        done
-        if [ "$ERRORFOUND" -eq "0" ]
+        if [ ! -d $CrombieTempDir/TerminalRunning ]
         then
-            hadd $CrombieTempDir/$inRoot.root $CrombieTempDir/TerminalRunning/$inRoot\_*.root
-        else
-            echo "Not hadding $CrombieTempDir/$inRoot.root"
+            mkdir $CrombieTempDir/TerminalRunning
         fi
-        rm $CrombieTempDir/TerminalRunning/$inRoot\_*.root
-        rm $CrombieTempDir/TerminalRunning/$inFile.running
+        $CROMBIEPATH/scripts/CrombieDumpFileList.sh
+        if [ "$?" -ne "0" ]
+        then
+            echo "Something went wrong with File Dump. Exiting..."
+            exit 1
+        fi
+        ./$CrombieSlimmerScript compile
     fi
-    running=1
-done
+    
+    for inFile in `ls $CrombieTempDir/$CrombieFileBase\_*.txt 2> /dev/null`
+    do
+        inFile="${inFile##*/}"
+        inRoot="${inFile%%.txt}"
+        if [ -f $CrombieTempDir/$inRoot.root ]
+        then
+            continue
+        elif [ ! -f $CrombieTempDir/TerminalRunning/$inFile.running ]
+        then
+            touch $CrombieTempDir/TerminalRunning/$inFile.running
+            echo "Running on "$inFile
+            cat $CrombieTempDir/$inFile | xargs -n2 -P$CrombieNLocalProcs ./$CrombieSlimmerScript
+            ERRORFOUND=0
+            for file in `ls $CrombieTempDir/TerminalRunning/$inRoot\_*.root`
+            do
+                $CrombieCheckerScript $file
+                if [ "$?" -eq "1" ]
+                then
+                    echo "Error found in $file"
+                    ERRORFOUND=1
+                fi
+            done
+            if [ "$ERRORFOUND" -eq "0" ]
+            then
+                hadd $CrombieTempDir/$inRoot.root $CrombieTempDir/TerminalRunning/$inRoot\_*.root
+            else
+                echo "Not hadding $CrombieTempDir/$inRoot.root"
+            fi
+            rm $CrombieTempDir/TerminalRunning/$inRoot\_*.root
+            rm $CrombieTempDir/TerminalRunning/$inFile.running
+        fi
+        running=1
+    done
+else
+    echo "Going directly to hadd step."
+fi    
 
 if [ "$running" -eq 0 ]
 then

@@ -4,6 +4,22 @@ isEOS=$1
 
 source CrombieSlimmingConfig.sh
 
+if [ ! -d $CrombieFullDir ]
+then
+    mkdir -p $CrombieFullDir
+fi
+
+if [ ! -d $CrombieTempDir ]
+then
+    mkdir -p $CrombieTempDir
+else
+    rm $CrombieTempDir/*.txt
+    if [ "$fresh" = "fresh" ]
+    then
+        rm $CrombieTempDir/*.root
+    fi
+fi
+
 if [ "$CrombieDirList" = "" ]
 then
     CrombieDirList=$CrombieFullDir/CrombieDirList.txt
@@ -22,22 +38,6 @@ then
             exit 1
         fi
         ls $CrombieRegDir > $CrombieDirList
-    fi
-fi
-
-if [ ! -d $CrombieFullDir ]
-then
-    mkdir -p $CrombieFullDir
-fi
-
-if [ ! -d $CrombieTempDir ]
-then
-    mkdir -p $CrombieTempDir
-else
-    rm $CrombieTempDir/*.txt
-    if [ "$fresh" = "fresh" ]
-    then
-        rm $CrombieTempDir/*.root
     fi
 fi
 
@@ -66,7 +66,7 @@ do
     then 
         count=0
         lastDir=$reasonableName
-        echo "$CrombieFullDir/$CrombieFileBase\_$reasonableName.root $CrombieTempDir/$CrombieFileBase\_"$reasonableName"_*.root" >> $haddFile
+        echo $CrombieFullDir/$CrombieFileBase\_$reasonableName.root $CrombieTempDir/$CrombieFileBase\_$reasonableName"_*.root" >> $haddFile
     fi
 
     if [ "$isEOS" = "eos" ]
