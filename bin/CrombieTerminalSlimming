@@ -24,7 +24,7 @@ if [ "$fresh" != "hadd" ]
 then
     countFiles=`ls $CrombieTempDir/TerminalRunning/*.txt.running  2> /dev/null | wc -l`
 
-    if [ "$countFiles" -eq "0" ]
+    if [ "$countFiles" -eq "0" -a "$fresh" != "resub" ]
     then
         if [ ! -d $CrombieTempDir/TerminalRunning ]
         then

@@ -17,7 +17,10 @@ source CrombieSlimmingConfig.sh
 
 export haddFile=$CrombieTempDir/myHadd.txt
 
-$CROMBIEPATH/scripts/CrombieDumpFileList.sh eos
+if [ "$fresh" != "resub" ]
+then
+    $CROMBIEPATH/scripts/CrombieDumpFileList.sh eos
+fi
 
 ranOnFile=0
     

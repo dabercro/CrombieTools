@@ -20,7 +20,8 @@ FlatSkimmer::FlatSkimmer() :
   fRunExpr("runNum"),
   fLumiExpr("lumiNum"),
   fEventExpr("eventNum"),
-  fReportFreq(100000)
+  fReportFreq(100000),
+  fCheckDuplicates(false)
 {
   fCopyObjects.resize(0);
 }
@@ -50,27 +51,33 @@ FlatSkimmer::Slim(TString fileName)
   Int_t cutevents  = 0;
   Int_t duplicates = 0;
 
-  for (Int_t iEntry = 0; iEntry != inTree->GetEntriesFast(); ++iEntry) {
+  Long64_t nentries = inTree->GetEntriesFast();
+
+  for (Long64_t iEntry = 0; iEntry != nentries; ++iEntry) {
     if (iEntry % fReportFreq == 0)
-      std::cout << "Processing " << fileName << " ... " << float(iEntry*100)/inTree->GetEntriesFast() << "%" << std::endl;
+      std::cout << "Processing " << fileName << " ... " << (float(iEntry)/nentries)*100 << "%" << std::endl;
 
     inTree->GetEntry(iEntry);
-    testString = TString::Format("%i_%i_%llu",runNum,lumiNum,eventNum);
-    if (eventsRecorded.find(testString) == eventsRecorded.end()) {
-      eventsRecorded.insert(testString);
-      if (fGoodLumiFilter->IsGood(runNum,lumiNum)) {
-        if (cutter->EvalInstance()) {
-          outTree->Fill();
+    if (fGoodLumiFilter->IsGood(runNum,lumiNum)) {
+      if (cutter->EvalInstance()) {
+        if (fCheckDuplicates) {
+          testString = TString::Format("%i_%i_%llu",runNum,lumiNum,eventNum);
+          if (eventsRecorded.find(testString) == eventsRecorded.end())
+            eventsRecorded.insert(testString);
+          else {
+            duplicates++;
+            continue;
+          }
         }
-        else
-          cutevents++;
+        outTree->Fill();
       }
       else
-        badlumis++;
+        cutevents++;
     }
     else
-      duplicates++;
+      badlumis++;
   }
+
   outFile->WriteTObject(outTree,fTreeName,"Overwrite");
   for (UInt_t iObj = 0; iObj != fCopyObjects.size(); ++iObj) {
     if (inFile->Get(fCopyObjects[iObj]))
@@ -83,7 +90,7 @@ FlatSkimmer::Slim(TString fileName)
   inFile->Close();
 
   std::cout << fileName << " events removed for" << std::endl;
-  std::cout << " Duplicates: " << duplicates << std::endl;
   std::cout << " Bad Runs:   " << badlumis << std::endl;
   std::cout << " Event Cut:  " << cutevents << std::endl;
+  std::cout << " Duplicates: " << duplicates << std::endl;
 }

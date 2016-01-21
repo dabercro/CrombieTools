@@ -22,7 +22,7 @@ fi
 
 if [ "$CrombieDirList" = "" ]
 then
-    CrombieDirList=$CrombieFullDir/CrombieDirList.txt
+    CrombieDirList=$CrombieTempDir/CrombieDirList.txt
     if [ "$isEOS" = "eos" ]
     then
         if [ ! -d bout ]

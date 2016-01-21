@@ -40,6 +40,7 @@ echo "" > $CommandList
 
 for file in `cat "${outFile%.*}".txt`
 do
+    echo root://eoscms/$file $OutputBase\_$NUM.root
     echo root://eoscms/$file $OutputBase\_$NUM.root >> $CommandList
     NUM=$((NUM + 1))
 done
@@ -50,7 +51,7 @@ hadd $OutputBase.root $OutputBase\_*.root
 
 ERRORLOG=$macroDir/LxbatchFileChecks.log
 ERRORFOUND=0
-for file in `ls $OutputBase\_*.root`
+for file in `ls $OutputBase*.root`
 do
     $CrombieCheckerScript $file
     if [ "$?" -eq "1" ]
@@ -60,13 +61,12 @@ do
         echo "Could not find acceptable output in $file" >> $ERRORLOG
         echo "Check output in job bout/out.$LSB_JOBID" >> $ERRORLOG
         echo "" >> $ERRORLOG
+        if [ "$file" = "$OutputBase.root" ]
+        then
+            exit 0
+        fi
     fi
 done
-
-if [ "$ERRORFOUND" -eq "1" ]
-then
-    exit 0
-fi
 
 echo ""
 echo "Copying to $outFile"

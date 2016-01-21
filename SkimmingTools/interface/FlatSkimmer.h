@@ -22,6 +22,7 @@ class FlatSkimmer
   void        SetLumiExpr          ( TString expr )             { fLumiExpr = expr;             }
   void        SetEventExpr         ( TString expr )             { fEventExpr = expr;            }
   void        SetReportFrequency   ( Int_t freq )               { fReportFreq = freq;           }
+  void        SetCheckDuplicates   ( Bool_t check )             { fCheckDuplicates = check;     }
   void        AddCopyObject        ( TString name )             { fCopyObjects.push_back(name); }
   void        Slim                 ( TString fileName );
   
@@ -36,6 +37,7 @@ class FlatSkimmer
   TString              fLumiExpr;
   TString              fEventExpr;
   Int_t                fReportFreq;
+  Int_t                fCheckDuplicates;
   std::vector<TString> fCopyObjects;
   
   ClassDef(FlatSkimmer,1)
