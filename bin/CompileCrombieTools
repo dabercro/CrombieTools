@@ -4,6 +4,7 @@
 
 import CrombieVars
 import CutflowMaker
+import Corrector
 import GoodLumiFilter
 import FlatSkimmer
 import TreeContainer
