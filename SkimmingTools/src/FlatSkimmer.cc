@@ -92,5 +92,10 @@ FlatSkimmer::Slim(TString fileName)
   std::cout << fileName << " events removed for" << std::endl;
   std::cout << " Bad Runs:   " << badlumis << std::endl;
   std::cout << " Event Cut:  " << cutevents << std::endl;
-  std::cout << " Duplicates: " << duplicates << std::endl;
+  std::cout << " Duplicates: ";
+  if (fCheckDuplicates)
+    std::cout << duplicates << std::endl;
+  else
+    std::cout << "Not Checking" << std::endl;
+
 }
