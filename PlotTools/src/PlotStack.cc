@@ -45,7 +45,7 @@ PlotStack::ReadMCConfig(TString config, TString fileDir)
   TString ColorEntry;
   while (!configFile.eof()) {
     configFile >> FileName >> XSec >> LegendEntry >> ColorEntry;
-    if (ColorEntry != "")
+    if (ColorEntry != "" && !FileName.BeginsWith('#'))
       AddMCFile(fileDir + FileName, XSec.Atof(), LegendEntry, ColorEntry.Atoi());
   }
 }
