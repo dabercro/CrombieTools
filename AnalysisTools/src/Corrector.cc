@@ -34,21 +34,25 @@ Corrector::~Corrector()
 Float_t
 Corrector::Evaluate()
 {
-  if (fCutFormula->EvalInstance() != 0) {
-    if (fNumDims == 1)
-      return fInHist->GetBinContent(fInHist->FindBin(fFormulas[0]->EvalInstance()));
-    else if (fNumDims == 2)
-      return fInHist->GetBinContent(fInHist->FindBin(fFormulas[0]->EvalInstance(),
-                                                     fFormulas[1]->EvalInstance()));
-    else if (fNumDims == 3)
-      return fInHist->GetBinContent(fInHist->FindBin(fFormulas[0]->EvalInstance(),
-                                                     fFormulas[1]->EvalInstance(),
-                                                     fFormulas[2]->EvalInstance()));
+  if (fInTree == NULL)
+    return 1.0;
+  else {
+    if (fCutFormula->EvalInstance() != 0) {
+      if (fNumDims == 1)
+        return fInHist->GetBinContent(fInHist->FindBin(fFormulas[0]->EvalInstance()));
+      else if (fNumDims == 2)
+        return fInHist->GetBinContent(fInHist->FindBin(fFormulas[0]->EvalInstance(),
+                                                       fFormulas[1]->EvalInstance()));
+      else if (fNumDims == 3)
+        return fInHist->GetBinContent(fInHist->FindBin(fFormulas[0]->EvalInstance(),
+                                                       fFormulas[1]->EvalInstance(),
+                                                       fFormulas[2]->EvalInstance()));
+      else
+        return 1.0;
+    }
     else
       return 1.0;
   }
-  else
-    return 1.0;
 }
 
 //--------------------------------------------------------------------
