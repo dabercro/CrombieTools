@@ -13,9 +13,10 @@ ClassImp(PlotStack)
 PlotStack::PlotStack() :
   fTreeName("events"),
   fAllHist("htotal"),
-  fLuminosity(19700),
+  fLuminosity(2110.0),
   fDataContainer(0),
   fMCContainer(0),
+  fMCWeights(""),
   fDebug(false)
 {
   fFriends.resize(0);
@@ -42,8 +43,8 @@ PlotStack::ReadMCConfig(TString config, TString fileDir)
   TString FileName;
   TString XSec;
   TString LegendEntry;
-  TString ColorEntry;
-  while (!configFile.eof()) {
+  TString ColorEntry; 
+ while (!configFile.eof()) {
     configFile >> FileName >> XSec >> LegendEntry >> ColorEntry;
     if (ColorEntry != "" && !FileName.BeginsWith('#'))
       AddMCFile(fileDir + FileName, XSec.Atof(), LegendEntry, ColorEntry.Atoi());
@@ -52,20 +53,33 @@ PlotStack::ReadMCConfig(TString config, TString fileDir)
 
 //--------------------------------------------------------------------
 std::vector<TH1D*>
-PlotStack::GetHistList(std::vector<TString> FileList, Int_t NumXBins, Double_t *XBins, Bool_t isMC)
+PlotStack::GetHistList(Int_t NumXBins, Double_t *XBins, Bool_t isMC)
 {
+  std::vector<TString> FileList;
   TreeContainer *tempContainer = NULL;
-  if (isMC)
+  TString tempCutHolder;
+  if (isMC) {
+    FileList = fMCFiles;
     tempContainer = fMCContainer;
-  else
+    if (fMCWeights != "") {
+      tempCutHolder = fDefaultCut;
+      SetDefaultWeight(TString("(") + tempCutHolder + TString(")*(") + fMCWeights + TString(")"));
+    }
+  }
+  else {
+    FileList = fDataFiles;
     tempContainer = fDataContainer;
-
+  }
+  
   for (UInt_t iFile = 0; iFile < FileList.size(); iFile++)
     tempContainer->AddFile(FileList[iFile]);
 
   SetTreeList(tempContainer->ReturnTreeList());
   std::vector<TFile*> theFiles = tempContainer->ReturnFileList();
   std::vector<TH1D*> theHists = MakeHists(NumXBins,XBins);
+  if (isMC && fMCWeights != "")
+    SetDefaultWeight(tempCutHolder);
+
   for (UInt_t iFile = 0; iFile < theFiles.size(); iFile++) {
     if (isMC) {
       TH1D *allHist = (TH1D*) theFiles[iFile]->FindObjectAny(fAllHist);
@@ -98,8 +112,8 @@ PlotStack::MakeCanvas(TString FileBase, Int_t NumXBins, Double_t *XBins,
     fMCContainer->AddFriendName(fFriends[iFriend]);
   }
 
-  std::vector<TH1D*> DataHists = GetHistList(fDataFiles,NumXBins,XBins,false);
-  std::vector<TH1D*>   MCHists = GetHistList(fMCFiles,NumXBins,XBins,true);
+  std::vector<TH1D*> DataHists = GetHistList(NumXBins,XBins,false);
+  std::vector<TH1D*>   MCHists = GetHistList(NumXBins,XBins,true);
 
   std::vector<TH1D*> theHists;
   SetRatioIndex(0);
@@ -167,4 +181,3 @@ PlotStack::MakeCanvas(TString FileBase, Int_t NumXBins, Double_t MinX, Double_t 
   ConvertToArray(NumXBins,MinX,MaxX,XBins);
   MakeCanvas(FileBase,NumXBins,XBins,XLabel,YLabel,logY);
 }
-

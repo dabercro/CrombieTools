@@ -3,11 +3,12 @@
 ClassImp(Corrector)
 
 //--------------------------------------------------------------------
-Corrector::Corrector( TString name ) :
+Corrector::Corrector(TString name) :
   fName(name),
   fInTree(NULL),
   fCorrectionFile(NULL),
-  fInHist(NULL),
+  fCorrectionHist(NULL),
+  fNumDims(0),
   fInCut('1'),
   fCutFormula(NULL)
 {
@@ -39,12 +40,12 @@ Corrector::Evaluate()
   else {
     if (fCutFormula->EvalInstance() != 0) {
       if (fNumDims == 1)
-        return fInHist->GetBinContent(fInHist->FindBin(fFormulas[0]->EvalInstance()));
+        return fCorrectionHist->GetBinContent(fCorrectionHist->FindBin(fFormulas[0]->EvalInstance()));
       else if (fNumDims == 2)
-        return fInHist->GetBinContent(fInHist->FindBin(fFormulas[0]->EvalInstance(),
+        return fCorrectionHist->GetBinContent(fCorrectionHist->FindBin(fFormulas[0]->EvalInstance(),
                                                        fFormulas[1]->EvalInstance()));
       else if (fNumDims == 3)
-        return fInHist->GetBinContent(fInHist->FindBin(fFormulas[0]->EvalInstance(),
+        return fCorrectionHist->GetBinContent(fCorrectionHist->FindBin(fFormulas[0]->EvalInstance(),
                                                        fFormulas[1]->EvalInstance(),
                                                        fFormulas[2]->EvalInstance()));
       else

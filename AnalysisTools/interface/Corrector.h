@@ -14,14 +14,14 @@ class Corrector
   Corrector( TString name );
   virtual ~Corrector();
 
-  TString               GetName           ()                    { return fName;                                    }
+  TString               GetName           ()                    { return fName;                                            }
 
-  void                  AddInExpression   ( TString expres )    { fInExpressions.push_back(expres); ++fNumDims;    }
-  void                  SetInCut          ( TString cut )       { fInCut = cut;                                    }
-  void                  SetInTree         ( TTree* tree )       { fInTree = tree; InitializeTree();                } 
+  void                  AddInExpression   ( TString expres )    { fInExpressions.push_back(expres); ++fNumDims;            }
+  void                  SetInCut          ( TString cut )       { fInCut = cut;                                            }
+  void                  SetInTree         ( TTree* tree )       { fInTree = tree; InitializeTree();                        } 
 
-  void                  SetCorrectionFile ( TString fileName )  { fCorrectionFile = new TFile(fileName);           }
-  virtual   void        SetCorrectionHist ( TString histName )  { fInHist = (TH1*) fCorrectionFile->Get(histName); }
+  virtual   void        SetCorrectionFile ( TString fileName )  { fCorrectionFile = new TFile(fileName);                   }
+  void                  SetCorrectionHist ( TString histName )  { fCorrectionHist = (TH1*) fCorrectionFile->Get(histName); }
 
   Float_t               Evaluate          ();
 
@@ -30,13 +30,13 @@ class Corrector
   TString               fName;
   
   TTree*                fInTree;
+  void                  InitializeTree    ();
 
   TFile*                fCorrectionFile;
-  void                  InitializeTree    ();
+  TH1*                  fCorrectionHist;
 
  private:
   Int_t                       fNumDims;
-  TH1*                        fInHist;
   TString                     fInCut;
   TTreeFormula*               fCutFormula;
   std::vector<TString>        fInExpressions;

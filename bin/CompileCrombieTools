@@ -4,7 +4,6 @@
 
 import CrombieVars
 import CutflowMaker
-import Corrector
 import GoodLumiFilter
 import FlatSkimmer
 import TreeContainer
@@ -14,5 +13,7 @@ import RocPlotter
 import Fit2DPlotter
 import FitPlotter
 import ResolutionPlotter
+import Corrector
+import Reweighter
 import TmvaClassifier
 import tdrStyle
