@@ -56,7 +56,7 @@ done
 echo "" >> $h
 echo "class $TreeName" >> $h
 echo "{" >> $h
-echo "public:" >> $h
+echo " public:" >> $h
 echo "  $TreeName( TTree* tree );" >> $h
 echo "  $TreeName( const char* name );" >> $h
 echo "  $TreeName( const char* name, TString outFileName );" >> $h
@@ -104,17 +104,14 @@ done
 echo "" >> $h
 echo "  TTree*  ReturnTree()                { return t;                             }" >> $h
 echo "  void    Fill()                      { t->Fill(); Reset();                   }" >> $h
+echo "  void    Reset();" >> $h
 echo "  void    WriteToFile   ( TFile *f )  { f->WriteTObject(t, t->GetName());     }" >> $h
 echo "  void    Write()                     { fFile->WriteTObject(t, t->GetName());"   >> $h
 echo "                                        fFile->Close();                       }" >> $h
 echo "" >> $h
-
-echo "protected:" >> $h
+echo " private:" >> $h
 echo "  TFile* fFile;" >> $h
 echo "  TTree* t;" >> $h
-echo "  void   Reset();" >> $h
-echo "" >> $h
-echo "private:" >> $h
 echo "  void   SetupTree();" >> $h
 echo "" >> $h
 echo "  ClassDef($TreeName,1)" >> $h
