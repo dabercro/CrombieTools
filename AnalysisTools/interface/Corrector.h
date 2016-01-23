@@ -22,6 +22,7 @@ class Corrector
 
   virtual   void        SetCorrectionFile ( TString fileName )  { fCorrectionFile = new TFile(fileName);                   }
   void                  SetCorrectionHist ( TString histName )  { fCorrectionHist = (TH1*) fCorrectionFile->Get(histName); }
+  void                  SetCorrectionHist ( TString hist1, TString hist2 );
 
   Float_t               Evaluate          ();
 

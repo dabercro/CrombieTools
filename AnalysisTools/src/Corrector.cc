@@ -32,6 +32,15 @@ Corrector::~Corrector()
 }
 
 //--------------------------------------------------------------------
+void
+Corrector::SetCorrectionHist(TString hist1, TString hist2)
+{
+  fCorrectionHist  = (TH1*) fCorrectionFile->Get(hist1);
+  TH1* divisorHist = (TH1*) fCorrectionFile->Get(hist2);
+  fCorrectionHist->Divide(divisorHist);
+}
+  
+//--------------------------------------------------------------------
 Float_t
 Corrector::Evaluate()
 {
