@@ -104,8 +104,12 @@ CorrectorApplicator::ApplyCorrections(TString fileName)
     }
 
     // Fill all the branches
-    for (UInt_t iBranch = 0; iBranch != fillBranches.size(); ++iBranch)
-      fillBranches[iBranch]->Fill();
+    if (fOutputTreeName == fInputTreeName) {
+      for (UInt_t iBranch = 0; iBranch != fillBranches.size(); ++iBranch)
+        fillBranches[iBranch]->Fill();
+    }
+    else
+      outTree->Fill();
   }
 
   theFile->cd();
