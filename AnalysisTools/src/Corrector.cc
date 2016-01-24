@@ -69,7 +69,16 @@ Corrector::Evaluate()
 void
 Corrector::InitializeTree()
 {
+  if (fCutFormula)
+    delete fCutFormula;
+
   fCutFormula = new TTreeFormula(fInCut,fInCut,fInTree);
+
+  if (fFormulas.size() != 0) {
+    for (UInt_t iFormula = 0; iFormula != fFormulas.size(); ++iFormula)
+      delete fFormulas[iFormula];
+    fFormulas.resize(0);
+  }
 
   TTreeFormula* tempFormula;
   for (UInt_t iExpression = 0; iExpression != fInExpressions.size(); ++iExpression) {
