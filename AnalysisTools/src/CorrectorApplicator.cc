@@ -82,6 +82,9 @@ CorrectorApplicator::ApplyCorrections(TString fileName)
   Long64_t nentries = theTree->GetEntriesFast();
   Float_t tempValue = 1.0;
   for (Long64_t iEntry = 0; iEntry != nentries; ++iEntry) {
+    if (iEntry % fReportFrequency == 0)
+      std::cout << "Processing " << fileName << " ... " << (float(iEntry)/nentries)*100 << "%" << std::endl;
+
     theTree->GetEntry(iEntry);
     // First reset all of the addressed floats to 1.0
     if (fName != "")

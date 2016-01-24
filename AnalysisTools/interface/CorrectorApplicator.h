@@ -8,7 +8,8 @@
 class CorrectorApplicator
 {
  public:
-  CorrectorApplicator( TString name = "", Bool_t saveAll = true );
+  CorrectorApplicator()                                                   { CorrectorApplicator("", true);          }
+  CorrectorApplicator( TString name, Bool_t saveAll );
   virtual ~CorrectorApplicator();
 
   void                 SetInputTreeName     ( TString tree )              { fInputTreeName = tree;                  }

@@ -7,6 +7,7 @@
 class Reweighter : public Corrector, public PlotStack
 {
  public:
+  Reweighter()                      { Reweighter("reweight");            }
   Reweighter( TString name );
   virtual ~Reweighter();
 

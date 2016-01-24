@@ -11,6 +11,7 @@
 class Corrector
 {
  public:
+  Corrector()                                                   { Corrector("correction");                                 }
   Corrector( TString name );
   virtual ~Corrector();
 
