@@ -118,7 +118,7 @@ Corrector::InitializeTree()
 void
 Corrector::SetMinMax()
 {
-  for (Int_t iDim = 0; iDim != fNumDims; ++fNumDims) {
+  for (Int_t iDim = 0; iDim != fNumDims; ++iDim) {
     TAxis* theAxis;
     if (iDim == 0)
       theAxis = fCorrectionHist->GetXaxis();
