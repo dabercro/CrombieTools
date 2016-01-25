@@ -2,6 +2,9 @@
 #include <iomanip>
 
 #include "TTreeFormula.h"
+#include "TCanvas.h"
+#include "TH1I.h"
+#include "TH1.h"
 
 #include "CutflowMaker.h"
 
@@ -12,40 +15,64 @@ CutflowMaker::CutflowMaker()
 {
   fCutNames.resize(0);
   fCuts.resize(0);
+  fYields.resize(0);
 }
 
 //--------------------------------------------------------------------
 void
-CutflowMaker::PrintCutflow(TTree* tree, Bool_t OnlyNums)
+CutflowMaker::GetCutflow()
 {
-
-  std::vector<Int_t> results;
-
-  if (tree != NULL) {
+  if (fYields.size() == 0 && fTree != NULL) {
     std::vector<TTreeFormula*> formulae;
     TTreeFormula *tempFormula;
     for (UInt_t iCut = 0; iCut != fCuts.size(); ++iCut) {
-      tempFormula = new TTreeFormula(fCutNames[iCut],fCuts[iCut],tree);
+      tempFormula = new TTreeFormula(fCutNames[iCut],fCuts[iCut],fTree);
       formulae.push_back(tempFormula);
-      results.push_back(0);
+      fYields.push_back(0);
     }
-    Int_t numEntries = tree->GetEntriesFast();
+    Int_t numEntries = fTree->GetEntriesFast();
     for (Int_t iEntry = 0; iEntry != numEntries; ++iEntry) {
-      tree->GetEntry(iEntry);
+      fTree->GetEntry(iEntry);
       for (UInt_t iCut = 0; iCut != formulae.size(); ++iCut) {
         if (formulae[iCut]->EvalInstance() == 0)
           break;
-        ++results[iCut];
+        ++fYields[iCut];
       }
     }
   }
+}
 
+//--------------------------------------------------------------------
+void
+CutflowMaker::PrintCutflow(Bool_t OnlyNums)
+{
+  GetCutflow();
   std::cout << std::setw(15);
   for (UInt_t iCut = 0; iCut != fCuts.size(); ++iCut) {
     if (!OnlyNums)
       std::cout << fCutNames[iCut];
-    if (tree != NULL)
-      std::cout << results[iCut];
+    if (fTree != NULL)
+      std::cout << fYields[iCut];
     std::cout << std::endl;
   }
+}
+
+//--------------------------------------------------------------------
+void
+CutflowMaker::MakePlot(TString name)
+{
+  GetCutflow();
+  TH1I* theHist = new TH1I("cutflow",";Cut;Number of Events",fCuts.size(),0,fCuts.size());
+  for (UInt_t iCut = 0; iCut != fCuts.size(); ++iCut) {
+    theHist->GetXaxis()->SetBinLabel(iCut+1,fCutNames[iCut]);
+    theHist->SetBinContent(iCut+1,fYields[iCut]);
+  }
+  theHist->SetLineWidth(2);
+  
+  TCanvas* theCanvas = new TCanvas("canvas",";Cut;Number of Events");
+  theHist->Draw();
+
+  theCanvas->SaveAs(name + ".pdf");
+  theCanvas->SaveAs(name + ".png");
+  theCanvas->SaveAs(name + ".C");
 }

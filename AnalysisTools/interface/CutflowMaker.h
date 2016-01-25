@@ -12,11 +12,16 @@ class CutflowMaker
   virtual ~CutflowMaker()  {}
   
   void      AddCut             ( TString name, TString cut )       { fCutNames.push_back(name); fCuts.push_back(cut); }
-  void      PrintCutflow       ( TTree* tree = 0, Bool_t OnlyNums = false );
+  void      SetTree            ( TTree* tree )                     { fTree = tree; fYields.resize(0);                 }
+  void      PrintCutflow       ( Bool_t OnlyNums = false );
+  void      MakePlot           ( TString name );
 
  private:
+  TTree*                       fTree;
   std::vector<TString>         fCutNames;
   std::vector<TString>         fCuts;
+  std::vector<UInt_t>          fYields;
+  void      GetCutflow         ();
 
   ClassDef(CutflowMaker,1)
 };
