@@ -15,6 +15,7 @@ class CutflowMaker
   void      SetTree            ( TTree* tree )                     { fTree = tree; fYields.resize(0);                 }
   void      PrintCutflow       ( Bool_t OnlyNums = false );
   void      MakePlot           ( TString name );
+  void      Reset              ()                          { fCutNames.resize(0); fCuts.resize(0); fYields.resize(0); }
 
  private:
   TTree*                       fTree;

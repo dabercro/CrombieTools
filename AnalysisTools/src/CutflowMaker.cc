@@ -39,6 +39,8 @@ CutflowMaker::GetCutflow()
         ++fYields[iCut];
       }
     }
+    for (UInt_t iFormula = 0; iFormula != formulae.size(); ++iFormula)
+      delete formulae[iFormula];
   }
 }
 
