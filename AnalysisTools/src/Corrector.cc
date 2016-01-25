@@ -129,7 +129,7 @@ Corrector::SetMinMax()
       std::cout << "I don't support this many axes at the moment." << std::endl;
       exit(3);
     }
-    fMins.push_back(theAxis->GetBinLowEdge(theAxis->GetFirst()));
-    fMaxs.push_back(theAxis->GetBinUpEdge(theAxis->GetLast()));
+    fMins.push_back(theAxis->GetBinCenter(theAxis->GetFirst()));
+    fMaxs.push_back(theAxis->GetBinCenter(theAxis->GetLast()));
   }
 }
