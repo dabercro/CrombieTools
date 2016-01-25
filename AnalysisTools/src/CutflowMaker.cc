@@ -47,14 +47,19 @@ void
 CutflowMaker::PrintCutflow(Bool_t OnlyNums)
 {
   GetCutflow();
-  std::cout << std::setw(15);
+  std::cout << std::endl;
   for (UInt_t iCut = 0; iCut != fCuts.size(); ++iCut) {
-    if (!OnlyNums)
-      std::cout << fCutNames[iCut];
-    if (fTree != NULL)
+    if (!OnlyNums) {
+      std::cout << std::setw(20);
+      std::cout << fCutNames[iCut] << ": ";
+    }
+    if (fTree != NULL) {
+      std::cout << std::setw(15);
       std::cout << fYields[iCut];
+    }
     std::cout << std::endl;
   }
+  std::cout << std::endl;
 }
 
 //--------------------------------------------------------------------
@@ -62,14 +67,14 @@ void
 CutflowMaker::MakePlot(TString name)
 {
   GetCutflow();
-  TH1I* theHist = new TH1I("cutflow",";Cut;Number of Events",fCuts.size(),0,fCuts.size());
+  TH1I* theHist = new TH1I("cutflow",";;Number of Events",fCuts.size(),0,fCuts.size());
   for (UInt_t iCut = 0; iCut != fCuts.size(); ++iCut) {
     theHist->GetXaxis()->SetBinLabel(iCut+1,fCutNames[iCut]);
     theHist->SetBinContent(iCut+1,fYields[iCut]);
   }
   theHist->SetLineWidth(2);
   
-  TCanvas* theCanvas = new TCanvas("canvas",";Cut;Number of Events");
+  TCanvas* theCanvas = new TCanvas("canvas",";;Number of Events");
   theHist->Draw();
 
   theCanvas->SaveAs(name + ".pdf");
