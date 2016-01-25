@@ -61,6 +61,8 @@ Reweighter::SetCorrectionHist(TString histName, Int_t NumXBins, Double_t* XBins)
     for (UInt_t iHist = 0; iHist != DataHists.size(); ++iHist)
       delete DataHists[iHist];
   }
+
+  SetMinMax();
 }
 
 //--------------------------------------------------------------------

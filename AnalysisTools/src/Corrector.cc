@@ -1,3 +1,6 @@
+#include <iostream>
+#include "TAxis.h"
+#include "TArray.h"
 #include "Corrector.h"
 
 ClassImp(Corrector)
@@ -14,6 +17,8 @@ Corrector::Corrector(TString name) :
 {
   fInExpressions.resize(0);
   fFormulas.resize(0);
+  fMins.resize(0);
+  fMaxs.resize(0);
 }
   
 //--------------------------------------------------------------------
@@ -38,8 +43,21 @@ Corrector::SetCorrectionHist(TString hist1, TString hist2)
   fCorrectionHist  = (TH1*) fCorrectionFile->Get(hist1);
   TH1* divisorHist = (TH1*) fCorrectionFile->Get(hist2);
   fCorrectionHist->Divide(divisorHist);
+  SetMinMax();
 }
   
+//--------------------------------------------------------------------
+Double_t
+Corrector::GetFormulaResult(Int_t index)
+{
+  Double_t eval = fFormulas[index]->EvalInstance();
+  if (eval < fMins[index])
+    eval = fMins[index];
+  else if (eval > fMaxs[index])
+    eval = fMaxs[index];
+  return eval;
+}
+
 //--------------------------------------------------------------------
 Float_t
 Corrector::Evaluate()
@@ -48,15 +66,24 @@ Corrector::Evaluate()
     return 1.0;
   else {
     if (fCutFormula->EvalInstance() != 0) {
-      if (fNumDims == 1)
-        return fCorrectionHist->GetBinContent(fCorrectionHist->FindBin(fFormulas[0]->EvalInstance()));
-      else if (fNumDims == 2)
-        return fCorrectionHist->GetBinContent(fCorrectionHist->FindBin(fFormulas[0]->EvalInstance(),
-                                                       fFormulas[1]->EvalInstance()));
-      else if (fNumDims == 3)
-        return fCorrectionHist->GetBinContent(fCorrectionHist->FindBin(fFormulas[0]->EvalInstance(),
-                                                       fFormulas[1]->EvalInstance(),
-                                                       fFormulas[2]->EvalInstance()));
+      if (fNumDims == 1) {
+        Double_t evalX = GetFormulaResult(0);
+        return fCorrectionHist->GetBinContent(fCorrectionHist->FindBin(evalX));
+      }
+      else if (fNumDims == 2) {
+        Double_t evalX = GetFormulaResult(0);
+        Double_t evalY = GetFormulaResult(1);
+        return fCorrectionHist->GetBinContent(fCorrectionHist->FindBin(evalX),
+                                              fCorrectionHist->FindBin(evalY));
+      }
+      else if (fNumDims == 3) {
+        Double_t evalX = GetFormulaResult(0);
+        Double_t evalY = GetFormulaResult(1);
+        Double_t evalZ = GetFormulaResult(2);
+        return fCorrectionHist->GetBinContent(fCorrectionHist->FindBin(evalX),
+                                              fCorrectionHist->FindBin(evalY),
+                                              fCorrectionHist->FindBin(evalZ));
+      }
       else
         return 1.0;
     }
@@ -84,5 +111,27 @@ Corrector::InitializeTree()
   for (UInt_t iExpression = 0; iExpression != fInExpressions.size(); ++iExpression) {
     tempFormula = new TTreeFormula(fInExpressions[iExpression],fInExpressions[iExpression],fInTree);
     fFormulas.push_back(tempFormula);
+  }
+}
+
+//--------------------------------------------------------------------
+void
+Corrector::SetMinMax()
+{
+  for (Int_t iDim = 0; iDim != fNumDims; ++fNumDims) {
+    TAxis* theAxis;
+    if (iDim == 0)
+      theAxis = fCorrectionHist->GetXaxis();
+    else if (iDim == 1)
+      theAxis = fCorrectionHist->GetYaxis();
+    else if (iDim == 2)
+      theAxis = fCorrectionHist->GetZaxis();
+    else {
+      std::cout << "I don't support this many axes at the moment." << std::endl;
+      exit(3);
+    }
+    const TArray* theArray = theAxis->GetXbins();
+    fMins.push_back(theArray->GetAt(0));
+    fMaxs.push_back(theArray->GetAt(theArray->GetSize() - 1));
   }
 }

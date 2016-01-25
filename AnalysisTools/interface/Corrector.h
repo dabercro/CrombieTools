@@ -22,7 +22,8 @@ class Corrector
   void                  SetInTree         ( TTree* tree )       { fInTree = tree; InitializeTree();                        } 
 
   virtual   void        SetCorrectionFile ( TString fileName )  { fCorrectionFile = new TFile(fileName);                   }
-  void                  SetCorrectionHist ( TString histName )  { fCorrectionHist = (TH1*) fCorrectionFile->Get(histName); }
+  void                  SetCorrectionHist ( TString histName )  { fCorrectionHist = (TH1*) fCorrectionFile->Get(histName);
+                                                                  SetMinMax();                                             }
   void                  SetCorrectionHist ( TString hist1, TString hist2 );
 
   Float_t               Evaluate          ();
@@ -36,6 +37,7 @@ class Corrector
 
   TFile*                fCorrectionFile;
   TH1*                  fCorrectionHist;
+  void                  SetMinMax         ();
 
  private:
   Int_t                       fNumDims;
@@ -43,6 +45,9 @@ class Corrector
   TTreeFormula*               fCutFormula;
   std::vector<TString>        fInExpressions;
   std::vector<TTreeFormula*>  fFormulas;
+  std::vector<Double_t>       fMins;
+  std::vector<Double_t>       fMaxs;
+  Double_t                    GetFormulaResult            ( Int_t index );
 
   ClassDef(Corrector,1)
 };
