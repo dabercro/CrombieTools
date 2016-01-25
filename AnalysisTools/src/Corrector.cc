@@ -1,6 +1,5 @@
 #include <iostream>
 #include "TAxis.h"
-#include "TArray.h"
 #include "Corrector.h"
 
 ClassImp(Corrector)
@@ -130,8 +129,7 @@ Corrector::SetMinMax()
       std::cout << "I don't support this many axes at the moment." << std::endl;
       exit(3);
     }
-    const TArray* theArray = theAxis->GetXbins();
-    fMins.push_back(theArray->GetAt(0));
-    fMaxs.push_back(theArray->GetAt(theArray->GetSize() - 1));
+    fMins.push_back(theAxis->GetBinLowEdge(theAxis->GetFirst()));
+    fMaxs.push_back(theAxis->GetBinUpEdge(theAxis->GetLast()));
   }
 }
