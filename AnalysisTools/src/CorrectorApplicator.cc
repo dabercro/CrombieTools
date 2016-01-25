@@ -18,6 +18,7 @@ CorrectorApplicator::CorrectorApplicator(TString name, Bool_t saveAll) :
   fReportFrequency(100000)
 {
   fCorrectors.resize(0);
+  fMergeFactors.resize(0);
 }
   
 //--------------------------------------------------------------------
@@ -78,6 +79,13 @@ CorrectorApplicator::ApplyCorrections(TString fileName)
     }
   }
 
+  // Get the addresses of factors to merge (will be just a branch)
+  std::vector<Float_t> mergeFactors;
+  for (UInt_t iMerge = 0; iMerge != fMergeFactors.size(); ++iMerge) {
+    mergeFactors.push_back(0.0);
+    theTree->SetBranchAddress(fMergeFactors[iMerge],&mergeFactors[iMerge]);
+  }
+
   // Now loop through the tree and apply the corrections
   Long64_t nentries = theTree->GetEntriesFast();
   Float_t tempValue = 1.0;
@@ -86,9 +94,12 @@ CorrectorApplicator::ApplyCorrections(TString fileName)
       std::cout << "Processing " << fileName << " ... " << (float(iEntry)/nentries)*100 << "%" << std::endl;
 
     theTree->GetEntry(iEntry);
-    // First reset all of the addressed floats to 1.0
-    if (fName != "")
+    // First reset all of the addressed floats to 1.0, merge factors for master factor
+    if (fName != "") {
       Addresses[fName] = 1.0;
+      for (UInt_t iMerge = 0; iMerge != mergeFactors.size(); ++iMerge)
+        Addresses[fName] *= mergeFactors[iMerge];
+    }
     if (fSaveAll) {
       for (UInt_t iCorrector = 0; iCorrector != fCorrectors.size(); ++iCorrector)
         Addresses[fCorrectors[iCorrector]->GetName()] = 1.0;
