@@ -55,13 +55,17 @@ class PlotBase
   enum LegendY { kUpper = 0, kLower };
   enum LegendX { kLeft  = 0, kRight };
   void                   SetLegendLocation        ( LegendY yLoc, LegendX xLoc, Double_t xWidth = 0.3, Double_t yWidth = 0.2 );
-  void                   SetLegendLimits          ( Double_t lim1, Double_t lim2, Double_t lim3, Double_t lim4 );
+  void                   SetLegendLimits          ( Double_t lim1, Double_t lim2, Double_t lim3, Double_t lim4 )
+                                                                                   { l1 = lim1; l2 = lim2; l3 = lim3; l4 = lim4; }
+
   void                   SetLegendBorderSize      ( Int_t size )                                  { fLegendBorderSize = size;    }
   void                   SetLegendFill            ( Bool_t fill )                                 { fLegendFill = fill;          }
 
   // We can name the lines in the legend as well as set alternative line widths or styles
   void                   AddLegendEntry           ( TString LegendEntry, Color_t ColorEntry );    // Uses default line width and style
   void                   AddLegendEntry           ( TString LegendEntry, Color_t ColorEntry, Int_t LineWidth, Int_t LineStyle );
+  void                   ResetLegend              ()                          { fLegendEntries.resize(0); fLineColors.resize(0); 
+                                                                                fLineWidths.resize(0);    fLineStyles.resize(0); }
 
   // Set one of the lines to be plotted like data
   void                   SetDataIndex             ( Int_t data )                                  { fDataIndex = data;           }
@@ -279,18 +283,6 @@ PlotBase::SetLegendLocation(LegendY yLoc, LegendX xLoc, Double_t xWidth, Double_
     l2 = 0.15;
     l4 = 0.15 + yWidth;
   }
-}
-
-//--------------------------------------------------------------------
-void
-PlotBase::SetLegendLimits(Double_t lim1, Double_t lim2, Double_t lim3, Double_t lim4)
-  // This is the more manual form of setting legend location
-  // The user specifies all the corners just like in TLegend initialization
-{
-  l1 = lim1;
-  l2 = lim2;
-  l3 = lim3;
-  l4 = lim4;
 }
 
 //--------------------------------------------------------------------

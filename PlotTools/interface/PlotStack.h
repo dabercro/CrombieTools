@@ -4,6 +4,7 @@
 #include "TreeContainer.h"
 #include "PlotHists.h"
 #include "HistHolder.h"
+#include "MCReader.h"
 
 class PlotStack : public PlotHists
 {

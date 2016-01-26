@@ -44,10 +44,22 @@ PlotStack::ReadMCConfig(TString config, TString fileDir)
   TString XSec;
   TString LegendEntry;
   TString ColorEntry; 
- while (!configFile.eof()) {
+  TString currLegend;
+  TString currColor;
+  while (!configFile.eof()) {
     configFile >> FileName >> XSec >> LegendEntry >> ColorEntry;
+    if (LegendEntry == ".")
+      LegendEntry = currLegend;
+    else
+      currLegend = LegendEntry;
+
+    if (ColorEntry == ".")
+      ColorEntry = currColor;
+    else
+      currColor = ColorEntry;
+
     if (ColorEntry != "" && !FileName.BeginsWith('#'))
-      AddMCFile(fileDir + FileName, XSec.Atof(), LegendEntry, ColorEntry.Atoi());
+      AddMCFile(fileDir + FileName, XSec.Atof(), LegendEntry.ReplaceAll("_"," "), ColorEntry.Atoi());
   }
 }
 
@@ -103,6 +115,7 @@ void
 PlotStack::MakeCanvas(TString FileBase, Int_t NumXBins, Double_t *XBins,
                       TString XLabel, TString YLabel, Bool_t logY)
 {
+  ResetLegend();
   fDataContainer = new TreeContainer();
   fDataContainer->SetTreeName(fTreeName);
   fMCContainer = new TreeContainer();
@@ -153,8 +166,10 @@ PlotStack::MakeCanvas(TString FileBase, Int_t NumXBins, Double_t *XBins,
     for (UInt_t iSmaller = iLarger + 1; iSmaller != HistHolders.size(); ++iSmaller)
       HistHolders[iLarger]->fHist->Add(HistHolders[iSmaller]->fHist);
 
-    AllHists.push_back(HistHolders[iLarger]->fHist);
-    AddLegendEntry(HistHolders[iLarger]->fEntry,HistHolders[iLarger]->fColor,1,1);
+    if (HistHolders[iLarger]->fHist->Integral() > 0) {
+      AllHists.push_back(HistHolders[iLarger]->fHist);
+      AddLegendEntry(HistHolders[iLarger]->fEntry,HistHolders[iLarger]->fColor,1,1);
+    }
   }
 
   AddLegendEntry("Data",1);

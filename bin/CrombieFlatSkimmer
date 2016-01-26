@@ -20,6 +20,7 @@ parser.add_argument('--run', '-r', metavar = 'EXPR', dest = 'runExpr', default =
 parser.add_argument('--lumi', '-l', metavar = 'EXPR', dest = 'lumiExpr', default = 'lumiNum', help = 'Set the expression for Lumi Number.')
 parser.add_argument('--freq', '-f', metavar = 'NUM', dest = 'reportFreq', type = int, default = 100000, help = 'Set the reporting frequency.')
 parser.add_argument('--filters', '-e', metavar = 'FILE', nargs = '*', dest = 'filters', default = [], help = 'Set the filter files.')
+parser.add_argument('--duplicate','-d', action = 'store_true', dest = 'doDuplicate', help = 'Turn on duplicate checking.')
 
 args = parser.parse_args()
 
@@ -34,6 +35,7 @@ lumiNum      = args.lumiExpr
 theCut       = args.cut
 reportFreq   = args.reportFreq
 filters      = args.filters
+doDuplicate  = args.doDuplicate
 
 if inDir == outDir:
     print ""
@@ -64,6 +66,7 @@ def skim(inQueue):
     skimmer.SetLumiExpr(lumiNum)
     skimmer.SetCut(theCut)
     skimmer.SetReportFrequency(reportFreq)
+    skimmer.SetCheckDuplicates(doDuplicate)
 
     for filt in filters:
         skimmer.AddEventFilter(filt)
