@@ -1,15 +1,18 @@
 #! /bin/bash
 
-cmsbase=$1
-outFile=$2
+outFile=$1
+cmsbase=$2
 
 macroDir=$LS_SUBCWD
 
 source $macroDir/CrombieSlimmingConfig.sh
 
-cd $cmsbase/src
-eval `scram runtime -sh`
-cd -
+if [ "$cmsbase" != "" ]
+then
+    cd $cmsbase/src
+    eval `scram runtime -sh`
+    cd -
+fi
 
 for file in `cat $macroDir/$CrombieJobScriptList`
 do

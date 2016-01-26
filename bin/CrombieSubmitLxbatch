@@ -2,12 +2,6 @@
 
 fresh=$1
 
-if [ "$CMSSW_BASE" = "" ]
-then
-    echo "CMSSW_BASE not set. Make sure to cmsenv someplace that you want the jobs to use"
-    exit
-fi
-
 if [ ! -d bout ]
 then
     mkdir bout
@@ -32,7 +26,7 @@ then
         if [ ! -f $outFile -o "$fresh" = "fresh" ]
         then
             echo Making: $outFile
-            command="bsub -q $CrombieQueue -n $CrombieNumberProcs -o bout/out.%J $CROMBIEPATH/scripts/CrombieDoJob.sh $CMSSW_BASE $outFile"
+            command="bsub -q $CrombieQueue -n $CrombieNumberProcs -o bout/out.%J $CROMBIEPATH/scripts/CrombieDoJob.sh $outFile $CMSSW_BASE"
             if [ "$fresh" = "test" ]
             then
                 echo $command

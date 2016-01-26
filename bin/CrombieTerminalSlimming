@@ -28,7 +28,7 @@ then
     then
         if [ ! -d $CrombieTempDir/TerminalRunning ]
         then
-            mkdir $CrombieTempDir/TerminalRunning
+            mkdir -p $CrombieTempDir/TerminalRunning
         fi
         $CROMBIEPATH/scripts/CrombieDumpFileList.sh
         if [ "$?" -ne "0" ]

@@ -32,10 +32,6 @@ echo "#include \"TTree.h\"" >> $h
 declare -a otherTypes=()
 for branch in `cat $inVarsFile`
 do
-    if [ "${branch:0:1}" = "#" ]
-    then
-        continue
-    fi
     after="${branch##*/}"
     varLetter="${after%=*}"
     if [ "$varLetter" != "F" -a "$varLetter" != "I" -a "$varLetter" != "i" -a "$varLetter" != "O" -a "$varLetter" != "VF" -a "$varLetter" != "VI" -a "$varLetter" != "VO" -a "$varLetter" != "L" -a "$varLetter" != "l" ]; then
@@ -68,7 +64,7 @@ for branch in `cat $inVarsFile`
 do
     if [ "${branch:0:1}" = "#" ]
     then
-        continue
+        branch=${branch:1}
     fi
     varType=""
     varName="${branch%/*}"
@@ -177,7 +173,7 @@ for branch in `cat $inVarsFile`
 do
     if [ "${branch:0:1}" = "#" ]
     then
-        continue
+        branch=${branch:1}
     fi
     varName="${branch%/*}"
     after="${branch##*/}"
