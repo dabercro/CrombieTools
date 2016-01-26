@@ -19,6 +19,7 @@ parser.add_argument('--copy', metavar = 'NAMES', nargs = '*', dest = 'copyObject
 parser.add_argument('--run', '-r', metavar = 'EXPR', dest = 'runExpr', default = 'runNum', help = 'Set the expression for Run Number.')
 parser.add_argument('--lumi', '-l', metavar = 'EXPR', dest = 'lumiExpr', default = 'lumiNum', help = 'Set the expression for Lumi Number.')
 parser.add_argument('--freq', '-f', metavar = 'NUM', dest = 'reportFreq', type = int, default = 100000, help = 'Set the reporting frequency.')
+parser.add_argument('--filters', '-e', metavar = 'FILE', nargs = '*', dest = 'filters', default = [], help = 'Set the filter files.')
 
 args = parser.parse_args()
 
@@ -32,6 +33,7 @@ runNum       = args.runExpr
 lumiNum      = args.lumiExpr
 theCut       = args.cut
 reportFreq   = args.reportFreq
+filters      = args.filters
 
 if inDir == outDir:
     print ""
@@ -63,6 +65,9 @@ def skim(inQueue):
     skimmer.SetCut(theCut)
     skimmer.SetReportFrequency(reportFreq)
 
+    for filt in filters:
+        skimmer.AddEventFilter(filt)
+    ##
     for obj in copyObjects:
         skimmer.AddCopyObject(obj)
     ##

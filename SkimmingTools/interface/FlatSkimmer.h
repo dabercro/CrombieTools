@@ -2,6 +2,7 @@
 #define CROMBIETOOLS_SKIMMINGTOOLS_FLATSKIMMER_H
 
 #include <vector>
+#include <set>
 
 #include "TString.h"
 
@@ -25,9 +26,10 @@ class FlatSkimmer
   void        SetCheckDuplicates   ( Bool_t check )             { fCheckDuplicates = check;     }
   void        AddCopyObject        ( TString name )             { fCopyObjects.push_back(name); }
   void        Slim                 ( TString fileName );
+  void        AddEventFilter       ( TString filterName );
   
  private:
-  
+  std::set<TString>    fEventFilter;
   GoodLumiFilter      *fGoodLumiFilter;
   TString              fInDirectory;
   TString              fOutDirectory;
@@ -39,6 +41,7 @@ class FlatSkimmer
   Int_t                fReportFreq;
   Int_t                fCheckDuplicates;
   std::vector<TString> fCopyObjects;
+  
   
   ClassDef(FlatSkimmer,1)
 };

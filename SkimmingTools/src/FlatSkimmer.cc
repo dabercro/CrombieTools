@@ -1,5 +1,5 @@
+#include <fstream>
 #include <iostream>
-#include <set>
 
 #include "TFile.h"
 #include "TTree.h"
@@ -24,6 +24,20 @@ FlatSkimmer::FlatSkimmer() :
   fCheckDuplicates(false)
 {
   fCopyObjects.resize(0);
+  fEventFilter.clear();
+}
+
+//--------------------------------------------------------------------
+void
+FlatSkimmer::AddEventFilter(TString filterName){
+  std::ifstream filterFile;
+  filterFile.open(filterName.Data());
+  TString eventString;
+  while (!filterFile.eof()) {
+    filterFile >> eventString;
+    if (eventString != "")
+      fEventFilter.insert(eventString);
+  }
 }
 
 //--------------------------------------------------------------------
@@ -49,6 +63,7 @@ FlatSkimmer::Slim(TString fileName)
 
   Int_t badlumis   = 0;
   Int_t cutevents  = 0;
+  Int_t filtered   = 0;
   Int_t duplicates = 0;
 
   Long64_t nentries = inTree->GetEntriesFast();
@@ -60,8 +75,12 @@ FlatSkimmer::Slim(TString fileName)
     inTree->GetEntry(iEntry);
     if (fGoodLumiFilter->IsGood(runNum,lumiNum)) {
       if (cutter->EvalInstance()) {
+        testString = TString::Format("%i:%i:%llu",runNum,lumiNum,eventNum);
+        if (fEventFilter.find(testString) != fEventFilter.end()) {
+          filtered++;
+          continue;
+        }
         if (fCheckDuplicates) {
-          testString = TString::Format("%i_%i_%llu",runNum,lumiNum,eventNum);
           if (eventsRecorded.find(testString) == eventsRecorded.end())
             eventsRecorded.insert(testString);
           else {
@@ -92,6 +111,7 @@ FlatSkimmer::Slim(TString fileName)
   std::cout << fileName << " events removed for" << std::endl;
   std::cout << " Bad Runs:   " << badlumis << std::endl;
   std::cout << " Event Cut:  " << cutevents << std::endl;
+  std::cout << " Filter:     " << filtered << std::endl;
   std::cout << " Duplicates: ";
   if (fCheckDuplicates)
     std::cout << duplicates << std::endl;
