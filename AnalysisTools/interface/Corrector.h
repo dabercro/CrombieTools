@@ -21,9 +21,8 @@ class Corrector
   void                  SetInCut          ( TString cut )       { fInCut = cut;                                            }
   void                  SetInTree         ( TTree* tree )       { fInTree = tree; InitializeTree();                        } 
 
-  virtual   void        SetCorrectionFile ( TString fileName )  { fCorrectionFile = new TFile(fileName);                   }
-  void                  SetCorrectionHist ( TString histName )  { fCorrectionHist = (TH1*) fCorrectionFile->Get(histName);
-                                                                  SetMinMax();                                             }
+  virtual   void        SetCorrectionFile ( TString fileName );
+  void                  SetCorrectionHist ( TString histName );
   void                  SetCorrectionHist ( TString hist1, TString hist2 );
 
   Float_t               Evaluate          ();

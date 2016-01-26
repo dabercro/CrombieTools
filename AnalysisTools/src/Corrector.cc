@@ -37,10 +37,46 @@ Corrector::~Corrector()
 
 //--------------------------------------------------------------------
 void
+Corrector::SetCorrectionFile(TString fileName)
+{
+  fCorrectionFile = new TFile(fileName);
+  if (fCorrectionFile == NULL) {
+    std::cout << "Could not open " << fileName << std::endl;
+    exit(1);
+  }
+}
+
+//--------------------------------------------------------------------
+void
+Corrector::SetCorrectionHist(TString histName)
+{ 
+  fCorrectionHist = (TH1*) fCorrectionFile->Get(histName);
+  if (fCorrectionHist == NULL) {
+    std::cout << "Could not load " << histName << std::endl;
+    std::cout << "Looking inside " << fCorrectionFile->GetName() << std::endl;
+    exit(1);
+  }
+  SetMinMax();
+}
+
+//--------------------------------------------------------------------
+void
 Corrector::SetCorrectionHist(TString hist1, TString hist2)
 {
   fCorrectionHist  = (TH1*) fCorrectionFile->Get(hist1);
+  if (fCorrectionHist == NULL) {
+    std::cout << "Could not load " << hist1 << std::endl;
+    std::cout << "Looking inside " << fCorrectionFile->GetName() << std::endl;
+    exit(1);
+  }
+
   TH1* divisorHist = (TH1*) fCorrectionFile->Get(hist2);
+  if (divisorHist == NULL) {
+    std::cout << "Could not load " << hist2 << std::endl;
+    std::cout << "Looking inside " << fCorrectionFile->GetName() << std::endl;
+    exit(1);
+  }
+
   fCorrectionHist->Divide(divisorHist);
   SetMinMax();
 }
