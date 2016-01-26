@@ -72,11 +72,14 @@ PlotHists::MakeHists(Int_t NumXBins, Double_t *XBins)
     tempName.Form("Hist_%d",fPlotCounter);
     fPlotCounter++;
     tempHist = new TH1D(tempName,tempName,NumXBins,XBins);
-    for (Int_t iBin = 1; iBin != NumXBins + 1; ++iBin) {
+    for (Int_t iBin = 1; iBin != NumXBins + 1; ++iBin)
       tempHist->SetBinContent(iBin,tempHist->GetBinWidth(iBin)/fEventsPer);
-    }
+
+    SetZeroError(tempHist);
     for (UInt_t iHist = 0; iHist != theHists.size(); ++iHist)
       Division(theHists[iHist],tempHist);
+
+    delete tempHist;
   }
 
   if (fPrintTests) {
