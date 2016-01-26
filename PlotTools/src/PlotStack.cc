@@ -112,7 +112,9 @@ PlotStack::MakeCanvas(TString FileBase, Int_t NumXBins, Double_t *XBins,
     fMCContainer->AddFriendName(fFriends[iFriend]);
   }
 
+  SetIncludeErrorBars(true);
   std::vector<TH1D*> DataHists = GetHistList(NumXBins,XBins,false);
+  SetIncludeErrorBars(false);
   std::vector<TH1D*>   MCHists = GetHistList(NumXBins,XBins,true);
 
   std::vector<TH1D*> theHists;
