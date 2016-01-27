@@ -37,56 +37,62 @@ LimitTreeMaker::~LimitTreeMaker()
 void
 LimitTreeMaker::MakeTree()
 {
-  TFile* theFile = new TFile(fOutputFileName,"UPDATE");
-  theFile->cd();
+  TFile* theFile = new TFile(fOutputFileName,"RECREATE");
+  TreeContainer* tempContainer = new TreeContainer();
+  for (UInt_t iFile = 0; iFile != fInFileNames.size(); ++iFile)
+    tempContainer->AddFile(fInFileNames[iFile]);
+  std::vector<TFile*> theFiles  = tempContainer->ReturnFileList();
+
   for (UInt_t iRegion = 0; iRegion != fRegionNames.size(); ++iRegion) {
-    TreeContainer* tempContainer = new TreeContainer();
-    tempContainer->SetTreeName(fTreeName);
-    for (UInt_t iFriend = 0; iFriend != fFriendNames.size(); ++iFriend)
-      tempContainer->AddFriendName(fFriendNames[iFriend]);
-    for (UInt_t iKeep = 0; iKeep != fKeepBranches.size(); ++iKeep)
-      tempContainer->AddKeepBranch(fKeepBranches[iKeep]);
-    for (UInt_t iWeight = 0; iWeight != fWeightBranch.size(); ++iWeight)
-      tempContainer->AddKeepBranch(fWeightBranch[iWeight]);
-
-    tempContainer->SetSkimmingCut(fRegionCuts[iRegion]);
-    for (UInt_t iFile = 0; iFile != fInFileNames.size(); ++iFile)
-      tempContainer->AddFile(fInFileNames[iFile]);
-
-    std::vector<TTree*> tempTrees = tempContainer->ReturnTreeList();
-    std::vector<TFile*> theFiles  = tempContainer->ReturnFileList();
-    for (UInt_t iTree = 0; iTree != tempTrees.size(); ++iTree) {
-      TTree* tempTree = tempTrees[iTree];
+    std::cout << "Region " << fRegionNames[iRegion] << std::endl;
+    for (UInt_t iTree = 0; iTree != theFiles.size(); ++iTree) {
+      std::cout << "File " << theFiles[iTree]->GetName() << std::endl;
+      theFile->cd();
+      TTree* outTree  = new TTree(fOutTreeNames[iTree] + "_" + fRegionNames[iTree],fOutTreeNames[iTree] + "_" + fRegionNames[iTree]);
+      TTree* tempTree   = (TTree*) theFiles[iTree]->Get("events");
+      TTree* weightTree = (TTree*) theFiles[iTree]->Get("corrections");
+      std::cout << tempTree << " ... " << weightTree << std::endl;
+      std::map<TString, Float_t> addresses;
+      TTreeFormula* cutForm = new TTreeFormula(fRegionCuts[iRegion],fRegionCuts[iRegion],tempTree);
+      for (UInt_t iKeep = 0; iKeep != fKeepBranches.size(); ++iKeep) {
+        addresses[fKeepBranches[iKeep]] = 0.0;
+        outTree->Branch(fKeepBranches[iKeep],&addresses[fKeepBranches[iKeep]],fKeepBranches[iKeep] + "/F");
+        tempTree->SetBranchAddress(fKeepBranches[iKeep],&addresses[fKeepBranches[iKeep]]);
+        std::cout << "Added " << fKeepBranches[iKeep] << std::endl;
+      }
 
       TH1* allHist = (TH1*) theFiles[iTree]->Get(fAllHistName);
       Float_t mcScale = fLuminosity*fXSecs[iTree]/(allHist->GetBinContent(1));
       Float_t mcWeight = 1.0;
-      TBranch* weightBranch = tempTree->Branch(fOutputWeightBranch,&mcWeight,fOutputWeightBranch+"/F");
-      std::vector<TTreeFormula*> weightsForm;
+      TBranch* weightBranch = outTree->Branch(fOutputWeightBranch,&mcWeight,fOutputWeightBranch+"/F");
       TTreeFormula* tempForm;
       for (UInt_t iWeight = 0; iWeight != fWeightBranch.size(); ++iWeight) {
-        tempForm = new TTreeFormula(fWeightBranch[iWeight],fWeightBranch[iWeight],tempTree);
-        weightsForm.push_back(tempForm);
+        addresses[fWeightBranch[iWeight]];
+        weightTree->SetBranchAddress(fWeightBranch[iWeight],&addresses[fWeightBranch[iWeight]]);
       }
 
+      std::cout << "About to cycle through trees" << std::endl;
       UInt_t nentries = tempTree->GetEntriesFast();
       for (UInt_t iEntry = 0; iEntry != nentries; ++iEntry) {
         tempTree->GetEntry(iEntry);
-        mcWeight = mcScale;
-        for (UInt_t iWeight = 0; iWeight != fWeightBranch.size(); ++iWeight)
-          mcWeight *= weightsForm[iWeight]->EvalInstance();
-        
-        weightBranch->Fill();
-      }
-      for (UInt_t iWeight = 0; iWeight != fWeightBranch.size(); ++iWeight) {
-        delete weightsForm[iWeight];
-        tempTree->SetBranchStatus(fWeightBranch[iWeight],0);
+        weightTree->GetEntry(iEntry);
+        if (mcScale > 0) {
+          mcWeight = mcScale;
+          for (UInt_t iWeight = 0; iWeight != fWeightBranch.size(); ++iWeight)
+            mcWeight *= addresses[fWeightBranch[iWeight]];
+        }
+        else
+          mcWeight = 1.0;
+
+        if (cutForm->EvalInstance())
+          outTree->Fill();
       }
 
       theFile->cd();
-      tempTree->Write(fOutTreeNames[iTree] + "_" + fRegionNames[iTree],TObject::kOverwrite);
+      outTree->Write(fOutTreeNames[iTree] + "_" + fRegionNames[iRegion],TObject::kOverwrite);
+      std::cout << "Wrote to file." << std::endl;
     }
-    delete tempContainer;
   }
   theFile->Close();
+  delete tempContainer;
 }

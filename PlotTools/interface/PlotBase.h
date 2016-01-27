@@ -73,6 +73,7 @@ class PlotBase
   void                   SetMakeRatio             ( Bool_t ratio )                                { fMakeRatio = ratio;          }
   void                   SetRatioIndex            ( Int_t ratio )                                 { fRatioIndex = ratio;         }
   void                   SetOnlyRatioWithData     ( Bool_t only )                                 { fOnlyRatioWithData = only;   }
+  void                   SetRatioMinMax           ( Float_t min, Float_t max )               { fRatioMin = min; fRatioMax = max; }
   // Pick a line to draw first on the plot, if desired
   void                   SetDrawFirst             ( Int_t first )                                 { fDrawFirst = first;          }
 
@@ -103,6 +104,8 @@ class PlotBase
   Int_t                      fDataIndex;          // Index in the plotter of the data line
   Bool_t                     fMakeRatio;          // Bool to make a ratio plot on bottom of image
   Int_t                      fRatioIndex;         // Pick which line to set as 1 in ratio plot
+  Float_t                    fRatioMin;
+  Float_t                    fRatioMax;
 
   std::vector<TString>       fLegendEntries;      // Number of legend entries should match number of lines
 
@@ -151,6 +154,8 @@ PlotBase::PlotBase() :
   fDataIndex(-1),
   fMakeRatio(false),
   fRatioIndex(-1),
+  fRatioMin(0.0),
+  fRatioMax(2.0),
   bPDF(true),
   bPNG(true),
   bC(true),
@@ -443,7 +448,7 @@ PlotBase::BaseCanvas(TString FileBase, std::vector<T*> theLines,
     pad2->cd();
 
     // This is to give ticks to the Y Axis, see ROOT documentation for more details
-    Int_t divisions = 506;
+    Int_t divisions = 504;
 
     // We take the line equal to '1' and copy it
     T *ratioLine = (T*) theLines[fRatioIndex]->Clone("ValueHolder");
@@ -462,6 +467,8 @@ PlotBase::BaseCanvas(TString FileBase, std::vector<T*> theLines,
       newLines[iLine]->GetYaxis()->SetTitleOffset((1 - ratioFrac)/ratioFrac);
       newLines[iLine]->GetYaxis()->SetNdivisions(divisions);
       newLines[iLine]->GetYaxis()->SetTitle("Ratio");
+      newLines[iLine]->SetMinimum(fRatioMin);
+      newLines[iLine]->SetMaximum(fRatioMax);
       newLines[iLine]->SetFillColor(0);
     }
 
