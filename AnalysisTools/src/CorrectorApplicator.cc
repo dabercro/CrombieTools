@@ -35,23 +35,23 @@ CorrectorApplicator::ApplyCorrections(TString fileName)
   // If the input and output trees are the same, check if branches already exist
   if (fInputTreeName == fOutputTreeName) {
     if (fName != "") {
-      if (!theTree->GetBranch(fName)) {
+      if (theTree->GetBranch(fName)) {
         std::cout << "Branch " << fName << " already exists in " << fileName << std::endl;
         theFile->Close();
-        exit(1);
+        exit(0);
       }
     }
     if (fSaveAll) {
       for (UInt_t iCorrector = 0; iCorrector != fCorrectors.size(); ++iCorrector) {
-        if (!theTree->GetBranch(fCorrectors[iCorrector]->GetName())) {
+        if (theTree->GetBranch(fCorrectors[iCorrector]->GetName())) {
           std::cout << "Branch " << fCorrectors[iCorrector]->GetName() << " already exists in " << fileName << std::endl;
           theFile->Close();
-          exit(1);
+          exit(0);
         }
         if (fCorrectors[iCorrector]->GetName() == fName) {
           std::cout << "Corrector has same name as merged name: " << fName << std::endl;
           theFile->Close();
-          exit(2);
+          exit(0);
         }
       }
     }
