@@ -137,6 +137,7 @@ class PlotBase
 
   // Use this to get certain draw options correct (for data, for example)
   template<class T>  void    LineDrawing          ( std::vector<T*> theLines, Int_t index, Bool_t same );
+  std::vector<TObject*>      fDeleteThese;
 };
 
 //--------------------------------------------------------------------
@@ -328,12 +329,19 @@ void
 PlotBase::LineDrawing(std::vector<T*> theLines, Int_t index, Bool_t same)
   // This is used instead of Draw for lines so that the draw options are set in one place
 {
-  TString options = "";
+  TString options = "hist";
   if (index == fDataIndex)
     options = "PE";
   if (same)
-    options = options + "same";
+    options = options + ",same";
   theLines[index]->Draw(options);
+  if (fRatioIndex != -1 && index != fDataIndex) {
+    T* tempLine = (T*) theLines[fRatioIndex]->Clone();
+    tempLine->SetFillColor(kGray);
+    tempLine->SetFillStyle(3001);
+    tempLine->Draw("e2,same");
+    fDeleteThese.push_back(tempLine);
+  }
 }
 
 //--------------------------------------------------------------------
@@ -503,7 +511,9 @@ PlotBase::BaseCanvas(TString FileBase, std::vector<T*> theLines,
   // Cleanup is minimal
   delete theLegend;
   delete theCanvas;
-
+  for (UInt_t iDelete = 0; iDelete != fDeleteThese.size(); ++iDelete)
+    delete fDeleteThese[iDelete];
+  fDeleteThese.resize(0);
 }
 
 #endif

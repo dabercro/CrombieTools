@@ -58,6 +58,10 @@ void
 Division(TH1* PlotHist, TH1* RatioHist)
 {
   PlotHist->Divide(RatioHist);
+  for (Int_t iBin = 1; iBin != RatioHist->GetXaxis()->GetNbins() + 1; ++iBin) {
+    if (PlotHist->GetBinContent(iBin) == 0 && RatioHist->GetBinContent(iBin) == 0)
+      PlotHist->SetBinContent(iBin,1);
+  }
 }
 
 //--------------------------------------------------------------------

@@ -11,7 +11,9 @@ struct HistHolder
   HistHolder ( TH1D *hist, TString entry, Color_t color )
   {
     fHist = hist; fEntry = entry; fColor = color;
-    fHist->SetFillColor(fColor); fHist->SetMarkerSize(0);
+    fHist->SetFillStyle(1001);
+    fHist->SetFillColor(fColor); 
+    fHist->SetMarkerSize(0);
   }
   virtual ~HistHolder()               {}
 

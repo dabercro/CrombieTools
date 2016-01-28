@@ -100,7 +100,6 @@ PlotStack::GetHistList(Int_t NumXBins, Double_t *XBins, Bool_t isMC)
         std::cout << "Scale factor " << fLuminosity*fXSecs[iFile]/allHist->GetBinContent(1) << std::endl;
       }
       theHists[iFile]->Scale(fLuminosity*fXSecs[iFile]/allHist->GetBinContent(1));
-      SetZeroError(theHists[iFile]);
       if (fDebug)
         std::cout << "Integral after " << theHists[iFile]->Integral() << std::endl;
     }
@@ -167,6 +166,8 @@ PlotStack::MakeCanvas(TString FileBase, Int_t NumXBins, Double_t *XBins,
       HistHolders[iLarger]->fHist->Add(HistHolders[iSmaller]->fHist);
 
     if (HistHolders[iLarger]->fHist->Integral() > 0) {
+      if (iLarger != 0)
+        SetZeroError(HistHolders[iLarger]->fHist);
       AllHists.push_back(HistHolders[iLarger]->fHist);
       AddLegendEntry(HistHolders[iLarger]->fEntry,HistHolders[iLarger]->fColor,1,1);
     }

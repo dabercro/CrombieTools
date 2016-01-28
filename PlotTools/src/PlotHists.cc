@@ -59,8 +59,7 @@ PlotHists::MakeHists(Int_t NumXBins, Double_t *XBins)
     tempName.Form("Hist_%d",fPlotCounter);
     fPlotCounter++;
     tempHist = new TH1D(tempName,tempName,NumXBins,XBins);
-    if (fIncludeErrorBars || int(iPlot) == fDataIndex)
-      tempHist->Sumw2();
+    tempHist->Sumw2();
 
     inTree->Draw(inExpr+">>"+tempName,inCut);
 

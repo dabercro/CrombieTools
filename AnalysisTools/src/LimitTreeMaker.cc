@@ -42,7 +42,7 @@ LimitTreeMaker::MakeTree()
     std::cout << "File " << fInFileNames[iFile] << std::endl;
     TFile* inFile = new TFile(fInFileNames[iFile]);
     TTree* tempTree   = (TTree*) inFile->Get("events");
-    TTree* weightTree = (TTree*) inFile->Get("corrections");
+    TTree* weightTree = (TTree*) inFile->Get("events");
     std::cout << tempTree << " ... " << weightTree << std::endl;
     theFile->cd();
     for (UInt_t iRegion = 0; iRegion != fRegionNames.size(); ++iRegion) {
