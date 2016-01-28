@@ -35,6 +35,9 @@ class PlotHists : public PlotBase
 
   // There are some tests I had dump out, set by this bool
   void                   SetPrintTests            ( Bool_t b )                            { fPrintTests = b;      }
+
+  std::vector<TH1D*>     MakeRatio                ( std::vector<TH1D*> InLines, std::vector<TH1D*> RatioLines )
+                                                                    { return GetRatioToLines(InLines,RatioLines); }
  private:
   
   Bool_t    fNormalizedHists;                     // Can normalize histograms in order to compare shapes
