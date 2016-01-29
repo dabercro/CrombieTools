@@ -8,6 +8,7 @@
 #include "TTree.h"
 #include "TString.h"
 
+#include "TLatex.h"
 #include "TH1.h"
 #include "TGraphErrors.h"
 #include "TCanvas.h"
@@ -80,9 +81,13 @@ class PlotBase
   // Options to not spit out .pdf .png and .C files
   void                   OnlyPDF                  ()                                              { bPNG = false; bC = false;    }
   void                   OnlyPNG                  ()                                              { bPDF = false; bC = false;    }
+
+  void                   SetLumiLabel             ( TString lumi )                                { fLumiLabel = lumi;           }
+  void                   SetLumiLabel             ( Float_t lumi )                  { fLumiLabel = TString::Format("%.1f",lumi); }
+  void                   SetIsCMSPrelim           ( Bool_t isPre )                                { fIsCMSPrelim = isPre;        }
   
  protected:
-  
+
   UInt_t                     fPlotCounter;        // This is used so that making scratch plots does not overlap
   
   TTree*                     fDefaultTree;        // Default Tree if needed
@@ -135,6 +140,9 @@ class PlotBase
   Bool_t                     fLegendFill;         // Gives fill option to legend drawing
   Int_t                      fDrawFirst;          // Can force one of the lines to be drawn first
 
+  TString                    fLumiLabel;
+  Bool_t                     fIsCMSPrelim;
+
   // Use this to get certain draw options correct (for data, for example)
   template<class T>  void    LineDrawing          ( std::vector<T*> theLines, Int_t index, Bool_t same );
   std::vector<TObject*>      fDeleteThese;
@@ -165,7 +173,9 @@ PlotBase::PlotBase() :
   fDefaultLineStyle(1),
   fOnlyRatioWithData(false),
   fLegendFill(false),
-  fDrawFirst(-1)
+  fDrawFirst(-1),
+  fLumiLabel(""),
+  fIsCMSPrelim(false)
 {
   fInTrees.resize(0);
   fInCuts.resize(0);
@@ -498,6 +508,30 @@ PlotBase::BaseCanvas(TString FileBase, std::vector<T*> theLines,
     // There is no log Y on the ratio plot
     if (logX)
       pad2->SetLogx();
+  }
+
+  theCanvas->cd();
+
+  if (fLumiLabel != "") {
+    TLatex* latex2 = new TLatex();
+    latex2->SetNDC();
+    latex2->SetTextSize(0.035);
+    latex2->SetTextAlign(31);
+    latex2->DrawLatex(0.90, 0.96, fLumiLabel + " fb^{-1} (13 TeV)");
+    fDeleteThese.push_back(latex2);
+  }
+
+  if (fIsCMSPrelim) {
+    TLatex* latex3 = new TLatex();
+    latex3->SetNDC();
+    latex3->SetTextSize(0.035);
+    latex3->SetTextFont(62);
+    latex3->SetTextAlign(11);
+    latex3->DrawLatex(0.12, 0.96, "CMS");
+    latex3->SetTextFont(52);
+    latex3->SetTextAlign(11);
+    latex3->DrawLatex(0.20, 0.96, "Preliminary");
+    fDeleteThese.push_back(latex3);
   }
 
   // Now save the picture we just finished making

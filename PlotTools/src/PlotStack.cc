@@ -17,6 +17,7 @@ PlotStack::PlotStack() :
   fDataContainer(0),
   fMCContainer(0),
   fMCWeights(""),
+  fMinLegendFrac(0.0),
   fDebug(false)
 {
   fFriends.resize(0);
@@ -114,6 +115,7 @@ void
 PlotStack::MakeCanvas(TString FileBase, Int_t NumXBins, Double_t *XBins,
                       TString XLabel, TString YLabel, Bool_t logY)
 {
+  SetLumiLabel(float(fLuminosity/1000.0));
   ResetLegend();
   fDataContainer = new TreeContainer();
   fDataContainer->SetTreeName(fTreeName);
@@ -169,7 +171,12 @@ PlotStack::MakeCanvas(TString FileBase, Int_t NumXBins, Double_t *XBins,
       if (iLarger != 0)
         SetZeroError(HistHolders[iLarger]->fHist);
       AllHists.push_back(HistHolders[iLarger]->fHist);
-      AddLegendEntry(HistHolders[iLarger]->fEntry,HistHolders[iLarger]->fColor,1,1);
+      if (HistHolders[iLarger]->fHist->Integral() > fMinLegendFrac * HistHolders[0]->fHist->Integral())
+        AddLegendEntry(HistHolders[iLarger]->fEntry,HistHolders[iLarger]->fColor,1,1);
+      else {
+        AddLegendEntry("Others",HistHolders[iLarger]->fColor,1,1);
+        break;
+      }
     }
   }
 

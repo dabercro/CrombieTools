@@ -12,36 +12,39 @@ class PlotStack : public PlotHists
   virtual ~PlotStack();
   
   // Set the tree of the files you are trying to plot and add friends in same file
-  void SetTreeName   ( TString name )             { fTreeName = name;                           }
-  void AddFriend     ( TString name )             { fFriends.push_back(name);                   }
+  void SetTreeName      ( TString name )             { fTreeName = name;                        }
+  void AddFriend        ( TString name )             { fFriends.push_back(name);                }
   
   // Set the all histogram and luminosity for normalization
-  void SetAllHist    ( TString name )             { fAllHist = name;                            }
-  void SetLuminosity ( Double_t lum )             { fLuminosity = lum;                          }
+  void SetAllHist       ( TString name )             { fAllHist = name;                         }
+  void SetLuminosity    ( Double_t lum )             { fLuminosity = lum;                       }
   
   // Add files as either data or MC
-  void AddDataFile   ( TString FileName )         { fDataFiles.push_back(FileName);             }
-  void AddMCFile     ( TString FileName, Double_t XSec, TString LegendEntry, Color_t ColorEntry )
+  void AddDataFile      ( TString FileName )         { fDataFiles.push_back(FileName);          }
+  void AddMCFile        ( TString FileName, Double_t XSec, 
+                          TString LegendEntry, Color_t ColorEntry )
                                         { fMCFiles.push_back(FileName); 
                                           fXSecs.push_back(XSec); 
                                           fStackEntries.push_back(LegendEntry); 
                                           fStackColors.push_back(ColorEntry);                   }
   // Alternatively, read a central MC configuration file
-  void ReadMCConfig  ( TString config, TString fileDir = "" );
+  void ReadMCConfig     ( TString config, TString fileDir = "" );
 
   // This is a function in case your data files are buggy and have not 1 for all of the multipliers
   // The multipliers for MC can be set separately
-  void SetMCWeights  ( TString weight )           { fMCWeights = weight;                        }
+  void SetMCWeights     ( TString weight )           { fMCWeights = weight;                     }
   
   // Choose the binning of your plots and make
-  void MakeCanvas    ( TString FileBase, Int_t NumXBins, Double_t *XBins,
-                       TString XLabel, TString YLabel, Bool_t logY = false );
+  void MakeCanvas       ( TString FileBase, Int_t NumXBins, Double_t *XBins,
+                          TString XLabel, TString YLabel, Bool_t logY = false );
   
-  void MakeCanvas    ( TString FileBase, Int_t NumXBins, Double_t MinX, Double_t MaxX,
-                       TString XLabel, TString YLabel, Bool_t logY = false );
+  void MakeCanvas       ( TString FileBase, Int_t NumXBins, Double_t MinX, Double_t MaxX,
+                          TString XLabel, TString YLabel, Bool_t logY = false );
   
+  void SetMinLegendFrac ( Double_t frac )            { fMinLegendFrac = frac;                   }
+
   // This dumps out some raw values for you to check yields
-  void SetDebug      ( Bool_t debug )              { fDebug = debug;                            }
+  void SetDebug         ( Bool_t debug )             { fDebug = debug;                          }
   
  protected:
   // Draws histograms for the object
@@ -58,9 +61,10 @@ class PlotStack : public PlotHists
   std::vector<TString>  fStackEntries;              // List of legend entries for MC
   std::vector<Color_t>  fStackColors;               // List of legend colors for MC
   
-  TreeContainer        *fDataContainer;             // A TreeContainer for data
-  TreeContainer        *fMCContainer;               // A TreeContainer for MC
+  TreeContainer*        fDataContainer;             // A TreeContainer for data
+  TreeContainer*        fMCContainer;               // A TreeContainer for MC
   TString               fMCWeights;                 // Separate MC weights if needed
+  Double_t              fMinLegendFrac;
 
   Bool_t                fDebug;                     // Dumps yield tests
   
