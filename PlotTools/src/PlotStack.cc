@@ -18,6 +18,7 @@ PlotStack::PlotStack() :
   fMCContainer(0),
   fMCWeights(""),
   fMinLegendFrac(0.0),
+  fForceTop(""),
   fDebug(false)
 {
   fFriends.resize(0);
@@ -115,6 +116,16 @@ void
 PlotStack::MakeCanvas(TString FileBase, Int_t NumXBins, Double_t *XBins,
                       TString XLabel, TString YLabel, Bool_t logY)
 {
+  std::cout << std::endl;
+  std::cout << " C R O M B I E   S T A C K " << std::endl;
+  std::cout << std::endl;
+  std::cout << "   Making File :   " << FileBase << std::endl;
+  std::cout << "   Plotting    :   " << fDefaultExpr << std::endl;
+  std::cout << "   Labeled     :   " << XLabel << std::endl;  
+  std::cout << "   With cut    :   " << fDefaultCut << std::endl;
+  std::cout << std::endl;
+
+
   SetLumiLabel(float(fLuminosity/1000.0));
   ResetLegend();
   fDataContainer = new TreeContainer();
@@ -153,7 +164,7 @@ PlotStack::MakeCanvas(TString FileBase, Int_t NumXBins, Double_t *XBins,
       TString tempName;
       tempName.Format("StackedHist_%d",iHist);
       tempMCHist = (TH1D*) MCHists[iHist]->Clone(tempName);
-      tempHistHolder = new HistHolder(tempMCHist,fStackEntries[iHist],fStackColors[iHist]);
+      tempHistHolder = new HistHolder(tempMCHist,fStackEntries[iHist],fStackColors[iHist],(fForceTop == fStackEntries[iHist]));
       HistHolders.push_back(tempHistHolder);
     }
     else
@@ -171,11 +182,17 @@ PlotStack::MakeCanvas(TString FileBase, Int_t NumXBins, Double_t *XBins,
       if (iLarger != 0)
         SetZeroError(HistHolders[iLarger]->fHist);
       AllHists.push_back(HistHolders[iLarger]->fHist);
-      if (HistHolders[iLarger]->fHist->Integral() > fMinLegendFrac * HistHolders[0]->fHist->Integral())
-        AddLegendEntry(HistHolders[iLarger]->fEntry,HistHolders[iLarger]->fColor,1,1);
-      else {
-        AddLegendEntry("Others",HistHolders[iLarger]->fColor,1,1);
-        break;
+
+      if ((HistHolders[iLarger]->fHist->Integral() > fMinLegendFrac * HistHolders[0]->fHist->Integral()) ||  // If less than the fraction set
+          (iLarger == HistHolders.size() - 1))                                                               // or the last histogram
+        AddLegendEntry(HistHolders[iLarger]->fEntry,HistHolders[iLarger]->fColor,1,1);                       // Add legend properly
+      else {                                                                                                 // Otherwise
+        if (HistHolders[iLarger + 1]->fHist->Integral() > 0)                                                 // Check if the next histogram contribute
+          AddLegendEntry("Others",HistHolders[iLarger]->fColor,1,1);                                         // If so, make others legend
+        else                                                                                                 // If not,
+          AddLegendEntry(HistHolders[iLarger]->fEntry,HistHolders[iLarger]->fColor,1,1);                     // Make normal legend entry
+
+        break;                                                                                               // Stop adding histograms
       }
     }
   }

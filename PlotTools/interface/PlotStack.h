@@ -41,6 +41,7 @@ class PlotStack : public PlotHists
   void MakeCanvas       ( TString FileBase, Int_t NumXBins, Double_t MinX, Double_t MaxX,
                           TString XLabel, TString YLabel, Bool_t logY = false );
   
+  void SetForceTop      ( TString force )            { fForceTop = force;                       }
   void SetMinLegendFrac ( Double_t frac )            { fMinLegendFrac = frac;                   }
 
   // This dumps out some raw values for you to check yields
@@ -64,6 +65,7 @@ class PlotStack : public PlotHists
   TreeContainer*        fDataContainer;             // A TreeContainer for data
   TreeContainer*        fMCContainer;               // A TreeContainer for MC
   TString               fMCWeights;                 // Separate MC weights if needed
+  TString               fForceTop;
   Double_t              fMinLegendFrac;
 
   Bool_t                fDebug;                     // Dumps yield tests
