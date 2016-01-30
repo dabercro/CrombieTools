@@ -433,6 +433,8 @@ PlotBase::BaseCanvas(TString FileBase, std::vector<T*> theLines,
     // Assume that log Y is only in the case of the top plot of ratio
     if (logY)
       pad1->SetLogy();
+
+    gPad->RedrawAxis();
   }
 
   // If the first draw was not specified by the user, use the maximum found before
@@ -448,6 +450,8 @@ PlotBase::BaseCanvas(TString FileBase, std::vector<T*> theLines,
     LineDrawing(theLines,fDataIndex,true);
 
   theLegend->Draw();
+
+  gPad->RedrawAxis();
 
   // If not a ratio plot, set the canvas to log
   if (!fMakeRatio) {
@@ -508,6 +512,8 @@ PlotBase::BaseCanvas(TString FileBase, std::vector<T*> theLines,
     // There is no log Y on the ratio plot
     if (logX)
       pad2->SetLogx();
+
+    gPad->RedrawAxis();
   }
 
   theCanvas->cd();
@@ -528,11 +534,14 @@ PlotBase::BaseCanvas(TString FileBase, std::vector<T*> theLines,
     latex3->SetTextFont(62);
     latex3->SetTextAlign(11);
     latex3->DrawLatex(0.12, 0.96, "CMS");
+    latex3->SetTextSize(0.030);
     latex3->SetTextFont(52);
     latex3->SetTextAlign(11);
     latex3->DrawLatex(0.20, 0.96, "Preliminary");
     fDeleteThese.push_back(latex3);
   }
+
+  gPad->RedrawAxis();
 
   // Now save the picture we just finished making
   if (bC)
