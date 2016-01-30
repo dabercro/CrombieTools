@@ -2,6 +2,12 @@
 
 fresh=$1
 
+if [ "$CMSSW_BASE" = "" ]
+then
+    echo "Require you to be cmsenv somewhere"
+    exit 1
+fi
+
 if [ ! -d bout ]
 then
     mkdir bout
