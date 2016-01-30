@@ -36,6 +36,7 @@ CutflowMaker::GetCutflow()
       for (UInt_t iCut = 0; iCut != formulae.size(); ++iCut) {
         if (formulae[iCut]->EvalInstance() == 0)
           break;
+        
         ++fYields[iCut];
       }
     }

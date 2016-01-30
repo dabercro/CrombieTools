@@ -180,7 +180,7 @@ PlotStack::MakeCanvas(TString FileBase, Int_t NumXBins, Double_t *XBins,
     for (UInt_t iHist = 0; iHist != HistHolders.size(); ++iHist) {
       tempHist = (TH1D*) HistHolders[iHist]->fHist->Clone();
       std::cout << HistHolders[iHist]->fEntry << "  :  " << tempHist->Integral(0,NumXBins + 1,"width") << std::endl;
-      dumpFile->WriteTObject(tempHist,HistHolders[iHist]->fEntry.ReplaceAll(" ","_"));
+      dumpFile->WriteTObject(tempHist,HistHolders[iHist]->fEntry);
     }
     tempHist = (TH1D*) DataHist->Clone();
     std::cout << "Data     :  " << tempHist->Integral(0,NumXBins + 1,"width") << std::endl;
