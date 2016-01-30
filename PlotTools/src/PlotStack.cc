@@ -19,7 +19,8 @@ PlotStack::PlotStack() :
   fMCWeights(""),
   fMinLegendFrac(0.0),
   fForceTop(""),
-  fDebug(false)
+  fDebug(false),
+  fDumpRootName("")
 {
   fFriends.resize(0);
   fDataFiles.resize(0);
@@ -132,6 +133,7 @@ PlotStack::MakeCanvas(TString FileBase, Int_t NumXBins, Double_t *XBins,
   fDataContainer->SetTreeName(fTreeName);
   fMCContainer = new TreeContainer();
   fMCContainer->SetTreeName(fTreeName);
+
   for (UInt_t iFriend = 0; iFriend != fFriends.size(); ++iFriend) {
     fDataContainer->AddFriendName(fFriends[iFriend]);
     fMCContainer->AddFriendName(fFriends[iFriend]);
@@ -158,6 +160,7 @@ PlotStack::MakeCanvas(TString FileBase, Int_t NumXBins, Double_t *XBins,
   HistHolder *tempHistHolder = 0;
   std::vector<HistHolder*> HistHolders;
   HistHolders.resize(0);
+
   for (UInt_t iHist = 0; iHist != MCHists.size(); ++iHist) {
     if (fStackEntries[iHist] != previousEntry) {
       previousEntry = fStackEntries[iHist];
@@ -169,6 +172,20 @@ PlotStack::MakeCanvas(TString FileBase, Int_t NumXBins, Double_t *XBins,
     }
     else
       tempMCHist->Add(MCHists[iHist]);
+  }
+
+  if (fDumpRootName != "") {
+    TH1D* tempHist;
+    TFile* dumpFile = new TFile(fDumpRootName,"RECREATE");
+    for (UInt_t iHist = 0; iHist != HistHolders.size(); ++iHist) {
+      tempHist = (TH1D*) HistHolders[iHist]->fHist->Clone();
+      std::cout << HistHolders[iHist]->fEntry << "  :  " << tempHist->Integral(0,NumXBins + 1,"width") << std::endl;
+      dumpFile->WriteTObject(tempHist,HistHolders[iHist]->fEntry.ReplaceAll(" ","_"));
+    }
+    tempHist = (TH1D*) DataHist->Clone();
+    std::cout << "Data     :  " << tempHist->Integral(0,NumXBins + 1,"width") << std::endl;
+    dumpFile->WriteTObject(tempHist,"Data");
+    dumpFile->Close();
   }
 
   std::sort(HistHolders.begin(),HistHolders.end(),SortHistHolders);

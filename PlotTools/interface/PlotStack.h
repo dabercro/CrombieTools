@@ -27,6 +27,7 @@ class PlotStack : public PlotHists
                                           fXSecs.push_back(XSec); 
                                           fStackEntries.push_back(LegendEntry); 
                                           fStackColors.push_back(ColorEntry);                   }
+
   // Alternatively, read a central MC configuration file
   void ReadMCConfig     ( TString config, TString fileDir = "" );
 
@@ -46,6 +47,7 @@ class PlotStack : public PlotHists
 
   // This dumps out some raw values for you to check yields
   void SetDebug         ( Bool_t debug )             { fDebug = debug;                          }
+  void SetDumpFileName  ( TString dumpName )         { fDumpRootName = dumpName;                }
   
  protected:
   // Draws histograms for the object
@@ -69,7 +71,8 @@ class PlotStack : public PlotHists
   Double_t              fMinLegendFrac;
 
   Bool_t                fDebug;                     // Dumps yield tests
-  
+  TString               fDumpRootName;              // File where each histogram in stack is dumped
+
   ClassDef(PlotStack,1)
 };
 
