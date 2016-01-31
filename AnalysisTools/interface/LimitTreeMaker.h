@@ -3,7 +3,6 @@
 
 #include <vector>
 #include "TString.h"
-#include "TreeContainer.h"
 
 class LimitTreeMaker
 {
@@ -23,7 +22,7 @@ class LimitTreeMaker
   void                 SetOutputWeightBranch   ( TString branch )            { fOutputWeightBranch = branch;           }
   void                 SetAllHistName          ( TString name )              { fAllHistName = name;                    }
   void                 SetLuminosity           ( Float_t lumi )              { fLuminosity = lumi;                     }
-  void                 MakeTree                ();
+  void                 MakeTrees               ();
 
  private:
   TString                   fOutputFileName;
