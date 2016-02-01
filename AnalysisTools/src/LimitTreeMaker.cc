@@ -61,11 +61,9 @@ LimitTreeMaker::MakeTrees()
       // Apply selection
       TFile* tempFile = new TFile("tempCopyFileDontUse.root","RECREATE");
       TTree* loopTree = inTree->CopyTree(fRegionCuts[iRegion]);
-      std::cout << loopTree << std::endl;
       // Initialize output tree
       TFile* outFile = new TFile(fOutputFileName,"UPDATE");
       TTree* outTree = new TTree(fOutTreeNames[iFile] + "_" + fRegionNames[iRegion],fOutTreeNames[iFile] + "_" + fRegionNames[iRegion]);
-      std::cout << outTree << std::endl;
 
       // Setup the branches to keep
       std::map<TString, Float_t> addresses;
@@ -88,7 +86,6 @@ LimitTreeMaker::MakeTrees()
       }
 
       UInt_t nentries = loopTree->GetEntries();
-      std::cout << nentries << std::endl;
       for (UInt_t iEntry = 0; iEntry != nentries; ++iEntry) {
         loopTree->GetEntry(iEntry);
         if (mcScale > 0) {
@@ -104,8 +101,6 @@ LimitTreeMaker::MakeTrees()
       outFile->cd();
       outFile->WriteTObject(outTree,fOutTreeNames[iFile] + "_" + fRegionNames[iRegion],"Overwrite");
       outFile->Close();
-
-      std::cout << "Hello" << std::endl;
 
       tempFile->Close();
       addresses.clear();

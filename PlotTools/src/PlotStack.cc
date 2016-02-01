@@ -2,6 +2,7 @@
 #include <iostream>
 #include <algorithm>
 
+#include "TColor.h"
 #include "TFile.h"
 #include "TLegend.h"
 
@@ -50,6 +51,7 @@ PlotStack::ReadMCConfig(TString config, TString fileDir)
   TString ColorEntry; 
   TString currLegend;
   TString currColor;
+  Int_t newColors = 0;
   while (!configFile.eof()) {
     configFile >> FileName >> XSec >> LegendEntry >> ColorEntry;
     if (LegendEntry == ".")
@@ -59,6 +61,16 @@ PlotStack::ReadMCConfig(TString config, TString fileDir)
 
     if (ColorEntry == ".")
       ColorEntry = currColor;
+    else if (ColorEntry == "rgb") {
+      ++newColors;
+      ColorEntry = TString::Format("%i",5000 + newColors);
+      currColor = ColorEntry;
+      TString red;
+      TString green;
+      TString blue;
+      configFile >> red >> green >> blue;
+      TColor* setColor = new TColor(ColorEntry.Atoi(),red.Atof()/255,green.Atof()/255,blue.Atof()/255);
+    }
     else
       currColor = ColorEntry;
 
