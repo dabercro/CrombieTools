@@ -16,4 +16,5 @@ import ResolutionPlotter
 import Corrector
 import Reweighter
 import TmvaClassifier
+import HistWriter
 import tdrStyle
