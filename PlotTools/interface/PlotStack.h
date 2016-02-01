@@ -31,7 +31,8 @@ class PlotStack : public PlotHists
   // Alternatively, read a central MC configuration file
   void ReadMCConfig     ( TString config, TString fileDir = "" );
 
-  // This is a function in case your data files are buggy and have not 1 for all of the multipliers
+  // The multipliers for Data can be set separately
+  void SetDataWeights   ( TString weight )           { fDataWeights = weight;                   }
   // The multipliers for MC can be set separately
   void SetMCWeights     ( TString weight )           { fMCWeights = weight;                     }
   
@@ -66,6 +67,7 @@ class PlotStack : public PlotHists
   
   TreeContainer*        fDataContainer;             // A TreeContainer for data
   TreeContainer*        fMCContainer;               // A TreeContainer for MC
+  TString               fDataWeights;               // Separate Data weights if needed
   TString               fMCWeights;                 // Separate MC weights if needed
   TString               fForceTop;
   Double_t              fMinLegendFrac;

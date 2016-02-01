@@ -17,4 +17,5 @@ import Corrector
 import Reweighter
 import TmvaClassifier
 import HistWriter
+import LimitTreeMaker
 import tdrStyle

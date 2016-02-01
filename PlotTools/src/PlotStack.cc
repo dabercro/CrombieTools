@@ -16,6 +16,7 @@ PlotStack::PlotStack() :
   fLuminosity(2110.0),
   fDataContainer(0),
   fMCContainer(0),
+  fDataWeights(""),
   fMCWeights(""),
   fMinLegendFrac(0.0),
   fForceTop(""),
@@ -72,7 +73,7 @@ PlotStack::GetHistList(Int_t NumXBins, Double_t *XBins, Bool_t isMC)
 {
   std::vector<TString> FileList;
   TreeContainer *tempContainer = NULL;
-  TString tempCutHolder;
+  TString tempCutHolder = "";
   if (isMC) {
     FileList = fMCFiles;
     tempContainer = fMCContainer;
@@ -84,6 +85,10 @@ PlotStack::GetHistList(Int_t NumXBins, Double_t *XBins, Bool_t isMC)
   else {
     FileList = fDataFiles;
     tempContainer = fDataContainer;
+    if (fDataWeights != "") {
+      tempCutHolder = fDefaultCut;
+      SetDefaultWeight(TString("(") + tempCutHolder + TString(") && (") + fDataWeights + TString(")"));
+    }
   }
   
   for (UInt_t iFile = 0; iFile < FileList.size(); iFile++)
@@ -92,7 +97,7 @@ PlotStack::GetHistList(Int_t NumXBins, Double_t *XBins, Bool_t isMC)
   SetTreeList(tempContainer->ReturnTreeList());
   std::vector<TFile*> theFiles = tempContainer->ReturnFileList();
   std::vector<TH1D*> theHists = MakeHists(NumXBins,XBins);
-  if (isMC && fMCWeights != "")
+  if (tempCutHolder != "")
     SetDefaultWeight(tempCutHolder);
 
   for (UInt_t iFile = 0; iFile < theFiles.size(); iFile++) {

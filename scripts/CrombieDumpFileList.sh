@@ -13,10 +13,10 @@ if [ ! -d $CrombieTempDir ]
 then
     mkdir -p $CrombieTempDir
 else
-    rm $CrombieTempDir/*.txt
+    rm $CrombieTempDir/*.txt 2> /dev/null
     if [ "$fresh" = "fresh" ]
     then
-        rm $CrombieTempDir/*.root
+        rm $CrombieTempDir/*.root 2> /dev/null
     fi
 fi
 

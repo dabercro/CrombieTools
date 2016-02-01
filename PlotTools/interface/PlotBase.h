@@ -75,6 +75,7 @@ class PlotBase
   void                   SetRatioIndex            ( Int_t ratio )                                 { fRatioIndex = ratio;         }
   void                   SetOnlyRatioWithData     ( Bool_t only )                                 { fOnlyRatioWithData = only;   }
   void                   SetRatioMinMax           ( Float_t min, Float_t max )               { fRatioMin = min; fRatioMax = max; }
+  void                   SetRatioTitle            ( TString title )                               { fRatioTitle = title;         }
   // Pick a line to draw first on the plot, if desired
   void                   SetDrawFirst             ( Int_t first )                                 { fDrawFirst = first;          }
 
@@ -111,6 +112,8 @@ class PlotBase
   Int_t                      fRatioIndex;         // Pick which line to set as 1 in ratio plot
   Float_t                    fRatioMin;
   Float_t                    fRatioMax;
+  TString                    fRatioTitle;
+  Bool_t                     fOnlyRatioWithData;  // Suppresses the ratio of extra MC
 
   std::vector<TString>       fLegendEntries;      // Number of legend entries should match number of lines
 
@@ -136,7 +139,6 @@ class PlotBase
   std::vector<Int_t>         fLineWidths;         // Will be filled with defaults unless
   std::vector<Int_t>         fLineStyles;         //   set explicitly with overloaded function
 
-  Bool_t                     fOnlyRatioWithData;  // Suppresses the ratio of extra MC
   Bool_t                     fLegendFill;         // Gives fill option to legend drawing
   Int_t                      fDrawFirst;          // Can force one of the lines to be drawn first
 
@@ -165,13 +167,14 @@ PlotBase::PlotBase() :
   fRatioIndex(-1),
   fRatioMin(0.0),
   fRatioMax(2.0),
+  fRatioTitle("Ratio"),
+  fOnlyRatioWithData(false),
   bPDF(true),
   bPNG(true),
   bC(true),
   fCanvasName("canvas"),
   fDefaultLineWidth(2),
   fDefaultLineStyle(1),
-  fOnlyRatioWithData(false),
   fLegendFill(false),
   fDrawFirst(-1),
   fLumiLabel(""),
@@ -488,7 +491,7 @@ PlotBase::BaseCanvas(TString FileBase, std::vector<T*> theLines,
       newLines[iLine]->GetXaxis()->SetTitleOffset(1.1);
       newLines[iLine]->GetYaxis()->SetTitleOffset((1 - ratioFrac)/ratioFrac);
       newLines[iLine]->GetYaxis()->SetNdivisions(divisions);
-      newLines[iLine]->GetYaxis()->SetTitle("Ratio");
+      newLines[iLine]->GetYaxis()->SetTitle(fRatioTitle);
       newLines[iLine]->SetMinimum(fRatioMin);
       newLines[iLine]->SetMaximum(fRatioMax);
       newLines[iLine]->SetFillColor(0);
