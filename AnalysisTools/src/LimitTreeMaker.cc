@@ -38,33 +38,52 @@ LimitTreeMaker::MakeTrees()
   TFile* outClear = new TFile(fOutputFileName,"RECREATE");
   outClear->Close();
 
-  for (UInt_t iFile = 0; iFile != fInFileNames.size(); ++iFile) {
-    std::cout << "File " << fInFileNames[iFile] << std::endl;
-    TFile* inFile = new TFile(fInFileNames[iFile]);
-    if (!inFile) {
-      std::cout << "Could not open file " << fInFileNames[iFile] << std::endl;
-      std::cout << "I bet you gave me the wrong name..." << std::endl;
-      exit(1);
-    }
-      
-    TTree* inTree = (TTree*) inFile->Get(fTreeName);
-    if (!inFile) {
-      std::cout << "Could not find tree " << fTreeName << std::endl;
-      std::cout << "in file " << fInFileNames[iFile] << std::endl;
-      std::cout << "I bet you gave me the wrong name..." << std::endl;
-      exit(1);
-    }
+  for (UInt_t iRegion = 0; iRegion != fRegionNames.size(); ++iRegion) {
+    TString regionName = fRegionNames[iRegion];
 
-    for (UInt_t iRegion = 0; iRegion != fRegionNames.size(); ++iRegion) {
-      std::cout << "Region: " << fRegionNames[iRegion] << std::endl;
-      inFile->cd();
+    std::cout << "Region: " << regionName << std::endl;
+
+    UInt_t numFiles = fInFileNames.size() + fExceptionFileNames[regionName].size();
+    for (UInt_t iFile = 0; iFile != numFiles; ++iFile) {
+      TString fileName;
+      TString outTreeName;
+      Float_t XSec;
+
+      if (iFile < fInFileNames.size()) {
+        fileName = fInFileNames[iFile];
+        if (fExceptionSkip[regionName].find(fileName) != fExceptionSkip[regionName].end())
+          continue;
+        outTreeName = fOutTreeNames[iFile];
+        XSec = fXSecs[iFile];
+      }
+      else {
+        fileName = (fExceptionFileNames[regionName])[iFile - fInFileNames.size()];
+        outTreeName = (fExceptionTreeNames[regionName])[iFile - fInFileNames.size()];
+        XSec =  (fExceptionXSecs[regionName])[iFile - fInFileNames.size()];
+      }
+      std::cout << "File " << fileName << std::endl;
+      TFile* inFile = new TFile(fileName);
+      if (!inFile) {
+        std::cout << "Could not open file " << fInFileNames[iFile] << std::endl;
+        std::cout << "I bet you gave me the wrong name..." << std::endl;
+        exit(1);
+      }
+      
+      TTree* inTree = (TTree*) inFile->Get(fTreeName);
+      if (!inFile) {
+        std::cout << "Could not find tree " << fTreeName << std::endl;
+        std::cout << "in file " << fInFileNames[iFile] << std::endl;
+        std::cout << "I bet you gave me the wrong name..." << std::endl;
+        exit(1);
+      }
+      
       // Apply selection
       TFile* tempFile = new TFile("tempCopyFileDontUse.root","RECREATE");
       TTree* loopTree = inTree->CopyTree(fRegionCuts[iRegion]);
       // Initialize output tree
       TFile* outFile = new TFile(fOutputFileName,"UPDATE");
-      TTree* outTree = new TTree(fOutTreeNames[iFile] + "_" + fRegionNames[iRegion],fOutTreeNames[iFile] + "_" + fRegionNames[iRegion]);
-
+      TTree* outTree = new TTree(outTreeName + "_" + regionName,outTreeName + "_" + regionName);
+      
       // Setup the branches to keep
       std::map<TString, Float_t> addresses;
       for (UInt_t iKeep = 0; iKeep != fKeepBranches.size(); ++iKeep) {
@@ -75,16 +94,16 @@ LimitTreeMaker::MakeTrees()
       
       // Get the all histogram and calculate x-section weight
       TH1* allHist = (TH1*) inFile->Get(fAllHistName);
-      Float_t mcScale = fLuminosity*fXSecs[iFile]/(allHist->GetBinContent(1));
+      Float_t mcScale = fLuminosity*XSec/(allHist->GetBinContent(1));
       // Setup the output weight branch
       Float_t mcWeight = 1.0;
       TBranch* weightBranch = outTree->Branch(fOutputWeightBranch,&mcWeight,fOutputWeightBranch+"/F");
       // Get branches for weights
       for (UInt_t iWeight = 0; iWeight != fWeightBranch.size(); ++iWeight) {
-        addresses[fWeightBranch[iWeight]];
+        addresses[fWeightBranch[iWeight]] = 0.0;
         loopTree->SetBranchAddress(fWeightBranch[iWeight],&addresses[fWeightBranch[iWeight]]);
       }
-
+      
       UInt_t nentries = loopTree->GetEntries();
       for (UInt_t iEntry = 0; iEntry != nentries; ++iEntry) {
         loopTree->GetEntry(iEntry);
@@ -95,16 +114,16 @@ LimitTreeMaker::MakeTrees()
         }
         else
           mcWeight = 1.0;
-
+        
         outTree->Fill();
       }
       outFile->cd();
-      outFile->WriteTObject(outTree,fOutTreeNames[iFile] + "_" + fRegionNames[iRegion],"Overwrite");
+      outFile->WriteTObject(outTree,outTreeName + "_" + regionName,"Overwrite");
       outFile->Close();
 
       tempFile->Close();
+      inFile->Close();
       addresses.clear();
     }
-    inFile->Close();
   }
 }

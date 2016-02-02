@@ -84,7 +84,7 @@ class PlotBase
   void                   OnlyPNG                  ()                                              { bPDF = false; bC = false;    }
 
   void                   SetLumiLabel             ( TString lumi )                                { fLumiLabel = lumi;           }
-  void                   SetLumiLabel             ( Float_t lumi )                  { fLumiLabel = TString::Format("%.1f",lumi); }
+  void                   SetLumiLabel             ( Float_t lumi )                  { fLumiLabel = TString::Format("%.2f",lumi); }
   void                   SetIsCMSPrelim           ( Bool_t isPre )                                { fIsCMSPrelim = isPre;        }
   
  protected:
