@@ -1,11 +1,8 @@
 Clean up Submission scripts
 Make generic MC reader and update reweighter tool (decouple from stackplotter)
      Clean up Limit Tree Maker
-Add titles to plots with CMS prelim and luminosity and stuff
 For plots in cutflow:
     Add options for efficiency from previous cut
     Add multiple lines for other files, maybe
-Add signal MC option to Stack plotter
-Add MC uncertainties to Stack plotter
 Make Plot Utils object?
 Check tdrStyle stuff out and potentially change or adjust

@@ -38,8 +38,8 @@ Reweighter::SetCorrectionHist(TString histName, Int_t NumXBins, Double_t* XBins)
 
   if(fMakingWeightsFromPlot) {
     // Reweights "MC" to match "Data"
-    std::vector<TH1D*> DataHists = GetHistList(NumXBins,XBins,false);
-    std::vector<TH1D*>   MCHists = GetHistList(NumXBins,XBins,true);
+    std::vector<TH1D*> DataHists = GetHistList(NumXBins,XBins,kData);
+    std::vector<TH1D*>   MCHists = GetHistList(NumXBins,XBins,kMC);
 
     fCorrectionHist = (TH1D*) DataHists[0]->Clone(histName);
     fCorrectionHist->Reset("M");

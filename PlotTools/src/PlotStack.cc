@@ -17,6 +17,7 @@ PlotStack::PlotStack() :
   fLuminosity(2110.0),
   fDataContainer(0),
   fMCContainer(0),
+  fSignalContainer(0),
   fDataWeights(""),
   fMCWeights(""),
   fMinLegendFrac(0.0),
@@ -30,6 +31,11 @@ PlotStack::PlotStack() :
   fXSecs.resize(0);
   fStackEntries.resize(0);
   fStackColors.resize(0);
+  fSignalFiles.resize(0);
+  fSignalXSecs.resize(0);
+  fSignalEntries.resize(0);
+  fSignalStyles.resize(0);
+
 }
 
 //--------------------------------------------------------------------
@@ -81,25 +87,33 @@ PlotStack::ReadMCConfig(TString config, TString fileDir)
 
 //--------------------------------------------------------------------
 std::vector<TH1D*>
-PlotStack::GetHistList(Int_t NumXBins, Double_t *XBins, Bool_t isMC)
+PlotStack::GetHistList(Int_t NumXBins, Double_t *XBins, HistType type)
 {
   std::vector<TString> FileList;
   TreeContainer *tempContainer = NULL;
   TString tempCutHolder = "";
-  if (isMC) {
-    FileList = fMCFiles;
-    tempContainer = fMCContainer;
-    if (fMCWeights != "") {
-      tempCutHolder = fDefaultCut;
-      SetDefaultWeight(TString("(") + tempCutHolder + TString(")*(") + fMCWeights + TString(")"));
-    }
-  }
-  else {
+
+  if (type == kData) {
     FileList = fDataFiles;
     tempContainer = fDataContainer;
     if (fDataWeights != "") {
       tempCutHolder = fDefaultCut;
       SetDefaultWeight(TString("(") + tempCutHolder + TString(") && (") + fDataWeights + TString(")"));
+    }
+  }
+  else {
+    if (type == kMC) {
+      FileList = fMCFiles;
+      tempContainer = fMCContainer;
+    }
+    else {
+      FileList = fSignalFiles;
+      tempContainer = fSignalContainer;
+    }
+
+    if (fMCWeights != "") {
+      tempCutHolder = fDefaultCut;
+      SetDefaultWeight(TString("(") + tempCutHolder + TString(")*(") + fMCWeights + TString(")"));
     }
   }
   
@@ -113,7 +127,7 @@ PlotStack::GetHistList(Int_t NumXBins, Double_t *XBins, Bool_t isMC)
     SetDefaultWeight(tempCutHolder);
 
   for (UInt_t iFile = 0; iFile < theFiles.size(); iFile++) {
-    if (isMC) {
+    if (type != kData) {
       TH1D *allHist = (TH1D*) theFiles[iFile]->FindObjectAny(fAllHist);
       if (fDebug) {
         std::cout << "Integral before " << theHists[iFile]->Integral() << std::endl;
@@ -150,16 +164,20 @@ PlotStack::MakeCanvas(TString FileBase, Int_t NumXBins, Double_t *XBins,
   fDataContainer->SetTreeName(fTreeName);
   fMCContainer = new TreeContainer();
   fMCContainer->SetTreeName(fTreeName);
+  fSignalContainer = new TreeContainer();
+  fSignalContainer->SetTreeName(fTreeName);
 
   for (UInt_t iFriend = 0; iFriend != fFriends.size(); ++iFriend) {
     fDataContainer->AddFriendName(fFriends[iFriend]);
     fMCContainer->AddFriendName(fFriends[iFriend]);
+    fSignalContainer->AddFriendName(fFriends[iFriend]);
   }
 
   SetIncludeErrorBars(true);
-  std::vector<TH1D*> DataHists = GetHistList(NumXBins,XBins,false);
+  std::vector<TH1D*> DataHists = GetHistList(NumXBins,XBins,kData);
   SetIncludeErrorBars(false);
-  std::vector<TH1D*>   MCHists = GetHistList(NumXBins,XBins,true);
+  std::vector<TH1D*> MCHists = GetHistList(NumXBins,XBins,kMC);
+  std::vector<TH1D*> SignalHists = GetHistList(NumXBins,XBins,kSignal);
 
   std::vector<TH1D*> theHists;
   SetRatioIndex(0);
@@ -234,6 +252,10 @@ PlotStack::MakeCanvas(TString FileBase, Int_t NumXBins, Double_t *XBins,
   AddLegendEntry("Data",1);
   SetDataIndex(int(AllHists.size()));
   AllHists.push_back(DataHist);
+  for (UInt_t iHist = 0; iHist != SignalHists.size(); ++iHist) {
+    AllHists.push_back(SignalHists[iHist]);
+    AddLegendEntry(fSignalEntries[iHist],1,2,fSignalStyles[iHist]);
+  }
 
   BaseCanvas(FileBase,AllHists,XLabel,YLabel,logY);
 
@@ -246,6 +268,7 @@ PlotStack::MakeCanvas(TString FileBase, Int_t NumXBins, Double_t *XBins,
 
   delete fDataContainer;
   delete fMCContainer;
+  delete fSignalContainer;
 }
 
 //--------------------------------------------------------------------
