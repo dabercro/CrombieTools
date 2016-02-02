@@ -50,10 +50,10 @@ LimitTreeMaker::MakeTrees()
       Float_t XSec;
 
       if (iFile < fInFileNames.size()) {
-        fileName = fInFileNames[iFile];
-        if (fExceptionSkip[regionName].find(fileName) != fExceptionSkip[regionName].end())
-          continue;
         outTreeName = fOutTreeNames[iFile];
+        if (fExceptionSkip[regionName].find(outTreeName) != fExceptionSkip[regionName].end())
+          continue;
+        fileName = fInFileNames[iFile];
         XSec = fXSecs[iFile];
       }
       else {
