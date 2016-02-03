@@ -21,7 +21,8 @@ PlotStack::PlotStack() :
   fDataWeights(""),
   fMCWeights(""),
   fMinLegendFrac(0.0),
-  fStackLineWidth(0),
+  fIgnoreInLinear(0.0),
+  fStackLineWidth(1),
   fOthersColor(0),
   fForceTop(""),
   fDebug(false),
@@ -241,7 +242,8 @@ PlotStack::MakeCanvas(TString FileBase, Int_t NumXBins, Double_t *XBins,
       if ((HistHolders[iLarger]->fHist->Integral() > fMinLegendFrac * HistHolders[0]->fHist->Integral()) ||  // If less than the fraction set
           (iLarger == HistHolders.size() - 1))                                                               // or the last histogram
         AddLegendEntry(HistHolders[iLarger]->fEntry,1,fStackLineWidth,1);                                    // Add legend properly
-      else {                                                                                                 // Otherwise
+      else if ((HistHolders[iLarger]->fHist->Integral() > fIgnoreInLinear * HistHolders[0]->fHist->Integral()) ||
+               logY) {                                                                                       // Otherwise if not ignored
         if (HistHolders[iLarger + 1]->fHist->Integral() > 0) {                                               // Check if the next histogram contribute
           if (fOthersColor != 0)
             HistHolders[iLarger]->fHist->SetFillColor(fOthersColor);
@@ -251,6 +253,10 @@ PlotStack::MakeCanvas(TString FileBase, Int_t NumXBins, Double_t *XBins,
           AddLegendEntry(HistHolders[iLarger]->fEntry,HistHolders[iLarger]->fColor,1,1);                     // Make normal legend entry
 
         break;                                                                                               // Stop adding histograms
+      }
+      else {
+        AllHists.pop_back();
+        break;
       }
     }
   }

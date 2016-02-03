@@ -53,6 +53,7 @@ class PlotStack : public PlotHists
   
   void SetForceTop       ( TString force )            { fForceTop = force;                       }
   void SetMinLegendFrac  ( Double_t frac )            { fMinLegendFrac = frac;                   }
+  void SetIgnoreInLinear ( Double_t ignore )           { fIgnoreInLinear = ignore;                }
   void SetOthersColor    ( Color_t color )            { fOthersColor = color;                    }
   void SetStackLineWidth ( Int_t width )              { fStackLineWidth = width;                 }
 
@@ -87,6 +88,7 @@ class PlotStack : public PlotHists
   TString               fMCWeights;                 // Separate MC weights if needed
   TString               fForceTop;
   Double_t              fMinLegendFrac;
+  Double_t              fIgnoreInLinear;
   Int_t                 fStackLineWidth;
   Color_t               fOthersColor;
 
