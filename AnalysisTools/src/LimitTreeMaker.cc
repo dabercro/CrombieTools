@@ -79,6 +79,10 @@ LimitTreeMaker::MakeTrees()
       
       // Apply selection
       TFile* tempFile = new TFile("tempCopyFileDontUse.root","RECREATE");
+      TString theCut = fRegionCuts[iRegion];
+      if (XSec < 0 && fExceptionDataCuts[regionName] != "")
+        theCut = TString("(") + theCut + ") && (" + fExceptionDataCuts[regionName] + ")";
+
       TTree* loopTree = inTree->CopyTree(fRegionCuts[iRegion]);
       // Initialize output tree
       TFile* outFile = new TFile(fOutputFileName,"UPDATE");
@@ -103,7 +107,12 @@ LimitTreeMaker::MakeTrees()
         addresses[fWeightBranch[iWeight]] = 0.0;
         loopTree->SetBranchAddress(fWeightBranch[iWeight],&addresses[fWeightBranch[iWeight]]);
       }
-      
+      for (UInt_t iWeight = 0; iWeight != fExceptionWeightBranches[regionName].size(); ++iWeight) {
+        addresses[(fExceptionWeightBranches[regionName])[iWeight]] = 0.0;
+        loopTree->SetBranchAddress((fExceptionWeightBranches[regionName])[iWeight],
+                                   &addresses[(fExceptionWeightBranches[regionName])[iWeight]]);
+      }
+
       UInt_t nentries = loopTree->GetEntries();
       for (UInt_t iEntry = 0; iEntry != nentries; ++iEntry) {
         loopTree->GetEntry(iEntry);
@@ -111,6 +120,8 @@ LimitTreeMaker::MakeTrees()
           mcWeight = mcScale;
           for (UInt_t iWeight = 0; iWeight != fWeightBranch.size(); ++iWeight)
             mcWeight *= addresses[fWeightBranch[iWeight]];
+          for (UInt_t iWeight = 0; iWeight != fExceptionWeightBranches[regionName].size(); ++iWeight)
+            mcWeight *= addresses[(fExceptionWeightBranches[regionName])[iWeight]];
         }
         else
           mcWeight = 1.0;
