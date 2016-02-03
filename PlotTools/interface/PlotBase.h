@@ -76,6 +76,8 @@ class PlotBase
   void                   SetOnlyRatioWithData     ( Bool_t only )                                 { fOnlyRatioWithData = only;   }
   void                   SetRatioMinMax           ( Float_t min, Float_t max )               { fRatioMin = min; fRatioMax = max; }
   void                   SetRatioTitle            ( TString title )                               { fRatioTitle = title;         }
+  void                   SetRatioGrid             ( Int_t grid )                                  { fRatioGrid = grid;           }
+  void                   SetRatioDivisions        ( Int_t divisions )                             { fRatioDivisions = divisions; }
   // Pick a line to draw first on the plot, if desired
   void                   SetDrawFirst             ( Int_t first )                                 { fDrawFirst = first;          }
 
@@ -113,6 +115,8 @@ class PlotBase
   Float_t                    fRatioMin;
   Float_t                    fRatioMax;
   TString                    fRatioTitle;
+  Int_t                      fRatioGrid;
+  Int_t                      fRatioDivisions;
   Bool_t                     fOnlyRatioWithData;  // Suppresses the ratio of extra MC
 
   std::vector<TString>       fLegendEntries;      // Number of legend entries should match number of lines
@@ -168,6 +172,8 @@ PlotBase::PlotBase() :
   fRatioMin(0.0),
   fRatioMax(2.0),
   fRatioTitle("Ratio"),
+  fRatioGrid(0),
+  fRatioDivisions(504),
   fOnlyRatioWithData(false),
   bPDF(true),
   bPNG(true),
@@ -468,13 +474,13 @@ PlotBase::BaseCanvas(TString FileBase, std::vector<T*> theLines,
   else {
     theCanvas->cd();
     TPad *pad2 = new TPad("pad2", "pad2", 0, 0, 1, 1 - ratioFrac);
-    pad2->SetTopMargin(0.035);
+    pad2->SetTopMargin(0.05);
     pad2->SetBottomMargin(0.4);
+    if (fRatioGrid > 0)
+      pad2->SetGridy(fRatioGrid);
+
     pad2->Draw();
     pad2->cd();
-
-    // This is to give ticks to the Y Axis, see ROOT documentation for more details
-    Int_t divisions = 504;
 
     // We take the line equal to '1' and copy it
     T *ratioLine = (T*) theLines[fRatioIndex]->Clone("ValueHolder");
@@ -491,8 +497,9 @@ PlotBase::BaseCanvas(TString FileBase, std::vector<T*> theLines,
       newLines[iLine]->GetYaxis()->SetLabelSize(fontSize/(1 - ratioFrac));
       newLines[iLine]->GetXaxis()->SetTitleOffset(1.1);
       newLines[iLine]->GetYaxis()->SetTitleOffset((1 - ratioFrac)/ratioFrac);
-      newLines[iLine]->GetYaxis()->SetNdivisions(divisions);
+      newLines[iLine]->GetYaxis()->SetNdivisions(fRatioDivisions);
       newLines[iLine]->GetYaxis()->SetTitle(fRatioTitle);
+      newLines[iLine]->GetYaxis()->CenterTitle();
       newLines[iLine]->SetMinimum(fRatioMin);
       newLines[iLine]->SetMaximum(fRatioMax);
       newLines[iLine]->SetFillColor(0);
