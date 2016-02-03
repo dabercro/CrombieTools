@@ -21,6 +21,7 @@ PlotStack::PlotStack() :
   fDataWeights(""),
   fMCWeights(""),
   fMinLegendFrac(0.0),
+  fOthersColor(0),
   fForceTop(""),
   fDebug(false),
   fDumpRootName("")
@@ -35,7 +36,6 @@ PlotStack::PlotStack() :
   fSignalXSecs.resize(0);
   fSignalEntries.resize(0);
   fSignalStyles.resize(0);
-
 }
 
 //--------------------------------------------------------------------
@@ -177,7 +177,9 @@ PlotStack::MakeCanvas(TString FileBase, Int_t NumXBins, Double_t *XBins,
   std::vector<TH1D*> DataHists = GetHistList(NumXBins,XBins,kData);
   SetIncludeErrorBars(false);
   std::vector<TH1D*> MCHists = GetHistList(NumXBins,XBins,kMC);
-  std::vector<TH1D*> SignalHists = GetHistList(NumXBins,XBins,kSignal);
+  std::vector<TH1D*> SignalHists;
+  if (fSignalFiles.size() != 0)
+    SignalHists = GetHistList(NumXBins,XBins,kSignal);
 
   std::vector<TH1D*> theHists;
   SetRatioIndex(0);
@@ -239,8 +241,14 @@ PlotStack::MakeCanvas(TString FileBase, Int_t NumXBins, Double_t *XBins,
           (iLarger == HistHolders.size() - 1))                                                               // or the last histogram
         AddLegendEntry(HistHolders[iLarger]->fEntry,HistHolders[iLarger]->fColor,1,1);                       // Add legend properly
       else {                                                                                                 // Otherwise
-        if (HistHolders[iLarger + 1]->fHist->Integral() > 0)                                                 // Check if the next histogram contribute
-          AddLegendEntry("Others",HistHolders[iLarger]->fColor,1,1);                                         // If so, make others legend
+        if (HistHolders[iLarger + 1]->fHist->Integral() > 0) {                                               // Check if the next histogram contribute
+          if (fOthersColor == 0)
+            AddLegendEntry("Others",HistHolders[iLarger]->fColor,1,1);                                       // If so, make others legend
+          else {
+            HistHolders[iLarger]->fHist->SetFillColor(fOthersColor);
+            AddLegendEntry("Others",fOthersColor,1,1);
+          }
+        }
         else                                                                                                 // If not,
           AddLegendEntry(HistHolders[iLarger]->fEntry,HistHolders[iLarger]->fColor,1,1);                     // Make normal legend entry
 

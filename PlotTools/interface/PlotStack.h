@@ -29,11 +29,11 @@ class PlotStack : public PlotHists
                                           fStackColors.push_back(ColorEntry);                   }
 
   void AddSignalFile    ( TString FileName, Double_t XSec, 
-                          TString LegendEntry, Color_t ColorEntry )
+                          TString LegendEntry, Int_t Style )
                                         { fSignalFiles.push_back(FileName); 
                                           fSignalXSecs.push_back(XSec); 
                                           fSignalEntries.push_back(LegendEntry); 
-                                          fSignalStyles.push_back(ColorEntry);                  }
+                                          fSignalStyles.push_back(Style);                       }
 
 
   // Alternatively, read a central MC configuration file
@@ -53,6 +53,7 @@ class PlotStack : public PlotHists
   
   void SetForceTop      ( TString force )            { fForceTop = force;                       }
   void SetMinLegendFrac ( Double_t frac )            { fMinLegendFrac = frac;                   }
+  void SetOthersColor   ( Color_t color )            { fOthersColor = color;                    }
 
   // This dumps out some raw values for you to check yields
   void SetDebug         ( Bool_t debug )             { fDebug = debug;                          }
@@ -85,6 +86,7 @@ class PlotStack : public PlotHists
   TString               fMCWeights;                 // Separate MC weights if needed
   TString               fForceTop;
   Double_t              fMinLegendFrac;
+  Color_t               fOthersColor;
 
   Bool_t                fDebug;                     // Dumps yield tests
   TString               fDumpRootName;              // File where each histogram in stack is dumped

@@ -14,7 +14,7 @@ class GoodLumiFilter
   Bool_t       IsGood    ( UInt_t run, UInt_t lumi );
     
  private:
-  std::map<UInt_t, std::set<UInt_t>>  fGoodLumis;
+  std::map<UInt_t, std::set<UInt_t> >  fGoodLumis;
 
   UInt_t       fCurrRun;
   UInt_t       fCurrLumi;
