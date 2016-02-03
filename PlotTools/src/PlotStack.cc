@@ -21,6 +21,7 @@ PlotStack::PlotStack() :
   fDataWeights(""),
   fMCWeights(""),
   fMinLegendFrac(0.0),
+  fStackLineWidth(0),
   fOthersColor(0),
   fForceTop(""),
   fDebug(false),
@@ -239,15 +240,12 @@ PlotStack::MakeCanvas(TString FileBase, Int_t NumXBins, Double_t *XBins,
 
       if ((HistHolders[iLarger]->fHist->Integral() > fMinLegendFrac * HistHolders[0]->fHist->Integral()) ||  // If less than the fraction set
           (iLarger == HistHolders.size() - 1))                                                               // or the last histogram
-        AddLegendEntry(HistHolders[iLarger]->fEntry,HistHolders[iLarger]->fColor,1,1);                       // Add legend properly
+        AddLegendEntry(HistHolders[iLarger]->fEntry,1,fStackLineWidth,1);                                    // Add legend properly
       else {                                                                                                 // Otherwise
         if (HistHolders[iLarger + 1]->fHist->Integral() > 0) {                                               // Check if the next histogram contribute
-          if (fOthersColor == 0)
-            AddLegendEntry("Others",HistHolders[iLarger]->fColor,1,1);                                       // If so, make others legend
-          else {
+          if (fOthersColor != 0)
             HistHolders[iLarger]->fHist->SetFillColor(fOthersColor);
-            AddLegendEntry("Others",fOthersColor,1,1);
-          }
+          AddLegendEntry("Others",1,fStackLineWidth,1);                                                      // If so, make others legend
         }
         else                                                                                                 // If not,
           AddLegendEntry(HistHolders[iLarger]->fEntry,HistHolders[iLarger]->fColor,1,1);                     // Make normal legend entry

@@ -384,6 +384,7 @@ PlotBase::BaseCanvas(TString FileBase, std::vector<T*> theLines,
   theCanvas->SetTitle(";"+XLabel+";"+YLabel);
   TLegend *theLegend = new TLegend(l1,l2,l3,l4);
   theLegend->SetBorderSize(fLegendBorderSize);
+  theLegend->SetFillStyle(0);
 
   // We will check for the largest line to plot first
   float maxValue = 0;
@@ -402,8 +403,8 @@ PlotBase::BaseCanvas(TString FileBase, std::vector<T*> theLines,
       theLines[iLine]->SetMarkerStyle(8);
 
     // Add a formated legend entry
-    if (fLegendFill && int(iLine) != fDataIndex)
-      theLegend->AddEntry(theLines[iLine],fLegendEntries[iLine],"lf");
+    if (fLegendFill && int(iLine) < fDataIndex)
+      theLegend->AddEntry(theLines[iLine],fLegendEntries[iLine],"f");
     else
       theLegend->AddEntry(theLines[iLine],fLegendEntries[iLine],"lp");
       
