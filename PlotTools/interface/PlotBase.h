@@ -78,7 +78,8 @@ class PlotBase
   void                   SetRatioMinMax           ( Float_t min, Float_t max )               { fRatioMin = min; fRatioMax = max; }
   void                   SetRatioTitle            ( TString title )                               { fRatioTitle = title;         }
   void                   SetRatioGrid             ( Int_t grid )                                  { fRatioGrid = grid;           }
-  void                   SetRatioDivisions        ( Int_t divisions )                             { fRatioDivisions = divisions; }
+  void                   SetRatioDivisions        ( Int_t divisions, Bool_t optimize = true )     { fRatioDivisions = divisions; 
+                                                                                                    fOptimDivisions = optimize;  }
   // Pick a line to draw first on the plot, if desired
   void                   SetDrawFirst             ( Int_t first )                                 { fDrawFirst = first;          }
 
@@ -118,6 +119,7 @@ class PlotBase
   TString                    fRatioTitle;
   Int_t                      fRatioGrid;
   Int_t                      fRatioDivisions;
+  Bool_t                     fOptimDivisions;
   Bool_t                     fOnlyRatioWithData;  // Suppresses the ratio of extra MC
 
   std::vector<TString>       fLegendEntries;      // Number of legend entries should match number of lines
@@ -177,6 +179,7 @@ PlotBase::PlotBase() :
   fRatioTitle("Ratio"),
   fRatioGrid(0),
   fRatioDivisions(504),
+  fOptimDivisions (true),
   fOnlyRatioWithData(false),
   bPDF(true),
   bPNG(true),
@@ -502,7 +505,7 @@ PlotBase::BaseCanvas(TString FileBase, std::vector<T*> theLines,
       newLines[iLine]->GetYaxis()->SetLabelSize(fontSize/(1 - ratioFrac));
       newLines[iLine]->GetXaxis()->SetTitleOffset(1.1);
       newLines[iLine]->GetYaxis()->SetTitleOffset((1 - ratioFrac)/ratioFrac);
-      newLines[iLine]->GetYaxis()->SetNdivisions(fRatioDivisions);
+      newLines[iLine]->GetYaxis()->SetNdivisions(fRatioDivisions,fOptimDivisions);
       newLines[iLine]->GetYaxis()->SetTitle(fRatioTitle);
       newLines[iLine]->GetYaxis()->CenterTitle();
       newLines[iLine]->SetMinimum(fRatioMin);
