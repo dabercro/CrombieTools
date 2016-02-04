@@ -23,6 +23,7 @@ class PlotBase
   virtual ~PlotBase();
   
   void                   SetCanvasName            ( TString name )                                { fCanvasName = name;          }
+  void                   SetCanvasSize            ( Int_t width, Int_t height )  { fCanvasWidth = width; fCanvasHeight = height; }
   
   void                   AddLine                  ( TTree *tree, TString cut, TString expr );  // Each line has a potentially different
                                                                                                //   tree, weight, and expression.
@@ -136,6 +137,8 @@ class PlotBase
  private:
 
   TString                    fCanvasName;         // The name of the output canvas
+  Int_t                      fCanvasWidth;
+  Int_t                      fCanvasHeight;
   Int_t                      fDefaultLineWidth;   // Line width to make all plots
   Int_t                      fDefaultLineStyle;   // Line style to use on all plots
   
@@ -179,6 +182,8 @@ PlotBase::PlotBase() :
   bPNG(true),
   bC(true),
   fCanvasName("canvas"),
+  fCanvasWidth(500),
+  fCanvasHeight(700),
   fDefaultLineWidth(2),
   fDefaultLineStyle(1),
   fLegendFill(false),
@@ -386,7 +391,7 @@ PlotBase::BaseCanvas(TString FileBase, std::vector<T*> theLines,
 
   UInt_t NumPlots = theLines.size();
   // Initialize the canvas and legend
-  TCanvas *theCanvas = new TCanvas(fCanvasName,fCanvasName);
+  TCanvas *theCanvas = new TCanvas(fCanvasName,fCanvasName,fCanvasWidth,fCanvasHeight);
   theCanvas->SetTitle(";"+XLabel+";"+YLabel);
   TLegend *theLegend = new TLegend(l1,l2,l3,l4);
   theLegend->SetBorderSize(fLegendBorderSize);
