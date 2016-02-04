@@ -3,7 +3,7 @@
 
 #include "TTreeFormula.h"
 #include "TCanvas.h"
-#include "TH1I.h"
+#include "TH1F.h"
 #include "TH1.h"
 
 #include "CutflowMaker.h"
@@ -11,7 +11,7 @@
 ClassImp(CutflowMaker)
 
 //--------------------------------------------------------------------
-CutflowMaker::CutflowMaker()
+CutflowMaker::CutflowMaker() :
 {
   fCutNames.resize(0);
   fCuts.resize(0);
@@ -67,17 +67,28 @@ CutflowMaker::PrintCutflow(Bool_t OnlyNums)
 
 //--------------------------------------------------------------------
 void
-CutflowMaker::MakePlot(TString name)
+CutflowMaker::MakePlot(TString name, PlotStyle type)
 {
+  if (fTree == NULL) {
+    std::cout << "Tree has not been set." << std::endl;
+    exit(1);
+  }
   GetCutflow();
-  TH1I* theHist = new TH1I("cutflow",";;Number of Events",fCuts.size(),0,fCuts.size());
+  TH1F* theHist = new TH1F("cutflow",";;Number of Events",fCuts.size(),0,fCuts.size());
   for (UInt_t iCut = 0; iCut != fCuts.size(); ++iCut) {
     theHist->GetXaxis()->SetBinLabel(iCut+1,fCutNames[iCut]);
-    theHist->SetBinContent(iCut+1,fYields[iCut]);
+    if (PlotStyle == kAbsolute)
+      theHist->SetBinContent(iCut+1,fYields[iCut]);
+    if (PlotStyle == kFractional) {
+      if (iCut == 0)
+        theHist->SetBinContent(iCut+1,float(fYields[iCut])/fTree->GetEntriesFast());
+      else
+        theHist->SetBinContent(iCut+1,float(fYields[iCut])/fYields[iCut - 1]);
+    }
   }
   theHist->SetLineWidth(2);
   
-  TCanvas* theCanvas = new TCanvas("canvas",";;Number of Events");
+  TCanvas* theCanvas = new TCanvas("canvas",";;Number of Events",fWidth,fHeight);
   theHist->Draw();
 
   theCanvas->SaveAs(name + ".pdf");
