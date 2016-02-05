@@ -12,6 +12,8 @@ ClassImp(CutflowMaker)
 
 //--------------------------------------------------------------------
 CutflowMaker::CutflowMaker() :
+  fWidth(600),
+  fHeight(600)
 {
   fCutNames.resize(0);
   fCuts.resize(0);
