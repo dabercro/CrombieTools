@@ -69,7 +69,7 @@ CutflowMaker::PrintCutflow(Bool_t OnlyNums)
 
 //--------------------------------------------------------------------
 void
-CutflowMaker::MakePlot(TString name, PlotStyle type)
+CutflowMaker::MakePlot(TString name, PlotType type)
 {
   if (fTree == NULL) {
     std::cout << "Tree has not been set." << std::endl;
@@ -79,9 +79,9 @@ CutflowMaker::MakePlot(TString name, PlotStyle type)
   TH1F* theHist = new TH1F("cutflow",";;Number of Events",fCuts.size(),0,fCuts.size());
   for (UInt_t iCut = 0; iCut != fCuts.size(); ++iCut) {
     theHist->GetXaxis()->SetBinLabel(iCut+1,fCutNames[iCut]);
-    if (PlotStyle == kAbsolute)
+    if (type == kAbsolute)
       theHist->SetBinContent(iCut+1,fYields[iCut]);
-    if (PlotStyle == kFractional) {
+    if (type == kFractional) {
       if (iCut == 0)
         theHist->SetBinContent(iCut+1,float(fYields[iCut])/fTree->GetEntriesFast());
       else
