@@ -1,9 +1,10 @@
 Clean up Submission scripts
 Make generic MC reader and update reweighter tool (decouple from stackplotter)
-     Clean up Limit Tree Maker
+    Clean up Limit Tree Maker
 For plots in cutflow:
-    Add options for efficiency from previous cut
-    Add multiple lines for other files, maybe
+    Add multiple lines for other files, can watch MC that way
+    Adjust to use triggers
 Make Plot Utils object?
-Check tdrStyle stuff out and potentially change or adjust
 Make generic parallelization tool
+Check tdrStyle stuff out and investigate CrombieStyle
+Revisit legend options in PlotBase
