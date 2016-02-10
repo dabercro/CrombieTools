@@ -24,6 +24,9 @@ class PlotBase
   
   void                   SetCanvasName            ( TString name )                                { fCanvasName = name;          }
   void                   SetCanvasSize            ( Int_t width, Int_t height )  { fCanvasWidth = width; fCanvasHeight = height; }
+  void                   SetAxisTitleOffset       ( Float_t offset )                              { fTitleOffset = offset;       }
+  void                   SetFontSize              ( Float_t fontSize )                            { fFontSize = fontSize;        }
+  void                   SetAxisMinMax            ( Float_t min, Float_t max )                 { fAxisMin = min; fAxisMax = max; }
   
   void                   AddLine                  ( TTree *tree, TString cut, TString expr );  // Each line has a potentially different
                                                                                                //   tree, weight, and expression.
@@ -111,6 +114,9 @@ class PlotBase
   
   Bool_t                     fIncludeErrorBars;   // Option to include error bars
 
+  Float_t                    fAxisMin;
+  Float_t                    fAxisMax;
+
   Int_t                      fDataIndex;          // Index in the plotter of the data line
   Bool_t                     fMakeRatio;          // Bool to make a ratio plot on bottom of image
   Int_t                      fRatioIndex;         // Pick which line to set as 1 in ratio plot
@@ -141,6 +147,8 @@ class PlotBase
   TString                    fCanvasName;         // The name of the output canvas
   Int_t                      fCanvasWidth;
   Int_t                      fCanvasHeight;
+  Float_t                    fTitleOffset;
+  Float_t                    fFontSize;
   Int_t                      fDefaultLineWidth;   // Line width to make all plots
   Int_t                      fDefaultLineStyle;   // Line style to use on all plots
   
@@ -171,11 +179,13 @@ PlotBase::PlotBase() :
   l4(0.9),
   fLegendBorderSize(0),
   fIncludeErrorBars(false),
+  fAxisMin(0.0),
+  fAxisMax(0.0),
   fDataIndex(-1),
   fMakeRatio(false),
   fRatioIndex(-1),
   fRatioMin(0.0),
-  fRatioMax(2.0),
+  fRatioMax(0.0),
   fRatioTitle("Ratio"),
   fRatioGrid(0),
   fRatioDivisions(504),
@@ -187,6 +197,8 @@ PlotBase::PlotBase() :
   fCanvasName("canvas"),
   fCanvasWidth(600),
   fCanvasHeight(600),
+  fTitleOffset(1.0),
+  fFontSize(0.04),
   fDefaultLineWidth(2),
   fDefaultLineStyle(1),
   fLegendFill(false),
@@ -382,7 +394,6 @@ PlotBase::BaseCanvas(TString FileBase, std::vector<T*> theLines,
 
   // Font size and size of ratio plots are set here
   // Can make this configurable, but don't think I need to
-  Float_t fontSize  = 0.04;
   Float_t ratioFrac = 0.7;
 
   // If user implicitly wants to make ratio by moving one of the defaults
@@ -408,6 +419,7 @@ PlotBase::BaseCanvas(TString FileBase, std::vector<T*> theLines,
   for (UInt_t iLine = 0; iLine != NumPlots; ++iLine) {
     // Set title of lines and format
     theLines[iLine]->SetTitle(";"+XLabel+";"+YLabel);
+    theLines[iLine]->SetTitleOffset(fTitleOffset);
     if (int(iLine) != fDataIndex) {
       theLines[iLine]->SetLineWidth(fLineWidths[iLine]);
       theLines[iLine]->SetLineStyle(fLineStyles[iLine]);
@@ -441,10 +453,15 @@ PlotBase::BaseCanvas(TString FileBase, std::vector<T*> theLines,
     pad1->cd();
     // Change the size of the font accordingly
     for (UInt_t iLine = 0; iLine != NumPlots; ++iLine) {
-      theLines[iLine]->GetYaxis()->SetTitleSize(fontSize/ratioFrac);
-      theLines[iLine]->GetYaxis()->SetLabelSize(fontSize/ratioFrac);
+      theLines[iLine]->GetYaxis()->SetTitleSize(fFontSize/ratioFrac);
+      theLines[iLine]->GetYaxis()->SetLabelSize(fFontSize/ratioFrac);
+      theLines[iLine]->GetYaxis()->SetTitleOffset(fTitleOffset);
       theLines[iLine]->GetXaxis()->SetTitleSize(0);
       theLines[iLine]->GetXaxis()->SetLabelSize(0);
+      if (fAxisMin != fAxisMax) {
+        theLines[iLine]->SetMinimum(fAxisMin);
+        theLines[iLine]->SetMaximum(fAxisMax);        
+      }
     }
     if (logX)
       pad1->SetLogx();
@@ -499,17 +516,18 @@ PlotBase::BaseCanvas(TString FileBase, std::vector<T*> theLines,
 
     // Now we do formatting for all of the lines
     for (UInt_t iLine = 0; iLine != NumPlots; ++iLine) {
-      newLines[iLine]->GetXaxis()->SetTitleSize(fontSize/(1 - ratioFrac));
-      newLines[iLine]->GetYaxis()->SetTitleSize(fontSize/(1 - ratioFrac));
-      newLines[iLine]->GetXaxis()->SetLabelSize(fontSize/(1 - ratioFrac));
-      newLines[iLine]->GetYaxis()->SetLabelSize(fontSize/(1 - ratioFrac));
-      newLines[iLine]->GetXaxis()->SetTitleOffset(1.1);
-      newLines[iLine]->GetYaxis()->SetTitleOffset((1 - ratioFrac)/ratioFrac);
+      newLines[iLine]->GetXaxis()->SetTitleSize(fFontSize/(1 - ratioFrac));
+      newLines[iLine]->GetYaxis()->SetTitleSize(fFontSize/(1 - ratioFrac));
+      newLines[iLine]->GetXaxis()->SetLabelSize(fFontSize/(1 - ratioFrac));
+      newLines[iLine]->GetYaxis()->SetLabelSize(fFontSize/(1 - ratioFrac));
+      newLines[iLine]->GetYaxis()->SetTitleOffset((1 - ratioFrac)/ratioFrac * fTitleOffset);
       newLines[iLine]->GetYaxis()->SetNdivisions(fRatioDivisions,fOptimDivisions);
       newLines[iLine]->GetYaxis()->SetTitle(fRatioTitle);
       newLines[iLine]->GetYaxis()->CenterTitle();
-      newLines[iLine]->SetMinimum(fRatioMin);
-      newLines[iLine]->SetMaximum(fRatioMax);
+      if (fRatioMin != fRatioMax) {
+        newLines[iLine]->SetMinimum(fRatioMin);
+        newLines[iLine]->SetMaximum(fRatioMax);
+      }
       newLines[iLine]->SetFillColor(0);
     }
 
