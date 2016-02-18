@@ -65,16 +65,15 @@ LimitTreeMaker::MakeTrees()
       TFile* inFile = new TFile(fileName);
       if (!inFile) {
         std::cout << "Could not open file " << fInFileNames[iFile] << std::endl;
-        std::cout << "I bet you gave me the wrong name..." << std::endl;
-        exit(1);
+        continue;
       }
       
       TTree* inTree = (TTree*) inFile->Get(fTreeName);
       if (!inFile) {
         std::cout << "Could not find tree " << fTreeName << std::endl;
         std::cout << "in file " << fInFileNames[iFile] << std::endl;
-        std::cout << "I bet you gave me the wrong name..." << std::endl;
-        exit(1);
+        inFile->Close();
+        continue;
       }
       
       // Apply selection
