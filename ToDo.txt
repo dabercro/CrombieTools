@@ -1,4 +1,7 @@
 Clean up Submission scripts
+    Add Error checking for the config (Things should be filled)
+    Check for running jobs and offer to kill them
+    Make fresh flag in TempDir for Full, but don't remove full right away
 Make generic MC reader and update reweighter tool (decouple from stackplotter)
     Clean up Limit Tree Maker
 For plots in cutflow:

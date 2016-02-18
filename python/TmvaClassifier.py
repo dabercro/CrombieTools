@@ -1,5 +1,5 @@
 import ROOT
-from CrombieVars import anaSrc
+from CrombieVars import *
 
 if not 'PlotHists' in dir(ROOT):
     ROOT.gROOT.LoadMacro(plotSrc + 'PlotHists.cc+')

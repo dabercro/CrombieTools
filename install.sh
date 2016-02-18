@@ -3,6 +3,7 @@
 # A simple install script for CrombieTools
 
 profile=0
+here=`pwd`
 
 if [ -f ~/.bashrc ]
     then
@@ -17,7 +18,7 @@ fi
 
 source $profile
 
-target=`pwd`/python
+target=$here/python
 case ":$PYTHONPATH:" in
     *:$target:*)
         echo "Python already is included." 
@@ -29,7 +30,7 @@ case ":$PYTHONPATH:" in
 	;;
 esac
 
-target=`pwd`/bin
+target=$here/bin
 case ":$PATH:" in
     *:$target:*)
         echo "Executables are already included." 
@@ -41,13 +42,15 @@ case ":$PATH:" in
 	;;
 esac
 
-target=`pwd`
+target=$here
 if [ "$CROMBIEPATH" = "" ]
 then
     echo "" >> $profile
     echo "# Location of CrombieTools" >> $profile
     echo "export CROMBIEPATH="$target >> $profile
 fi
+
+cd $here
 
 echo "-------------------------------------------------------------"
 echo " Now execute the following command:"

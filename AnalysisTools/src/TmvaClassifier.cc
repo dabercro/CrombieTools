@@ -176,16 +176,22 @@ TmvaClassifier::Apply(Int_t NumBins, Double_t *VarVals, Int_t NumMapPoints)
       BDTBins[i0] = i0 * binWidth - 1;
 
     for (Int_t iVarBin = 0; iVarBin != NumBins; ++iVarBin) {
-      TString BinCut = TString::Format("%s*(%s>=%f&&%s<%f)", fWeight.Data(),
+      TString BinCut = TString::Format("(%s>=%f&&%s<%f)",
                                        fUniformVariable.Data(), VarVals[iVarBin],
                                        fUniformVariable.Data(), VarVals[iVarBin+1]);
-      HistPlotter->AddWeight(fWeight + TString("*(classID == 1 && ") + BinCut + ")");
+      HistPlotter->AddWeight(TString("weight*(classID == 1 && ") + BinCut + ")");
     }
+
+    std::cout << "Making hists." << std::endl;
 
     std::vector<TH1D*> BDTHists = HistPlotter->MakeHists(NumMapPoints,-1,1);
 
-    delete BackgroundTree;
+    std::cout << "Finished hists." << std::endl;
+
+//     delete BackgroundTree;
     delete TrainingTreeContainer;
+
+    std::cout << "Deleted containers." << std::endl;
 
     for (Int_t iVarBin = 0; iVarBin != NumBins; ++iVarBin) {
       tempGraph = new TGraph(NumMapPoints);
@@ -197,9 +203,13 @@ TmvaClassifier::Apply(Int_t NumBins, Double_t *VarVals, Int_t NumMapPoints)
       }
     }
 
+    std::cout << "Got map points." << std::endl;
+
     for (UInt_t iHist = 0; iHist != BDTHists.size(); ++iHist)
       delete BDTHists[iHist];
   }
+
+  std::cout << "About to apply." << std::endl;
 
   // Then apply the BDT
   TMVA::Reader* reader = new TMVA::Reader("Color:!Silent");
