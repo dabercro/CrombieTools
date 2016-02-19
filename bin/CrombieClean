@@ -4,3 +4,9 @@ find $CROMBIEPATH -name '*.so'  | xargs rm
 find $CROMBIEPATH -name '*.d'   | xargs rm
 find $CROMBIEPATH -name '*.pcm' | xargs rm
 find $CROMBIEPATH -name '*.pyc' | xargs rm
+
+pycacheDir=$CROMBIEPATH/python/CrombieTools/__pycache__
+if [ -d $pycacheDir ]
+then
+    rmdir $pycacheDir
+fi

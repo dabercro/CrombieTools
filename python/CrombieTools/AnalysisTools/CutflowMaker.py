@@ -1,5 +1,5 @@
 import ROOT
-from CrombieVars import anaSrc
+from .. import anaSrc
 
 if not 'CutflowMaker' in dir(ROOT):
     ROOT.gROOT.LoadMacro(anaSrc + 'CutflowMaker.cc+')

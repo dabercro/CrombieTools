@@ -1,5 +1,5 @@
 import ROOT
-from CrombieVars import plotSrc, skimSrc
+from .. import anaSrc, plotSrc, skimSrc
 
 if not 'TreeContainer' in dir(ROOT):
     ROOT.gROOT.LoadMacro(skimSrc + 'TreeContainer.cc+')
@@ -7,6 +7,7 @@ if not 'PlotHists' in dir(ROOT):
     ROOT.gROOT.LoadMacro(plotSrc + 'PlotHists.cc+')
 if not 'PlotStack' in dir(ROOT):
     ROOT.gROOT.LoadMacro(plotSrc + 'PlotStack.cc+')
+if not 'Reweighter' in dir(ROOT):
+    ROOT.gROOT.LoadMacro(anaSrc + 'Reweighter.cc+')
 
-newStackPlotter = ROOT.PlotStack
-stackPlotter    = newStackPlotter()
+newReweighter = ROOT.Reweighter

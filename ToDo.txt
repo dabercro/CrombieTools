@@ -10,7 +10,7 @@ Make generic MC reader and update reweighter tool (decouple from stackplotter)
 For plots in cutflow:
     Add multiple lines for other files, can watch MC that way
     Adjust to use triggers
-Make Plot Utils object?
+Make Plot Utils object
 Make generic parallelization tool
 Check tdrStyle stuff out and investigate CrombieStyle
 Revisit legend options in PlotBase

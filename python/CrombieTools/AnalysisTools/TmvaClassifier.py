@@ -1,5 +1,5 @@
 import ROOT
-from CrombieVars import *
+from .. import anaSrc, plotSrc, skimSrc
 
 if not 'PlotHists' in dir(ROOT):
     ROOT.gROOT.LoadMacro(plotSrc + 'PlotHists.cc+')
@@ -9,4 +9,4 @@ if not 'TmvaClassifier' in dir(ROOT):
     ROOT.gROOT.LoadMacro(anaSrc + 'TmvaClassifier.cc+')
 
 newClassifier = ROOT.TmvaClassifier
-classifier = newClassifier()
+classifier    = newClassifier()

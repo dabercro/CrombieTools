@@ -1,6 +1,6 @@
 import ROOT
 import json
-from CrombieVars import skimSrc
+from .. import skimSrc
 
 if not 'GoodLumiFilter' in dir(ROOT):
     ROOT.gROOT.LoadMacro(skimSrc + 'GoodLumiFilter.cc+')
@@ -18,9 +18,5 @@ def MakeFilter(jsonFileName):
             for lumisec in lumisecs:
                 for lumi in range(lumisec[0],lumisec[1]+1):
                     filter.AddLumi(int(run),lumi)
-                ##
-            ##
-        ##
-    ##
+
     return filter
-##
