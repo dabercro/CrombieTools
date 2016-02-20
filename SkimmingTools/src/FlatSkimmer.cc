@@ -21,11 +21,20 @@ FlatSkimmer::FlatSkimmer() :
   fLumiExpr("lumiNum"),
   fEventExpr("eventNum"),
   fReportFreq(100000),
-  fCheckDuplicates(false)
+  fCheckDuplicates(false),
+  fIsCopy(false)
 {
   fCopyObjects.resize(0);
   fEventFilter.clear();
 }
+
+//--------------------------------------------------------------------
+FlatSkimmer::~FlatSkimmer()
+{
+  if (fIsCopy)
+    delete fGoodLumiFilter;
+}
+
 
 //--------------------------------------------------------------------
 void
@@ -118,4 +127,15 @@ FlatSkimmer::Slim(TString fileName)
   else
     std::cout << "Not Checking" << std::endl;
 
+}
+
+//--------------------------------------------------------------------
+FlatSkimmer*
+FlatSkimmer::Copy()
+{
+  FlatSkimmer *newSkimmer = new FlatSkimmer();
+  *newSkimmer = *this;
+  newSkimmer->fGoodLumiFilter = this->fGoodLumiFilter->Copy();
+  newSkimmer->fIsCopy = true;
+  return newSkimmer;
 }

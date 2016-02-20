@@ -5,3 +5,4 @@
 from CrombieTools.SkimmingTools import *
 from CrombieTools.PlotTools import *
 from CrombieTools.AnalysisTools import *
+from CrombieTools import *

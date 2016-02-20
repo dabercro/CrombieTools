@@ -10,8 +10,9 @@ class GoodLumiFilter
   GoodLumiFilter();
   virtual ~GoodLumiFilter() {}
 
-  void         AddLumi   ( UInt_t run, UInt_t lumi )      { fGoodLumis[run].insert(lumi); }
-  Bool_t       IsGood    ( UInt_t run, UInt_t lumi );
+  void            AddLumi   ( UInt_t run, UInt_t lumi )      { fGoodLumis[run].insert(lumi); }
+  Bool_t          IsGood    ( UInt_t run, UInt_t lumi );
+  GoodLumiFilter *Copy      ();
     
  private:
   std::map<UInt_t, std::set<UInt_t> >  fGoodLumis;

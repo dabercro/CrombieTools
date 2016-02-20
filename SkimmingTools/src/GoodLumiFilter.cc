@@ -29,3 +29,12 @@ GoodLumiFilter::IsGood(UInt_t run, UInt_t lumi)
 
   return fCurrGood;
 }
+
+//--------------------------------------------------------------------
+GoodLumiFilter*
+GoodLumiFilter::Copy()
+{
+  GoodLumiFilter *newFilter = new GoodLumiFilter();
+  *newFilter = *this;
+  return newFilter;
+}

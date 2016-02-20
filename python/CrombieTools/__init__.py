@@ -1,5 +1,6 @@
 import ROOT
 import os
+import subprocess
 
 ROOT.gROOT.SetBatch(True)
 
@@ -24,4 +25,19 @@ anaSrc  = packdir + '/AnalysisTools/src/'
 plotSrc = packdir + '/PlotTools/src/'
 skimSrc = packdir + '/SkimmingTools/src/'
 
-__all__ = ['AnalysisTools','PlotTools','SkimmingTools']
+if os.path.exists('CrombieSlimmingConfig.sh'):
+    configContents = subprocess.Popen(['bash','-c','source CrombieSlimmingConfig.sh; env'],stdout = subprocess.PIPE)
+    for line in configContents.stdout:
+        if type(line) == bytes:
+            (key,sep,value) = line.decode('utf-8').partition('=')
+        elif type(line) == str:
+            (key,sep,value) = line.partition('=')
+        else:
+            print('Not sure how to handle subprocess output. Contact Dan.')
+            break
+        os.environ[key] = str(value).strip('\n')
+
+    configContents.communicate()
+
+
+__all__ = ['AnalysisTools','PlotTools','SkimmingTools','Parallelization']

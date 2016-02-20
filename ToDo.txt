@@ -6,11 +6,12 @@ Clean up Submission scripts
         This came from empty Nero directories. Fix this.
 Error handling in LimitTreeMaker
 Make generic MC reader and update reweighter tool (decouple from stackplotter)
+    Make xsection weight adder as well
     Clean up Limit Tree Maker
 For plots in cutflow:
     Add multiple lines for other files, can watch MC that way
     Adjust to use triggers
-Make Plot Utils object
-Make generic parallelization tool
 Check tdrStyle stuff out and investigate CrombieStyle
 Revisit legend options in PlotBase
+Add check for existing output file into FlatSkimmer itself
+Test Parallelization.py and remove CrombieFlatSkimmer
