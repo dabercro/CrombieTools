@@ -1,10 +1,6 @@
-import ROOT
-from .. import plotSrc
+from .. import Load
 
-if not 'Plot2D' in dir(ROOT):
-    ROOT.gROOT.LoadMacro(plotSrc + 'Plot2D.cc+')
-if not 'PlotFitParameters' in dir(ROOT):
-    ROOT.gROOT.LoadMacro(plotSrc + 'PlotFitParameters.cc+')
+newFitPlotter = Load('PlotFitParameters')
 
 def setupResolution(aPlotter):
     aPlotter.SetLooseFit('[2] * TMath::Gaus(x,[0],[1])')
@@ -21,5 +17,4 @@ def newResolutionPlotter():
     aPlotter = newFitPlotter()
     return setupResolution(aPlotter)
 
-newFitPlotter = ROOT.PlotFitParameters
 plotter       = newFitPlotter()

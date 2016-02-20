@@ -1,10 +1,4 @@
-import ROOT
-from .. import skimSrc
+from .. import Load
 
-if not 'GoodLumiFilter' in dir(ROOT):
-    ROOT.gROOT.LoadMacro(skimSrc + 'GoodLumiFilter.cc+')
-if not 'FlatSkimmer' in dir(ROOT):
-    ROOT.gROOT.LoadMacro(skimSrc + 'FlatSkimmer.cc+')
-
-newFlatSkimmer = ROOT.FlatSkimmer
+newFlatSkimmer = Load('FlatSkimmer')
 flatSkimmer    = newFlatSkimmer()

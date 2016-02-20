@@ -1,8 +1,7 @@
 import ROOT
-from .. import plotSrc
+from .. import Load
 
-if not 'PlotUtils' in dir(ROOT):
-    ROOT.gROOT.LoadMacro(plotSrc + 'PlotUtils.cc+')
+Load('PlotUtils')
 
 SetZeroError = ROOT.SetZeroError
 Divison = ROOT.Division

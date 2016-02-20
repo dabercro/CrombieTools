@@ -1,8 +1,4 @@
-import ROOT
-from .. import plotSrc
+from .. import Load
 
-if not 'Plot2D' in dir(ROOT):
-    ROOT.gROOT.LoadMacro(plotSrc + 'Plot2D.cc+')
-
-newFit2DPlotter = ROOT.Plot2D
+newFit2DPlotter = Load('Plot2D')
 plotter         = newFit2DPlotter()

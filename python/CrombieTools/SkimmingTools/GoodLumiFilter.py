@@ -1,11 +1,7 @@
-import ROOT
 import json
-from .. import skimSrc
+from .. import Load
 
-if not 'GoodLumiFilter' in dir(ROOT):
-    ROOT.gROOT.LoadMacro(skimSrc + 'GoodLumiFilter.cc+')
-
-newGoodLumiFilter = ROOT.GoodLumiFilter
+newGoodLumiFilter = Load('GoodLumiFilter')
 
 def MakeFilter(jsonFileName):
     filter = newGoodLumiFilter()

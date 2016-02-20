@@ -1,8 +1,4 @@
-import ROOT
-from .. import skimSrc
+from .. import Load
 
-if not 'TreeContainer' in dir(ROOT):
-    ROOT.gROOT.LoadMacro(skimSrc + 'TreeContainer.cc+')
-
-newTreeContainer = ROOT.TreeContainer
+newTreeContainer = Load('TreeContainer')
 treeContainer    = newTreeContainer()

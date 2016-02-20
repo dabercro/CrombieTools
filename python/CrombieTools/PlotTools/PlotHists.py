@@ -1,8 +1,4 @@
-import ROOT
-from .. import plotSrc
+from .. import Load
 
-if not 'PlotHists' in dir(ROOT):
-    ROOT.gROOT.LoadMacro(plotSrc + 'PlotHists.cc+')
-
-newHistPlotter = ROOT.PlotHists
+newHistPlotter = Load('PlotHists')
 plotter        = newHistPlotter()

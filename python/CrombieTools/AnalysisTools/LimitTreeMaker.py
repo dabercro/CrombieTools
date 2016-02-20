@@ -1,7 +1,3 @@
-import ROOT
-from .. import anaSrc, skimSrc
+from .. import Load
 
-if not 'LimitTreeMaker' in dir(ROOT):
-    ROOT.gROOT.LoadMacro(anaSrc + 'LimitTreeMaker.cc+')
-
-newLimitTreeMaker = ROOT.LimitTreeMaker
+newLimitTreeMaker = Load('LimitTreeMaker')
