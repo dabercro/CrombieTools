@@ -1,8 +1,4 @@
-import ROOT
-from .. import anaSrc
+from .. import Load
 
-if not 'CutflowMaker' in dir(ROOT):
-    ROOT.gROOT.LoadMacro(anaSrc + 'CutflowMaker.cc+')
-
-newCutflowMaker = ROOT.CutflowMaker
+newCutflowMaker = Load('CutflowMaker')
 cutflowMaker = newCutflowMaker()

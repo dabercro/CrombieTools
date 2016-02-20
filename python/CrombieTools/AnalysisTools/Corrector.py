@@ -1,13 +1,7 @@
-import ROOT
-from .. import anaSrc
+from .. import Load
 
-if not 'Corrector' in dir(ROOT):
-    ROOT.gROOT.LoadMacro(anaSrc + 'Corrector.cc+')
-if not 'CorrectorApplicator' in dir(ROOT):
-    ROOT.gROOT.LoadMacro(anaSrc + 'CorrectorApplicator.cc+')
-
-newCorrector  = ROOT.Corrector
-newApplicator = ROOT.CorrectorApplicator
+newCorrector  = Load('Corrector')
+newApplicator = Load('CorrectorApplicator')
 
 def MakeApplicator(name,saveAll,inputTree,outputTree,reportFreq):
     applicator = newApplicator(name,saveAll)

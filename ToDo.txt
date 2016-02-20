@@ -1,3 +1,4 @@
+Fix install script to check for existing installation first
 Clean up Submission scripts
     Add Error checking for the config (Things should be filled)
     Check for running jobs and offer to kill them
