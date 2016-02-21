@@ -1,18 +1,26 @@
 Fix install script to check for existing installation first
+
+Make generic MC reader and update reweighter tool (decouple from stackplotter)
+    Make xsection weight adder as well
+    Clean up Limit Tree Maker
+    Allow stack plotter to work without luminosity
+    This will come from MC reader with options on what to read, and how to weight
+
 Clean up Submission scripts
     Add Error checking for the config (Things should be filled)
     Check for running jobs and offer to kill them
     Make fresh flag in TempDir for Full, but don't remove full right away
     Somehow had empty trees from signal in Full... investigate
         This came from empty Nero directories. Fix this.
+
+Add check for existing output file into FlatSkimmer itself
+Test Parallelization.py and remove CrombieFlatSkimmer
+
 Error handling in LimitTreeMaker
-Make generic MC reader and update reweighter tool (decouple from stackplotter)
-    Make xsection weight adder as well
-    Clean up Limit Tree Maker
+
 For plots in cutflow:
     Add multiple lines for other files, can watch MC that way
     Adjust to use triggers
+
 Check tdrStyle stuff out and investigate CrombieStyle
 Revisit legend options in PlotBase
-Add check for existing output file into FlatSkimmer itself
-Test Parallelization.py and remove CrombieFlatSkimmer

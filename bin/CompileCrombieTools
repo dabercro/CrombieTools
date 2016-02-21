@@ -2,6 +2,7 @@
 
 # Creates all .so, .pcm, and .pyc files that could possibly be needed
 
+from CrombieTools.CommonTools import *
 from CrombieTools.SkimmingTools import *
 from CrombieTools.PlotTools import *
 from CrombieTools.AnalysisTools import *

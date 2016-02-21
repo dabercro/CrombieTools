@@ -2,7 +2,7 @@ import ROOT
 import os
 import subprocess
 
-__all__ = ['AnalysisTools','PlotTools','SkimmingTools','Parallelization']
+__all__ = ['AnalysisTools','CommonTools','PlotTools','SkimmingTools','Parallelization']
 
 ROOT.gROOT.SetBatch(True)
 

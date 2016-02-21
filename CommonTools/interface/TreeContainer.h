@@ -6,8 +6,8 @@
 // Authors: D.Abercrombie
 //--------------------------------------------------------------------------------------------------
 
-#ifndef CROMBIETOOLS_SKIMMINGTOOLS_TREECONTAINER_H
-#define CROMBIETOOLS_SKIMMINGTOOLS_TREECONTAINER_H
+#ifndef CROMBIETOOLS_COMMONTOOLS_TREECONTAINER_H
+#define CROMBIETOOLS_COMMONTOOLS_TREECONTAINER_H
 
 #include <vector>
 
