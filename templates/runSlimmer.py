@@ -3,6 +3,9 @@
 import sys,os
 import ROOT
 
+# Use MakeTree script and 
+# Load other macros here
+
 ROOT.gROOT.LoadMacro('slimmer.cc+')
 
 if sys.argv[1] == "compile":

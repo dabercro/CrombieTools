@@ -10,7 +10,7 @@ export CrombieRegDir=/afs/cern.ch/work/d/dabercro/eos/cms$CrombieEosDir
 export CrombieTempDir=/afs/cern.ch/work/d/dabercro/public/TempOut
 export CrombieFullDir=/afs/cern.ch/work/d/dabercro/public/FullOut
 export CrombieSkimDir=/afs/cern.ch/work/d/dabercro/public/SkimOut
-export CrombieDirList
+export CrombieDirList=
 
 export CrombieSlimmerScript=runSlimmer.py
 export CrombieJobScriptList=CrombieJobScriptList.txt

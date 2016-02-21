@@ -22,6 +22,12 @@ inVarsFile=$TreeName.txt
 h=$TreeName.h
 s=$TreeName.cc
 
+if [ $h -nt $inVarsFile ] && [ $s -nt $inVarsFile ]
+then
+    echo "Using old $TreeName"
+    exit 0
+fi
+
 echo "#ifndef CROMBIE_"$def"_H" > $h
 echo "#define CROMBIE_"$def"_H" >> $h
 
