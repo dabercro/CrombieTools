@@ -1,5 +1,5 @@
 export CrombieFilesPerJob=10
-export CrombieNumberProcs=1
+export CrombieNBatchProcs=1
 export CrombieQueue=8nh
 
 export CrombieNLocalProcs=`getconf _NPROCESSORS_ONLN`

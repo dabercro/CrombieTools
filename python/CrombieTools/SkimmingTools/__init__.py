@@ -1,1 +1,1 @@
-__all__ = ['FlatSkimmer','GoodLumiFilter']
+__all__ = ['Corrector','FlatSkimmer','GoodLumiFilter','HistWriter','Reweighter']

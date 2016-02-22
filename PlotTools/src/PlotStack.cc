@@ -1,8 +1,6 @@
-#include <fstream>
 #include <iostream>
 #include <algorithm>
 
-#include "TColor.h"
 #include "TFile.h"
 #include "TLegend.h"
 
@@ -13,8 +11,6 @@ ClassImp(PlotStack)
 //--------------------------------------------------------------------
 PlotStack::PlotStack() :
   fTreeName("events"),
-  fAllHist("htotal"),
-  fLuminosity(2110.0),
   fDataContainer(0),
   fMCContainer(0),
   fSignalContainer(0),
@@ -30,14 +26,6 @@ PlotStack::PlotStack() :
 {
   fFriends.resize(0);
   fDataFiles.resize(0);
-  fMCFiles.resize(0);
-  fXSecs.resize(0);
-  fStackEntries.resize(0);
-  fStackColors.resize(0);
-  fSignalFiles.resize(0);
-  fSignalXSecs.resize(0);
-  fSignalEntries.resize(0);
-  fSignalStyles.resize(0);
 }
 
 //--------------------------------------------------------------------
@@ -45,82 +33,42 @@ PlotStack::~PlotStack()
 {}
 
 //--------------------------------------------------------------------
-void
-PlotStack::ReadMCConfig(TString config, TString fileDir)
-{
-  if (fileDir != "" && !fileDir.EndsWith("/"))
-      fileDir = fileDir + "/";
-
-  std::ifstream configFile;
-  configFile.open(config.Data());
-  TString FileName;
-  TString XSec;
-  TString LegendEntry;
-  TString ColorEntry; 
-  TString currLegend;
-  TString currColor;
-  Int_t newColors = 0;
-  while (!configFile.eof()) {
-    configFile >> FileName >> XSec >> LegendEntry >> ColorEntry;
-    if (LegendEntry == ".")
-      LegendEntry = currLegend;
-    else
-      currLegend = LegendEntry;
-
-    if (ColorEntry == ".")
-      ColorEntry = currColor;
-    else if (ColorEntry == "rgb") {
-      ++newColors;
-      ColorEntry = TString::Format("%i",5000 + newColors);
-      currColor = ColorEntry;
-      TString red;
-      TString green;
-      TString blue;
-      configFile >> red >> green >> blue;
-      TColor* setColor = new TColor(ColorEntry.Atoi(),red.Atof()/255,green.Atof()/255,blue.Atof()/255);
-    }
-    else
-      currColor = ColorEntry;
-
-    if (ColorEntry != "" && !FileName.BeginsWith('#'))
-      AddMCFile(fileDir + FileName, XSec.Atof(), LegendEntry.ReplaceAll("_"," "), ColorEntry.Atoi());
-  }
-}
-
-//--------------------------------------------------------------------
 std::vector<TH1D*>
 PlotStack::GetHistList(Int_t NumXBins, Double_t *XBins, HistType type)
 {
-  std::vector<TString> FileList;
+  std::vector<MCFileInfo*> *FileInfo = &fMCFileInfo;
   TreeContainer *tempContainer = NULL;
   TString tempCutHolder = "";
+  UInt_t numFiles = 0;
 
   if (type == kData) {
-    FileList = fDataFiles;
+    numFiles = fDataFiles.size();
     tempContainer = fDataContainer;
     if (fDataWeights != "") {
       tempCutHolder = fDefaultCut;
       SetDefaultWeight(TString("(") + tempCutHolder + TString(") && (") + fDataWeights + TString(")"));
     }
+    for (UInt_t iFile = 0; iFile != fDataFiles.size(); ++iFile)
+      tempContainer->AddFile(fDataFiles[iFile]);
   }
   else {
-    if (type == kMC) {
-      FileList = fMCFiles;
+    if (type == kMC)
       tempContainer = fMCContainer;
-    }
+
     else {
-      FileList = fSignalFiles;
       tempContainer = fSignalContainer;
+      FileInfo = &fSignalFileInfo;
     }
+
+    numFiles = (*FileInfo).size();
+    for (UInt_t iFile = 0; iFile != numFiles; ++iFile)
+      tempContainer->AddFile((*FileInfo)[iFile]->fFileName);
 
     if (fMCWeights != "") {
       tempCutHolder = fDefaultCut;
       SetDefaultWeight(TString("(") + tempCutHolder + TString(")*(") + fMCWeights + TString(")"));
     }
   }
-  
-  for (UInt_t iFile = 0; iFile < FileList.size(); iFile++)
-    tempContainer->AddFile(FileList[iFile]);
 
   SetTreeList(tempContainer->ReturnTreeList());
   std::vector<TFile*> theFiles = tempContainer->ReturnFileList();
@@ -128,19 +76,9 @@ PlotStack::GetHistList(Int_t NumXBins, Double_t *XBins, HistType type)
   if (tempCutHolder != "")
     SetDefaultWeight(tempCutHolder);
 
-  for (UInt_t iFile = 0; iFile < theFiles.size(); iFile++) {
-    if (type != kData) {
-      TH1D *allHist = (TH1D*) theFiles[iFile]->FindObjectAny(fAllHist);
-      if (fDebug) {
-        std::cout << "Integral before " << theHists[iFile]->Integral() << std::endl;
-        std::cout << "Scale factor " << fLuminosity*fXSecs[iFile]/allHist->GetBinContent(1) << std::endl;
-      }
-      theHists[iFile]->Scale(fLuminosity*fXSecs[iFile]/allHist->GetBinContent(1));
-      if (fDebug)
-        std::cout << "Integral after " << theHists[iFile]->Integral() << std::endl;
-    }
-    else if (fDebug)
-      std::cout << "Data yield " << theHists[iFile]->Integral() << std::endl;
+  if (type != kData) {
+    for (UInt_t iFile = 0; iFile < numFiles; iFile++)
+      theHists[iFile]->Scale((*FileInfo)[iFile]->fXSecWeight);
   }
   return theHists;
 }
@@ -158,7 +96,6 @@ PlotStack::MakeCanvas(TString FileBase, Int_t NumXBins, Double_t *XBins,
   std::cout << "   Labeled     :   " << XLabel << std::endl;  
   std::cout << "   With cut    :   " << fDefaultCut << std::endl;
   std::cout << std::endl;
-
 
   SetLumiLabel(float(fLuminosity/1000.0));
   ResetLegend();
@@ -180,7 +117,7 @@ PlotStack::MakeCanvas(TString FileBase, Int_t NumXBins, Double_t *XBins,
   SetIncludeErrorBars(false);
   std::vector<TH1D*> MCHists = GetHistList(NumXBins,XBins,kMC);
   std::vector<TH1D*> SignalHists;
-  if (fSignalFiles.size() != 0)
+  if (fSignalFileInfo.size() != 0)
     SignalHists = GetHistList(NumXBins,XBins,kSignal);
 
   std::vector<TH1D*> theHists;
@@ -201,12 +138,13 @@ PlotStack::MakeCanvas(TString FileBase, Int_t NumXBins, Double_t *XBins,
   HistHolders.resize(0);
 
   for (UInt_t iHist = 0; iHist != MCHists.size(); ++iHist) {
-    if (fStackEntries[iHist] != previousEntry) {
-      previousEntry = fStackEntries[iHist];
+    if (fMCFileInfo[iHist]->fEntry != previousEntry) {
+      previousEntry = fMCFileInfo[iHist]->fEntry;
       TString tempName;
       tempName.Format("StackedHist_%d",iHist);
       tempMCHist = (TH1D*) MCHists[iHist]->Clone(tempName);
-      tempHistHolder = new HistHolder(tempMCHist,fStackEntries[iHist],fStackColors[iHist],(fForceTop == fStackEntries[iHist]));
+      tempHistHolder = new HistHolder(tempMCHist,fMCFileInfo[iHist]->fEntry,fMCFileInfo[iHist]->fColorStyle,
+                                      (fForceTop == fMCFileInfo[iHist]->fEntry));
       HistHolders.push_back(tempHistHolder);
     }
     else
@@ -266,7 +204,7 @@ PlotStack::MakeCanvas(TString FileBase, Int_t NumXBins, Double_t *XBins,
   AllHists.push_back(DataHist);
   for (UInt_t iHist = 0; iHist != SignalHists.size(); ++iHist) {
     AllHists.push_back(SignalHists[iHist]);
-    AddLegendEntry(fSignalEntries[iHist],1,2,fSignalStyles[iHist]);
+    AddLegendEntry(fSignalFileInfo[iHist]->fEntry,1,2,fSignalFileInfo[iHist]->fColorStyle);
   }
 
   BaseCanvas(FileBase,AllHists,XLabel,YLabel,logY);

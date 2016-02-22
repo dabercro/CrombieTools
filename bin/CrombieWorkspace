@@ -1,29 +1,17 @@
 #! /bin/bash
 
-ConfigName=CrombieSlimmingConfig.sh
+for dir in `ls $CROMBIEPATH/templates`
+do
+    if [ ! -d $dir ]
+    then
+        mkdir $dir
+    fi
 
-if [ ! -f $ConfigName ]
-then
-    cp $CROMBIEPATH/templates/$ConfigName .
-fi
-
-SlimmerName=runSlimmer.py
-
-if [ ! -f $SlimmerName ]
-then
-    cp $CROMBIEPATH/templates/$SlimmerName .
-fi
-
-ScriptList=CrombieJobScriptList.txt
-
-if [ ! -f $ScriptList ]
-then
-    cp $CROMBIEPATH/templates/$ScriptList .
-fi
-
-FlatSkimmer=FlatSkimmer.sh
-
-if [ ! -f $FlatSkimmer ]
-then
-    cp $CROMBIEPATH/templates/$FlatSkimmer .
-fi
+    for file in `ls $CROMBIEPATH/templates/$dir`
+    do
+        if [ ! -f $dir/$file ]
+        then
+            cp $CROMBIEPATH/templates/$dir/$file $dir/$file
+        fi
+    done
+done

@@ -165,6 +165,7 @@ class PlotBase
   // Use this to get certain draw options correct (for data, for example)
   template<class T>  void    LineDrawing          ( std::vector<T*> theLines, Int_t index, Bool_t same );
   std::vector<TObject*>      fDeleteThese;
+
 };
 
 //--------------------------------------------------------------------

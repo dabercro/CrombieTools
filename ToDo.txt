@@ -1,10 +1,11 @@
 Fix install script to check for existing installation first
 
 Make generic MC reader and update reweighter tool (decouple from stackplotter)
+    Finish UseLimitTree function in the stack plotter,
+        it should change basically how GetHists behaves, nothing else
     Make xsection weight adder as well
     Clean up Limit Tree Maker
     Allow stack plotter to work without luminosity
-    This will come from MC reader with options on what to read, and how to weight
 
 Clean up Submission scripts
     Add Error checking for the config (Things should be filled)

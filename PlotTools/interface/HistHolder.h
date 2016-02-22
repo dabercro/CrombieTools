@@ -15,7 +15,7 @@ struct HistHolder
     fHist->SetFillColor(fColor);
     fHist->SetMarkerSize(0);
   }
-  virtual ~HistHolder()               {}
+  virtual ~HistHolder()   {}
 
   TH1D *fHist;
   TString fEntry;

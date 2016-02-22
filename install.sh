@@ -50,6 +50,13 @@ then
     echo "export CROMBIEPATH="$target >> $profile
 fi
 
+if [ "$CROMBIEDATE" = "" ]
+then
+    echo "" >> $profile
+    echo "# Date format used for versioning" >> $profile
+    echo "export CROMBIEDATE=\`date +%y%m%d\`" >> $profile
+fi
+
 cd $here
 
 echo "-------------------------------------------------------------"

@@ -4,8 +4,9 @@
 #include "TreeContainer.h"
 #include "PlotHists.h"
 #include "HistHolder.h"
+#include "MCReader.h"
 
-class PlotStack : public PlotHists
+class PlotStack : public PlotHists , public MCReader
 {
  public:
   PlotStack();
@@ -15,29 +16,12 @@ class PlotStack : public PlotHists
   void SetTreeName       ( TString name )             { fTreeName = name;                        }
   void AddFriend         ( TString name )             { fFriends.push_back(name);                }
   
-  // Set the all histogram and luminosity for normalization
-  void SetAllHist        ( TString name )             { fAllHist = name;                         }
-  void SetLuminosity     ( Double_t lum )             { fLuminosity = lum;                       }
-  
-  // Add files as either data or MC
+  // Add files as data
   void AddDataFile       ( TString FileName )         { fDataFiles.push_back(FileName);          }
-  void AddMCFile         ( TString FileName, Double_t XSec, 
-                           TString LegendEntry, Color_t ColorEntry )
-                                         { fMCFiles.push_back(FileName); 
-                                           fXSecs.push_back(XSec); 
-                                           fStackEntries.push_back(LegendEntry); 
-                                           fStackColors.push_back(ColorEntry);                   }
-
-  void AddSignalFile     ( TString FileName, Double_t XSec, 
-                           TString LegendEntry, Int_t Style )
-                                         { fSignalFiles.push_back(FileName); 
-                                           fSignalXSecs.push_back(XSec); 
-                                           fSignalEntries.push_back(LegendEntry); 
-                                           fSignalStyles.push_back(Style);                       }
-
 
   // Alternatively, read a central MC configuration file
-  void ReadMCConfig      ( TString config, TString fileDir = "" );
+  void UseLimitTree      ( TString region, TString config, TString limitFile );
+  void UseLimitTree      ( TString region, TString mcConfig, TString signalConfig, TString limitFile );
 
   // The multipliers for Data can be set separately
   void SetDataWeights    ( TString weight )           { fDataWeights = weight;                   }
@@ -65,21 +49,11 @@ class PlotStack : public PlotHists
   // Draws histograms for the object
   enum HistType { kData = 0, kMC, kSignal };
   std::vector<TH1D*>    GetHistList            ( Int_t NumXBins, Double_t *XBins, HistType type);
+
  private:
-  
   TString               fTreeName;                  // Stores name of tree from file
   std::vector<TString>  fFriends;                   // Stores list of friends
-  TString               fAllHist;                   // Used to get the number of events in MC sample for normalization
-  Double_t              fLuminosity;                // Set luminosity in inverse pb
   std::vector<TString>  fDataFiles;                 // List of data files
-  std::vector<TString>  fMCFiles;                   // List of MC files
-  std::vector<Double_t> fXSecs;                     // List of MC cross sections
-  std::vector<TString>  fStackEntries;              // List of legend entries for MC
-  std::vector<Color_t>  fStackColors;               // List of legend colors for MC
-  std::vector<TString>  fSignalFiles;
-  std::vector<Double_t> fSignalXSecs;
-  std::vector<TString>  fSignalEntries;
-  std::vector<Color_t>  fSignalStyles;
   
   TreeContainer*        fDataContainer;             // A TreeContainer for data
   TreeContainer*        fMCContainer;               // A TreeContainer for MC

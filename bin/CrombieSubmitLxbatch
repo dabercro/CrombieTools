@@ -32,7 +32,7 @@ then
         if [ ! -f $outFile -o "$fresh" = "fresh" ]
         then
             echo Making: $outFile
-            command="bsub -q $CrombieQueue -n $CrombieNumberProcs -o bout/out.%J $CROMBIEPATH/scripts/CrombieDoJob.sh $outFile $CMSSW_BASE"
+            command="bsub -q $CrombieQueue -n $CrombieNBatchProcs -o bout/out.%J $CROMBIEPATH/scripts/CrombieDoJob.sh $outFile $CMSSW_BASE"
             if [ "$fresh" = "test" ]
             then
                 echo $command

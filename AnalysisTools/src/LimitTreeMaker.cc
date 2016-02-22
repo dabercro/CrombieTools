@@ -13,13 +13,8 @@ ClassImp(LimitTreeMaker)
 LimitTreeMaker::LimitTreeMaker(TString outputName) :
   fOutputFileName(outputName),
   fTreeName("events"),
-  fOutputWeightBranch("weight"),
-  fAllHistName("htotal"),
-  fLuminosity(2000.0)
+  fOutputWeightBranch("weight")
 {
-  fInFileNames.resize(0);
-  fOutTreeNames.resize(0);
-  fXSecs.resize(0);
   fFriendNames.resize(0);
   fKeepBranches.resize(0);
   fWeightBranch.resize(0);
@@ -43,37 +38,45 @@ LimitTreeMaker::MakeTrees()
 
     std::cout << "Region: " << regionName << std::endl;
 
-    UInt_t numFiles = fInFileNames.size() + fExceptionFileNames[regionName].size();
+    UInt_t numFiles = fMCFileInfo.size() + fSignalFileInfo.size() + fExceptionFileNames[regionName].size();
+    UInt_t sumofMC = fMCFileInfo.size() + fSignalFileInfo.size();
     for (UInt_t iFile = 0; iFile != numFiles; ++iFile) {
       TString fileName;
       TString outTreeName;
       Float_t XSec;
 
-      if (iFile < fInFileNames.size()) {
-        outTreeName = fOutTreeNames[iFile];
+      if (iFile < fMCFileInfo.size()) {
+        outTreeName = fMCFileInfo[iFile]->fTreeName;
         if (fExceptionSkip[regionName].find(outTreeName) != fExceptionSkip[regionName].end())
           continue;
-        fileName = fInFileNames[iFile];
-        XSec = fXSecs[iFile];
+        fileName = fMCFileInfo[iFile]->fFileName;
+        XSec = fMCFileInfo[iFile]->fXSec;
+      }
+      else if (iFile < sumofMC) {
+        outTreeName = fSignalFileInfo[iFile - fMCFileInfo.size()]->fTreeName;
+        if (fExceptionSkip[regionName].find(outTreeName) != fExceptionSkip[regionName].end())
+          continue;
+        fileName = fSignalFileInfo[iFile - fMCFileInfo.size()]->fFileName;
+        XSec = fSignalFileInfo[iFile - fMCFileInfo.size()]->fXSec;
       }
       else {
-        fileName = (fExceptionFileNames[regionName])[iFile - fInFileNames.size()];
-        outTreeName = (fExceptionTreeNames[regionName])[iFile - fInFileNames.size()];
-        XSec =  (fExceptionXSecs[regionName])[iFile - fInFileNames.size()];
+        fileName = (fExceptionFileNames[regionName])[iFile - sumofMC];
+        outTreeName = (fExceptionTreeNames[regionName])[iFile - sumofMC];
+        XSec =  (fExceptionXSecs[regionName])[iFile - sumofMC];
       }
       std::cout << "File " << fileName << std::endl;
       TFile* inFile = new TFile(fileName);
       if (!inFile) {
-        std::cout << "Could not open file " << fInFileNames[iFile] << std::endl;
-        continue;
+        std::cout << "Could not open file " << fileName << std::endl;
+        exit(1);
       }
       
       TTree* inTree = (TTree*) inFile->Get(fTreeName);
-      if (!inFile) {
+      if (!inTree) {
         std::cout << "Could not find tree " << fTreeName << std::endl;
-        std::cout << "in file " << fInFileNames[iFile] << std::endl;
+        std::cout << "in file " << inFile << std::endl;
         inFile->Close();
-        continue;
+        exit(1);
       }
       
       // Apply selection
