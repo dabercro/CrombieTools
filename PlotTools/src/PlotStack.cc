@@ -20,6 +20,9 @@ PlotStack::PlotStack() :
   fIgnoreInLinear(0.0),
   fStackLineWidth(1),
   fOthersColor(0),
+  fUsingLumi(true),
+  fLimitFile(0),
+  fLimitRegion(""),
   fForceTop(""),
   fDebug(false),
   fDumpRootName("")
@@ -30,53 +33,80 @@ PlotStack::PlotStack() :
 
 //--------------------------------------------------------------------
 PlotStack::~PlotStack()
-{}
+{
+  if (fLimitFile)
+    fLimitFile->Close();
+}
+
+//--------------------------------------------------------------------
+void
+PlotStack::UseLimitTree(TString limitFile, TString region, TString mcConfig, TString signalConfig)
+{
+  fUsingLumi = false;
+  fLimitFile = TFile::Open(limitFile);
+  fLimitRegion = region;
+  ReadMCConfig(mcConfig,"",MCReader::kBackground);
+  if (signalConfig != "")
+    ReadMCConfig(signalConfig,"",MCReader::kSignal);
+}
 
 //--------------------------------------------------------------------
 std::vector<TH1D*>
 PlotStack::GetHistList(Int_t NumXBins, Double_t *XBins, HistType type)
 {
   std::vector<MCFileInfo*> *FileInfo = &fMCFileInfo;
-  TreeContainer *tempContainer = NULL;
   TString tempCutHolder = "";
   UInt_t numFiles = 0;
+    
+  if (type == kSignal)
+    FileInfo = &fSignalFileInfo;
 
-  if (type == kData) {
-    numFiles = fDataFiles.size();
-    tempContainer = fDataContainer;
-    if (fDataWeights != "") {
-      tempCutHolder = fDefaultCut;
-      SetDefaultWeight(TString("(") + tempCutHolder + TString(") && (") + fDataWeights + TString(")"));
+  if (fLimitFile) {
+    ResetTree();
+    if (type == kData)
+      AddTree((TTree*) fLimitFile->Get(TString("data_") + fLimitRegion));
+    else {
+      numFiles = (*FileInfo).size();
+      for (UInt_t iFile = 0; iFile != numFiles; ++iFile)
+        AddTree((TTree*) fLimitFile->Get((*FileInfo)[iFile]->fTreeName + "_" + fLimitRegion));
     }
-    for (UInt_t iFile = 0; iFile != fDataFiles.size(); ++iFile)
-      tempContainer->AddFile(fDataFiles[iFile]);
   }
   else {
-    if (type == kMC)
-      tempContainer = fMCContainer;
+    TreeContainer *tempContainer = NULL;
 
+    if (type == kData) {
+      numFiles = fDataFiles.size();
+      tempContainer = fDataContainer;
+      for (UInt_t iFile = 0; iFile != fDataFiles.size(); ++iFile)
+        tempContainer->AddFile(fDataFiles[iFile]);
+    }
     else {
-      tempContainer = fSignalContainer;
-      FileInfo = &fSignalFileInfo;
+      if (type == kMC)
+        tempContainer = fMCContainer;
+      
+      else
+        tempContainer = fSignalContainer;
+      
+      numFiles = (*FileInfo).size();
+      for (UInt_t iFile = 0; iFile != numFiles; ++iFile)
+        tempContainer->AddFile((*FileInfo)[iFile]->fFileName);
     }
-
-    numFiles = (*FileInfo).size();
-    for (UInt_t iFile = 0; iFile != numFiles; ++iFile)
-      tempContainer->AddFile((*FileInfo)[iFile]->fFileName);
-
-    if (fMCWeights != "") {
-      tempCutHolder = fDefaultCut;
-      SetDefaultWeight(TString("(") + tempCutHolder + TString(")*(") + fMCWeights + TString(")"));
-    }
+    SetTreeList(tempContainer->ReturnTreeList());
   }
 
-  SetTreeList(tempContainer->ReturnTreeList());
-  std::vector<TFile*> theFiles = tempContainer->ReturnFileList();
+  if (type == kData && fDataWeights != "") {
+    tempCutHolder = fDefaultCut;
+    SetDefaultWeight(TString("(") + tempCutHolder + TString(") && (") + fDataWeights + TString(")"));
+  }
+  else if (type != kData && fMCWeights != "") {
+    tempCutHolder = fDefaultCut;
+    SetDefaultWeight(TString("(") + tempCutHolder + TString(")*(") + fMCWeights + TString(")"));
+  }
   std::vector<TH1D*> theHists = MakeHists(NumXBins,XBins);
   if (tempCutHolder != "")
     SetDefaultWeight(tempCutHolder);
 
-  if (type != kData) {
+  if (fUsingLumi && type != kData) {
     for (UInt_t iFile = 0; iFile < numFiles; iFile++)
       theHists[iFile]->Scale((*FileInfo)[iFile]->fXSecWeight);
   }
@@ -120,7 +150,6 @@ PlotStack::MakeCanvas(TString FileBase, Int_t NumXBins, Double_t *XBins,
   if (fSignalFileInfo.size() != 0)
     SignalHists = GetHistList(NumXBins,XBins,kSignal);
 
-  std::vector<TH1D*> theHists;
   SetRatioIndex(0);
   SetOnlyRatioWithData(true);
   SetLegendFill(true);

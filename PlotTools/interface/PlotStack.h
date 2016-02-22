@@ -20,8 +20,7 @@ class PlotStack : public PlotHists , public MCReader
   void AddDataFile       ( TString FileName )         { fDataFiles.push_back(FileName);          }
 
   // Alternatively, read a central MC configuration file
-  void UseLimitTree      ( TString region, TString config, TString limitFile );
-  void UseLimitTree      ( TString region, TString mcConfig, TString signalConfig, TString limitFile );
+  void UseLimitTree      ( TString limitFile, TString region, TString mcConfig, TString signalConfig = "" );
 
   // The multipliers for Data can be set separately
   void SetDataWeights    ( TString weight )           { fDataWeights = weight;                   }
@@ -37,9 +36,11 @@ class PlotStack : public PlotHists , public MCReader
   
   void SetForceTop       ( TString force )            { fForceTop = force;                       }
   void SetMinLegendFrac  ( Double_t frac )            { fMinLegendFrac = frac;                   }
-  void SetIgnoreInLinear ( Double_t ignore )           { fIgnoreInLinear = ignore;                }
+  void SetIgnoreInLinear ( Double_t ignore )          { fIgnoreInLinear = ignore;                }
   void SetOthersColor    ( Color_t color )            { fOthersColor = color;                    }
   void SetStackLineWidth ( Int_t width )              { fStackLineWidth = width;                 }
+
+  void SetUsingLumi      ( Bool_t isUsed )            { fUsingLumi = isUsed;                     }
 
   // This dumps out some raw values for you to check yields
   void SetDebug          ( Bool_t debug )             { fDebug = debug;                          }
@@ -55,9 +56,9 @@ class PlotStack : public PlotHists , public MCReader
   std::vector<TString>  fFriends;                   // Stores list of friends
   std::vector<TString>  fDataFiles;                 // List of data files
   
-  TreeContainer*        fDataContainer;             // A TreeContainer for data
-  TreeContainer*        fMCContainer;               // A TreeContainer for MC
-  TreeContainer*        fSignalContainer;           // A TreeContainer for Signal MC
+  TreeContainer        *fDataContainer;             // A TreeContainer for data
+  TreeContainer        *fMCContainer;               // A TreeContainer for MC
+  TreeContainer        *fSignalContainer;           // A TreeContainer for Signal MC
   TString               fDataWeights;               // Separate Data weights if needed
   TString               fMCWeights;                 // Separate MC weights if needed
   TString               fForceTop;
@@ -65,6 +66,9 @@ class PlotStack : public PlotHists , public MCReader
   Double_t              fIgnoreInLinear;
   Int_t                 fStackLineWidth;
   Color_t               fOthersColor;
+  Bool_t                fUsingLumi;
+  TFile                *fLimitFile;
+  TString               fLimitRegion;
 
   Bool_t                fDebug;                     // Dumps yield tests
   TString               fDumpRootName;              // File where each histogram in stack is dumped

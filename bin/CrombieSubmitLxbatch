@@ -13,6 +13,11 @@ then
     mkdir bout
 fi
 
+if [ "$fresh" = "fresh" ] && [ -d $CrombieTempDir ]
+then
+    touch $CrombieTempDir/CrombieFreshener
+fi
+
 source CrombieSlimmingConfig.sh
 
 export haddFile=$CrombieTempDir/myHadd.txt

@@ -10,6 +10,7 @@ if [ "$fresh" = "fresh" ]
 then
     if [ -d $CrombieTempDir ]
     then
+        touch $CrombieTempDir/CrombieFreshener
         rm $CrombieTempDir/*.root 2> /dev/null
         if [ -d $CrombieTempDir/TerminalRunning ]
         then
