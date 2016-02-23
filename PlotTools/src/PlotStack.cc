@@ -112,10 +112,8 @@ PlotStack::GetHistList(Int_t NumXBins, Double_t *XBins, HistType type)
     SetDefaultWeight(tempCutHolder);
 
   if (fUsingLumi && type != kData) {
-    for (UInt_t iFile = 0; iFile < numFiles; iFile++) {
-      std::cout << "Scale factor: " << (*FileInfo)[iFile]->fXSecWeight << std::endl;
+    for (UInt_t iFile = 0; iFile < numFiles; iFile++)
       theHists[iFile]->Scale((*FileInfo)[iFile]->fXSecWeight);
-    }
   }
   return theHists;
 }
