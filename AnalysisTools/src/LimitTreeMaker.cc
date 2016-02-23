@@ -34,7 +34,7 @@ void
 LimitTreeMaker::ReadExceptionConfig(TString config, TString region, TString fileDir)
 {
   if (fileDir != "")
-    SetInDir(fileDir);
+    SetInDirectory(fileDir);
 
   std::ifstream configFile;
   configFile.open(config.Data());
