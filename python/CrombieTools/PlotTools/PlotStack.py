@@ -1,11 +1,12 @@
 import os
-from .. import Load
+from .. import Load, DirFromEnv
 
 newStackPlotter = Load('PlotStack')
 plotter         = newStackPlotter()
 
 def SetupFromEnv(aPlotter = plotter):
     from .. import LoadConfig
+    DirFromEnv('CrombieOutPlotDir')
     if os.path.exists('CrombieAnalysisConfig.sh'):
         def readMC(config):
             aPlotter.ReadMCConfig(config,aPlotter.kBackground)

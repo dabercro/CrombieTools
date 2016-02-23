@@ -4,6 +4,7 @@
 #include <iostream>
 
 #include "TFile.h"
+#include "TH1D.h"
 #include "TH1.h"
 #include "TString.h"
 
@@ -17,7 +18,7 @@ Double_t GetXSecWeight(TString fileName, Double_t XSec, TString allHistName)
     std::cout << "Cannot open file " << fileName << std::endl;
     exit(1);
   }
-  TH1* allHist = (TH1*) theFile->Get(allHistName);
+  TH1D* allHist = (TH1D*) theFile->Get(allHistName);
   Double_t weight = -1;
   if (allHist)
     weight = XSec/allHist->GetBinContent(1);
