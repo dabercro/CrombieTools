@@ -15,11 +15,11 @@ class MCReader
   virtual ~MCReader();
 
   // Set the all histogram and luminosity for normalization
-  void       SetAllHistName       ( TString name )                      { fAllHistName = name;     }
-  void       SetLuminosity        ( Double_t lum )                      { fLuminosity = lum;       }
+  void       SetAllHistName       ( TString name )                              { fAllHistName = name;     }
+  void       SetLuminosity        ( Double_t lum )                              { fLuminosity = lum;       }
 
   enum MCType { kBackground = 0, kSignal };
-  void       SetMCType            ( MCType type )                       { fMCType = type;          }
+  void       SetMCType            ( MCType type )                               { fMCType = type;          }
 
   // This is the default MC File adder
   void       AddMCFile            ( TString treeName, TString fileName, Double_t XSec, 
@@ -27,28 +27,30 @@ class MCReader
   // Default File adder with type changing
   void       AddMCFile            ( TString treeName, TString fileName, Double_t XSec, 
                                     TString entry, Int_t colorstyle, MCType type )
-                            { SetMCType(type); AddMCFile(treeName,fileName,XSec,entry,colorstyle); }
+                                    { SetMCType(type); AddMCFile(treeName,fileName,XSec,entry,colorstyle); }
   // This is when you don't care about limit trees and are adding by hand
   void       AddMCFile            ( TString fileName, Double_t XSec, TString entry, Int_t colorstyle )
-                                                   { AddMCFile("",fileName,XSec,entry,colorstyle); }
+                                                           { AddMCFile("",fileName,XSec,entry,colorstyle); }
   // Same as before with type changing
   void       AddMCFile            ( TString fileName, Double_t XSec, TString entry, 
                                     Int_t colorstyle, MCType type )
-                                     { SetMCType(type); AddMCFile(fileName,XSec,entry,colorstyle); }
+                                             { SetMCType(type); AddMCFile(fileName,XSec,entry,colorstyle); }
     
-  void       SetInDirectory       ( TString inDir )                      { fInDirectory = inDir;   }
+  void       SetInDirectory       ( TString dir )    { fInDirectory = dir.EndsWith("/") ? dir : dir + "/"; }
   void       ReadMCConfig         ( TString config, TString fileDir = "" );
   void       ReadMCConfig         ( TString config,  MCType type, TString fileDir = "" ) 
-                                                  { SetMCType(type); ReadMCConfig(config,fileDir); }
+                                                          { SetMCType(type); ReadMCConfig(config,fileDir); }
+
+  TString    AddInDir             ( TString FileName );
 
  protected:
   Double_t   fLuminosity;
   TString    fAllHistName;
   std::vector<MCFileInfo*>  fMCFileInfo;
   std::vector<MCFileInfo*>  fSignalFileInfo;
-  TString    fInDirectory;
 
  private:
+  TString    fInDirectory;
   MCType     fMCType;
   
 };
@@ -74,11 +76,21 @@ MCReader::~MCReader()
 }
 
 //--------------------------------------------------------------------
+TString
+MCReader::AddInDir(TString FileName)
+{
+  if (fInDirectory != "")
+    return fInDirectory + FileName;
+  else
+    return FileName;
+}
+
+//--------------------------------------------------------------------
 void
 MCReader::AddMCFile(TString treeName, TString fileName, Double_t XSec, 
                     TString entry, Int_t colorstyle)
 {
-  MCFileInfo* tempInfo = new MCFileInfo(treeName,fileName,XSec,
+  MCFileInfo* tempInfo = new MCFileInfo(treeName,AddInDir(fileName),XSec,
                                         entry,colorstyle,fAllHistName);
   tempInfo->fXSecWeight *= fLuminosity;
   if (fMCType == kBackground)
@@ -95,12 +107,9 @@ MCReader::AddMCFile(TString treeName, TString fileName, Double_t XSec,
 void
 MCReader::ReadMCConfig(TString config, TString fileDir)
 {
-  if (fileDir == "")
-    fileDir = fInDirectory;
+  if (fileDir != "")
+    SetInDirectory(fileDir);
   
-  if (fileDir != "" && !fileDir.EndsWith("/"))
-    fileDir = fileDir + "/";
-
   std::ifstream configFile;
   configFile.open(config.Data());
   TString LimitTreeName;
@@ -149,7 +158,7 @@ MCReader::ReadMCConfig(TString config, TString fileDir)
         currColorStyle = ColorStyleEntry;
 
       if (ColorStyleEntry != "" && !LimitTreeName.BeginsWith('#'))
-        AddMCFile(LimitTreeName, fileDir + FileName, XSec.Atof(), LegendEntry.ReplaceAll("_"," "), ColorStyleEntry.Atoi());
+        AddMCFile(LimitTreeName, FileName, XSec.Atof(), LegendEntry.ReplaceAll("_"," "), ColorStyleEntry.Atoi());
     }
   }
   configFile.close();

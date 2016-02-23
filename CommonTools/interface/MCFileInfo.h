@@ -20,7 +20,7 @@ Double_t GetXSecWeight(TString fileName, Double_t XSec, TString allHistName)
   TH1* allHist = (TH1*) theFile->Get(allHistName);
   Double_t weight = -1;
   if (allHist)
-    Double_t weight = XSec/allHist->GetBinContent(1);
+    weight = XSec/allHist->GetBinContent(1);
   else
     std::cout << "Just so you know, I can't find " << allHistName << std::endl;
 

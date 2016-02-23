@@ -13,19 +13,19 @@ class PlotStack : public PlotHists , public MCReader
   virtual ~PlotStack();
   
   // Set the tree of the files you are trying to plot and add friends in same file
-  void SetTreeName       ( TString name )             { fTreeName = name;                        }
-  void AddFriend         ( TString name )             { fFriends.push_back(name);                }
+  void SetTreeName       ( TString name )             { fTreeName = name;                         }
+  void AddFriend         ( TString name )             { fFriends.push_back(name);                 }
   
   // Add files as data
-  void AddDataFile       ( TString FileName )         { fDataFiles.push_back(FileName);          }
+  void AddDataFile       ( TString FileName )         { fDataFiles.push_back(AddInDir(FileName)); }
 
   // Alternatively, read a central MC configuration file
   void UseLimitTree      ( TString limitFile, TString region, TString mcConfig, TString signalConfig = "" );
 
   // The multipliers for Data can be set separately
-  void SetDataWeights    ( TString weight )           { fDataWeights = weight;                   }
+  void SetDataWeights    ( TString weight )           { fDataWeights = weight;                    }
   // The multipliers for MC can be set separately
-  void SetMCWeights      ( TString weight )           { fMCWeights = weight;                     }
+  void SetMCWeights      ( TString weight )           { fMCWeights = weight;                      }
   
   // Choose the binning of your plots and make
   void MakeCanvas        ( TString FileBase, Int_t NumXBins, Double_t *XBins,
@@ -34,19 +34,19 @@ class PlotStack : public PlotHists , public MCReader
   void MakeCanvas        ( TString FileBase, Int_t NumXBins, Double_t MinX, Double_t MaxX,
                            TString XLabel, TString YLabel, Bool_t logY = false );
   
-  void SetForceTop       ( TString force )            { fForceTop = force;                       }
-  void SetMinLegendFrac  ( Double_t frac )            { fMinLegendFrac = frac;                   }
-  void SetIgnoreInLinear ( Double_t ignore )          { fIgnoreInLinear = ignore;                }
-  void SetOthersColor    ( Color_t color )            { fOthersColor = color;                    }
-  void SetStackLineWidth ( Int_t width )              { fStackLineWidth = width;                 }
+  void SetForceTop       ( TString force )            { fForceTop = force;                        }
+  void SetMinLegendFrac  ( Double_t frac )            { fMinLegendFrac = frac;                    }
+  void SetIgnoreInLinear ( Double_t ignore )          { fIgnoreInLinear = ignore;                 }
+  void SetOthersColor    ( Color_t color )            { fOthersColor = color;                     }
+  void SetStackLineWidth ( Int_t width )              { fStackLineWidth = width;                  }
 
-  void SetUsingLumi      ( Bool_t isUsed )            { fUsingLumi = isUsed;                     }
+  void SetUsingLumi      ( Bool_t isUsed )            { fUsingLumi = isUsed;                      }
 
-  void SetOutDirectory   ( TString dir )  { fOutDirectory = dir.EndsWith("/") ? dir : dir + "/"; }
-  void SetLimitTreeDir   ( TString dir )  { fLimitTreeDir = dir.EndsWith("/") ? dir : dir + "/"; }              
+  void SetOutDirectory   ( TString dir )   { fOutDirectory = dir.EndsWith("/") ? dir : dir + "/"; }
+  void SetLimitTreeDir   ( TString dir )   { fLimitTreeDir = dir.EndsWith("/") ? dir : dir + "/"; }              
   // This dumps out some raw values for you to check yields
-  void SetDebug          ( Bool_t debug )             { fDebug = debug;                          }
-  void SetDumpFileName   ( TString dumpName )         { fDumpRootName = dumpName;                }
+  void SetDebug          ( Bool_t debug )             { fDebug = debug;                           }
+  void SetDumpFileName   ( TString dumpName )         { fDumpRootName = dumpName;                 }
   
  protected:
   // Draws histograms for the object

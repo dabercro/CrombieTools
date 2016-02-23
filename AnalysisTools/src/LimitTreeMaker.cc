@@ -33,11 +33,8 @@ LimitTreeMaker::~LimitTreeMaker()
 void
 LimitTreeMaker::ReadExceptionConfig(TString config, TString region, TString fileDir)
 {
-  if (fileDir == "")
-    fileDir = fInDirectory;
-  
-  if (fileDir != "" && !fileDir.EndsWith("/"))
-    fileDir = fileDir + "/";
+  if (fileDir != "")
+    SetInDir(fileDir);
 
   std::ifstream configFile;
   configFile.open(config.Data());
@@ -50,11 +47,11 @@ LimitTreeMaker::ReadExceptionConfig(TString config, TString region, TString file
   while (!configFile.eof()) {
     configFile >> LimitTreeName >> FileName;
     if (LimitTreeName == "skip") {
-      ExceptionSkip(region,FileName);
+      ExceptionSkip(region,AddInDir(FileName));
     }
     else {
       configFile >> XSec >> LegendEntry >> ColorStyleEntry;
-      ExceptionAdd(region,FileName,LimitTreeName,XSec.Atof());
+      ExceptionAdd(region,AddInDir(FileName),LimitTreeName,XSec.Atof());
     }
   }
   configFile.close();
