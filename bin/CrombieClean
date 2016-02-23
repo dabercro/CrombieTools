@@ -1,5 +1,6 @@
 #! /bin/bash
 
+find $CROMBIEPATH -name '*~'    | xargs rm
 find $CROMBIEPATH -name '*.so'  | xargs rm
 find $CROMBIEPATH -name '*.d'   | xargs rm
 find $CROMBIEPATH -name '*.pcm' | xargs rm

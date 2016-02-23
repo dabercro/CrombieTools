@@ -15,7 +15,7 @@ def SetupFromEnv(aPlotter = plotter):
             if os.environ.get(target[1]) == None:
                 print 'Cannot find ' + target[1] + ' in config'
             else:
-                target[0](os.environ[target[1]]
+                target[0](os.environ[target[1]])
 
     else:
         print 'Could not find CrombieAnalysisConfig.sh'
