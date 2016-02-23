@@ -33,12 +33,12 @@ class LimitTreeMaker : public MCReader
 
   void    AddExceptionDataCut      ( TString region, TString cut )              { fExceptionDataCuts[region] = cut;           }
   void    AddExceptionWeightBranch ( TString region, TString weight )  { fExceptionWeightBranches[region].push_back(weight);  }
-  void    SetReportFrequency       ( Int_t freq )                               { fReportFrequency = freq;                    }
+  void    SetReportFrequency       ( UInt_t freq )                              { fReportFrequency = freq;                    }
 
   void    MakeTrees                ();
 
  private:
-  Int_t                     fReportFrequency;
+  UInt_t                    fReportFrequency;
   TString                   fOutDirectory;
   TString                   fOutputFileName;
   TString                   fTreeName;

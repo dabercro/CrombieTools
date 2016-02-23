@@ -12,7 +12,7 @@ ClassImp(LimitTreeMaker)
 
 //--------------------------------------------------------------------
 LimitTreeMaker::LimitTreeMaker(TString outputName) :
-  fReportFrequency(10),
+  fReportFrequency(10000),
   fOutDirectory(""),
   fOutputFileName(outputName),
   fTreeName("events"),
@@ -64,6 +64,8 @@ LimitTreeMaker::ReadExceptionConfig(TString config, TString region, TString file
 void
 LimitTreeMaker::MakeTrees()
 {
+  if (fReportFrequency < 1)
+    fReportFrequency = 10000;
   TFile* outClear = new TFile(fOutDirectory + fOutputFileName,"RECREATE");
   outClear->Close();
 
@@ -74,7 +76,7 @@ LimitTreeMaker::MakeTrees()
     UInt_t sumofMC = fMCFileInfo.size() + fSignalFileInfo.size();
     for (UInt_t iFile = 0; iFile != numFiles; ++iFile) {
       try  {
-        if ((Int_t) iFile % fReportFrequency == 0) {
+        if (iFile % fReportFrequency == 0 && fReportFrequency < numFiles) {
           std::cout << fOutputFileName << " : ";
           for (UInt_t jRegion = 0; jRegion != fRegionNames.size(); ++jRegion) {
             if (jRegion == iRegion)
