@@ -34,10 +34,11 @@ class MCReader
   // Same as before with type changing
   void       AddMCFile            ( TString fileName, Double_t XSec, TString entry, 
                                     Int_t colorstyle, MCType type )
-                                          { SetMCType(type); AddMCFile(fileName,XSec,entry,colorstyle); }
+                                     { SetMCType(type); AddMCFile(fileName,XSec,entry,colorstyle); }
     
-  void       ReadMCConfig         ( TString config, TString fileDir );
-  void       ReadMCConfig         ( TString config, TString fileDir, MCType type ) 
+  void       SetInDirectory       ( TString inDir )                      { fInDirectory = inDir;   }
+  void       ReadMCConfig         ( TString config, TString fileDir = "" );
+  void       ReadMCConfig         ( TString config,  MCType type, TString fileDir = "" ) 
                                                   { SetMCType(type); ReadMCConfig(config,fileDir); }
 
  protected:
@@ -47,6 +48,7 @@ class MCReader
   std::vector<MCFileInfo*>  fSignalFileInfo;
 
  private:
+  TString    fInDirectory;
   MCType     fMCType;
   
 };
@@ -93,8 +95,11 @@ MCReader::AddMCFile(TString treeName, TString fileName, Double_t XSec,
 void
 MCReader::ReadMCConfig(TString config, TString fileDir)
 {
+  if (fileDir == "")
+    fileDir = fInDirectory;
+
   if (fileDir != "" && !fileDir.EndsWith("/"))
-      fileDir = fileDir + "/";
+    fileDir = fileDir + "/";
 
   std::ifstream configFile;
   configFile.open(config.Data());

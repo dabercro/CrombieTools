@@ -16,6 +16,7 @@ PlotStack::PlotStack() :
   fSignalContainer(0),
   fDataWeights(""),
   fMCWeights(""),
+  fForceTop(""),
   fMinLegendFrac(0.0),
   fIgnoreInLinear(0.0),
   fStackLineWidth(1),
@@ -23,7 +24,8 @@ PlotStack::PlotStack() :
   fUsingLumi(true),
   fLimitFile(0),
   fLimitRegion(""),
-  fForceTop(""),
+  fOutDirectory(""),
+  fLimitTreeDir(""),
   fDebug(false),
   fDumpRootName("")
 {
@@ -43,11 +45,14 @@ void
 PlotStack::UseLimitTree(TString limitFile, TString region, TString mcConfig, TString signalConfig)
 {
   fUsingLumi = false;
+  if (!limitFile.Contains('/'))
+    limitFile = fLimitTreeDir + limitFile;
+
   fLimitFile = TFile::Open(limitFile);
   fLimitRegion = region;
-  ReadMCConfig(mcConfig,"",MCReader::kBackground);
+  ReadMCConfig(mcConfig,MCReader::kBackground);
   if (signalConfig != "")
-    ReadMCConfig(signalConfig,"",MCReader::kSignal);
+    ReadMCConfig(signalConfig,MCReader::kSignal);
 }
 
 //--------------------------------------------------------------------
@@ -235,6 +240,9 @@ PlotStack::MakeCanvas(TString FileBase, Int_t NumXBins, Double_t *XBins,
     AllHists.push_back(SignalHists[iHist]);
     AddLegendEntry(fSignalFileInfo[iHist]->fEntry,1,2,fSignalFileInfo[iHist]->fColorStyle);
   }
+
+  if (!FileBase.Contains('/'))
+    FileBase = fOutDirectory + FileBase;
 
   BaseCanvas(FileBase,AllHists,XLabel,YLabel,logY);
 

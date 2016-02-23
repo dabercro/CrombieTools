@@ -1,7 +1,6 @@
 import ROOT
 import os
 import subprocess
-from importlib import import_module
 
 __all__ = ['AnalysisTools','CommonTools','PlotTools','SkimmingTools','Parallelization']
 
@@ -80,4 +79,4 @@ for config in CrombieConfigs:
 possibleImports = ['CrombieCutsFile']
 for toImport in possibleImports:
     if not os.environ.get(toImport) == None:
-        cuts = import_module(os.environ[toImport].strip('.py'))
+        cuts = __import__(os.environ[toImport].strip('.py'), globals(), locals(), [], -1)
