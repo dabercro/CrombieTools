@@ -2,10 +2,10 @@
 
 object=$1
 
-find $CROMBIEPATH -name '$object*.so'  | xargs rm
-find $CROMBIEPATH -name '$object*.d'   | xargs rm
-find $CROMBIEPATH -name '$object*.pcm' | xargs rm
-find $CROMBIEPATH -name '$object*.pyc' | xargs rm
+find $CROMBIEPATH -name $object*.so  | xargs rm
+find $CROMBIEPATH -name $object*.d   | xargs rm
+find $CROMBIEPATH -name $object*.pcm | xargs rm
+find $CROMBIEPATH -name $object*.pyc | xargs rm
 
 pycacheDir=$CROMBIEPATH/python/CrombieTools/__pycache__
 if [ -d $pycacheDir ]

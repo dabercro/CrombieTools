@@ -23,17 +23,19 @@ class LimitTreeMaker : public MCReader
   void    AddRegion                ( TString regionName, TString regionCut )
                                                       { fRegionNames.push_back(regionName); fRegionCuts.push_back(regionCut); }
   void    SetOutputWeightBranch    ( TString branch )                           { fOutputWeightBranch = branch;               }
-  void    MakeTrees                ();
 
   void    ExceptionSkip            ( TString region, TString outTreeName )      { fExceptionSkip[region].insert(outTreeName); }
   void    ExceptionAdd             ( TString region, TString fileName, TString outTreeName, Float_t XSec = -1 )
                                                                        { fExceptionFileNames[region].push_back(fileName);
                                                                          fExceptionTreeNames[region].push_back(outTreeName);
                                                                          fExceptionXSecs[region].push_back(XSec);             }
+  void    ReadExceptionConfig      ( TString config, TString region, TString fileDir = "" );
 
   void    AddExceptionDataCut      ( TString region, TString cut )              { fExceptionDataCuts[region] = cut;           }
   void    AddExceptionWeightBranch ( TString region, TString weight )  { fExceptionWeightBranches[region].push_back(weight);  }
   void    SetReportFrequency       ( Int_t freq )                               { fReportFrequency = freq;                    }
+
+  void    MakeTrees                ();
 
  private:
   Int_t                     fReportFrequency;

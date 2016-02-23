@@ -31,6 +31,37 @@ LimitTreeMaker::~LimitTreeMaker()
 
 //--------------------------------------------------------------------
 void
+LimitTreeMaker::ReadExceptionConfig(TString config, TString region, TString fileDir)
+{
+  if (fileDir == "")
+    fileDir = fInDirectory;
+  
+  if (fileDir != "" && !fileDir.EndsWith("/"))
+    fileDir = fileDir + "/";
+
+  std::ifstream configFile;
+  configFile.open(config.Data());
+  TString LimitTreeName;
+  TString FileName;
+  TString XSec;
+  TString LegendEntry;
+  TString ColorStyleEntry; 
+
+  while (!configFile.eof()) {
+    configFile >> LimitTreeName >> FileName;
+    if (LimitTreeName == "skip") {
+      ExceptionSkip(region,FileName);
+    }
+    else {
+      configFile >> XSec >> LegendEntry >> ColorStyleEntry;
+      ExceptionAdd(region,FileName,LimitTreeName,XSec.Atof());
+    }
+  }
+  configFile.close();
+}
+
+//--------------------------------------------------------------------
+void
 LimitTreeMaker::MakeTrees()
 {
   TFile* outClear = new TFile(fOutDirectory + fOutputFileName,"RECREATE");
@@ -63,15 +94,11 @@ LimitTreeMaker::MakeTrees()
 
       if (iFile < fMCFileInfo.size()) {
         outTreeName = fMCFileInfo[iFile]->fTreeName;
-        if (fExceptionSkip[regionName].find(outTreeName) != fExceptionSkip[regionName].end())
-          continue;
         fileName = fMCFileInfo[iFile]->fFileName;
         XSec = fMCFileInfo[iFile]->fXSec;
       }
       else if (iFile < sumofMC) {
         outTreeName = fSignalFileInfo[iFile - fMCFileInfo.size()]->fTreeName;
-        if (fExceptionSkip[regionName].find(outTreeName) != fExceptionSkip[regionName].end())
-          continue;
         fileName = fSignalFileInfo[iFile - fMCFileInfo.size()]->fFileName;
         XSec = fSignalFileInfo[iFile - fMCFileInfo.size()]->fXSec;
       }
@@ -80,6 +107,14 @@ LimitTreeMaker::MakeTrees()
         outTreeName = (fExceptionTreeNames[regionName])[iFile - sumofMC];
         XSec =  (fExceptionXSecs[regionName])[iFile - sumofMC];
       }
+
+      if (iFile < sumofMC) {
+        if (fExceptionSkip[regionName].find(outTreeName) != fExceptionSkip[regionName].end())
+          continue;
+        if (fExceptionSkip[regionName].find(fileName) != fExceptionSkip[regionName].end())
+          continue;
+      }
+
       TFile* inFile = new TFile(fileName);
       if (!inFile) {
         std::cout << "Could not open file " << fileName << std::endl;

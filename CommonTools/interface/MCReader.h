@@ -46,9 +46,9 @@ class MCReader
   TString    fAllHistName;
   std::vector<MCFileInfo*>  fMCFileInfo;
   std::vector<MCFileInfo*>  fSignalFileInfo;
+  TString    fInDirectory;
 
  private:
-  TString    fInDirectory;
   MCType     fMCType;
   
 };
@@ -59,8 +59,8 @@ MCReader::MCReader() :
   fAllHistName("htotal"),
   fMCType(kBackground)
 {
-  fMCFileInfo.resize(0);
-  fSignalFileInfo.resize(0);
+  fMCFileInfo.clear();
+  fSignalFileInfo.clear();
 }
 
 //--------------------------------------------------------------------
@@ -97,7 +97,7 @@ MCReader::ReadMCConfig(TString config, TString fileDir)
 {
   if (fileDir == "")
     fileDir = fInDirectory;
-
+  
   if (fileDir != "" && !fileDir.EndsWith("/"))
     fileDir = fileDir + "/";
 
@@ -110,31 +110,47 @@ MCReader::ReadMCConfig(TString config, TString fileDir)
   TString ColorStyleEntry; 
   TString currLegend;
   TString currColorStyle;
+  TString red;
+  TString green;
+  TString blue;
   Int_t newColors = 0;
+  std::vector<MCFileInfo*> *FileInfo = &fMCFileInfo;
+  if (fMCType == kSignal)
+    FileInfo = &fSignalFileInfo;
+
   while (!configFile.eof()) {
-    configFile >> LimitTreeName >> FileName >> XSec >> LegendEntry >> ColorStyleEntry;
-    if (LegendEntry == ".")
-      LegendEntry = currLegend;
-    else
-      currLegend = LegendEntry;
-
-    if (ColorStyleEntry == ".")
-      ColorStyleEntry = currColorStyle;
-    else if (ColorStyleEntry == "rgb") {
-      ++newColors;
-      ColorStyleEntry = TString::Format("%i",5000 + newColors);
-      currColorStyle = ColorStyleEntry;
-      TString red;
-      TString green;
-      TString blue;
-      configFile >> red >> green >> blue;
-      TColor* setColor = new TColor(ColorStyleEntry.Atoi(),red.Atof()/255,green.Atof()/255,blue.Atof()/255);
+    configFile >> LimitTreeName >> FileName;
+    if (LimitTreeName == "skip") {
+      for (UInt_t iFile = 0; iFile != (*FileInfo).size(); ++iFile) {
+        if ((*FileInfo)[iFile]->fFileName == FileName) {
+          delete (*FileInfo)[iFile];
+          (*FileInfo).erase((*FileInfo).begin() + iFile);
+          break;
+        }
+      }
     }
-    else
-      currColorStyle = ColorStyleEntry;
+    else {
+      configFile >> XSec >> LegendEntry >> ColorStyleEntry;
+      if (LegendEntry == ".")
+        LegendEntry = currLegend;
+      else
+        currLegend = LegendEntry;
+      
+      if (ColorStyleEntry == ".")
+        ColorStyleEntry = currColorStyle;
+      else if (ColorStyleEntry == "rgb") {
+        ++newColors;
+        ColorStyleEntry = TString::Format("%i",5000 + newColors);
+        currColorStyle = ColorStyleEntry;
+        configFile >> red >> green >> blue;
+        TColor* setColor = new TColor(ColorStyleEntry.Atoi(),red.Atof()/255,green.Atof()/255,blue.Atof()/255);
+      }
+      else
+        currColorStyle = ColorStyleEntry;
 
-    if (ColorStyleEntry != "" && !LimitTreeName.BeginsWith('#'))
-      AddMCFile(LimitTreeName, fileDir + FileName, XSec.Atof(), LegendEntry.ReplaceAll("_"," "), ColorStyleEntry.Atoi());
+      if (ColorStyleEntry != "" && !LimitTreeName.BeginsWith('#'))
+        AddMCFile(LimitTreeName, fileDir + FileName, XSec.Atof(), LegendEntry.ReplaceAll("_"," "), ColorStyleEntry.Atoi());
+    }
   }
   configFile.close();
 }
