@@ -56,3 +56,9 @@ def Load(className):
         return 0
 
     return getattr(ROOT,className)
+
+def DirFromEnv(envVar):
+    if type(os.environ.get(envVar)) == str:
+        if not os.path.exists(os.environ[envVar]):
+            os.makedirs(os.environ[envVar])
+

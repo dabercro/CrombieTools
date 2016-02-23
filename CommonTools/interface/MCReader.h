@@ -133,7 +133,7 @@ MCReader::ReadMCConfig(TString config, TString fileDir)
     else
       currColorStyle = ColorStyleEntry;
 
-    if (ColorStyleEntry != "" && !FileName.BeginsWith('#'))
+    if (ColorStyleEntry != "" && !LimitTreeName.BeginsWith('#'))
       AddMCFile(LimitTreeName, fileDir + FileName, XSec.Atof(), LegendEntry.ReplaceAll("_"," "), ColorStyleEntry.Atoi());
   }
   configFile.close();

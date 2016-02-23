@@ -9,10 +9,12 @@ regionCuts = {
     'signal' : '1'
     }
 
+defaultMCWeight = 'mcWeight'
+
 additionKeys = ['signal']
 additions    = { # key : [Data,MC]
     'signal'  : ['0','1'],
-    'default' : ['1','1']
+    'default' : ['1',defaultMCWeight]
     }
 
 def cut(category, region):
@@ -27,4 +29,7 @@ def dataMCCuts(region, isData):
     if isData:
         index = 0
 
-    return '(' + additions[key][index] + ')'
+    if key == 'default' or index == 0:
+        return '(' + additions[key][index] + ')'
+    else:
+        return '((' + additions[key][index] + ')*(' + defaultMCWeight + '))'

@@ -5,6 +5,7 @@ newStackPlotter = Load('PlotStack')
 plotter         = newStackPlotter()
 
 def SetupFromEnv(aPlotter = plotter):
+    from .. import LoadConfig
     if os.path.exists('CrombieAnalysisConfig.sh'):
         targets = [[aPlotter.SetLuminosity, 'CrombieLuminosity'],
                    [aPlotter.SetInDirectory, 'CrombieInFilesDir'],
@@ -15,7 +16,10 @@ def SetupFromEnv(aPlotter = plotter):
             if os.environ.get(target[1]) == None:
                 print 'Cannot find ' + target[1] + ' in config'
             else:
-                target[0](os.environ[target[1]])
+                try:
+                    target[0](os.environ[target[1]])
+                except:
+                    target[0](float(os.environ[target[1]]))
 
     else:
         print 'Could not find CrombieAnalysisConfig.sh'

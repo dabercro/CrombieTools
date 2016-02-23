@@ -1,4 +1,5 @@
 #include <iostream>
+#include <cstdlib>
 
 #include "TFile.h"
 #include "TTree.h"
@@ -11,6 +12,8 @@ ClassImp(LimitTreeMaker)
 
 //--------------------------------------------------------------------
 LimitTreeMaker::LimitTreeMaker(TString outputName) :
+  fReportFrequency(10),
+  fOutDirectory(""),
   fOutputFileName(outputName),
   fTreeName("events"),
   fOutputWeightBranch("weight")
@@ -30,17 +33,30 @@ LimitTreeMaker::~LimitTreeMaker()
 void
 LimitTreeMaker::MakeTrees()
 {
-  TFile* outClear = new TFile(fOutputFileName,"RECREATE");
+  TFile* outClear = new TFile(fOutDirectory + fOutputFileName,"RECREATE");
   outClear->Close();
 
   for (UInt_t iRegion = 0; iRegion != fRegionNames.size(); ++iRegion) {
     TString regionName = fRegionNames[iRegion];
 
-    std::cout << "Region: " << regionName << std::endl;
-
     UInt_t numFiles = fMCFileInfo.size() + fSignalFileInfo.size() + fExceptionFileNames[regionName].size();
     UInt_t sumofMC = fMCFileInfo.size() + fSignalFileInfo.size();
     for (UInt_t iFile = 0; iFile != numFiles; ++iFile) {
+      try  {
+        if ((Int_t) iFile % fReportFrequency == 0) {
+          std::cout << fOutputFileName << " : ";
+          for (UInt_t jRegion = 0; jRegion != fRegionNames.size(); ++jRegion) {
+            if (jRegion == iRegion)
+              std::cout << "[[" << fRegionNames[jRegion] << "]], ";
+            else
+              std::cout << fRegionNames[jRegion] << ", ";
+          }
+          std::cout << "   " << iFile << " / " << numFiles << " Files." << std::endl;
+        }
+      }
+      catch (...) {
+        std::cout << "Exception occured on file " << iFile << std::endl;
+      }
       TString fileName;
       TString outTreeName;
       Float_t XSec;
@@ -64,7 +80,6 @@ LimitTreeMaker::MakeTrees()
         outTreeName = (fExceptionTreeNames[regionName])[iFile - sumofMC];
         XSec =  (fExceptionXSecs[regionName])[iFile - sumofMC];
       }
-      std::cout << "File " << fileName << std::endl;
       TFile* inFile = new TFile(fileName);
       if (!inFile) {
         std::cout << "Could not open file " << fileName << std::endl;
@@ -80,14 +95,14 @@ LimitTreeMaker::MakeTrees()
       }
       
       // Apply selection
-      TFile* tempFile = new TFile("tempCopyFileDontUse.root","RECREATE");
+      TFile* tempFile = new TFile(TString("/tmp/") + getenv("USER") + "/" + fOutputFileName + ".tempCopyFileDontUse.root","RECREATE");
       TString theCut = fRegionCuts[iRegion];
       if (XSec < 0 && fExceptionDataCuts[regionName] != "")
         theCut = TString("(") + theCut + ") && (" + fExceptionDataCuts[regionName] + ")";
 
       TTree* loopTree = inTree->CopyTree(fRegionCuts[iRegion]);
       // Initialize output tree
-      TFile* outFile = new TFile(fOutputFileName,"UPDATE");
+      TFile* outFile = new TFile(fOutDirectory + fOutputFileName,"UPDATE");
       TTree* outTree = new TTree(outTreeName + "_" + regionName,outTreeName + "_" + regionName);
       
       // Setup the branches to keep

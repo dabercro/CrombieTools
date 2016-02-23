@@ -10,29 +10,34 @@
 class LimitTreeMaker : public MCReader
 {
  public:
-  LimitTreeMaker()                                                             { LimitTreeMaker("limittree.root");           }
+  LimitTreeMaker()                                                              { LimitTreeMaker("limittree.root");           }
   LimitTreeMaker( TString outputName );
   virtual ~LimitTreeMaker();
 
-  void      SetTreeName              ( TString tree )                          { fTreeName = tree;                           }
-  void      AddFriendName            ( TString tree )                          { fFriendNames.push_back(tree);               }
-  void      AddKeepBranch            ( TString branch )                        { fKeepBranches.push_back(branch);            }
-  void      AddWeightBranch          ( TString branch )                        { fWeightBranch.push_back(branch);            }
-  void      AddRegion                ( TString regionName, TString regionCut )
-                                                     { fRegionNames.push_back(regionName); fRegionCuts.push_back(regionCut); }
-  void      SetOutputWeightBranch    ( TString branch )                        { fOutputWeightBranch = branch;               }
-  void      MakeTrees                ();
+  void    SetOutDirectory          ( TString dir )                     { fOutDirectory = dir.EndsWith("/") ? dir : dir + "/"; }
+  void    SetOutFileName           ( TString file )                             { fOutputFileName = file;                     }
+  void    SetTreeName              ( TString tree )                             { fTreeName = tree;                           }
+  void    AddFriendName            ( TString tree )                             { fFriendNames.push_back(tree);               }
+  void    AddKeepBranch            ( TString branch )                           { fKeepBranches.push_back(branch);            }
+  void    AddWeightBranch          ( TString branch )                           { fWeightBranch.push_back(branch);            }
+  void    AddRegion                ( TString regionName, TString regionCut )
+                                                      { fRegionNames.push_back(regionName); fRegionCuts.push_back(regionCut); }
+  void    SetOutputWeightBranch    ( TString branch )                           { fOutputWeightBranch = branch;               }
+  void    MakeTrees                ();
 
-  void      ExceptionSkip            ( TString region, TString outTreeName )   { fExceptionSkip[region].insert(outTreeName); }
-  void      ExceptionAdd             ( TString region, TString fileName, TString outTreeName, Float_t XSec = -1 )
+  void    ExceptionSkip            ( TString region, TString outTreeName )      { fExceptionSkip[region].insert(outTreeName); }
+  void    ExceptionAdd             ( TString region, TString fileName, TString outTreeName, Float_t XSec = -1 )
                                                                        { fExceptionFileNames[region].push_back(fileName);
                                                                          fExceptionTreeNames[region].push_back(outTreeName);
-                                                                         fExceptionXSecs[region].push_back(XSec);            }
+                                                                         fExceptionXSecs[region].push_back(XSec);             }
 
-  void      AddExceptionDataCut      ( TString region, TString cut )           { fExceptionDataCuts[region] = cut;           }
-  void      AddExceptionWeightBranch     ( TString region, TString weight )
-                                                                       { fExceptionWeightBranches[region].push_back(weight); }
+  void    AddExceptionDataCut      ( TString region, TString cut )              { fExceptionDataCuts[region] = cut;           }
+  void    AddExceptionWeightBranch ( TString region, TString weight )  { fExceptionWeightBranches[region].push_back(weight);  }
+  void    SetReportFrequency       ( Int_t freq )                               { fReportFrequency = freq;                    }
+
  private:
+  Int_t                     fReportFrequency;
+  TString                   fOutDirectory;
   TString                   fOutputFileName;
   TString                   fTreeName;
   std::vector<TString>      fFriendNames;
