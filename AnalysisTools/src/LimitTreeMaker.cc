@@ -52,6 +52,10 @@ LimitTreeMaker::ReadExceptionConfig(TString config, TString region, TString file
     else {
       configFile >> XSec >> LegendEntry >> ColorStyleEntry;
       ExceptionAdd(region,AddInDir(FileName),LimitTreeName,XSec.Atof());
+      if (ColorStyleEntry == "rgb") {
+        for (Int_t iColor = 0; iColor != 3; ++iColor)
+          configFile >> ColorStyleEntry;
+      }
     }
   }
   configFile.close();
