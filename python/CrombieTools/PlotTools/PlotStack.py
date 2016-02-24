@@ -45,14 +45,15 @@ def ReadExceptConfig(region,aPlotter = plotter):
     else:
         plotter.ReadMCConfig(os.environ['CrombieExcept_' + region])
 
-def MakePlots(categories,regions,exprArg,aPlotter = plotter):
+def MakePlots(categories,regions,exprArgs,aPlotter = plotter):
     if not (type(categories) == list and type(regions) == list):
         print 'Even if not using multiple regions or categories, must be a list!'
         return 0
     for category in categories:
         for region in regions:
             SetCuts(category,region,aPlotter)
-            expr = list(exprArg)
-            aPlotter.SetDefaultExpr(expr[0])
-            expr[0] = '_'.join([category,region,expr[0]])
-            plotter.MakeCanvas(*tuple(expr))
+            for exprArg in exprArgs:
+                expr = list(exprArg)
+                aPlotter.SetDefaultExpr(expr[0])
+                expr[0] = '_'.join([category,region,expr[0]])
+                plotter.MakeCanvas(*tuple(expr))
