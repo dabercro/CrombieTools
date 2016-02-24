@@ -56,4 +56,4 @@ def MakePlots(categories,regions,exprArgs,aPlotter = plotter):
                 expr = list(exprArg)
                 aPlotter.SetDefaultExpr(expr[0])
                 expr[0] = '_'.join([category,region,expr[0]])
-                plotter.MakeCanvas(*tuple(expr))
+                plotter.MakeCanvas(*expr)

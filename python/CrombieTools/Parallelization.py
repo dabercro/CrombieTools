@@ -5,8 +5,12 @@ from time import time
 configProcs = os.environ.get('CrombieNLocalProcs')
 configProcs = configProcs or 1
 
-def runParallel(object, procs=configProcs):
+def runParallel(object, functionName, parametersLists, procs=configProcs):
     totStartTime = time()
+
+    if not functionName in dir(object):
+        print('You gave an invalid function name!')
+        exit(1)
 
     if not 'Copy' in dir(object):
         print('#########################################')
@@ -23,15 +27,16 @@ def runParallel(object, procs=configProcs):
         running = True
 
         objCopy = object.Copy()
+        functionToRun = getattr(objCopy,functionName)
 
         while running:
             try:
-                inFileName = inQueue.get(True,1)
-                print('About to process ' + inFileName)
+                parameters = inQueue.get(True,1)
+                print('About to process ' + str(parameters))
                 startTime = time()
-                skimmer.Slim(inFileName)
-                print('Finished ' + inFileName + ' ... Elapsed time: ' + str(time() - startTime) + ' seconds')
-            except:
+                functionToRun(*inFileName)
+                print('Finished ' + str(parameters) + ' ... Elapsed time: ' + str(time() - startTime) + ' seconds')
+            except Queue.Empty:
                 print('Worker finished...')
                 running = False
 
@@ -39,6 +44,26 @@ def runParallel(object, procs=configProcs):
 
     theQueue     = Queue()
     theProcesses = []
+
+    for parameters in parametersLists:
+        theQueue.put(parameters)
+
+    for worker in range(numMaxProcesses):
+        aProcess = Process(target=skim, args=(theQueue,))
+        aProcess.start()
+        theProcesses.append(aProcess)
+
+    for aProccess in theProcesses:
+        aProccess.join()
+
+    print('All done!')
+    print()
+    print('Total time: ' + str(time() - totStartTime) + ' seconds')
+    print()
+    
+
+def runOnDirectory(object, procs=configProcs):
+    theFiles = []
 
     if not 'GetInDirectory' in dir(object):
         print('##########################################')
@@ -53,17 +78,6 @@ def runParallel(object, procs=configProcs):
 
     for inFileName in sorted(os.listdir(inDir), key=GetSize, reverse=True):
         if inFileName.endswith('.root'):
-            theQueue.put(inFileName)
+            theFiles.append([inFileName])
 
-    for worker in range(numMaxProcesses):
-        aProcess = Process(target=skim, args=(theQueue,))
-        aProcess.start()
-        theProcesses.append(aProcess)
-
-    for aProccess in theProcesses:
-        aProccess.join()
-
-    print('All done!')
-    print()
-    print('Total time: ' + str(time() - totStartTime) + ' seconds')
-    print()
+    runParallel(object,'RunOnFile',theFiles,procs)
