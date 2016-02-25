@@ -2,6 +2,8 @@
 
 full=$1
 
+testDir="test"
+
 for dir in `ls $CROMBIEPATH/templates`
 do
     if [ ! -d $dir ]
@@ -11,18 +13,18 @@ do
 
     if [ "$full" = "test" ]
     then
-        for testFile in `ls $CROMBIEPATH/templates/$dir/testFiles`
+        for testFile in `ls $CROMBIEPATH/templates/$dir/$testDir`
         do
             if [ ! -f $dir/$testFile ]
             then
-                cp $CROMBIEPATH/templates/$dir/testFiles/$testFile $dir/$testFile
+                cp $CROMBIEPATH/templates/$dir/$testDir/$testFile $dir/$testFile
             fi
         done
     fi
 
     for file in `ls $CROMBIEPATH/templates/$dir`
     do
-        if [ "$file" = "testFiles" ]
+        if [ "$file" = "$testDir" ]
         then
             continue
         fi

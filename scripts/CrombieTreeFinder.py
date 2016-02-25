@@ -13,18 +13,10 @@ if os.path.isfile(sys.argv[1]):
             NumberOfEvents = testTree.GetEntriesFast()
             if NumberOfEvents != 0:
                 print 'Tree ' + testKey.GetName() + ' has ' + str(NumberOfEvents) + ' events!'
-                if len(sys.argv) == 2:
-                    exit(0)
-                else:
-                    exit(NumberOfEvents)
-            ##
-        ##
-    ##
-##
+                exit(0)
 else:
     print 'Error, file does not exist.'
     exit(1)
-##
 
 print 'Did not successfully find tree with events.'
 exit(1)

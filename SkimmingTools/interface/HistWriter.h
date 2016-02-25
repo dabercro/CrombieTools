@@ -15,6 +15,8 @@ class HistWriter
   void                  SetHistName       ( TString histName )   { fHistName = histName;                      }
 
   void                  MakeHist          ( TString configName );
+  void                  MakeHist          ( TString fileName, TString histName, TString configName )
+                                        { SetFileName(fileName); SetHistName(histName); MakeHist(configName); }
 
  private:
   TString               fFileName;

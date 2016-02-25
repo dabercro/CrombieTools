@@ -147,7 +147,6 @@ echo "//------------------------------------------------------------------------
 echo "$TreeName::$TreeName(const char* name, TString outFileName)" >> $s
 echo "{" >> $s
 echo "  fFile = new TFile(outFileName,\"RECREATE\");" >> $s
-echo "  fFile->cd();" >> $s
 echo "  t = new TTree(name,name);" >> $s
 echo "  SetupTree();" >> $s
 echo "}" >> $s
@@ -157,7 +156,6 @@ echo "//------------------------------------------------------------------------
 echo "$TreeName::$TreeName(const char* name, TFile* outFile)" >> $s
 echo "{" >> $s
 echo "  fFile = outFile;" >> $s
-echo "  fFile->cd();" >> $s
 echo "  t = new TTree(name,name);" >> $s
 echo "  SetupTree();" >> $s
 echo "}" >> $s
@@ -165,10 +163,7 @@ echo "" >> $s
 
 echo "//--------------------------------------------------------------------------------------------------" >> $s
 echo "$TreeName::~$TreeName()" >> $s
-echo "{" >> $s
-echo "  delete t;" >> $s
-echo "  delete fFile;" >> $s
-echo "}" >> $s
+echo "{ }" >> $s
 echo "" >> $s
 
 echo "//--------------------------------------------------------------------------------------------------" >> $s

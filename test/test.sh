@@ -4,6 +4,15 @@ fast=$1
 
 here=`pwd`
 
+if [ "$CROMBIEPATH" = "" ]
+then
+    echo "Installation not complete!"
+    echo " Did you run ../install.sh and source your bash profile?"
+    exit 1
+fi
+
+echo "Testing package installed at $CROMBIEPATH"
+
 if [ "$fast" != "fast" ]                   # Start from fresh directory
 then                                       # unless we only want to quickly
     for toRemove in `ls`                   # check new features or tests
@@ -48,17 +57,20 @@ outBase=$CrombieFullDir/$CrombieFileBase
 for sample in "Data" "Signal" "MC1" "MC2" "MC3"
 do
     echo "Generating pretend $sample."
-    ./runSlimmer.py $sample.root {$outBase}_$sample.root
-    ls {$outBase}_$sample.root
-    $CrombieCheckerScript {$outBase}_$sample.root
-    if [ $? -ne 10000 ]
+    ./runSlimmer.py $sample.root ${outBase}_$sample.root
+    ls ${outBase}_$sample.root
+    $CrombieCheckerScript ${outBase}_$sample.root test
+    if [ $? -ne 0 ]
     then
-        echo "ERROR: Number of generated events not correct!"
+        echo "ERROR: Tree not found!"
     fi
 done
 
-# Run HistWriter to make histogram for background corrections (shape it)
-# Apply corrections to Background and (not actually) Signal
+echo "Making correction histogram!"
+./makeHist.py
+# NEED TO MAKE THIS PARALLEL!
+echo "Adding corrections to .root Files!"
+./corrector.py
 # Figure out something for reweighter...
 # Make up a good runs file
 # Run Skimmer to cut out based on some variable to eliminate background
@@ -76,4 +88,4 @@ cd $here/analysis
 # Make more stack plots with BDT cuts
 # Make cutflow
 
-CompileCrombieTools
+# CompileCrombieTools

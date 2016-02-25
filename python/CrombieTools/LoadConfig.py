@@ -21,4 +21,5 @@ for config in CrombieConfigs:
 possibleImports = ['CrombieCutsFile']
 for toImport in possibleImports:
     if not os.environ.get(toImport) == None:
-        cuts = __import__(os.environ[toImport].strip('.py'), globals(), locals(), [], -1)
+        if os.path.exists(os.environ[toImport]):
+            cuts = __import__(os.environ[toImport].strip('.py'), globals(), locals(), [], -1)
