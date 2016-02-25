@@ -2,7 +2,11 @@ Make tests
 
 Fix install script to check for existing installation first
 
-Make generic MC reader and update reweighter tool (decouple from stackplotter)
+Make Histogram systematics adding function (AddSys(fileName,histName,startBin=1,endBin=0))
+    This may be more of a PlotUtils kind of thing
+    Error can apply to TGraphs too then...
+
+Make generic MC reader and --update reweighter tool-- (decouple from stackplotter)
     Make xsection weight adder as well
     Clean up Limit Tree Maker
 

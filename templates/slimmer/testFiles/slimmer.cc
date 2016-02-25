@@ -14,20 +14,28 @@ void slimmer(TString inFileName, TString outFileName)
   // distribution for background (weight the MC, do Data correctly)
   // Different distributions for signal and background discriminators
 
-  if (inFileName == "Data.root") {
+  for (UInt_t iEvent = 0; iEvent != numEvents; ++iEvent) {
+    if (inFileName == "Data.root") {
     
-  }
-  else if (iFileName == "MC.root") {
+    }
+    else if (iFileName == "Signal.root") {
     
-  }
-  else if (iFileName == "Signal.root") {
-    
-  }
-  else {
-    std::cout << "You don't seem to be running the test script." << std::endl;
-    std::cout << "You should probably modify slimmer.cc for your analysis!" << std::endl;
+    }
+    else {
+      if (iFileName == "MC1.root") {
+      
+      }
+      else if (iFileName == "MC2.root") {
+      
+      }
+      else if (iFileName == "MC3.root") {
+        
+      }
+    }
+    output->Fill();
   }
 
-  delete gen;
+  output->Write();
   delete output;
+  delete gen;
 }

@@ -31,10 +31,21 @@ cd $here/analysis
 
 source CrombieAnalysisConfig.sh     # This should source the slimming config too
 
+if [ "${host:0:6}" != "lxplus" ]
+then
+    cd $here
+    mkdir $CrombieFullDir
+fi
+
+if [ ! -d $CrombieFullDir ]
+then
+    echo "scripts/CrombieDumpFileList should have made your out directory, but didn't!"
+fi
+
 cd $here/slimmer
 
 outBase=$CrombieFullDir/$CrombieFileBase
-for sample in "Data" "MC" "Signal"
+for sample in "Data" "Signal" "MC1" "MC2" "MC3"
 do
     echo "Generating pretend $sample."
     ./runSlimmer.py $sample.root {$outBase}_$sample.root
@@ -48,11 +59,21 @@ done
 
 # Run HistWriter to make histogram for background corrections (shape it)
 # Apply corrections to Background and (not actually) Signal
+# Figure out something for reweighter...
 # Make up a good runs file
 # Run Skimmer to cut out based on some variable to eliminate background
 
 cd $here/analysis
 
 # Make limit tree
+# Make stacks with MC configs
+# Make stacks using limit trees
+# Make parameter fit plots (2D and FitParameters)
+# Traing BDTs
+# Make ROC curves
+# Plot Hists to show discriminators include normalization
+# Include systematics
+# Make more stack plots with BDT cuts
+# Make cutflow
 
 CompileCrombieTools
