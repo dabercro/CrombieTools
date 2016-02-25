@@ -1,5 +1,7 @@
 #! /bin/bash
 
+full=$1
+
 for dir in `ls $CROMBIEPATH/templates`
 do
     if [ ! -d $dir ]
@@ -7,8 +9,23 @@ do
         mkdir $dir
     fi
 
+    if [ "$full" = "test" ]
+    then
+        for testFile in `ls $CROMBIEPATH/templates/$dir/testFiles`
+        do
+            if [ ! -f $dir/$testFile ]
+            then
+                cp $CROMBIEPATH/templates/$dir/testFiles/$testFile $dir/$testFile
+            fi
+        done
+    fi
+
     for file in `ls $CROMBIEPATH/templates/$dir`
     do
+        if [ "$file" = "testFiles" ]
+        then
+            continue
+        fi
         if [ ! -f $dir/$file ]
         then
             cp $CROMBIEPATH/templates/$dir/$file $dir/$file

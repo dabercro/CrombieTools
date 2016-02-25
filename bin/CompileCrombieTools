@@ -7,7 +7,7 @@ if len(sys.argv) > 1:
     for tool in sys.argv[1:]:
         Load(tool)
 else:
-    # Otherwise, creates all .so, .pcm, and .pyc files that could possibly be needed
+    # Otherwise, creates most .so, .pcm, and .pyc files
     from CrombieTools.CommonTools import *
     from CrombieTools.SkimmingTools import *
     from CrombieTools.PlotTools import *

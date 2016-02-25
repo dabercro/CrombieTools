@@ -1,3 +1,0 @@
-example/F=0
-LogExample/F=10000
-intExample/I=0

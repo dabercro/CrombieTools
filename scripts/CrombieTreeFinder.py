@@ -13,7 +13,10 @@ if os.path.isfile(sys.argv[1]):
             NumberOfEvents = testTree.GetEntriesFast()
             if NumberOfEvents != 0:
                 print 'Tree ' + testKey.GetName() + ' has ' + str(NumberOfEvents) + ' events!'
-                exit(0)
+                if len(sys.argv) == 2:
+                    exit(0)
+                else:
+                    exit(NumberOfEvents)
             ##
         ##
     ##
