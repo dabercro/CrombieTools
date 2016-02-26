@@ -12,7 +12,7 @@ if os.path.isfile(sys.argv[1]):
             testTree = testFile.Get(testKey.GetName())
             NumberOfEvents = testTree.GetEntriesFast()
             if NumberOfEvents != 0:
-                print 'Tree ' + testKey.GetName() + ' has ' + str(NumberOfEvents) + ' events!'
+                print 'Tree \'' + testKey.GetName() + '\' has ' + str(NumberOfEvents) + ' events!'
                 exit(0)
 else:
     print 'Error, file does not exist.'

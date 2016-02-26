@@ -17,8 +17,8 @@ if [ "$fast" != "fast" ]                   # Start from fresh directory
 then                                       # unless we only want to quickly
     for toRemove in `ls`                   # check new features or tests
     do
-        if [ "$toRemove" != "test.sh" ]
-        then
+        if [ -d $toRemove ]                # Only remove directories
+        then                               # Leave all testing scripts
             rm -rf $toRemove
         fi
     done
@@ -43,7 +43,7 @@ source CrombieAnalysisConfig.sh     # This should source the slimming config too
 if [ "${host:0:6}" != "lxplus" ]
 then
     cd $here
-    mkdir $CrombieFullDir
+    mkdir $CrombieFullDir &> /dev/null
 fi
 
 if [ ! -d $CrombieFullDir ]
@@ -88,4 +88,13 @@ cd $here/analysis
 # Make more stack plots with BDT cuts
 # Make cutflow
 
-# CompileCrombieTools
+CompileCrombieTools
+cd $here
+
+if [ "$fast" != "fast" ]
+then
+    echo "-------------------------------------------------------------------"
+    echo "Making sure that rerunning doesn't overwrite files or recompile ..."
+    echo "-------------------------------------------------------------------"
+    ./test.sh fast
+fi

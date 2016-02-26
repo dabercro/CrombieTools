@@ -5,6 +5,8 @@
 profile=0
 here=`pwd`
 
+echo " # "
+
 if [ -f ~/.bashrc ]
     then
     profile=~/.bashrc
@@ -12,16 +14,33 @@ elif [ -f ~/.bash_profile ]
     then
     profile=~/.bash_profile
 else
-    echo "No profile found... Exiting."
+    echo " # No profile found... Exiting."
+    echo " # Make sure either ~/.bashrc or ~/.bash_profile exists!"
+    echo " # "
     exit
+fi
+
+# Check for existing installation:
+if [ ! -z "$CROMBIEPATH" ]
+then
+    echo " # You seem to already have an installation at $CROMBIEPATH"
+    echo " # I will check that your \$PATH and \$PYTHONPATH point to it."
+    echo " # If you are still having trouble, try"
+    echo " # "
+    echo " #  > CrombieClean"
+    echo " #  > CompileCrombieTools"
+    echo " # "
+    targetDir=$CROMBIEPATH
+else
+    targetDir=$here
 fi
 
 source $profile
 
-target=$here/python
+target=$targetDir/python
 case ":$PYTHONPATH:" in
     *:$target:*)
-        echo "Python already is included." 
+        echo " # Python already is included." 
 	;;
     *)
 	echo "" >> $profile
@@ -30,10 +49,10 @@ case ":$PYTHONPATH:" in
 	;;
 esac
 
-target=$here/bin
+target=$targetDir/bin
 case ":$PATH:" in
     *:$target:*)
-        echo "Executables are already included." 
+        echo " # Executables are already included." 
 	;;
     *)
 	echo "" >> $profile
@@ -42,7 +61,7 @@ case ":$PATH:" in
 	;;
 esac
 
-target=$here
+target=$targetDir
 if [ "$CROMBIEPATH" = "" ]
 then
     echo "" >> $profile
@@ -59,23 +78,27 @@ fi
 
 cd $here
 
-echo "-------------------------------------------------------------"
-echo " Now execute the following command:"
-echo ""
-echo "> source $profile"
-echo ""
-echo " Or just log out and log back in or open a new bash shell."
-echo ""
-echo " After that, I recommend running the test!"
-echo ""
-echo "> cd test"
-echo "> ./test.sh"
-echo ""
-echo " Or at the very least :"
-echo ""
-echo "> CompileCrombieTools"
-echo ""
-echo " which will be in your path. That will prevent possible error"
-echo " messages later from evironment manipulation."
-echo "-------------------------------------------------------------"
-echo ""
+echo " # "
+echo " # -------------------------------------------------------------"
+echo " #  Now execute the following command:"
+echo " # "
+echo " # > source $profile"
+echo " # "
+echo " #  Or just log out and log back in or open a new bash shell."
+if [ "$here" = "$targetDir" ]
+then
+    echo " # "
+    echo " #  After that, I recommend running the test!"
+    echo " # "
+    echo " #  > cd test"
+    echo " #  > ./test.sh"
+    echo " # "
+    echo " #  Or at the very least :"
+    echo " # "
+    echo " #  > CompileCrombieTools"
+    echo " # "
+    echo " #  which will be in your path. That will prevent possible error"
+    echo " #  messages later from evironment manipulation."
+fi
+echo " # -------------------------------------------------------------"
+echo " # "

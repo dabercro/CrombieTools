@@ -24,7 +24,6 @@ s=$TreeName.cc
 
 if [ $h -nt $inVarsFile ] && [ $s -nt $inVarsFile ]
 then
-    echo "Using old $TreeName"
     exit 0
 fi
 

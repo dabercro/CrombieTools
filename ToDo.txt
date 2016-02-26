@@ -1,6 +1,6 @@
 Make tests
 
-Fix install script to check for existing installation first
+Make docs, just simple HTML so anyone can read them
 
 Make Histogram systematics adding function (AddSys(fileName,histName,startBin=1,endBin=0))
     This may be more of a PlotUtils kind of thing
@@ -19,8 +19,6 @@ Clean up Submission scripts
 
 Add check for existing output file into FlatSkimmer itself
 Test Parallelization.py and remove CrombieFlatSkimmer
-
-Error handling in LimitTreeMaker
 
 For plots in cutflow:
     Add multiple lines for other files, can watch MC that way
