@@ -2,6 +2,10 @@ Make tests
 
 Make docs, just simple HTML so anyone can read them
 
+Make InDirectory runner class that is also "Copyable" class (for plotters as well)
+    Feed copier a list of pointers that must also be copied...
+    Store these pointers to delete at the end?
+
 Make Histogram systematics adding function (AddSys(fileName,histName,startBin=1,endBin=0))
     This may be more of a PlotUtils kind of thing
     Error can apply to TGraphs too then...

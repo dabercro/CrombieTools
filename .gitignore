@@ -1,6 +1,8 @@
+*.log
 *.pyc
 *.pcm
 *.so
 *.d
 *~
 test/*/*
+docs/*/*

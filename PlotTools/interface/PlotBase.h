@@ -1,3 +1,15 @@
+/*!
+  \class  PlotBase
+  \file   PlotBase.h
+  \brief  Base class for all plotting scripts
+
+  Plot base holds much of the parameters used for plotting various kinds of plots.
+  It also holds all of the functions that are used to create and save the canvas.
+
+  \author Daniel Abercrombie
+  \date   2016-02-27
+*/
+
 #ifndef CROMBIETOOLS_PLOTTOOLS_PLOTBASE_H
 #define CROMBIETOOLS_PLOTTOOLS_PLOTBASE_H
 
@@ -22,118 +34,152 @@ class PlotBase
   PlotBase();
   virtual ~PlotBase();
   
+  //! Sets the name of the canvas created by PlotBase.
   void                   SetCanvasName            ( TString name )                                { fCanvasName = name;          }
+  //! Sets the size of the output canvas.
   void                   SetCanvasSize            ( Int_t width, Int_t height )  { fCanvasWidth = width; fCanvasHeight = height; }
+  //! Sets the offset of the Y-axis title as a ratio of the default offset
   void                   SetAxisTitleOffset       ( Float_t offset )                              { fTitleOffset = offset;       }
+  //! Sets the fontsize of the axis labels
   void                   SetFontSize              ( Float_t fontSize )                            { fFontSize = fontSize;        }
+  //! Forces the minimum and maximum values of the Y-axis in the plot.
   void                   SetAxisMinMax            ( Float_t min, Float_t max )                 { fAxisMin = min; fAxisMax = max; }
   
-  void                   AddLine                  ( TTree *tree, TString cut, TString expr );  // Each line has a potentially different
-                                                                                               //   tree, weight, and expression.
-  // Can make a default for one of these instead
+  //!  This function adds a tree pointer, cut, and expression used for generating a line in the plot
+  void                   AddLine                  ( TTree *tree, TString cut, TString expr );
+
+  //! Set the default tree pointer for each line in the plot
   void                   SetDefaultTree           ( TTree *tree )                                 { fDefaultTree = tree;         }
+  //! Set the default weight for each line in the plot
   void                   SetDefaultWeight         ( TString cut )                                 { fDefaultCut = cut;           }
+  //! Set the default expression to be plotted on the x-axis for each line in the plot
   void                   SetDefaultExpr           ( TString expr )                                { fDefaultExpr = expr;         }
 
-  // Can set all of the trees at once
+  //! Can store multiple trees at once for plots. Each tree plots its own line.
   void                   SetTreeList              ( std::vector<TTree*> treelist )                { fInTrees = treelist;         }
-  // Otherwise, add things to lines one at a time
+  //! Set a tree for a single line.
   void                   AddTree                  ( TTree *tree )                                 { fInTrees.push_back(tree);    }
+  //! Set a weight for a single line.
   void                   AddWeight                ( TString cut )                                 { fInCuts.push_back(cut);      }
+  //! Set an x expression for a single line.
   void                   AddExpr                  ( TString expr )                                { fInExpr.push_back(expr);     }
-  // We can reset anything to make more plots with same object
+
+  //! Reset the list of trees used to makes lines
   void                   ResetTree                ()                                              { fInTrees.clear();          }
+  //! Reset the list of weights used to makes lines
   void                   ResetWeight              ()                                              { fInCuts.clear();           }
+  //! Reset the list of expressions used to makes lines
   void                   ResetExpr                ()                                              { fInExpr.clear();           }
 
-  // Two parts at once. Only use if the other part of a line already has a default set.
-  void                   AddTreeWeight            ( TTree *tree, TString cut );           // These are used to set multiple values at
-  void                   AddTreeExpr              ( TTree *tree, TString expr );          //  the same time. It may be simpler to
-  void                   AddWeightExpr            ( TString cut, TString expr );          //  just set single variables for most users.
+  //! Set a tree and weight concurrently for each line. Best used when a default expression is set.
+  void                   AddTreeWeight            ( TTree *tree, TString cut );
+  //! Set a tree and expression concurrently for each line. Best used when a default weight is set.
+  void                   AddTreeExpr              ( TTree *tree, TString expr );
+  //! Set a weight and expression concurrently for each line. Best used when a default tree is set.
+  void                   AddWeightExpr            ( TString cut, TString expr );
   
-  // Some formatting options are available
+  //! Set the default line width.
   void                   SetDefaultLineWidth      ( Int_t width )                                 { fDefaultLineWidth = width;   }
+  //! Set the default line style.
   void                   SetDefaultLineStyle      ( Int_t style )                                 { fDefaultLineStyle = style;   }
+  //! Set this to true to feature error bars in the plots.
   void                   SetIncludeErrorBars      ( Bool_t include )                              { fIncludeErrorBars = include; }
 
-  // We can also set location and format of legend
+  //! Used for vertical position of legend.
   enum LegendY { kUpper = 0, kLower };
+  //! Used for horizontal position of legend.
   enum LegendX { kLeft  = 0, kRight };
+  //! Set the legend location using LegendY and LegendX enums.
   void                   SetLegendLocation        ( LegendY yLoc, LegendX xLoc, Double_t xWidth = 0.3, Double_t yWidth = 0.2 );
+  //! Set the legend location manually.
   void                   SetLegendLimits          ( Double_t lim1, Double_t lim2, Double_t lim3, Double_t lim4 )
                                                                                    { l1 = lim1; l2 = lim2; l3 = lim3; l4 = lim4; }
 
+  //! Set the legend border size.
   void                   SetLegendBorderSize      ( Int_t size )                                  { fLegendBorderSize = size;    }
+  //! If true, the legend will be filled with a solid background.
   void                   SetLegendFill            ( Bool_t fill )                                 { fLegendFill = fill;          }
 
-  // We can name the lines in the legend as well as set alternative line widths or styles
-  void                   AddLegendEntry           ( TString LegendEntry, Color_t ColorEntry );    // Uses default line width and style
+  //! Set entry and color for each line. This uses the default line width and style.
+  void                   AddLegendEntry           ( TString LegendEntry, Color_t ColorEntry );
+  //! Set entry, color, width, and style for each line.
   void                   AddLegendEntry           ( TString LegendEntry, Color_t ColorEntry, Int_t LineWidth, Int_t LineStyle );
+  //! Resets the legend entries for each line.
   void                   ResetLegend              ()                          { fLegendEntries.clear(); fLineColors.clear(); 
                                                                                 fLineWidths.clear();    fLineStyles.clear(); }
 
-  // Set one of the lines to be plotted like data
+  //! Set one of the lines to be plotted as data.
   void                   SetDataIndex             ( Int_t data )                                  { fDataIndex = data;           }
-  // Set bool to make a smaller pad for ratio plots
+  //! If true, a ratio pad will be drawn underneath.
   void                   SetMakeRatio             ( Bool_t ratio )                                { fMakeRatio = ratio;          }
+  //! Set which line will be '1' in the ratio plot.
   void                   SetRatioIndex            ( Int_t ratio )                                 { fRatioIndex = ratio;         }
+  //! If true, the ratio index will only be compared to the data index.
   void                   SetOnlyRatioWithData     ( Bool_t only )                                 { fOnlyRatioWithData = only;   }
+  //! Force the minimum and maximum values of the ratio pad.
   void                   SetRatioMinMax           ( Float_t min, Float_t max )               { fRatioMin = min; fRatioMax = max; }
+  //! Set the y axis label of the ratio pad.
   void                   SetRatioTitle            ( TString title )                               { fRatioTitle = title;         }
+  //! Set horizontal dotted lines on the ratio pad.
   void                   SetRatioGrid             ( Int_t grid )                                  { fRatioGrid = grid;           }
+  //! Sets the divisions of the ratio y axis.
   void                   SetRatioDivisions        ( Int_t divisions, Bool_t optimize = true )     { fRatioDivisions = divisions; 
                                                                                                     fOptimDivisions = optimize;  }
-  // Pick a line to draw first on the plot, if desired
+  //! Force a line to draw first on the plot, if desired.
   void                   SetDrawFirst             ( Int_t first )                                 { fDrawFirst = first;          }
 
-  // Options to not spit out .pdf .png and .C files
+  //! Call this before plotting to only write plots to .pdf files.
   void                   OnlyPDF                  ()                                              { bPNG = false; bC = false;    }
+  //! Call this before plotting to only write plots to .png files.
   void                   OnlyPNG                  ()                                              { bPDF = false; bC = false;    }
 
+  //! Set the luminosity label.
   void                   SetLumiLabel             ( TString lumi )                                { fLumiLabel = lumi;           }
+  //! Set the luminosity lable with a float in fb.
   void                   SetLumiLabel             ( Float_t lumi )                  { fLumiLabel = TString::Format("%.2f",lumi); }
+  //! If true, plot will have "CMS Preliminary" in the top.
   void                   SetIsCMSPrelim           ( Bool_t isPre )                                { fIsCMSPrelim = isPre;        }
   
  protected:
 
-  UInt_t                     fPlotCounter;        // This is used so that making scratch plots does not overlap
+  UInt_t                     fPlotCounter;        //!< This is used so that making scratch plots does not overlap
   
-  TTree*                     fDefaultTree;        // Default Tree if needed
-  TString                    fDefaultCut;         // Default cut if needed
-  TString                    fDefaultExpr;        // Default resolution expression if needed
+  TTree*                     fDefaultTree;        //!< Default Tree if needed
+  TString                    fDefaultCut;         //!< Default cut if needed
+  TString                    fDefaultExpr;        //!< Default resolution expression if needed
   
-  Double_t                   l1;                  // First X value of legend location
-  Double_t                   l2;                  // First Y value of legend location
-  Double_t                   l3;                  // Second X value of legend location
-  Double_t                   l4;                  // Second Y value of legend location
-  Int_t                      fLegendBorderSize;   // Border size of legend
+  Double_t                   l1;                  //!< First X value of legend location
+  Double_t                   l2;                  //!< First Y value of legend location
+  Double_t                   l3;                  //!< Second X value of legend location
+  Double_t                   l4;                  //!< Second Y value of legend location
+  Int_t                      fLegendBorderSize;   //!< Border size of legend
   
-  std::vector<TTree*>        fInTrees;            // Holds all the trees for each line if needed
-  std::vector<TString>       fInCuts;             // Holds the cuts for the trees if needed
-  std::vector<TString>       fInExpr;             // Holds multiple resolution expressions if needed
+  std::vector<TTree*>        fInTrees;            //!< Holds all the trees for each line if needed
+  std::vector<TString>       fInCuts;             //!< Holds the cuts for the trees if needed
+  std::vector<TString>       fInExpr;             //!< Holds multiple resolution expressions if needed
   
-  Bool_t                     fIncludeErrorBars;   // Option to include error bars
+  Bool_t                     fIncludeErrorBars;   //!< Option to include error bars
 
   Float_t                    fAxisMin;
   Float_t                    fAxisMax;
 
-  Int_t                      fDataIndex;          // Index in the plotter of the data line
-  Bool_t                     fMakeRatio;          // Bool to make a ratio plot on bottom of image
-  Int_t                      fRatioIndex;         // Pick which line to set as 1 in ratio plot
+  Int_t                      fDataIndex;          //!< Index in the plotter of the data line
+  Bool_t                     fMakeRatio;          //!< Bool to make a ratio plot on bottom of image
+  Int_t                      fRatioIndex;         //!< Pick which line to set as 1 in ratio plot
   Float_t                    fRatioMin;
   Float_t                    fRatioMax;
   TString                    fRatioTitle;
   Int_t                      fRatioGrid;
   Int_t                      fRatioDivisions;
   Bool_t                     fOptimDivisions;
-  Bool_t                     fOnlyRatioWithData;  // Suppresses the ratio of extra MC
+  Bool_t                     fOnlyRatioWithData;  //!< Suppresses the ratio of extra MC
 
-  std::vector<TString>       fLegendEntries;      // Number of legend entries should match number of lines
+  std::vector<TString>       fLegendEntries;      //!< Number of legend entries should match number of lines
 
-  // Takes number of bins, min and max, and dumps it into an already allocated array
+  //! Takes number of bins, min and max, and dumps it into an already allocated array
   void                       ConvertToArray       ( Int_t NumXBins, Double_t MinX, Double_t MaxX, Double_t *XBins );
 
-  // This is the powerhouse of all the plotting tools. Everything happens here. See function for more comments
+  //! This is the powerhouse of all the plotting tools. Everything happens here.
   template<class T>  void    BaseCanvas           ( TString FileBase, std::vector<T*> theLines,
 						    TString XLabel, TString YLabel, Bool_t logY, Bool_t logX = false );
 
@@ -144,25 +190,25 @@ class PlotBase
 
  private:
 
-  TString                    fCanvasName;         // The name of the output canvas
+  TString                    fCanvasName;         //!< The name of the output canvas
   Int_t                      fCanvasWidth;
   Int_t                      fCanvasHeight;
   Float_t                    fTitleOffset;
   Float_t                    fFontSize;
-  Int_t                      fDefaultLineWidth;   // Line width to make all plots
-  Int_t                      fDefaultLineStyle;   // Line style to use on all plots
+  Int_t                      fDefaultLineWidth;   //!< Line width to make all plots
+  Int_t                      fDefaultLineStyle;   //!< Line style to use on all plots
   
   std::vector<Color_t>       fLineColors;         // Number of colors should match number of lines
   std::vector<Int_t>         fLineWidths;         // Will be filled with defaults unless
   std::vector<Int_t>         fLineStyles;         //   set explicitly with overloaded function
 
-  Bool_t                     fLegendFill;         // Gives fill option to legend drawing
-  Int_t                      fDrawFirst;          // Can force one of the lines to be drawn first
+  Bool_t                     fLegendFill;         //!< Gives fill option to legend drawing
+  Int_t                      fDrawFirst;          //!< Can force one of the lines to be drawn first
 
   TString                    fLumiLabel;
   Bool_t                     fIsCMSPrelim;
 
-  // Use this to get certain draw options correct (for data, for example)
+  //! Use this to get certain draw options correct (for data, for example)
   template<class T>  void    LineDrawing          ( std::vector<T*> theLines, Int_t index, Bool_t same );
   std::vector<TObject*>      fDeleteThese;
 
@@ -221,8 +267,7 @@ PlotBase::~PlotBase()
 {}
 
 //--------------------------------------------------------------------
-void
-PlotBase::AddLine(TTree *tree, TString cut, TString expr)
+void PlotBase::AddLine(TTree *tree, TString cut, TString expr)
 {
   // Check for defaults. If none, set the values for each line.
   if (fDefaultTree != NULL) {
@@ -243,8 +288,7 @@ PlotBase::AddLine(TTree *tree, TString cut, TString expr)
 }
 
 //--------------------------------------------------------------------
-void
-PlotBase::AddTreeWeight(TTree *tree, TString cut)
+void PlotBase::AddTreeWeight(TTree *tree, TString cut)
 {
   // Check for defaults. If none, set the values for each line.
   if (fDefaultTree != NULL) {
@@ -264,8 +308,7 @@ PlotBase::AddTreeWeight(TTree *tree, TString cut)
 }
 
 //--------------------------------------------------------------------
-void
-PlotBase::AddTreeExpr(TTree *tree, TString expr)
+void PlotBase::AddTreeExpr(TTree *tree, TString expr)
 {
   // Check for defaults. If none, set the values for each line.
   if (fDefaultTree != NULL) {
@@ -285,8 +328,7 @@ PlotBase::AddTreeExpr(TTree *tree, TString expr)
 }
 
 //--------------------------------------------------------------------
-void
-PlotBase::AddWeightExpr(TString cut, TString expr)
+void PlotBase::AddWeightExpr(TString cut, TString expr)
 {
   // Check for defaults. If none, set the values for each line.
   if (fDefaultTree == NULL) {
@@ -306,11 +348,12 @@ PlotBase::AddWeightExpr(TString cut, TString expr)
 }
 
 //--------------------------------------------------------------------
-void
-PlotBase::SetLegendLocation(LegendY yLoc, LegendX xLoc, Double_t xWidth, Double_t yWidth)
-  // This function is designed to be lazy about putting legends
-  // There are nice enums, like kUpper, kLower and kLeft, kRight
-  // The width and height are then fractions of the canvas
+/* !
+   This function is designed to be lazy about putting legends
+   There are nice enums, like kUpper, kLower and kLeft, kRight
+   The width and height are then fractions of the canvas
+*/
+void PlotBase::SetLegendLocation(LegendY yLoc, LegendX xLoc, Double_t xWidth, Double_t yWidth)
 {
   if (xLoc == kLeft) {
     l1 = 0.15;
@@ -332,9 +375,7 @@ PlotBase::SetLegendLocation(LegendY yLoc, LegendX xLoc, Double_t xWidth, Double_
 }
 
 //--------------------------------------------------------------------
-void
-PlotBase::AddLegendEntry(TString LegendEntry, Color_t ColorEntry )
-  // Uses default line width and style to label and draw line
+void PlotBase::AddLegendEntry(TString LegendEntry, Color_t ColorEntry )
 {
   fLegendEntries.push_back(LegendEntry);
   fLineColors.push_back(ColorEntry);
@@ -345,7 +386,6 @@ PlotBase::AddLegendEntry(TString LegendEntry, Color_t ColorEntry )
 //--------------------------------------------------------------------
 void
 PlotBase::AddLegendEntry(TString LegendEntry, Color_t ColorEntry, Int_t LineWidth, Int_t LineStyle)
-  // Here alternative line styles can be specified
 {
   fLegendEntries.push_back(LegendEntry);
   fLineColors.push_back(ColorEntry);
@@ -356,7 +396,6 @@ PlotBase::AddLegendEntry(TString LegendEntry, Color_t ColorEntry, Int_t LineWidt
 //--------------------------------------------------------------------
 void
 PlotBase::ConvertToArray(Int_t NumXBins, Double_t MinX, Double_t MaxX, Double_t *XBins)
-  // Simple function to get arrays fast
 {
   Double_t binWidth = (MaxX - MinX)/NumXBins;
   for (Int_t i0 = 0; i0 < NumXBins + 1; i0++)
@@ -365,9 +404,10 @@ PlotBase::ConvertToArray(Int_t NumXBins, Double_t MinX, Double_t MaxX, Double_t 
 
 //--------------------------------------------------------------------
 template<class T>
-void
-PlotBase::LineDrawing(std::vector<T*> theLines, Int_t index, Bool_t same)
-  // This is used instead of Draw for lines so that the draw options are set in one place
+/*!
+  This is used instead of Draw for lines so that the draw options are set in one place
+*/
+void PlotBase::LineDrawing(std::vector<T*> theLines, Int_t index, Bool_t same)
 {
   TString options = "hist";
   if (index == fDataIndex)
@@ -385,11 +425,12 @@ PlotBase::LineDrawing(std::vector<T*> theLines, Int_t index, Bool_t same)
 }
 
 //--------------------------------------------------------------------
+/*!
+   Main macro of the plotters
+*/
 template<class T>
-void
-PlotBase::BaseCanvas(TString FileBase, std::vector<T*> theLines,
+void PlotBase::BaseCanvas(TString FileBase, std::vector<T*> theLines,
                      TString XLabel, TString YLabel, Bool_t logY, Bool_t logX)
-  // Main macro of the plotters
 {
   gStyle->SetOptStat(0);
 

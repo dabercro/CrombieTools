@@ -5,7 +5,6 @@
 #include "TH1.h"
 #include "TString.h"
 
-// This structure is used by PlotStack to automatically order MC histograms in stack without changing colors
 struct HistHolder
 {
   HistHolder ( TH1D *hist, TString entry, Color_t color, Bool_t force = false )
@@ -23,9 +22,7 @@ struct HistHolder
   Bool_t fForceTop;
 };
 
-// A function used to sort of vector of HistHolders
-Bool_t
-SortHistHolders ( HistHolder *h1, HistHolder *h2 )
+Bool_t SortHistHolders ( HistHolder *h1, HistHolder *h2 )
 {
   if (h1->fForceTop)
     return true;
