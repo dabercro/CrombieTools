@@ -1,6 +1,12 @@
 Document code
 
+Finish combining InDirectoryHolder with classes that would benefit. Check if inFile exists in AddInDir()
+Create reporter class to give updates on progress based on number of events.
+Rewrite classes that I want to run in parallel so that the shallow copy from python works.
+
 Make tests
+
+Write a tool that compares files after slimming/skimming.
 
 Make InDirectory runner class that is also "Copyable" class (for plotters as well)
     Feed copier a list of pointers that must also be copied...

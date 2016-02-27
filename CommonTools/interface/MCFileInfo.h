@@ -1,8 +1,9 @@
 /**
-   \file MCFileInfo.h
+   @file MCFileInfo.h
+
    Defines the MCFileInfo class and a function to get cross section weight.
 
-   \author Daniel Abercrombie */
+   @author Daniel Abercrombie <dabercro@mit.edu> */
 
 #ifndef CROMBIETOOLS_COMMONTOOLS_MCFILEINFO_H
 #define CROMBIETOOLS_COMMONTOOLS_MCFILEINFO_H
@@ -17,13 +18,13 @@
 /**
    Returns the XSection weight of each event.
 
-   \param fileName is the name of the MC File containing all
+   @param fileName is the name of the MC File containing all
    events in the sample. 
-   \param XSec is the cross section in pb in the sample. 
-   \param allHistName is the name of the histogram counting 
+   @param XSec is the cross section in pb in the sample. 
+   @param allHistName is the name of the histogram counting 
    all events that were generated for the sample.
 
-   \returns output that should be multiplied by the
+   @returns output that should be multiplied by the
    luminosity (in pb) to get the overall scaling of the histogram.
    This multiplication is done already in MCFileReader. */
 
@@ -46,7 +47,7 @@ Double_t GetXSecWeight(TString fileName, Double_t XSec, TString allHistName)
 }
 
 /**
-   \struct MCFileInfo
+   @struct MCFileInfo
    Structure holding all the information desired from each MC File. */
 struct MCFileInfo
 {

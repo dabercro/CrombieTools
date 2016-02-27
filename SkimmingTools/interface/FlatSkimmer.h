@@ -6,16 +6,16 @@
 
 #include "TString.h"
 
+#include "InDirectoryHolder.h"
 #include "GoodLumiFilter.h"
 
-class FlatSkimmer
+class FlatSkimmer : public InDirectoryHolder
 {
  public:
   FlatSkimmer();
-  virtual ~FlatSkimmer();
+  virtual ~FlatSkimmer() {};
   
-  void         SetGoodLumiFilter    ( GoodLumiFilter *filter )   { fGoodLumiFilter = filter;     }
-  void         SetInDirectory       ( TString dir )              { fInDirectory = dir;           }
+  void         SetGoodLumiFilter    ( GoodLumiFilter *filter )   { fGoodLumiFilter = *filter;    }
   void         SetOutDirectory      ( TString dir )              { fOutDirectory = dir;          }
   void         SetCut               ( TString cut )              { fCut = cut;                   }
   void         SetTreeName          ( TString name )             { fTreeName = name;             }
@@ -28,16 +28,13 @@ class FlatSkimmer
   void         Slim                 ( TString fileName );
   void         AddEventFilter       ( TString filterName );
 
-  TString      GetInDirectory       ()                           { return fInDirectory;          }
   TString      GetOutDirectory      ()                           { return fOutDirectory;         }
 
-  FlatSkimmer *Copy                 ();
   void         RunOnFile            ( TString name )             { Slim(name);                   }
   
  private:
-  std::set<TString>    fEventFilter;
-  GoodLumiFilter      *fGoodLumiFilter;
-  TString              fInDirectory;
+  std::set<TString>    fEventFilter;      ///< Events to skim out.
+  GoodLumiFilter       fGoodLumiFilter;   ///< GoodLumiFilter for this FlatSkimmer.
   TString              fOutDirectory;
   TString              fCut;
   TString              fTreeName;
@@ -47,8 +44,6 @@ class FlatSkimmer
   Int_t                fReportFreq;
   Int_t                fCheckDuplicates;
   std::vector<TString> fCopyObjects;
-
-  Bool_t               fIsCopy;
   
   ClassDef(FlatSkimmer,1)
 };

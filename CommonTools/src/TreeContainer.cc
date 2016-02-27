@@ -9,19 +9,15 @@
 ClassImp(TreeContainer)
 
 //--------------------------------------------------------------------
-TreeContainer::TreeContainer(TString fileName) :
-  fPrinting(false),
-  tempFile(NULL),
-  tempTree(NULL),
-  fTreeName("events"),
-  fTree(NULL),
-  fOutputFileName("output.root"),
-  fSkimmingCut("")
+
+/**
+   TreeContainer Constructor.
+   @param fileName can either be the name of a single file or a directory.
+   If it's a file, that file is opened. If it's a directory, all the 
+   .root files in that directory are opened */
+
+TreeContainer::TreeContainer(TString fileName)
 {
-  fFriendNames.resize(0);
-  fFileList.resize(0);
-  fKeepBranches.resize(0);
-  fFileNames.resize(0);
   if (fileName != "") {
     if (fileName.Contains(".root"))
       AddFile(fileName);
@@ -43,8 +39,7 @@ TreeContainer::~TreeContainer()
 }
 
 //--------------------------------------------------------------------
-void
-TreeContainer::AddFile(TString fileName)
+void TreeContainer::AddFile(TString fileName)
 {
   tempFile = TFile::Open(fileName);
   if (fPrinting)
@@ -57,8 +52,7 @@ TreeContainer::AddFile(TString fileName)
 }
 
 //--------------------------------------------------------------------
-void
-TreeContainer::AddDirectory(TString directoryName,TString searchFor)
+void TreeContainer::AddDirectory(TString directoryName,TString searchFor)
 {
   TString tempName;
   TSystemDirectory *dir = new TSystemDirectory(directoryName,directoryName);
@@ -82,8 +76,7 @@ TreeContainer::AddDirectory(TString directoryName,TString searchFor)
 }
 
 //--------------------------------------------------------------------
-TTree*
-TreeContainer::SkimTree(TTree *tree, TFile *inFile)
+TTree* TreeContainer::SkimTree(TTree *tree, TFile *inFile)
 {
   if (fKeepBranches.size() > 0) {
     tree->SetBranchStatus("*",0);
@@ -106,8 +99,7 @@ TreeContainer::SkimTree(TTree *tree, TFile *inFile)
 }
 
 //--------------------------------------------------------------------
-TTree*
-TreeContainer::ReturnTree(TString Name, TFile* inFile)
+TTree* TreeContainer::ReturnTree(TString Name, TFile* inFile)
 {
   if (fTree)
     return fTree;
@@ -137,8 +129,7 @@ TreeContainer::ReturnTree(TString Name, TFile* inFile)
 }
 
 //--------------------------------------------------------------------
-std::vector<TTree*>
-TreeContainer::ReturnTreeList(TString Name)
+std::vector<TTree*> TreeContainer::ReturnTreeList(TString Name)
 {
   if (fTreeList.size() != 0)
     return fTreeList;
@@ -173,8 +164,7 @@ TreeContainer::ReturnTreeList(TString Name)
 }
 
 //--------------------------------------------------------------------
-void
-TreeContainer::MakeFile(TString fileName, TString treeName)
+void TreeContainer::MakeFile(TString fileName, TString treeName)
 {
   if (fileName != "")
     SetOutputFileName(fileName);

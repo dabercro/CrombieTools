@@ -1,3 +1,13 @@
+""" @package CrombieTools
+Base package module of everything used through python.
+
+This contains a useful functions for compiling objects while loading 
+them into ROOT and for creating directories from environment variables 
+loaded by submodules. There are also several submodules contained in
+the package.
+@author Daniel Abercrombie <dabercro@mit.edu>
+"""
+
 import ROOT
 import os
 
@@ -31,7 +41,15 @@ dependencies = { 'FlatSkimmer' :         ['GoodLumiFilter'],
                  'TmvaClassifier' :      ['TreeContainer','PlotHists']
                  }
 
+
 def Load(className):
+    """ Loads a class from Crombie Tools into ROOT.
+
+    The function pointer for the constructor is returned.
+    This can also load PlotUtils functions into the ROOT
+    module, but it would be much better to import what
+    you need from CrombieTools.PlotTools.PlotUtils
+    """
     if not className in dir(ROOT):
         if type(dependencies.get(className)) == list:
             for depend in dependencies[className]:
@@ -58,6 +76,7 @@ def Load(className):
     return getattr(ROOT,className)
 
 def DirFromEnv(envVar):
+    """ Creates a directory stored in an environment variable."""
     if type(os.environ.get(envVar)) == str:
         if not os.path.exists(os.environ[envVar]):
             os.makedirs(os.environ[envVar])

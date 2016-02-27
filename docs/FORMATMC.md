@@ -34,6 +34,7 @@ The elements are space delimited.
     <td align="left" valign="top">
       This is the name of the file for the given sample.
       The file name does not need to be absolute, as the input directory is set in 
+      MCReader::SetInDirectory(), usually by reading
       the [environment configuration](docs/ENVCONFIG.md).
     </td>
   </tr>

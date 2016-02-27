@@ -1,22 +1,28 @@
+""" @package CrombieTools.Parallelization
+Package for running processes in parallel.
+@author Daniel Abercrombie <dabercro@mit.edu>
+"""
+
 import os
 from multiprocessing import Process, Queue
 from time import time
+from copy import copy
 
 configProcs = os.environ.get('CrombieNLocalProcs')
 configProcs = configProcs or 1
 
-def runParallel(object, functionName, parametersLists, procs=configProcs):
+def RunParallel(object, functionName, parametersLists, procs=configProcs):
+    """ Starts parallel processes.
+
+    @param object is an object that has a Copy() function member.
+    @param functionName is the str name of the function that will be run in multiple instances.
+    @param parametersLists is a list of lists. Each sublist contains the parameters for the functionName.
+    @param procs is the maximum number of processors that will be used.
+    """
     totStartTime = time()
 
     if not functionName in dir(object):
         print('You gave an invalid function name!')
-        exit(1)
-
-    if not 'Copy' in dir(object):
-        print('#########################################')
-        print('# Missing copy function in this object. #')
-        print('# Cannot run in parallel.               #')
-        print('#########################################')
         exit(1)
 
     if 'GetOutDirectory' in dir(object):
@@ -26,7 +32,7 @@ def runParallel(object, functionName, parametersLists, procs=configProcs):
     def skim(inQueue):
         running = True
 
-        objCopy = object.Copy()
+        objCopy = copy(object)
         functionToRun = getattr(objCopy,functionName)
 
         while running:
@@ -60,9 +66,15 @@ def runParallel(object, functionName, parametersLists, procs=configProcs):
     print()
     print('Total time: ' + str(time() - totStartTime) + ' seconds')
     print()
-    
 
-def runOnDirectory(object, procs=configProcs):
+    
+def RunOnDirectory(object, procs=configProcs):
+    """ Runs an object over a directory.
+
+    @param object has GetInDirectory and RunOnFile function members. 
+    This function then runs the object's over all the files in that directory.
+    """
+
     theFiles = []
 
     if not 'GetInDirectory' in dir(object):

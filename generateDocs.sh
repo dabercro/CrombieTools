@@ -1,15 +1,24 @@
 #! /bin/bash
 
+## \file generateDocs.sh
+#  Generates Doxygen files if doxygen is installed.
+#  If the user is me (dabercro), also has a subcommand to 
+#  copy the resulting files to CERN's AFS space.
+#  \author Daniel Abercrombie
+
 copy=$1
 
 if [ `which doxygen` != "" ]
 then
     pdfName=CrombieToolsManual.pdf
     doxygen docs/CrombieDocs.cfg
-    cd docs/latex
-    make
-    mv refman.pdf $pdfName
-    cd -
+    if [ "$copy" != "test" ]     # In this case, I'm just testing Doxygen configs
+    then
+        cd docs/latex
+        make
+        mv refman.pdf $pdfName
+        cd -
+    fi
     if [ "$USER" = "dabercro" ] && [ "$copy" = "copy" ]
     then
         targetDir=/afs/cern.ch/user/d/dabercro/www/CrombieToolsDocs

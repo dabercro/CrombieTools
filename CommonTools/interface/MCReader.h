@@ -1,8 +1,10 @@
 /**
-   \file MCReader.h
+   @file MCReader.h
+
    Defines the MCReader class. Since the MCReader class is never used alone,
    the entire class it defined in this header.
-   \author Daniel Abercrombie */
+
+   @author Daniel Abercrombie <dabercro@mit.edu> */
 
 #ifndef CROMBIETOOLS_COMMONTOOLS_MCREADER_H
 #define CROMBIETOOLS_COMMONTOOLS_MCREADER_H
@@ -12,68 +14,64 @@
 #include "TColor.h"
 #include "TString.h"
 
+#include "InDirectoryHolder.h"
 #include "MCFileInfo.h"
 
 /**
-   \class MCReader
-   This class reads a formatted [MC Config file](\ref md_docs_FORMATMC). */
+   @class MCReader
+   This class reads a formatted [MC Config file](@ref md_docs_FORMATMC). */
 
-class MCReader
+class MCReader : public InDirectoryHolder
 {
  public:
   MCReader();
   virtual ~MCReader();
 
-  // Set the all histogram and luminosity for normalization
+  /// Set the all histogram and luminosity for normalization.
   void       SetAllHistName       ( TString name )                              { fAllHistName = name;     }
+  /// Set the Luminosity in inverse pb.
   void       SetLuminosity        ( Double_t lum )                              { fLuminosity = lum;       }
 
+  /// Differentiates between background and signal MC.
   enum MCType { kBackground = 0, kSignal };
+  /// Set the MCType of the next config file read.
   void       SetMCType            ( MCType type )                               { fMCType = type;          }
 
-  // This is the default MC File adder
+  /// This is the default MC File adder
   void       AddMCFile            ( TString treeName, TString fileName, Double_t XSec, 
                                     TString entry = "", Int_t colorstyle = 0 );
-  // Default File adder with type changing
+  /// Default File adder with MCType changing
   void       AddMCFile            ( TString treeName, TString fileName, Double_t XSec, 
                                     TString entry, Int_t colorstyle, MCType type )
                                     { SetMCType(type); AddMCFile(treeName,fileName,XSec,entry,colorstyle); }
-  // This is when you don't care about limit trees and are adding by hand
+  /// This is for when you don't care about limit trees and are adding by hand
   void       AddMCFile            ( TString fileName, Double_t XSec, TString entry, Int_t colorstyle )
                                                            { AddMCFile("",fileName,XSec,entry,colorstyle); }
-  // Same as before with type changing
+  /// For when you don't care about limit trees and are adding by hand with type changing
   void       AddMCFile            ( TString fileName, Double_t XSec, TString entry, 
                                     Int_t colorstyle, MCType type )
                                              { SetMCType(type); AddMCFile(fileName,XSec,entry,colorstyle); }
     
-  void       SetInDirectory       ( TString dir )    { fInDirectory = dir.EndsWith("/") ? dir : dir + "/"; }
+  /// Reads an MC configuration file
   void       ReadMCConfig         ( TString config, TString fileDir = "" );
+  /// Reads an MC configuration while changing the MCType
   void       ReadMCConfig         ( TString config,  MCType type, TString fileDir = "" ) 
                                                           { SetMCType(type); ReadMCConfig(config,fileDir); }
 
-  TString    AddInDir             ( TString FileName );
-
  protected:
-  Double_t   fLuminosity;
-  TString    fAllHistName;
-  std::vector<MCFileInfo*>  fMCFileInfo;
-  std::vector<MCFileInfo*>  fSignalFileInfo;
+  Double_t   fLuminosity = 2245.0;                        ///< The Luminosity in inverse pb
+  TString    fAllHistName = "htotal";                     ///< The all histogram name used ingenerating cross section weights
+  std::vector<MCFileInfo*>  fMCFileInfo;                  ///< Vector of background MCFileInfo objects
+  std::vector<MCFileInfo*>  fSignalFileInfo;              ///< Vector of signal MCFileInfo objects
 
  private:
-  TString    fInDirectory;
-  MCType     fMCType;
+  MCType     fMCType = kBackground;                       ///< Type of files in the next config
   
 };
 
 //--------------------------------------------------------------------
-MCReader::MCReader() :
-  fLuminosity(2245.0),
-  fAllHistName("htotal"),
-  fMCType(kBackground)
-{
-  fMCFileInfo.clear();
-  fSignalFileInfo.clear();
-}
+MCReader::MCReader()
+{ }
 
 //--------------------------------------------------------------------
 MCReader::~MCReader()
@@ -86,18 +84,7 @@ MCReader::~MCReader()
 }
 
 //--------------------------------------------------------------------
-TString
-MCReader::AddInDir(TString FileName)
-{
-  if (fInDirectory != "")
-    return fInDirectory + FileName;
-  else
-    return FileName;
-}
-
-//--------------------------------------------------------------------
-void
-MCReader::AddMCFile(TString treeName, TString fileName, Double_t XSec, 
+void MCReader::AddMCFile(TString treeName, TString fileName, Double_t XSec, 
                     TString entry, Int_t colorstyle)
 {
   MCFileInfo* tempInfo = new MCFileInfo(treeName,AddInDir(fileName),XSec,
@@ -114,8 +101,13 @@ MCReader::AddMCFile(TString treeName, TString fileName, Double_t XSec,
 }
 
 //--------------------------------------------------------------------
-void
-MCReader::ReadMCConfig(TString config, TString fileDir)
+
+/**
+   Reads in a configuration file assuming it has the format descrbed
+   in [Formatting MC Configs](@ref mc_docs_FORMATMC). Contents of 
+   this MC file is stored in one of two vectors MCFileInfo pointers. */
+
+void MCReader::ReadMCConfig(TString config, TString fileDir)
 {
   if (fileDir != "")
     SetInDirectory(fileDir);

@@ -12,8 +12,6 @@ ClassImp(FlatSkimmer)
 
 //--------------------------------------------------------------------
 FlatSkimmer::FlatSkimmer() :
-  fGoodLumiFilter(NULL),
-  fInDirectory("."),
   fOutDirectory("."),
   fCut("1"),
   fTreeName("events"),
@@ -21,20 +19,8 @@ FlatSkimmer::FlatSkimmer() :
   fLumiExpr("lumiNum"),
   fEventExpr("eventNum"),
   fReportFreq(100000),
-  fCheckDuplicates(false),
-  fIsCopy(false)
-{
-  fCopyObjects.resize(0);
-  fEventFilter.clear();
-}
-
-//--------------------------------------------------------------------
-FlatSkimmer::~FlatSkimmer()
-{
-  if (fIsCopy)
-    delete fGoodLumiFilter;
-}
-
+  fCheckDuplicates(false)
+{ }
 
 //--------------------------------------------------------------------
 void
@@ -53,7 +39,7 @@ FlatSkimmer::AddEventFilter(TString filterName){
 void
 FlatSkimmer::Slim(TString fileName)
 {
-  TFile *inFile = TFile::Open(fInDirectory + "/" + fileName);
+  TFile *inFile = TFile::Open(AddInDir(fileName));
   TTree *inTree = (TTree*) inFile->Get(fTreeName);
   TTreeFormula *cutter = new TTreeFormula("cutter",fCut,inTree);
 
@@ -82,7 +68,7 @@ FlatSkimmer::Slim(TString fileName)
       std::cout << "Processing " << fileName << " ... " << (float(iEntry)/nentries)*100 << "%" << std::endl;
 
     inTree->GetEntry(iEntry);
-    if (fGoodLumiFilter->IsGood(runNum,lumiNum)) {
+    if (fGoodLumiFilter.IsGood(runNum,lumiNum)) {
       if (cutter->EvalInstance()) {
         testString = TString::Format("%i:%i:%llu",runNum,lumiNum,eventNum);
         if (fEventFilter.find(testString) != fEventFilter.end()) {
@@ -127,15 +113,4 @@ FlatSkimmer::Slim(TString fileName)
   else
     std::cout << "Not Checking" << std::endl;
 
-}
-
-//--------------------------------------------------------------------
-FlatSkimmer*
-FlatSkimmer::Copy()
-{
-  FlatSkimmer *newSkimmer = new FlatSkimmer();
-  *newSkimmer = *this;
-  newSkimmer->fGoodLumiFilter = this->fGoodLumiFilter->Copy();
-  newSkimmer->fIsCopy = true;
-  return newSkimmer;
 }

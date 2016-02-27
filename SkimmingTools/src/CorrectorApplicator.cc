@@ -1,3 +1,8 @@
+/**
+   @file CorrectorApplicator.cc
+   Defines functions in the CorrectorApplicator class.
+   @author Daniel Abercrombie <dabercor@mit.edu> */
+
 #include <iostream>
 #include <map>
 
@@ -12,24 +17,23 @@ ClassImp(CorrectorApplicator)
 //--------------------------------------------------------------------
 CorrectorApplicator::CorrectorApplicator(TString name, Bool_t saveAll) :
   fName(name),
-  fSaveAll(saveAll),
-  fInputTreeName("events"),
-  fOutputTreeName("corrections"),
-  fReportFrequency(100000)
-{
-  fCorrectors.resize(0);
-  fMergeFactors.resize(0);
-}
+  fSaveAll(saveAll)
+{ }
   
 //--------------------------------------------------------------------
-CorrectorApplicator::~CorrectorApplicator()
-{ }
 
-//--------------------------------------------------------------------
-void
-CorrectorApplicator::ApplyCorrections(TString fileName)
+/**
+   Applies all of the Corrector objects to the input fileName.
+   Does not have to be an absolute path if fInDirectory is set.
+   Each unique name of the Corrector objects creates a new branch
+   if fSaveAll is true. If multiple correctors have the same name,
+   then the result of that branch is the product of the correctors.
+   A product of all Corrector object results and any branches labelled
+   to be merged are stored in a branch called fName. */
+
+void CorrectorApplicator::ApplyCorrections(TString fileName)
 {
-  TFile* theFile = new TFile(fileName,"UPDATE");
+  TFile* theFile = new TFile(AddInDir(fileName),"UPDATE");
   TTree* theTree = (TTree*) theFile->Get(fInputTreeName);
   TTree* outTree;
   // If the input and output trees are the same, check if branches already exist
@@ -43,12 +47,12 @@ CorrectorApplicator::ApplyCorrections(TString fileName)
     }
     if (fSaveAll) {
       for (UInt_t iCorrector = 0; iCorrector != fCorrectors.size(); ++iCorrector) {
-        if (theTree->GetBranch(fCorrectors[iCorrector]->GetName())) {
-          std::cout << "Branch " << fCorrectors[iCorrector]->GetName() << " already exists in " << fileName << std::endl;
+        if (theTree->GetBranch(fCorrectors[iCorrector].GetName())) {
+          std::cout << "Branch " << fCorrectors[iCorrector].GetName() << " already exists in " << fileName << std::endl;
           theFile->Close();
           exit(0);
         }
-        if (fCorrectors[iCorrector]->GetName() == fName) {
+        if (fCorrectors[iCorrector].GetName() == fName) {
           std::cout << "Corrector has same name as merged name: " << fName << std::endl;
           theFile->Close();
           exit(0);
@@ -69,9 +73,9 @@ CorrectorApplicator::ApplyCorrections(TString fileName)
     fillBranches.push_back(outTree->Branch(fName,&Addresses[fName],fName+"/F"));
   }
   for (UInt_t iCorrector = 0; iCorrector != fCorrectors.size(); ++iCorrector) {
-    fCorrectors[iCorrector]->SetInTree(theTree);
+    fCorrectors[iCorrector].SetInTree(theTree);
     if (fSaveAll) {
-      TString checkName = fCorrectors[iCorrector]->GetName();
+      TString checkName = fCorrectors[iCorrector].GetName();
       if (!outTree->GetBranch(checkName)) {
         Addresses[checkName] = 1.0;
         fillBranches.push_back(outTree->Branch(checkName,&Addresses[checkName],checkName+"/F"));
@@ -102,16 +106,16 @@ CorrectorApplicator::ApplyCorrections(TString fileName)
     }
     if (fSaveAll) {
       for (UInt_t iCorrector = 0; iCorrector != fCorrectors.size(); ++iCorrector)
-        Addresses[fCorrectors[iCorrector]->GetName()] = 1.0;
+        Addresses[fCorrectors[iCorrector].GetName()] = 1.0;
     }
     
     // Evaluate the correctors and save the factor values
     for (UInt_t iCorrector = 0; iCorrector != fCorrectors.size(); ++iCorrector) {
-      tempValue = fCorrectors[iCorrector]->Evaluate();
+      tempValue = fCorrectors[iCorrector].Evaluate();
       if (fName != "")
         Addresses[fName] *= tempValue;
       if (fSaveAll)
-        Addresses[fCorrectors[iCorrector]->GetName()] *= tempValue;
+        Addresses[fCorrectors[iCorrector].GetName()] *= tempValue;
     }
 
     // Fill all the branches

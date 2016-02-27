@@ -1,9 +1,10 @@
 /**
-  \file   PlotBase.h
+  @file   PlotBase.h
+
   Definition of PlotBase class. Since PlotBase is never initialized directly as a class,
   the entire class definition is contained in this header file.
 
-  \author Daniel Abercrombie */
+  @author Daniel Abercrombie <dabercro@mit.edu> */
 
 #ifndef CROMBIETOOLS_PLOTTOOLS_PLOTBASE_H
 #define CROMBIETOOLS_PLOTTOOLS_PLOTBASE_H
@@ -24,10 +25,11 @@
 #include "PlotUtils.h"
 
 /**
-   \class PlotBase
+   @class PlotBase
    Base class for all plotting classes.
    PlotBase holds much of the parameters used for plotting various kinds of plots.
    It also holds all of the functions that are used to create and save the canvas. */
+
 class PlotBase
 {
  public:
@@ -165,6 +167,7 @@ class PlotBase
      If fAxisMin is the same value as fAxisMax,
      then both values are ignored and the axis height
      is determined by the first line plotted. */
+
   Float_t                    fAxisMin = 0.0;
   Float_t                    fAxisMax = 0.0;        ///< Maximum value of the y-axis. 
 
