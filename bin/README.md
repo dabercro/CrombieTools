@@ -1,9 +1,12 @@
 # Command Line Tools
 
-<table cellpadding=50>
+The following tools are all contained in `CrombieTools/bin`, which is added to your `$PATH` by the installation script.
+Now you should be able to call them from anywhere within your system.
+
+<table cellpadding=20>
   <tr>
     <th align="left" valign="top">
-      `CleanEmacsBackups`
+      <code>CleanEmacsBackups</code>
     </th>
     <th align="left">
        Searches the existing directory and all subdirectories for `*~` files and removes them.
@@ -11,7 +14,7 @@
   </tr>
   <tr>
     <th align="left" valign="top">
-      `CompileCrombieTools`
+      <code>CompileCrombieTools</code>
     </th>
     <th align="left">
       Compiles all of the objects in the package.
@@ -21,7 +24,7 @@
   </tr>
   <tr>
     <th align="left" valign="top">
-      `CrombieClean`
+      <code>CrombieClean</code>
     </th>
     <th align="left">
       Removes all files created by `CompileCrombieTools`.
@@ -30,7 +33,7 @@
   </tr>
   <tr>
     <th align="left" valign="top">
-      `CrombieSetupWorkspace`
+      <code>CrombieSetupWorkspace</code>
     </th>
     <th align="left">
       Copies a number of template files into the directory you call it from.
