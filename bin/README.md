@@ -2,7 +2,7 @@
 
 <table cellpadding=50>
   <tr>
-    <th>
+    <th valign="top">
       `CleanEmacsBackups`
     </th>
     <th>
@@ -10,7 +10,7 @@
     </th>
   </tr>
   <tr>
-    <th>
+    <th valign="top">
       `CompileCrombieTools`
     </th>
     <th>
@@ -18,14 +18,18 @@
       Can also take an optional argument to only compile named class (and dependencies).
       Will only recompile the objects if cleaned or the source files have been changed.
     </th>
-    <th>
+  </tr>
+  <tr>
+    <th valign="top">
       `CrombieClean`
     </th>
     <th>
       Removes all files created by `CompileCrombieTools`.
       This can also take an optional arguments to only clean certain classes.
     </th>
-    <th>
+  </tr>
+  <tr>
+    <th valign="top">
       `CrombieSetupWorkspace`
     </th>
     <th>
