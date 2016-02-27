@@ -1,3 +1,9 @@
+/**
+   \file MCReader.h
+   Defines the MCReader class. Since the MCReader class is never used alone,
+   the entire class it defined in this header.
+   \author Daniel Abercrombie */
+
 #ifndef CROMBIETOOLS_COMMONTOOLS_MCREADER_H
 #define CROMBIETOOLS_COMMONTOOLS_MCREADER_H
 
@@ -7,6 +13,10 @@
 #include "TString.h"
 
 #include "MCFileInfo.h"
+
+/**
+   \class MCReader
+   This class reads a formatted [MC Config file](\ref md_docs_FORMATMC). */
 
 class MCReader
 {

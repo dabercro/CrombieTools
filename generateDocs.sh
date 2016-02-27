@@ -4,16 +4,16 @@ copy=$1
 
 if [ `which doxygen` != "" ]
 then
+    pdfName=CrombieToolsManual.pdf
     doxygen docs/CrombieDocs.cfg
     cd docs/latex
     make
-    mv refman.pdf CrombieToolsManual.pdf
+    mv refman.pdf $pdfName
     cd -
     if [ "$USER" = "dabercro" ] && [ "$copy" = "copy" ]
     then
-        targetDir=lxplus.cern.ch:/afs/cern.ch/user/d/dabercro/www/CrombieToolsDocs/.
-        scp -r docs/html/* $targetDir
-        scp docs/latex/CrombieToolsManual.pdf $targetDir
+        targetDir=/afs/cern.ch/user/d/dabercro/www/CrombieToolsDocs
+        tar -czf - docs/html/* docs/latex/$pdfName | ssh lxplus.cern.ch "cd $targetDir ; rm -rf search ; tar -xzf - ; mv docs/html/* . ; mv docs/latex/$pdfName ."
     fi
 else
     echo "You need the 'doxygen' package to" 

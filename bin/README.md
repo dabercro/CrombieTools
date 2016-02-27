@@ -5,39 +5,57 @@ Now you should be able to call them from anywhere within your system.
 
 <table cellpadding=20>
   <tr>
-    <th align="left" valign="top">
+    <td align="left" valign="top">
       <code>CleanEmacsBackups</code>
-    </th>
-    <th align="left">
+    </td>
+    <td align="left">
        Searches the existing directory and all subdirectories for `*~` files and removes them.
-    </th>
+    </td>
   </tr>
   <tr>
-    <th align="left" valign="top">
+    <td align="left" valign="top">
       <code>CompileCrombieTools</code>
-    </th>
-    <th align="left">
+    </td>
+    <td align="left">
       Compiles all of the objects in the package.
       Can also take an optional argument to only compile named class (and dependencies).
       Will only recompile the objects if cleaned or the source files have been changed.
-    </th>
+    </td>
   </tr>
   <tr>
-    <th align="left" valign="top">
+    <td align="left" valign="top">
       <code>CrombieClean</code>
-    </th>
-    <th align="left">
+    </td>
+    <td align="left">
       Removes all files created by `CompileCrombieTools`.
       This can also take an optional arguments to only clean certain classes.
-    </th>
+    </td>
   </tr>
   <tr>
-    <th align="left" valign="top">
-      <code>CrombieSetupWorkspace</code>
-    </th>
-    <th align="left">
+    <td align="left" valign="top">
+      <code>CrombieSubmitLxbatch</code>
+    </td>
+    <td align="left">
+    </td>
+  </tr>
+  <tr>
+    <td align="left" valign="top">
+      <code>CrombieTerminalSlimming</code>
+    </td>
+    <td align="left">
+      This tools allows for running the [slimmer](docs/SLIMMING.md) interactively in a shell.
+      Like `CrombieSubmitLxbatch`, this sources a local [CrombieSlimmingConfig.sh](docs/ENVCONFIG.md) to set a number of environment variables.
+      `CrombieTerminal` also comes with the same subcommands as `CrombieTerminalSlimming.
+    </td>
+  </tr>
+  <tr>
+    <td align="left" valign="top">
+      <code>CrombieWorkspace</code>
+    </td>
+    <td align="left">
       Copies a number of template files into the directory you call it from.
-      These files are used to configure the Skimming tools, described below.
-    </th>
+      These files are used to configure the Skimming tools.
+      For additional example files, give the optional argument <code>CrombieSetupWorkspace test</code>.
+    </td>
   </tr>
 </table>

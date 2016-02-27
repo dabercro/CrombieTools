@@ -3,8 +3,7 @@
   Definition of PlotBase class. Since PlotBase is never initialized directly as a class,
   the entire class definition is contained in this header file.
 
-  \author Daniel Abercrombie
-  \date   2016-02-27 */
+  \author Daniel Abercrombie */
 
 #ifndef CROMBIETOOLS_PLOTTOOLS_PLOTBASE_H
 #define CROMBIETOOLS_PLOTTOOLS_PLOTBASE_H

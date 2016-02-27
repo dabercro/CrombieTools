@@ -1,21 +1,18 @@
 # Crombie Tools
 
-## Installation
+Welcome to the CrombieTools package.
 
-This package should be useable on a system with ROOT 6.05/02 or higher and Python 2.7 installed.
-To install, first check that `~/.bashrc` or `~/.bash_profile` on MACOSX exsists.
-If not type `touch ~/.bashrc` or `touch ~/.bash_profile`.
-Then simply do the following:
+This contains everything I use to analyze flat trees in ROOT.
+After installation, it can basically be treated as a Python package.
+The backend is mostly classes written in C++.
 
-    git clone https://github.com/dabercro/CrombieTools.git
-    cd CrombieTools
-    ./install.sh
+## Topics
 
-The install script will add the necessary lines environment variables to your `~/.bashrc` or `~/.bash_profile`.
-
-## Other topics
-
-After installation, check out some of these other features
-
+[Installation](INSTALL.md) <br>
 [Running Tests](test/README.md) <br>
-[Command Line Tools](bin/README.md)
+[Command Line Tools](bin/README.md) <br>
+[Formatting MC Configs](docs/FORMATMC.md)
+
+## Notes
+
+Documentation is very not complete yet.

@@ -1,3 +1,9 @@
+/**
+   \file MCFileInfo.h
+   Defines the MCFileInfo class and a function to get cross section weight.
+
+   \author Daniel Abercrombie */
+
 #ifndef CROMBIETOOLS_COMMONTOOLS_MCFILEINFO_H
 #define CROMBIETOOLS_COMMONTOOLS_MCFILEINFO_H
 
@@ -8,10 +14,20 @@
 #include "TH1.h"
 #include "TString.h"
 
+/**
+   Returns the XSection weight of each event.
+
+   \param fileName is the name of the MC File containing all
+   events in the sample. 
+   \param XSec is the cross section in pb in the sample. 
+   \param allHistName is the name of the histogram counting 
+   all events that were generated for the sample.
+
+   \returns output that should be multiplied by the
+   luminosity (in pb) to get the overall scaling of the histogram.
+   This multiplication is done already in MCFileReader. */
+
 Double_t GetXSecWeight(TString fileName, Double_t XSec, TString allHistName)
-// Returns the XSection weight of each event.
-// Just multiply the output by the luminosity (in pb).
-// This multiplication is done already in MCFileReader
 {
   TFile *theFile = TFile::Open(fileName);
   if (!theFile) {
@@ -29,8 +45,12 @@ Double_t GetXSecWeight(TString fileName, Double_t XSec, TString allHistName)
   return weight;
 }
 
+/**
+   \struct MCFileInfo
+   Structure holding all the information desired from each MC File. */
 struct MCFileInfo
 {
+  /// The constructor fills all of the entries
   MCFileInfo ( TString treeName, TString fileName, Double_t XSec, 
                TString entry, Int_t colorstyle, TString allHist ) {
     fTreeName = treeName;
@@ -45,12 +65,12 @@ struct MCFileInfo
   }
   virtual ~MCFileInfo()  {}
 
-  TString  fTreeName;
-  TString  fFileName;
-  Double_t fXSec;
-  TString  fEntry;
-  Int_t    fColorStyle;
-  Double_t fXSecWeight;
+  TString  fTreeName;    ///< Base name for the Limit Tree made by LimitTreeMaker
+  TString  fFileName;    ///< Name of the MC file
+  Double_t fXSec;        ///< Cross section of the sample contained in the MC file
+  TString  fEntry;       ///< Legend entry for that file
+  Int_t    fColorStyle;  ///< Fill color or line style (if signal) for that file
+  Double_t fXSecWeight;  ///< Weight determined by GetXSecWeight()
 };
 
 #endif

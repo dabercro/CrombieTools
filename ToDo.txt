@@ -1,6 +1,6 @@
-Make tests
+Document code
 
-Make docs, just simple HTML so anyone can read them
+Make tests
 
 Make InDirectory runner class that is also "Copyable" class (for plotters as well)
     Feed copier a list of pointers that must also be copied...
