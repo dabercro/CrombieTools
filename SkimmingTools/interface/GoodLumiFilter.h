@@ -22,7 +22,7 @@ class GoodLumiFilter
   /// Returns if event with a given run and lumi number is good
   Bool_t          IsGood    ( UInt_t run, UInt_t lumi );
 
-  GoodLumiFilter();
+  GoodLumiFilter() {}
   virtual ~GoodLumiFilter() {}
 
   /// Add a good run and lumi number

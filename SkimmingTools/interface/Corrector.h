@@ -1,6 +1,8 @@
 /**
    @file   Corrector.h
+
    Header file for the Corrector class.
+
    @author Daniel Abercrombie <dabercro@mit.edu> */
 
 #ifndef CROMBIETOOLS_SKIMMINGTOOLS_CORRECTOR_H
@@ -31,7 +33,7 @@ class Corrector
   void                  SetCorrectionHist ( TString hist1, TString hist2 );
 
   /// Evaluate the TTree pointer fInTree at its current entry.
-  Float_t               Evaluate          () const ;
+  Float_t               Evaluate          ();
 
   /// Constructor setting the name of a branch it would like to write to.
   Corrector( TString name );

@@ -27,6 +27,7 @@ Clean up Submission scripts
     Somehow had empty trees from signal in Full... investigate
         This came from empty Nero directories. Fix this.
 
+Mark eligible functions as const.
 Add check for existing output file into FlatSkimmer itself
 Test Parallelization.py and remove CrombieFlatSkimmer
 
