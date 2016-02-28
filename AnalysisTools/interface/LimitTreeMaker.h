@@ -1,3 +1,8 @@
+/**
+  @file   LimitTreeMaker.h
+  Header file for the LimitTreeMaker class.
+  @author Daniel Abercrombie <dabercro@mit.edu> */
+
 #ifndef CROMBIETOOLS_ANALYSISTOOLS_LIMITTREEMAKER_H
 #define CROMBIETOOLS_ANALYSISTOOLS_LIMITTREEMAKER_H
 
@@ -7,35 +12,48 @@
 #include "TString.h"
 #include "MCReader.h"
 
+/**
+   @class LimitTreeMaker
+   Makes small flat trees for limit tools.
+   Reads from a [config file](@ref md_docs_FORMATMC) or multiple and creates one file
+   with a tree for each control region and each file read in. Only works if you have
+   write access to /tmp/$USER since it uses the space to hold trees while copying. */
+
 class LimitTreeMaker : public MCReader
 {
  public:
-  LimitTreeMaker()                                                              { LimitTreeMaker("limittree.root");           }
+  LimitTreeMaker()                                                                        { LimitTreeMaker("limittree.root");           }
   LimitTreeMaker( TString outputName );
   virtual ~LimitTreeMaker();
 
-  void    SetOutDirectory          ( TString dir )                     { fOutDirectory = dir.EndsWith("/") ? dir : dir + "/"; }
-  void    SetOutFileName           ( TString file )                             { fOutputFileName = file;                     }
-  void    SetTreeName              ( TString tree )                             { fTreeName = tree;                           }
-  void    AddFriendName            ( TString tree )                             { fFriendNames.push_back(tree);               }
-  void    AddKeepBranch            ( TString branch )                           { fKeepBranches.push_back(branch);            }
-  void    AddWeightBranch          ( TString branch )                           { fWeightBranch.push_back(branch);            }
-  void    AddRegion                ( TString regionName, TString regionCut )
-                                                      { fRegionNames.push_back(regionName); fRegionCuts.push_back(regionCut); }
-  void    SetOutputWeightBranch    ( TString branch )                           { fOutputWeightBranch = branch;               }
+  /// Reads a config and swaps out files for one control region
+  void              ReadExceptionConfig      ( TString config, TString region, TString fileDir = "" );
+  /// Makes the file containing all of the limit trees.
+  void              MakeTrees                ();
 
-  void    ExceptionSkip            ( TString region, TString outTreeName )      { fExceptionSkip[region].insert(outTreeName); }
-  void    ExceptionAdd             ( TString region, TString fileName, TString outTreeName, Float_t XSec = -1 )
-                                                                       { fExceptionFileNames[region].push_back(fileName);
-                                                                         fExceptionTreeNames[region].push_back(outTreeName);
-                                                                         fExceptionXSecs[region].push_back(XSec);             }
-  void    ReadExceptionConfig      ( TString config, TString region, TString fileDir = "" );
+  /// Set output directory of limit tree file.
+  inline    void    SetOutDirectory          ( TString dir )                     { fOutDirectory = dir.EndsWith("/") ? dir : dir + "/"; }
+  /// Set name of limit tree file
+  inline    void    SetOutFileName           ( TString file )                             { fOutputFileName = file;                     }
+  /// Set the name of the tree read from each input file
+  inline    void    SetTreeName              ( TString tree )                             { fTreeName = tree;                           }
+  /// Add friends to input tree. @todo I don't think this works.
+  inline    void    AddFriendName            ( TString tree )                             { fFriendNames.push_back(tree);               }
+  inline    void    AddKeepBranch            ( TString branch )                           { fKeepBranches.push_back(branch);            }
+  inline    void    AddWeightBranch          ( TString branch )                           { fWeightBranch.push_back(branch);            }
+  inline    void    AddRegion                ( TString regionName, TString regionCut )
+                                                                { fRegionNames.push_back(regionName); fRegionCuts.push_back(regionCut); }
+  inline    void    SetOutputWeightBranch    ( TString branch )                           { fOutputWeightBranch = branch;               }
 
-  void    AddExceptionDataCut      ( TString region, TString cut )              { fExceptionDataCuts[region] = cut;           }
-  void    AddExceptionWeightBranch ( TString region, TString weight )  { fExceptionWeightBranches[region].push_back(weight);  }
-  void    SetReportFrequency       ( UInt_t freq )                              { fReportFrequency = freq;                    }
-
-  void    MakeTrees                ();
+  inline    void    ExceptionSkip            ( TString region, TString outTreeName )      { fExceptionSkip[region].insert(outTreeName); }
+  inline    void    ExceptionAdd             ( TString region, TString fileName, TString outTreeName, Float_t XSec = -1 )
+                                                                                 { fExceptionFileNames[region].push_back(fileName);
+                                                                                   fExceptionTreeNames[region].push_back(outTreeName);
+                                                                                   fExceptionXSecs[region].push_back(XSec);             }
+  inline    void    AddExceptionDataCut      ( TString region, TString cut )              { fExceptionDataCuts[region] = cut;           }
+  inline    void    AddExceptionWeightBranch ( TString region, TString weight )  { fExceptionWeightBranches[region].push_back(weight);  }
+  /// @todo make all frequency reports in a centralized class
+  inline    void    SetReportFrequency       ( UInt_t freq )                              { fReportFrequency = freq;                    }
 
  private:
   UInt_t                    fReportFrequency;

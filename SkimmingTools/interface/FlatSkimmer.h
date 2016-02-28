@@ -44,6 +44,7 @@ class FlatSkimmer : public InDirectoryHolder
   void         SetLumiExpr          ( TString expr )             { fLumiExpr = expr;             }
   /// Set branch name for event number
   void         SetEventExpr         ( TString expr )             { fEventExpr = expr;            }
+  /// @todo make all frequency reports in a centralized class
   void         SetReportFrequency   ( Int_t freq )               { fReportFreq = freq;           }
   /// Set flag to check for duplicate events
   void         SetCheckDuplicates   ( Bool_t check )             { fCheckDuplicates = check;     }

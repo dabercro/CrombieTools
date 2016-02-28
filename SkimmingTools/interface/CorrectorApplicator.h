@@ -34,6 +34,7 @@ class CorrectorApplicator : public InDirectoryHolder
   void                 AddCorrector         ( Corrector* corrector )      { fCorrectors.push_back(*corrector);      }
   /// Add a branch name to include by multiplication into the main output branch of the CorrectorApplicator.
   void                 AddFactorToMerge     ( TString factor )            { fMergeFactors.push_back(factor);        }
+  /// @todo make all frequency reports in a centralized class
   void                 SetReportFrequency   ( Int_t freq )                { fReportFrequency = freq;                }
 
   /// Wrapper for CrombieTools.Parallelization.RunOnDirectory() to use.

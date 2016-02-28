@@ -37,112 +37,111 @@ class PlotBase
   virtual ~PlotBase();
   
   ///  This function adds a tree pointer, cut, and expression used for generating a line in the plot
-  void                   AddLine                  ( TTree *tree, TString cut, TString expr );
+  inline    void         AddLine                  ( TTree *tree, TString cut, TString expr );
 
   /// Set a tree and weight concurrently for each line. Best used when a default expression is set.
-  void                   AddTreeWeight            ( TTree *tree, TString cut );
+  inline    void         AddTreeWeight            ( TTree *tree, TString cut );
   /// Set a tree and expression concurrently for each line. Best used when a default weight is set.
-  void                   AddTreeExpr              ( TTree *tree, TString expr );
+  inline    void         AddTreeExpr              ( TTree *tree, TString expr );
   /// Set a weight and expression concurrently for each line. Best used when a default tree is set.
-  void                   AddWeightExpr            ( TString cut, TString expr );
+  inline    void         AddWeightExpr            ( TString cut, TString expr );
+
+  /// Set entry and color for each line. This uses the default line width and style.
+  inline    void         AddLegendEntry           ( TString LegendEntry, Color_t ColorEntry );
+  /// Set entry, color, width, and style for each line.
+  inline    void         AddLegendEntry           ( TString LegendEntry, Color_t ColorEntry, Int_t LineWidth, Int_t LineStyle );
+
+  /// Sets the name of the canvas created by PlotBase.
+  inline    void         SetCanvasName            ( TString name )                                { fCanvasName = name;          }
+  /// Sets the size of the output canvas.
+  inline    void         SetCanvasSize            ( Int_t width, Int_t height )  { fCanvasWidth = width; fCanvasHeight = height; }
+  /// Sets the offset of the Y-axis title as a ratio of the default offset
+  inline    void         SetAxisTitleOffset       ( Float_t offset )                              { fTitleOffset = offset;       }
+  /// Sets the fontsize of the axis labels
+  inline    void         SetFontSize              ( Float_t fontSize )                            { fFontSize = fontSize;        }
+  /// Forces the minimum and maximum values of the Y-axis in the plot.
+  inline    void         SetAxisMinMax            ( Float_t min, Float_t max )                 { fAxisMin = min; fAxisMax = max; }
+  
+  /// Set the default tree pointer for each line in the plot
+  inline    void         SetDefaultTree           ( TTree *tree )                                 { fDefaultTree = tree;         }
+  /// Set the default weight for each line in the plot
+  inline    void         SetDefaultWeight         ( TString cut )                                 { fDefaultCut = cut;           }
+  /// Set the default expression to be plotted on the x-axis for each line in the plot
+  inline    void         SetDefaultExpr           ( TString expr )                                { fDefaultExpr = expr;         }
+
+  /// Can store multiple trees at once for plots. Each tree plots its own line.
+  inline    void         SetTreeList              ( std::vector<TTree*> treelist )                { fInTrees = treelist;         }
+  /// Set a tree for a single line.
+  inline    void         AddTree                  ( TTree *tree )                                 { fInTrees.push_back(tree);    }
+  /// Set a weight for a single line.
+  inline    void         AddWeight                ( TString cut )                                 { fInCuts.push_back(cut);      }
+  /// Set an x expression for a single line.
+  inline    void         AddExpr                  ( TString expr )                                { fInExpr.push_back(expr);     }
+
+  /// Reset the list of trees used to makes lines
+  inline    void         ResetTree                ()                                              { fInTrees.clear();            }
+  /// Reset the list of weights used to makes lines
+  inline    void         ResetWeight              ()                                              { fInCuts.clear();             }
+  /// Reset the list of expressions used to makes lines
+  inline    void         ResetExpr                ()                                              { fInExpr.clear();             }
+  
+  /// Set the default line width.
+  inline    void         SetDefaultLineWidth      ( Int_t width )                                 { fDefaultLineWidth = width;   }
+  /// Set the default line style.
+  inline    void         SetDefaultLineStyle      ( Int_t style )                                 { fDefaultLineStyle = style;   }
+  /// Set this to true to feature error bars in the plots.
+  inline    void         SetIncludeErrorBars      ( Bool_t include )                              { fIncludeErrorBars = include; }
 
   /// Used for vertical position of legend.
   enum LegendY { kUpper = 0, kLower };
   /// Used for horizontal position of legend.
   enum LegendX { kLeft  = 0, kRight };
   /// Set the legend location using LegendY and LegendX enums.
-  void                   SetLegendLocation        ( LegendY yLoc, LegendX xLoc, Double_t xWidth = 0.3, Double_t yWidth = 0.2 );
-
-  /// Set entry and color for each line. This uses the default line width and style.
-  void                   AddLegendEntry           ( TString LegendEntry, Color_t ColorEntry );
-  /// Set entry, color, width, and style for each line.
-  void                   AddLegendEntry           ( TString LegendEntry, Color_t ColorEntry, Int_t LineWidth, Int_t LineStyle );
-
-  /// Sets the name of the canvas created by PlotBase.
-  void                   SetCanvasName            ( TString name )                                { fCanvasName = name;          }
-  /// Sets the size of the output canvas.
-  void                   SetCanvasSize            ( Int_t width, Int_t height )  { fCanvasWidth = width; fCanvasHeight = height; }
-  /// Sets the offset of the Y-axis title as a ratio of the default offset
-  void                   SetAxisTitleOffset       ( Float_t offset )                              { fTitleOffset = offset;       }
-  /// Sets the fontsize of the axis labels
-  void                   SetFontSize              ( Float_t fontSize )                            { fFontSize = fontSize;        }
-  /// Forces the minimum and maximum values of the Y-axis in the plot.
-  void                   SetAxisMinMax            ( Float_t min, Float_t max )                 { fAxisMin = min; fAxisMax = max; }
-  
-  /// Set the default tree pointer for each line in the plot
-  void                   SetDefaultTree           ( TTree *tree )                                 { fDefaultTree = tree;         }
-  /// Set the default weight for each line in the plot
-  void                   SetDefaultWeight         ( TString cut )                                 { fDefaultCut = cut;           }
-  /// Set the default expression to be plotted on the x-axis for each line in the plot
-  void                   SetDefaultExpr           ( TString expr )                                { fDefaultExpr = expr;         }
-
-  /// Can store multiple trees at once for plots. Each tree plots its own line.
-  void                   SetTreeList              ( std::vector<TTree*> treelist )                { fInTrees = treelist;         }
-  /// Set a tree for a single line.
-  void                   AddTree                  ( TTree *tree )                                 { fInTrees.push_back(tree);    }
-  /// Set a weight for a single line.
-  void                   AddWeight                ( TString cut )                                 { fInCuts.push_back(cut);      }
-  /// Set an x expression for a single line.
-  void                   AddExpr                  ( TString expr )                                { fInExpr.push_back(expr);     }
-
-  /// Reset the list of trees used to makes lines
-  void                   ResetTree                ()                                              { fInTrees.clear();            }
-  /// Reset the list of weights used to makes lines
-  void                   ResetWeight              ()                                              { fInCuts.clear();             }
-  /// Reset the list of expressions used to makes lines
-  void                   ResetExpr                ()                                              { fInExpr.clear();             }
-  
-  /// Set the default line width.
-  void                   SetDefaultLineWidth      ( Int_t width )                                 { fDefaultLineWidth = width;   }
-  /// Set the default line style.
-  void                   SetDefaultLineStyle      ( Int_t style )                                 { fDefaultLineStyle = style;   }
-  /// Set this to true to feature error bars in the plots.
-  void                   SetIncludeErrorBars      ( Bool_t include )                              { fIncludeErrorBars = include; }
-
+  inline    void         SetLegendLocation        ( LegendY yLoc, LegendX xLoc, Double_t xWidth = 0.3, Double_t yWidth = 0.2 );
   /// Set the legend location manually.
-  void                   SetLegendLimits          ( Double_t lim1, Double_t lim2, Double_t lim3, Double_t lim4 )
+  inline    void         SetLegendLimits          ( Double_t lim1, Double_t lim2, Double_t lim3, Double_t lim4 )
                                                                                    { l1 = lim1; l2 = lim2; l3 = lim3; l4 = lim4; }
 
   /// Set the legend border size.
-  void                   SetLegendBorderSize      ( Int_t size )                                  { fLegendBorderSize = size;    }
+  inline    void         SetLegendBorderSize      ( Int_t size )                                  { fLegendBorderSize = size;    }
   /// If true, the legend will be filled with a solid background.
-  void                   SetLegendFill            ( Bool_t fill )                                 { fLegendFill = fill;          }
+  inline    void         SetLegendFill            ( Bool_t fill )                                 { fLegendFill = fill;          }
 
   /// Resets the legend entries for each line.
-  void                   ResetLegend              ()                              { fLegendEntries.clear(); fLineColors.clear(); 
+  inline    void         ResetLegend              ()                              { fLegendEntries.clear(); fLineColors.clear(); 
                                                                                     fLineWidths.clear();    fLineStyles.clear(); }
 
   /// Set one of the lines to be plotted as data.
-  void                   SetDataIndex             ( Int_t data )                                  { fDataIndex = data;           }
+  inline    void         SetDataIndex             ( Int_t data )                                  { fDataIndex = data;           }
   /// If true, a ratio pad will be drawn underneath.
-  void                   SetMakeRatio             ( Bool_t ratio )                                { fMakeRatio = ratio;          }
+  inline    void         SetMakeRatio             ( Bool_t ratio )                                { fMakeRatio = ratio;          }
   /// Set which line will be '1' in the ratio plot.
-  void                   SetRatioIndex            ( Int_t ratio )                                 { fRatioIndex = ratio;         }
+  inline    void         SetRatioIndex            ( Int_t ratio )                                 { fRatioIndex = ratio;         }
   /// If true, the ratio index will only be compared to the data index.
-  void                   SetOnlyRatioWithData     ( Bool_t only )                                 { fOnlyRatioWithData = only;   }
+  inline    void         SetOnlyRatioWithData     ( Bool_t only )                                 { fOnlyRatioWithData = only;   }
   /// Force the minimum and maximum values of the ratio pad.
-  void                   SetRatioMinMax           ( Float_t min, Float_t max )               { fRatioMin = min; fRatioMax = max; }
+  inline    void         SetRatioMinMax           ( Float_t min, Float_t max )               { fRatioMin = min; fRatioMax = max; }
   /// Set the y axis label of the ratio pad.
-  void                   SetRatioTitle            ( TString title )                               { fRatioTitle = title;         }
+  inline    void         SetRatioTitle            ( TString title )                               { fRatioTitle = title;         }
   /// Set horizontal dotted lines on the ratio pad.
-  void                   SetRatioGrid             ( Int_t grid )                                  { fRatioGrid = grid;           }
+  inline    void         SetRatioGrid             ( Int_t grid )                                  { fRatioGrid = grid;           }
   /// Sets the divisions of the ratio y axis.
-  void                   SetRatioDivisions        ( Int_t divisions, Bool_t optimize = true )     { fRatioDivisions = divisions; 
+  inline    void         SetRatioDivisions        ( Int_t divisions, Bool_t optimize = true )     { fRatioDivisions = divisions; 
                                                                                                     fOptimDivisions = optimize;  }
   /// Force a line to draw first on the plot, if desired.
-  void                   SetDrawFirst             ( Int_t first )                                 { fDrawFirst = first;          }
+  inline    void         SetDrawFirst             ( Int_t first )                                 { fDrawFirst = first;          }
 
   /// Call this before plotting to only write plots to .pdf files.
-  void                   OnlyPDF                  ()                                              { bPNG = false; bC = false;    }
+  inline    void         OnlyPDF                  ()                                              { bPNG = false; bC = false;    }
   /// Call this before plotting to only write plots to .png files.
-  void                   OnlyPNG                  ()                                              { bPDF = false; bC = false;    }
+  inline    void         OnlyPNG                  ()                                              { bPDF = false; bC = false;    }
 
   /// Set the luminosity label.
-  void                   SetLumiLabel             ( TString lumi )                                { fLumiLabel = lumi;           }
+  inline    void         SetLumiLabel             ( TString lumi )                                { fLumiLabel = lumi;           }
   /// Set the luminosity lable with a float in fb.
-  void                   SetLumiLabel             ( Float_t lumi )                  { fLumiLabel = TString::Format("%.2f",lumi); }
+  inline    void         SetLumiLabel             ( Float_t lumi )                  { fLumiLabel = TString::Format("%.2f",lumi); }
   /// If true, plot will have "CMS Preliminary" in the top.
-  void                   SetIsCMSPrelim           ( Bool_t isPre )                                { fIsCMSPrelim = isPre;        }
+  inline    void         SetIsCMSPrelim           ( Bool_t isPre )                                { fIsCMSPrelim = isPre;        }
   
  protected:
 
@@ -188,7 +187,7 @@ class PlotBase
   std::vector<TString>       fLegendEntries;        ///< Number of legend entries should match number of lines
 
   /// Takes number of bins, min and max, and dumps it into an already allocated array
-  void                       ConvertToArray       ( Int_t NumXBins, Double_t MinX, Double_t MaxX, Double_t *XBins );
+  inline    void             ConvertToArray       ( Int_t NumXBins, Double_t MinX, Double_t MaxX, Double_t *XBins );
 
   /// This is the powerhouse of all the plotting tools. Everything happens here.
   template<class T>  void    BaseCanvas           ( TString FileBase, std::vector<T*> theLines,

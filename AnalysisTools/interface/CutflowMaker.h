@@ -13,7 +13,7 @@ class CutflowMaker
   
   void      AddCut             ( TString name, TString cut )       { fCutNames.push_back(name); fCuts.push_back(cut); }
   void      SetCanvasSize      ( Int_t width, Int_t height )       { fWidth = width; fHeight = height;                }
-  void      SetTree            ( TTree* tree )                     { fTree = tree; fYields.resize(0);                 }
+  inline void      SetTree            ( TTree* tree )                     { fTree = tree; fYields.resize(0);                 }
   void      PrintCutflow       ( Bool_t OnlyNums = false );
   enum   PlotType  { kAbsolute = 0, kFractional };
   void      MakePlot           ( TString name, PlotType type = kAbsolute );

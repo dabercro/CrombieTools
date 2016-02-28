@@ -28,39 +28,39 @@ class MCReader : public InDirectoryHolder
   virtual ~MCReader();
 
 
-  /// Reads an MC configuration file
-  void       ReadMCConfig         ( TString config, TString fileDir = "" );
-
   /// Differentiates between background and signal MC.
   enum MCType { kBackground = 0, kSignal };
 
+  /// Reads an MC configuration file
+  void                 ReadMCConfig         ( TString config, TString fileDir = "" );
+
   /// This is the default MC File adder
-  void       AddMCFile            ( TString treeName, TString fileName, Double_t XSec, 
-                                    TString entry = "", Int_t colorstyle = 0 );
+  void                 AddMCFile            ( TString treeName, TString fileName, Double_t XSec, 
+                                              TString entry = "", Int_t colorstyle = 0 );
 
   /// Default File adder with MCType changing
-  void       AddMCFile            ( TString treeName, TString fileName, Double_t XSec, 
-                                    TString entry, Int_t colorstyle, MCType type )
-                                    { SetMCType(type); AddMCFile(treeName,fileName,XSec,entry,colorstyle); }
+  inline    void       AddMCFile            ( TString treeName, TString fileName, Double_t XSec, 
+                                              TString entry, Int_t colorstyle, MCType type )
+                                              { SetMCType(type); AddMCFile(treeName,fileName,XSec,entry,colorstyle); }
   /// This is for when you don't care about limit trees and are adding by hand
-  void       AddMCFile            ( TString fileName, Double_t XSec, TString entry, Int_t colorstyle )
-                                                           { AddMCFile("",fileName,XSec,entry,colorstyle); }
+  inline    void       AddMCFile            ( TString fileName, Double_t XSec, TString entry, Int_t colorstyle )
+                                                                     { AddMCFile("",fileName,XSec,entry,colorstyle); }
   /// For when you don't care about limit trees and are adding by hand with type changing
-  void       AddMCFile            ( TString fileName, Double_t XSec, TString entry, 
-                                    Int_t colorstyle, MCType type )
-                                             { SetMCType(type); AddMCFile(fileName,XSec,entry,colorstyle); }
+  inline    void       AddMCFile            ( TString fileName, Double_t XSec, TString entry, 
+                                              Int_t colorstyle, MCType type )
+                                                       { SetMCType(type); AddMCFile(fileName,XSec,entry,colorstyle); }
 
   /// Set the all histogram and luminosity for normalization.
-  void       SetAllHistName       ( TString name )                              { fAllHistName = name;     }
+  inline    void       SetAllHistName       ( TString name )                              { fAllHistName = name;     }
   /// Set the Luminosity in inverse pb.
-  void       SetLuminosity        ( Double_t lum )                              { fLuminosity = lum;       }
+  inline    void       SetLuminosity        ( Double_t lum )                              { fLuminosity = lum;       }
 
   /// Set the MCType of the next config file read.
-  void       SetMCType            ( MCType type )                               { fMCType = type;          }
+  inline    void       SetMCType            ( MCType type )                               { fMCType = type;          }
     
   /// Reads an MC configuration while changing the MCType
-  void       ReadMCConfig         ( TString config,  MCType type, TString fileDir = "" ) 
-                                                          { SetMCType(type); ReadMCConfig(config,fileDir); }
+  inline    void       ReadMCConfig         ( TString config,  MCType type, TString fileDir = "" ) 
+                                                                    { SetMCType(type); ReadMCConfig(config,fileDir); }
 
  protected:
   Double_t   fLuminosity = 2245.0;                        ///< The Luminosity in inverse pb

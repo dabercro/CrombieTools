@@ -4,6 +4,7 @@
 #include "TFile.h"
 #include "TLegend.h"
 
+#include "HistHolder.h"
 #include "PlotStack.h"
 
 ClassImp(PlotStack)

@@ -17,20 +17,20 @@
 
 class InDirectoryHolder
 {
- protected:
-  TString    AddInDir             ( TString FileName );   ///< A helper function that prepends the input directory to a filename
-
  public:
   InDirectoryHolder() {};
   virtual ~InDirectoryHolder() {};
 
   /// Sets the input directory where the MCFiles will be searched for, appending a "/" if missing.
-  void       SetInDirectory       ( TString dir )    { fInDirectory = dir.EndsWith("/") ? dir : dir + "/"; }
+  inline void       SetInDirectory       ( TString dir )    { fInDirectory = dir.EndsWith("/") ? dir : dir + "/"; }
   /// @returns the input directory
-  TString    GetInDirectory       ()                 { return fInDirectory;                                }
+  inline TString    GetInDirectory       ()                 { return fInDirectory;                                }
 
  private:
-  TString    fInDirectory = "";                           ///< Stores the input directory
+  TString    fInDirectory = "";                                  ///< Stores the input directory
+
+ protected:
+  inline TString    AddInDir             ( TString FileName );   ///< A helper function that prepends the input directory to a filename
 };
 
 //--------------------------------------------------------------------

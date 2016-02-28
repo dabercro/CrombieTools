@@ -24,35 +24,35 @@ class TreeContainer
   virtual ~TreeContainer();
   
   /// Adds another file to the list of files contained in TreeContainer.
-  void                   AddFile             ( TString fileName );
+  inline    void         AddFile             ( TString fileName );
   /// Adds all of the files located in a particular directory.
-  void                   AddDirectory        ( TString directoryName, TString searchFor = ".root" );
+  inline    void         AddDirectory        ( TString directoryName, TString searchFor = ".root" );
   /// Return all of the trees contained as a single TTree pointer.
   TTree*                 ReturnTree          ( TString Name = "", TFile *inFile = NULL );
   /// Return all of the trees contained as a vector of TTree pointers.
   std::vector<TTree*>    ReturnTreeList      ( TString Name = "" );
 
   /// Write a single TTree into a TFile.
-  void                   MakeFile            ( TString fileName = "", TString treeName = "");
+  void                    MakeFile            ( TString fileName = "", TString treeName = "");
   
   /// Sets the name of the tree searched for in the input files.
-  void                   SetTreeName         ( TString TreeName )         { fTreeName = TreeName;           }
+  inline    void         SetTreeName         ( TString TreeName )         { fTreeName = TreeName;           }
   /// Add a friend to look for in each file.
-  void                   AddFriendName       ( TString name )             { fFriendNames.push_back(name);   }
+  inline    void         AddFriendName       ( TString name )             { fFriendNames.push_back(name);   }
   /// Set the printing level for debugging.
-  void                   SetPrinting         ( Bool_t printing )          { fPrinting = printing;           }
+  inline    void         SetPrinting         ( Bool_t printing )          { fPrinting = printing;           }
   
   /// Use this to keep only certain branches when trees are returned.
-  void                   AddKeepBranch       ( TString name )             { fKeepBranches.push_back(name);  }
+  inline    void         AddKeepBranch       ( TString name )             { fKeepBranches.push_back(name);  }
   /// Use this to set an output file to place a single tree.
-  void                   SetOutputFileName   ( TString name )             { fOutputFileName = name;         }
+  inline    void         SetOutputFileName   ( TString name )             { fOutputFileName = name;         }
   /// Set a cut to apply to returned trees.
-  void                   SetSkimmingCut      ( TString cut )              { fSkimmingCut = cut;             }
+  inline    void         SetSkimmingCut      ( TString cut )              { fSkimmingCut = cut;             }
   
   /// Return vector of file names read by the TreeContainer.
-  std::vector<TString>   ReturnFileNames     ()                           { return fFileNames;              }
+  inline    std::vector<TString>   ReturnFileNames     ()                 { return fFileNames;              }
   /// Return vector of TFile pointers read by the TreeContainer.
-  std::vector<TFile*>    ReturnFileList      ()                           { return fFileList;               }
+  inline    std::vector<TFile*>    ReturnFileList      ()                 { return fFileList;               }
   
  private:
   
