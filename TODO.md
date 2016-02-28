@@ -1,11 +1,6 @@
 # Project Todo List
 
-@todo Document code <br>
-      Group things that should be grouped
-
-@todo Finish combining InDirectoryHolder with classes that would benefit. Check if inFile exists in AddInDir()
-@todo Create reporter class to give updates on progress based on number of events.
-@todo Rewrite classes that I want to run in parallel so that the shallow copy from python works.
+@todo Document code
 
 @todo Make tests
 
@@ -15,8 +10,8 @@
       This may be more of a PlotUtils kind of thing <br>
       Error can apply to TGraphs too then...
 
-@todo Make generic MC reader and __update reweighter tool__ (decouple from stackplotter) <br>
-      Clean up Limit Tree Maker
+@todo MC reader and __update Reweighter tool__ (decouple from PlotStack) <br>
+      Clean up LimitTreeMaker
 
 @todo Clean up Submission scripts <br>
       Add Error checking for the config (Things should be filled) <br>
@@ -26,12 +21,11 @@
       This came from empty Nero directories. Fix this.
 
 @todo Mark eligible functions as const or inline
-@todo Add check for existing output file into FlatSkimmer itself
-@todo Test Parallelization.py and remove CrombieFlatSkimmer
 
 @todo For plots in cutflow: <br>
       Add multiple lines for other files, can watch MC that way <br>
       Adjust to use triggers
 
 @todo Check tdrStyle stuff out and investigate CrombieStyle
+
 @todo Revisit legend options in PlotBase

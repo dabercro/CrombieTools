@@ -11,17 +11,20 @@
 
 #include "TString.h"
 
-#include "InDirectoryHolder.h"
+#include "InOutDirectoryHolder.h"
 #include "GoodLumiFilter.h"
 
 /**
+   @ingroup skimminggroup
    @class FlatSkimmer
+   @brief Can be created using the CrombieTools.SkimmingTools.FlatSkimmer module.
+
    Skims events out of a flat tree.
    Takes files from one directory, and writes copies to another directory, 
    taking out events based on a cut string, event filters, a GoodLumiFilter,
    and duplicate events. */
 
-class FlatSkimmer : public InDirectoryHolder
+class FlatSkimmer : public InOutDirectoryHolder
 {
  public:
   void         Skim                 ( TString fileName );
@@ -32,8 +35,6 @@ class FlatSkimmer : public InDirectoryHolder
   
   /// Set GoodLumiFilter to determine good events
   void         SetGoodLumiFilter    ( GoodLumiFilter *filter )   { fGoodLumiFilter = *filter;    }
-  /// Set output directory to write files
-  void         SetOutDirectory      ( TString dir )              { fOutDirectory = dir;          }
   /// Set cut that events must pass
   void         SetCut               ( TString cut )              { fCut = cut;                   }
   /// Set input tree name
@@ -50,8 +51,6 @@ class FlatSkimmer : public InDirectoryHolder
   void         SetCheckDuplicates   ( Bool_t check )             { fCheckDuplicates = check;     }
   /// Add name of TObject to copy from input file to output file unchanged
   void         AddCopyObject        ( TString name )             { fCopyObjects.push_back(name); }
-  /// Get the name of the output directory
-  TString      GetOutDirectory      () const                     { return fOutDirectory;         }
 
   /// Wrapper to be used by CrombieTools.Parallelization.RunOnDirectory()
   void         RunOnFile            ( TString name )             { Skim(name);                   }
@@ -59,7 +58,6 @@ class FlatSkimmer : public InDirectoryHolder
  private:
   std::set<TString>    fEventFilter;             ///< Events to skim out
   GoodLumiFilter       fGoodLumiFilter;          ///< GoodLumiFilter for this FlatSkimmer
-  TString              fOutDirectory = ".";      ///< Output directory
   TString              fCut = "1";               ///< Event cut
   TString              fTreeName = "events";     ///< Tree name of flat tree to read
   TString              fRunExpr = "runNum";      ///< Branch for run number

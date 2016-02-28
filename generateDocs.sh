@@ -22,7 +22,13 @@ then
     if [ "$USER" = "dabercro" ] && [ "$copy" = "copy" ]
     then
         targetDir=/afs/cern.ch/user/d/dabercro/www/CrombieToolsDocs
-        tar -czf - docs/html/* docs/latex/$pdfName | ssh lxplus.cern.ch "cd $targetDir ; rm -rf search ; tar -xzf - ; mv docs/html/* . ; mv docs/latex/$pdfName ."
+        if [ `which gtar` = "" ]  # Macs use BSD tar by default, so I've installed gtar
+        then
+            useTar=tar
+        else
+            useTar=gtar
+        fi
+        $useTar -czf - docs/html/* docs/latex/$pdfName | ssh lxplus.cern.ch "cd $targetDir ; rm -rf search ; tar -xzf - ; mv docs/html/* . ; mv docs/latex/$pdfName ."
     fi
 else
     echo "You need the 'doxygen' package to" 

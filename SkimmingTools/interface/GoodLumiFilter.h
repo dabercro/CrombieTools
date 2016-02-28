@@ -10,11 +10,12 @@
 #include <set>
 
 /**
+   @ingroup skimminggroup
    @class GoodLumiFilter
-   Holds good events from JSON file.
-   It is filled by 
-   CrombieTools.SkimmingTools.GoodLumiFilter.MakeFilter() 
-   and can return whether a given event is good or not. */
+   @brief Created using CrombieTools.SkimmingTools.GoodLumiFilter.MakeFilter().
+
+   Holds good events from JSON file and can return whether
+   a given event is good or not. */
 
 class GoodLumiFilter
 {

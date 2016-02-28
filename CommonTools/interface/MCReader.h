@@ -14,14 +14,15 @@
 #include "TColor.h"
 #include "TString.h"
 
-#include "InDirectoryHolder.h"
+#include "InOutDirectoryHolder.h"
 #include "MCFileInfo.h"
 
 /**
+   @ingroup commongroup
    @class MCReader
    This class reads a formatted [MC Config file](@ref md_docs_FORMATMC). */
 
-class MCReader : public InDirectoryHolder
+class MCReader : public InOutDirectoryHolder
 {
  public:
   MCReader();

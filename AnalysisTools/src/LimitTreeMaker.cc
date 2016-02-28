@@ -13,7 +13,6 @@ ClassImp(LimitTreeMaker)
 //--------------------------------------------------------------------
 LimitTreeMaker::LimitTreeMaker(TString outputName) :
   fReportFrequency(10000),
-  fOutDirectory(""),
   fOutputFileName(outputName),
   fTreeName("events"),
   fOutputWeightBranch("weight")
@@ -67,7 +66,7 @@ LimitTreeMaker::MakeTrees()
 {
   if (fReportFrequency < 1)
     fReportFrequency = 10000;
-  TFile* outClear = new TFile(fOutDirectory + fOutputFileName,"RECREATE");
+  TFile* outClear = new TFile(AddOutDir(fOutputFileName),"RECREATE");
   outClear->Close();
 
   for (UInt_t iRegion = 0; iRegion != fRegionNames.size(); ++iRegion) {
@@ -140,7 +139,7 @@ LimitTreeMaker::MakeTrees()
 
       TTree* loopTree = inTree->CopyTree(fRegionCuts[iRegion]);
       // Initialize output tree
-      TFile* outFile = new TFile(fOutDirectory + fOutputFileName,"UPDATE");
+      TFile* outFile = new TFile(AddOutDir(fOutputFileName),"UPDATE");
       TTree* outTree = new TTree(outTreeName + "_" + regionName,outTreeName + "_" + regionName);
       
       // Setup the branches to keep

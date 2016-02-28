@@ -10,7 +10,10 @@
 #include "TString.h"
 
 /**
+   @ingroup skimminggroup
    @class HistWriter
+   @brief Can be created using the CrombieTools.SkimmingTools.HistWriter module.
+
    Class used to write a histogram into a .root file from a .txt file. */
 
 class HistWriter

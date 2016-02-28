@@ -25,6 +25,7 @@
 #include "PlotUtils.h"
 
 /**
+   @ingroup plotgroup
    @class PlotBase
    Base class for all plotting classes.
    PlotBase holds much of the parameters used for plotting various kinds of plots.

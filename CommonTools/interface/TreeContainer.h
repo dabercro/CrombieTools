@@ -13,9 +13,12 @@
 #include "TTree.h"
 
 /**
+   @ingroup commongroup
    @class TreeContainer
-   Capable of holding many trees and skimming them.
-   Probably just a poor reimplementation of TChain, but I have code that depends on this now. */
+   @brief Can be called from the CrombieTools.CommonTools.TreeContainer module.
+
+   Capable of holding many trees and skimming them. Probably just a poor reimplementation
+   of TChain, but I have code that depends on this now. */
 
 class TreeContainer
 {
@@ -24,9 +27,9 @@ class TreeContainer
   virtual ~TreeContainer();
   
   /// Adds another file to the list of files contained in TreeContainer.
-  inline    void         AddFile             ( TString fileName );
+  void                   AddFile             ( TString fileName );
   /// Adds all of the files located in a particular directory.
-  inline    void         AddDirectory        ( TString directoryName, TString searchFor = ".root" );
+  void                   AddDirectory        ( TString directoryName, TString searchFor = ".root" );
   /// Return all of the trees contained as a single TTree pointer.
   TTree*                 ReturnTree          ( TString Name = "", TFile *inFile = NULL );
   /// Return all of the trees contained as a vector of TTree pointers.

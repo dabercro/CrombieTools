@@ -10,6 +10,7 @@
 #include <set>
 #include <vector>
 #include "TString.h"
+#include "InOutDirectoryHolder.h"
 #include "MCReader.h"
 
 /**
@@ -31,8 +32,6 @@ class LimitTreeMaker : public MCReader
   /// Makes the file containing all of the limit trees.
   void              MakeTrees                ();
 
-  /// Set output directory of limit tree file.
-  inline    void    SetOutDirectory          ( TString dir )                     { fOutDirectory = dir.EndsWith("/") ? dir : dir + "/"; }
   /// Set name of limit tree file
   inline    void    SetOutFileName           ( TString file )                             { fOutputFileName = file;                     }
   /// Set the name of the tree read from each input file
@@ -57,7 +56,6 @@ class LimitTreeMaker : public MCReader
 
  private:
   UInt_t                    fReportFrequency;
-  TString                   fOutDirectory;
   TString                   fOutputFileName;
   TString                   fTreeName;
   std::vector<TString>      fFriendNames;

@@ -12,8 +12,11 @@
 #include "Corrector.h"
 
 /**
+   @ingroup skimminggroup
    @class CorrectorApplicator
-   Applies multiple correctors to a tree in a file. */
+   @brief Can be created using the CrombieTools.SkimmingTools.Corrector module.
+
+   Applies multiple Corrector objects to a tree in a file. */
 
 class CorrectorApplicator : public InDirectoryHolder
 {

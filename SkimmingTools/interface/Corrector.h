@@ -16,7 +16,10 @@
 #include "TH1.h"
 
 /**
+   @ingroup skimminggroup
    @class Corrector
+   @brief Can be created using the CrombieTools.SkimmingTools.Corrector module.
+
    A Corrector reads from a tree and histogram and returns a correction factor.
    The CorrectorApplicator facilitates this application by providing the trees 
    and writes the result to a branch. */

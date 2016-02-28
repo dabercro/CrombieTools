@@ -8,7 +8,22 @@
 
 #include "TString.h"
 
+//--------------------------------------------------------------------
+
 /**
+   @ingroup commongroup
+   Helper function that prepends a directory name to a file. */
+
+inline TString AddDirectory(TString dir, TString FileName)
+{
+  if (dir == "" || FileName.BeginsWith("/"))
+    return FileName;
+  else
+    return dir + FileName;
+}
+
+/**
+   @ingroup commongroup
    @class InDirectoryHolder
    This class is used to facilitate running over files in a directory.
    
@@ -21,33 +36,24 @@ class InDirectoryHolder
   InDirectoryHolder() {};
   virtual ~InDirectoryHolder() {};
 
-  /// Sets the input directory where the MCFiles will be searched for, appending a "/" if missing.
-  inline void       SetInDirectory       ( TString dir )    { fInDirectory = dir.EndsWith("/") ? dir : dir + "/"; }
+  /// Sets the input directory where the MCFiles will be searched for, and adds a "/" if needed.
+  inline void       SetInDirectory     ( TString dir )      { fInDirectory = dir.EndsWith("/") ? dir : dir + "/"; }
   /// @returns the input directory
-  inline TString    GetInDirectory       ()                 { return fInDirectory;                                }
-
- private:
-  TString    fInDirectory = "";                                  ///< Stores the input directory
+  inline TString    GetInDirectory     ()  const            { return fInDirectory;                                }
 
  protected:
-  inline TString    AddInDir             ( TString FileName );   ///< A helper function that prepends the input directory to a filename
-};
-
-//--------------------------------------------------------------------
-
 /**
+   A helper function that prepends the input directory to a filename.
    @param FileName is the name of a file inside 
    the fInDirectory or an absolute path.
    @returns FileName with the input directory prepended,
    unless absolute or fInDirectory is empty, 
-   where it is left alone. */
+   where it is left alone. 
+   @todo Check if file exists in the input directory*/
+  inline TString    AddInDir    ( TString FileName ) const  { return AddDirectory(fInDirectory, FileName);        }
 
-TString InDirectoryHolder::AddInDir(TString FileName)
-{
-  if (fInDirectory != "" && !FileName.BeginsWith('/'))
-    return fInDirectory + FileName;
-  else
-    return FileName;
-}
+ private:
+  TString    fInDirectory = "";        ///< Stores the input directory
+};
 
 #endif

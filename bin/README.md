@@ -59,3 +59,5 @@ Now you should be able to call them from anywhere within your system.
     </td>
   </tr>
 </table>
+
+@todo Document CrombieSubmitLxbatch and subcommands for CrombieTerminalSlimming

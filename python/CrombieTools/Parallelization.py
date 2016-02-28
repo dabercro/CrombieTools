@@ -1,6 +1,10 @@
-""" @package CrombieTools.Parallelization
-Package for running processes in parallel.
+""" @file Parallelization.py
+Defines the CrombieTools.Parallelization package.
 @author Daniel Abercrombie <dabercro@mit.edu>
+
+@package CrombieTools.Parallelization
+Package for running processes in parallel.
+Submodule of CrombieTools.
 """
 
 import os
@@ -33,6 +37,7 @@ def RunParallel(object, functionName, parametersLists, procs=configProcs):
     def skim(inQueue):
         running = True
 
+        ## @todo Make sure all classes I'm interested in running parallel work as shallow copies. This should be done in tests.
         objCopy = copy(object)
         functionToRun = getattr(objCopy,functionName)
 

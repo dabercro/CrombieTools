@@ -57,7 +57,7 @@ void FlatSkimmer::Skim(TString fileName)
   inTree->SetBranchAddress(fLumiExpr,&lumiNum);
   inTree->SetBranchAddress(fEventExpr,&eventNum);
 
-  TFile *outFile =  new TFile(fOutDirectory + "/" + fileName,"RECREATE");
+  TFile *outFile =  new TFile(AddOutDir(fileName),"RECREATE");
   TTree *outTree = inTree->CloneTree(0);
 
   std::set<TString> eventsRecorded;

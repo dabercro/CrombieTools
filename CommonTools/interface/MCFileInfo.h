@@ -16,6 +16,7 @@
 #include "TString.h"
 
 /**
+   @ingroup commongroup
    Returns the XSection weight of each event.
 
    @param fileName is the name of the MC File containing all
@@ -47,8 +48,10 @@ Double_t GetXSecWeight(TString fileName, Double_t XSec, TString allHistName)
 }
 
 /**
+   @ingroup commongroup
    @struct MCFileInfo
    Structure holding all the information desired from each MC File. */
+
 struct MCFileInfo
 {
   /// The constructor fills all of the entries

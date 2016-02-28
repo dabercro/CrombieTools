@@ -6,6 +6,9 @@
 #include "TH1.h"
 #include "TGraphErrors.h"
 
+/** @addtogroup plotgroup */
+/* @{ */
+
 //--------------------------------------------------------------------
 void
 SetZeroError(TF1* theFunc)
@@ -163,5 +166,6 @@ GetRatioToPoint(std::vector<TF1*> InFuncs, Double_t RatioPoint, Double_t PointEr
   tempRatioFunc.SetParError(0,PointError);
   return GetRatioToLine(InFuncs,&tempRatioFunc);
 }
+/* @} */
 
 #endif
