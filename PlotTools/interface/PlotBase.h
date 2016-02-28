@@ -419,7 +419,8 @@ void PlotBase::LineDrawing(std::vector<T*> theLines, Int_t index, Bool_t same)
 //--------------------------------------------------------------------
 
 /**
-   Main macro of the plotters */
+   Main macro of the plotters.
+   @todo Please make better comments for this very important function. */
 
 template<class T>
 void PlotBase::BaseCanvas(TString FileBase, std::vector<T*> theLines,

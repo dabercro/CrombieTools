@@ -11,7 +11,7 @@
       Error can apply to TGraphs too then...
 
 @todo MC reader and __update Reweighter tool__ (decouple from PlotStack) <br>
-      Clean up LimitTreeMaker
+      Clean up LimitTreeMaker, it should probably inherit from TreeContainer, but TreeContainer needs a review
 
 @todo Clean up Submission scripts <br>
       Add Error checking for the config (Things should be filled) <br>

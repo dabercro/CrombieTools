@@ -1,7 +1,7 @@
 source ../slimmer/CrombieSlimmingConfig.sh
 
 export CrombieMCConfig=MCConfig.txt
-export CrombieSigConfig=SignalConfig.txt
+export CrombieSignalConfig=SignalConfig.txt
 export CrombieExcept_example=MCAdjust.txt
 export CrombieLuminosity=2245.0
 export CrombieInFilesDir=$CrombieSkimDir

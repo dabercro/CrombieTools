@@ -38,7 +38,7 @@ def SetCuts(category,region,aPlotter = plotter):
     aPlotter.SetMCWeights(cuts.dataMCCuts(region,False))
     aPlotter.SetDataWeights(cuts.dataMCCuts(region,True))
 
-def ReadExceptConfig(region,aPlotter = plotter):
+def ReadExceptionConfig(region,aPlotter = plotter):
     from .. import LoadConfig
     if os.environ.get('CrombieExcept_' + region) == None:
         print 'Region ' + region + ' does not have an except config set!'

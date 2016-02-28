@@ -1,7 +1,7 @@
 /**
    @file CorrectorApplicator.cc
    Defines functions in the CorrectorApplicator class.
-   @author Daniel Abercrombie <dabercor@mit.edu> */
+   @author Daniel Abercrombie <dabercro@mit.edu> */
 
 #include <iostream>
 #include <map>

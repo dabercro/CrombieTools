@@ -29,7 +29,7 @@ def SetupFromEnv(ltm):
 
         for region in LoadConfig.cuts.regions:
             if os.environ.get('CrombieExcept_' + region) != None:
-                ltm.ReadExceptionFile(os.environ['CrombieExcept_' + region],region)
+                ltm.ReadExceptionConfig(os.environ['CrombieExcept_' + region],region)
 
     else:
         print 'Could not find CrombieAnalysisConfig.sh'
