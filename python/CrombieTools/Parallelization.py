@@ -12,10 +12,10 @@ from multiprocessing import Process, Queue
 from time import time
 from copy import copy
 
-configProcs = os.environ.get('CrombieNLocalProcs')
-configProcs = configProcs or 1
+## Number of processors from environment
+DefaultNumProcs = os.environ.get('CrombieNLocalProcs') or 1
 
-def RunParallel(object, functionName, parametersLists, procs=configProcs):
+def RunParallel(object, functionName, parametersLists, procs=DefaultNumProcs):
     """ Starts parallel processes.
 
     @param object is an object that can be copied and run independently when
@@ -74,7 +74,7 @@ def RunParallel(object, functionName, parametersLists, procs=configProcs):
     print()
 
     
-def RunOnDirectory(object, procs=configProcs):
+def RunOnDirectory(object, procs=DefaultNumProcs):
     """ Runs an object over a directory.
 
     @param object has GetInDirectory and RunOnFile function members. 

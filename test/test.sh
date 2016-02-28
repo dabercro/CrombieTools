@@ -19,7 +19,7 @@ then                                       # unless we only want to quickly
     do
         if [ -d $toRemove ]                # Only remove directories
         then                               # Leave all testing scripts
-            rm -rf $toRemove
+            rm -rf $toRemove               # and READMEs
         fi
     done
     CrombieClean
