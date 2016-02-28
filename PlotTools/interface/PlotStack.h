@@ -11,6 +11,15 @@ class PlotStack : public PlotHists , public MCReader
  public:
   PlotStack();
   virtual ~PlotStack();
+
+  void UseLimitTree      ( TString limitFile, TString region, TString mcConfig, TString signalConfig = "" );
+
+  // Choose the binning of your plots and make
+  void MakeCanvas        ( TString FileBase, Int_t NumXBins, Double_t *XBins,
+                           TString XLabel, TString YLabel, Bool_t logY = false );
+  
+  void MakeCanvas        ( TString FileBase, Int_t NumXBins, Double_t MinX, Double_t MaxX,
+                           TString XLabel, TString YLabel, Bool_t logY = false );
   
   // Set the tree of the files you are trying to plot and add friends in same file
   void SetTreeName       ( TString name )             { fTreeName = name;                         }
@@ -19,20 +28,10 @@ class PlotStack : public PlotHists , public MCReader
   // Add files as data
   void AddDataFile       ( TString FileName )         { fDataFiles.push_back(AddInDir(FileName)); }
 
-  // Alternatively, read a central MC configuration file
-  void UseLimitTree      ( TString limitFile, TString region, TString mcConfig, TString signalConfig = "" );
-
   // The multipliers for Data can be set separately
   void SetDataWeights    ( TString weight )           { fDataWeights = weight;                    }
   // The multipliers for MC can be set separately
   void SetMCWeights      ( TString weight )           { fMCWeights = weight;                      }
-  
-  // Choose the binning of your plots and make
-  void MakeCanvas        ( TString FileBase, Int_t NumXBins, Double_t *XBins,
-                           TString XLabel, TString YLabel, Bool_t logY = false );
-  
-  void MakeCanvas        ( TString FileBase, Int_t NumXBins, Double_t MinX, Double_t MaxX,
-                           TString XLabel, TString YLabel, Bool_t logY = false );
   
   void SetForceTop       ( TString force )            { fForceTop = force;                        }
   void SetMinLegendFrac  ( Double_t frac )            { fMinLegendFrac = frac;                    }

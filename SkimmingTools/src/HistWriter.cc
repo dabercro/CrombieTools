@@ -1,3 +1,8 @@
+/**
+  @file   HistWriter.cc
+  Defines the HistWriter class.
+  @author Daniel Abercrombie <dabercro@mit.edu> */
+
 #include <fstream>
 #include <iostream>
 #include "TFile.h"
@@ -12,14 +17,17 @@ HistWriter::HistWriter(TString fileName, TString histName) :
   fFileName(fileName),
   fHistName(histName)
 { }
-  
-//--------------------------------------------------------------------
-HistWriter::~HistWriter()
-{ }
 
 //--------------------------------------------------------------------
-void
-HistWriter::MakeHist(TString configName)
+
+/**
+   Reads the configuration file given by configName. The configuration
+   file consists only of alternating bin edge locations and bin contents.
+   The first and last number of the file should be a bin edge.
+   (The number of edges is the number of bins + 1).
+   These can be separated by spaces or new lines. */
+
+void HistWriter::MakeHist(TString configName)
 {
   std::vector<Float_t> xVals;
   std::vector<Float_t> binVals;

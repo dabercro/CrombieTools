@@ -18,8 +18,11 @@
 class CorrectorApplicator : public InDirectoryHolder
 {
  public:
-  CorrectorApplicator()                                                   { CorrectorApplicator("", true);          }
+  /// Apply the corrections to a given file.
+  void                 ApplyCorrections     ( TString fileName );
+
   CorrectorApplicator( TString name, Bool_t saveAll );
+  CorrectorApplicator()                                                   { CorrectorApplicator("", true);          }
   virtual ~CorrectorApplicator() {} ;
 
   /// Set the name of the input tree for each of the Corrector objects to read.
@@ -33,8 +36,6 @@ class CorrectorApplicator : public InDirectoryHolder
   void                 AddFactorToMerge     ( TString factor )            { fMergeFactors.push_back(factor);        }
   void                 SetReportFrequency   ( Int_t freq )                { fReportFrequency = freq;                }
 
-  /// Apply the corrections to a given file.
-  void                 ApplyCorrections     ( TString fileName );
   /// Wrapper for CrombieTools.Parallelization.RunOnDirectory() to use.
   void                 RunOnFile            ( TString fileName )          { ApplyCorrections(fileName);             }
 

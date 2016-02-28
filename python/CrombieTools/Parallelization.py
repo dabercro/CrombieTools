@@ -14,7 +14,8 @@ configProcs = configProcs or 1
 def RunParallel(object, functionName, parametersLists, procs=configProcs):
     """ Starts parallel processes.
 
-    @param object is an object that has a Copy() function member.
+    @param object is an object that can be copied and run independently when
+    Python's shallow copy.copy() is called on it.
     @param functionName is the str name of the function that will be run in multiple instances.
     @param parametersLists is a list of lists. Each sublist contains the parameters for the functionName.
     @param procs is the maximum number of processors that will be used.

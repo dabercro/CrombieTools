@@ -27,14 +27,18 @@ class TreeContainer
   void                   AddFile             ( TString fileName );
   /// Adds all of the files located in a particular directory.
   void                   AddDirectory        ( TString directoryName, TString searchFor = ".root" );
-  /// Sets the name of the tree searched for in the input files.
-  void                   SetTreeName         ( TString TreeName )         { fTreeName = TreeName;           }
-  /// Add a friend to look for in each file.
-  void                   AddFriendName       ( TString name )             { fFriendNames.push_back(name);   }
   /// Return all of the trees contained as a single TTree pointer.
   TTree*                 ReturnTree          ( TString Name = "", TFile *inFile = NULL );
   /// Return all of the trees contained as a vector of TTree pointers.
   std::vector<TTree*>    ReturnTreeList      ( TString Name = "" );
+
+  /// Write a single TTree into a TFile.
+  void                   MakeFile            ( TString fileName = "", TString treeName = "");
+  
+  /// Sets the name of the tree searched for in the input files.
+  void                   SetTreeName         ( TString TreeName )         { fTreeName = TreeName;           }
+  /// Add a friend to look for in each file.
+  void                   AddFriendName       ( TString name )             { fFriendNames.push_back(name);   }
   /// Set the printing level for debugging.
   void                   SetPrinting         ( Bool_t printing )          { fPrinting = printing;           }
   
@@ -50,12 +54,7 @@ class TreeContainer
   /// Return vector of TFile pointers read by the TreeContainer.
   std::vector<TFile*>    ReturnFileList      ()                           { return fFileList;               }
   
-  /// Write a single TTree into a TFile.
-  void                   MakeFile            ( TString fileName = "", TString treeName = "");
-  
  private:
-  
-  TTree*                 SkimTree            ( TTree *tree, TFile *inFile );
   
   Bool_t                 fPrinting = false;                       ///< Printer for debugging
   TFile*                 tempFile = NULL;                         ///< Pointer to File
@@ -72,6 +71,8 @@ class TreeContainer
   TString                fSkimmingCut = "";                       ///< Cut to return only branches meeting given conditions
   
   std::vector<TString>   fFileNames;                              ///< Used to track names of files where tree list come from
+  
+  TTree*                 SkimTree            ( TTree *tree, TFile *inFile );
   
   ClassDef(TreeContainer,1)
 };

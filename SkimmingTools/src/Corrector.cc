@@ -1,3 +1,8 @@
+/**
+  @file   Corrector.cc
+  Describes the Corrector class.
+  @author Daniel Abercrombie <dabercro@mit.edu> */
+
 #include <iostream>
 #include "TAxis.h"
 #include "Corrector.h"
@@ -6,19 +11,8 @@ ClassImp(Corrector)
 
 //--------------------------------------------------------------------
 Corrector::Corrector(TString name) :
-  fName(name),
-  fInTree(NULL),
-  fCorrectionFile(NULL),
-  fCorrectionHist(NULL),
-  fNumDims(0),
-  fInCut('1'),
-  fCutFormula(NULL)
-{
-  fInExpressions.resize(0);
-  fFormulas.resize(0);
-  fMins.resize(0);
-  fMaxs.resize(0);
-}
+  fName(name)
+{ }
   
 //--------------------------------------------------------------------
 Corrector::~Corrector()
@@ -36,8 +30,7 @@ Corrector::~Corrector()
 }
 
 //--------------------------------------------------------------------
-void
-Corrector::SetCorrectionFile(TString fileName)
+void Corrector::SetCorrectionFile(TString fileName)
 {
   fCorrectionFile = new TFile(fileName);
   if (fCorrectionFile == NULL) {
@@ -47,8 +40,7 @@ Corrector::SetCorrectionFile(TString fileName)
 }
 
 //--------------------------------------------------------------------
-void
-Corrector::SetCorrectionHist(TString histName)
+void Corrector::SetCorrectionHist(TString histName)
 { 
   fCorrectionHist = (TH1*) fCorrectionFile->Get(histName);
   if (fCorrectionHist == NULL) {
@@ -60,8 +52,7 @@ Corrector::SetCorrectionHist(TString histName)
 }
 
 //--------------------------------------------------------------------
-void
-Corrector::SetCorrectionHist(TString hist1, TString hist2)
+void Corrector::SetCorrectionHist(TString hist1, TString hist2)
 {
   fCorrectionHist  = (TH1*) fCorrectionFile->Get(hist1);
   if (fCorrectionHist == NULL) {
@@ -82,8 +73,7 @@ Corrector::SetCorrectionHist(TString hist1, TString hist2)
 }
   
 //--------------------------------------------------------------------
-Double_t
-Corrector::GetFormulaResult(Int_t index)
+Double_t Corrector::GetFormulaResult(Int_t index)
 {
   Double_t eval = fFormulas[index]->EvalInstance();
   if (eval < fMins[index])
@@ -94,8 +84,13 @@ Corrector::GetFormulaResult(Int_t index)
 }
 
 //--------------------------------------------------------------------
-Float_t
-Corrector::Evaluate()
+
+/**
+   @returns value of correction histogram using the expressions added 
+   through AddInExpression(), unless the event does not pass the cut
+   set by SetInCut(). In that case, a value of 1 is returned. */
+
+Float_t Corrector::Evaluate()
 {
   if (fInTree == NULL)
     return 1.0;
@@ -128,8 +123,7 @@ Corrector::Evaluate()
 }
 
 //--------------------------------------------------------------------
-void
-Corrector::InitializeTree()
+void Corrector::InitializeTree()
 {
   if (fCutFormula)
     delete fCutFormula;
@@ -150,8 +144,7 @@ Corrector::InitializeTree()
 }
 
 //--------------------------------------------------------------------
-void
-Corrector::SetMinMax()
+void Corrector::SetMinMax()
 {
   for (Int_t iDim = 0; iDim != fNumDims; ++iDim) {
     TAxis* theAxis;

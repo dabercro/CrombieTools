@@ -1,24 +1,39 @@
+/**
+   @file   GoodLumiFilter.h
+   Header file for GoodLumiFilter class.
+   @author Daniel Abercrombie <dabercro@mit.edu> */
+
 #ifndef CROMBIETOOLS_SKIMMINGTOOLS_GOODLUMIFILTER_H
 #define CROMBIETOOLS_SKIMMINGTOOLS_GOODLUMIFILTER_H
 
 #include <map>
 #include <set>
 
+/**
+   @class GoodLumiFilter
+   Holds good events from JSON file.
+   It is filled by 
+   CrombieTools.SkimmingTools.GoodLumiFilter.MakeFilter() 
+   and can return whether a given event is good or not. */
+
 class GoodLumiFilter
 {
  public:
+  /// Returns if event with a given run and lumi number is good
+  Bool_t          IsGood    ( UInt_t run, UInt_t lumi );
+
   GoodLumiFilter();
   virtual ~GoodLumiFilter() {}
 
+  /// Add a good run and lumi number
   void            AddLumi   ( UInt_t run, UInt_t lumi )      { fGoodLumis[run].insert(lumi); }
-  Bool_t          IsGood    ( UInt_t run, UInt_t lumi );
     
  private:
-  std::map<UInt_t, std::set<UInt_t> >  fGoodLumis;
+  std::map<UInt_t, std::set<UInt_t> >  fGoodLumis;  ///< Map of good lumis
 
-  UInt_t       fCurrRun;
-  UInt_t       fCurrLumi;
-  Bool_t       fCurrGood;
+  UInt_t       fCurrRun = 0;                        ///< Holds current run to improve performance
+  UInt_t       fCurrLumi = 0;                       ///< Holds current lumi to improve performance
+  Bool_t       fCurrGood = false;                   ///< Holds current IsGood() result to improve performance
 
   ClassDef(GoodLumiFilter,1)
 };

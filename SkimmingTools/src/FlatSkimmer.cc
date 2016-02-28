@@ -1,3 +1,8 @@
+/**
+  @file   FlatSkimmer.cc
+  Describes FlatSkimmer class.
+  @author Daniel Abercrombie <dabercro@mit.edu> */
+
 #include <fstream>
 #include <iostream>
 
@@ -11,20 +16,14 @@
 ClassImp(FlatSkimmer)
 
 //--------------------------------------------------------------------
-FlatSkimmer::FlatSkimmer() :
-  fOutDirectory("."),
-  fCut("1"),
-  fTreeName("events"),
-  fRunExpr("runNum"),
-  fLumiExpr("lumiNum"),
-  fEventExpr("eventNum"),
-  fReportFreq(100000),
-  fCheckDuplicates(false)
-{ }
 
-//--------------------------------------------------------------------
-void
-FlatSkimmer::AddEventFilter(TString filterName){
+/**
+   Adds an event filter list to be removed during skimming.
+   And event filter list must consist of events to remove in the format
+   <RunNumber>:<LumiNumber>:<EventNumber>. Multiple event filters
+   can be added. */
+
+void FlatSkimmer::AddEventFilter(TString filterName){
   std::ifstream filterFile;
   filterFile.open(filterName.Data());
   TString eventString;
@@ -36,8 +35,16 @@ FlatSkimmer::AddEventFilter(TString filterName){
 }
 
 //--------------------------------------------------------------------
-void
-FlatSkimmer::Slim(TString fileName)
+
+/**
+   Skims a file from the input directory and places it in the output.
+   Skimming is done using a cut, GoodLumiFilter, event filters, and
+   possibly removing duplicate events. The duplicate events flag is false
+   by default because it's a very expensive check.
+   The function reports the number of events removed from the file from
+   each mechanism. */
+
+void FlatSkimmer::Skim(TString fileName)
 {
   TFile *inFile = TFile::Open(AddInDir(fileName));
   TTree *inTree = (TTree*) inFile->Get(fTreeName);

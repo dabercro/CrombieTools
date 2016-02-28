@@ -17,6 +17,9 @@
 
 class InDirectoryHolder
 {
+ protected:
+  TString    AddInDir             ( TString FileName );   ///< A helper function that prepends the input directory to a filename
+
  public:
   InDirectoryHolder() {};
   virtual ~InDirectoryHolder() {};
@@ -25,9 +28,6 @@ class InDirectoryHolder
   void       SetInDirectory       ( TString dir )    { fInDirectory = dir.EndsWith("/") ? dir : dir + "/"; }
   /// @returns the input directory
   TString    GetInDirectory       ()                 { return fInDirectory;                                }
-
- protected:
-  TString    AddInDir             ( TString FileName );   ///< A helper function that prepends the input directory to a filename
 
  private:
   TString    fInDirectory = "";                           ///< Stores the input directory

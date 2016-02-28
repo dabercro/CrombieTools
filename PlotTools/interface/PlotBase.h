@@ -36,6 +36,28 @@ class PlotBase
   PlotBase();
   virtual ~PlotBase();
   
+  ///  This function adds a tree pointer, cut, and expression used for generating a line in the plot
+  void                   AddLine                  ( TTree *tree, TString cut, TString expr );
+
+  /// Set a tree and weight concurrently for each line. Best used when a default expression is set.
+  void                   AddTreeWeight            ( TTree *tree, TString cut );
+  /// Set a tree and expression concurrently for each line. Best used when a default weight is set.
+  void                   AddTreeExpr              ( TTree *tree, TString expr );
+  /// Set a weight and expression concurrently for each line. Best used when a default tree is set.
+  void                   AddWeightExpr            ( TString cut, TString expr );
+
+  /// Used for vertical position of legend.
+  enum LegendY { kUpper = 0, kLower };
+  /// Used for horizontal position of legend.
+  enum LegendX { kLeft  = 0, kRight };
+  /// Set the legend location using LegendY and LegendX enums.
+  void                   SetLegendLocation        ( LegendY yLoc, LegendX xLoc, Double_t xWidth = 0.3, Double_t yWidth = 0.2 );
+
+  /// Set entry and color for each line. This uses the default line width and style.
+  void                   AddLegendEntry           ( TString LegendEntry, Color_t ColorEntry );
+  /// Set entry, color, width, and style for each line.
+  void                   AddLegendEntry           ( TString LegendEntry, Color_t ColorEntry, Int_t LineWidth, Int_t LineStyle );
+
   /// Sets the name of the canvas created by PlotBase.
   void                   SetCanvasName            ( TString name )                                { fCanvasName = name;          }
   /// Sets the size of the output canvas.
@@ -47,9 +69,6 @@ class PlotBase
   /// Forces the minimum and maximum values of the Y-axis in the plot.
   void                   SetAxisMinMax            ( Float_t min, Float_t max )                 { fAxisMin = min; fAxisMax = max; }
   
-  ///  This function adds a tree pointer, cut, and expression used for generating a line in the plot
-  void                   AddLine                  ( TTree *tree, TString cut, TString expr );
-
   /// Set the default tree pointer for each line in the plot
   void                   SetDefaultTree           ( TTree *tree )                                 { fDefaultTree = tree;         }
   /// Set the default weight for each line in the plot
@@ -67,18 +86,11 @@ class PlotBase
   void                   AddExpr                  ( TString expr )                                { fInExpr.push_back(expr);     }
 
   /// Reset the list of trees used to makes lines
-  void                   ResetTree                ()                                              { fInTrees.clear();          }
+  void                   ResetTree                ()                                              { fInTrees.clear();            }
   /// Reset the list of weights used to makes lines
-  void                   ResetWeight              ()                                              { fInCuts.clear();           }
+  void                   ResetWeight              ()                                              { fInCuts.clear();             }
   /// Reset the list of expressions used to makes lines
-  void                   ResetExpr                ()                                              { fInExpr.clear();           }
-
-  /// Set a tree and weight concurrently for each line. Best used when a default expression is set.
-  void                   AddTreeWeight            ( TTree *tree, TString cut );
-  /// Set a tree and expression concurrently for each line. Best used when a default weight is set.
-  void                   AddTreeExpr              ( TTree *tree, TString expr );
-  /// Set a weight and expression concurrently for each line. Best used when a default tree is set.
-  void                   AddWeightExpr            ( TString cut, TString expr );
+  void                   ResetExpr                ()                                              { fInExpr.clear();             }
   
   /// Set the default line width.
   void                   SetDefaultLineWidth      ( Int_t width )                                 { fDefaultLineWidth = width;   }
@@ -87,12 +99,6 @@ class PlotBase
   /// Set this to true to feature error bars in the plots.
   void                   SetIncludeErrorBars      ( Bool_t include )                              { fIncludeErrorBars = include; }
 
-  /// Used for vertical position of legend.
-  enum LegendY { kUpper = 0, kLower };
-  /// Used for horizontal position of legend.
-  enum LegendX { kLeft  = 0, kRight };
-  /// Set the legend location using LegendY and LegendX enums.
-  void                   SetLegendLocation        ( LegendY yLoc, LegendX xLoc, Double_t xWidth = 0.3, Double_t yWidth = 0.2 );
   /// Set the legend location manually.
   void                   SetLegendLimits          ( Double_t lim1, Double_t lim2, Double_t lim3, Double_t lim4 )
                                                                                    { l1 = lim1; l2 = lim2; l3 = lim3; l4 = lim4; }
@@ -102,13 +108,9 @@ class PlotBase
   /// If true, the legend will be filled with a solid background.
   void                   SetLegendFill            ( Bool_t fill )                                 { fLegendFill = fill;          }
 
-  /// Set entry and color for each line. This uses the default line width and style.
-  void                   AddLegendEntry           ( TString LegendEntry, Color_t ColorEntry );
-  /// Set entry, color, width, and style for each line.
-  void                   AddLegendEntry           ( TString LegendEntry, Color_t ColorEntry, Int_t LineWidth, Int_t LineStyle );
   /// Resets the legend entries for each line.
-  void                   ResetLegend              ()                          { fLegendEntries.clear(); fLineColors.clear(); 
-                                                                                fLineWidths.clear();    fLineStyles.clear(); }
+  void                   ResetLegend              ()                              { fLegendEntries.clear(); fLineColors.clear(); 
+                                                                                    fLineWidths.clear();    fLineStyles.clear(); }
 
   /// Set one of the lines to be plotted as data.
   void                   SetDataIndex             ( Int_t data )                                  { fDataIndex = data;           }
