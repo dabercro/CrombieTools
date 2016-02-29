@@ -138,7 +138,7 @@ void MCReader::ReadMCConfig(TString config, TString fileDir)
     configFile >> LimitTreeName >> FileName;
     if (LimitTreeName == "skip") {
       for (UInt_t iFile = 0; iFile != (*FileInfo).size(); ++iFile) {
-        if ((*FileInfo)[iFile]->fFileName == FileName) {
+        if ((*FileInfo)[iFile]->fFileName == AddInDir(FileName)) {
           delete (*FileInfo)[iFile];
           (*FileInfo).erase((*FileInfo).begin() + iFile);
           break;
