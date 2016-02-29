@@ -40,7 +40,6 @@ class PlotStack : public PlotHists , public MCReader
 
   void SetUsingLumi      ( Bool_t isUsed )            { fUsingLumi = isUsed;                      }
 
-  void SetOutDirectory   ( TString dir )   { fOutDirectory = dir.EndsWith("/") ? dir : dir + "/"; }
   void SetLimitTreeDir   ( TString dir )   { fLimitTreeDir = dir.EndsWith("/") ? dir : dir + "/"; }              
   // This dumps out some raw values for you to check yields
   void SetDebug          ( Bool_t debug )             { fDebug = debug;                           }
@@ -69,7 +68,6 @@ class PlotStack : public PlotHists , public MCReader
   Bool_t                fUsingLumi;
   TFile                *fLimitFile;
   TString               fLimitRegion;
-  TString               fOutDirectory;
   TString               fLimitTreeDir;
 
   Bool_t                fDebug;                     // Dumps yield tests

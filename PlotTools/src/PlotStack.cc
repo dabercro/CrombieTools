@@ -25,7 +25,6 @@ PlotStack::PlotStack() :
   fUsingLumi(true),
   fLimitFile(0),
   fLimitRegion(""),
-  fOutDirectory(""),
   fLimitTreeDir(""),
   fDebug(false),
   fDumpRootName("")
@@ -242,10 +241,7 @@ PlotStack::MakeCanvas(TString FileBase, Int_t NumXBins, Double_t *XBins,
     AddLegendEntry(fSignalFileInfo[iHist]->fEntry,1,2,fSignalFileInfo[iHist]->fColorStyle);
   }
 
-  if (!FileBase.Contains('/'))
-    FileBase = fOutDirectory + FileBase;
-
-  BaseCanvas(FileBase,AllHists,XLabel,YLabel,logY);
+  BaseCanvas(AddOutDir(FileBase),AllHists,XLabel,YLabel,logY);
 
   for (UInt_t iHist = 0; iHist != AllHists.size(); ++iHist)
     delete AllHists[iHist];
