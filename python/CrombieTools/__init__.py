@@ -29,7 +29,7 @@ if crombieDir == '':
     exit(1)
 
 for package in __all__:
-    if os.path.exists(crombieDir + '/' + package):
+    if os.path.exists(crombieDir + '/' + package + '/interface'):
         ROOT.gSystem.AddIncludePath('-I' + crombieDir + '/' + package + '/interface/')
 
 dependencies = { 'FlatSkimmer' :         ['GoodLumiFilter'],

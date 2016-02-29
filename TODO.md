@@ -1,5 +1,7 @@
 # Project Todo List
 
+@todo Make cuts template good at returning N-1 plots and a wrapper for this in CrombieTools.PlotTools.PlotStack
+
 @todo Document code
 
 @todo Make tests

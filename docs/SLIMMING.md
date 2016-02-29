@@ -1,6 +1,6 @@
-## Generating flat trees
+# Slimming Instructions
 
-### Configuring Trees
+## Generating flat trees for output
 
 The variables that you want to include in a flat tree can be specified in `OutTree.txt` or whatever you rename it to.
 The format of the configuration file is `<branchName>/<type>=<default>`.

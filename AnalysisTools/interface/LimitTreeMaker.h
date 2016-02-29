@@ -29,7 +29,7 @@ class LimitTreeMaker : public MCReader
 
   /// Reads a config and swaps out files for one control region
   void              ReadExceptionConfig      ( TString config, TString region, TString fileDir = "" );
-  /// Makes the file containing all of the limit trees.
+  /// Makes the file containing all of the limit trees. @todo Tries to read fInDirectory without a file, fixme.
   void              MakeTrees                ();
 
   /// Set name of limit tree file
