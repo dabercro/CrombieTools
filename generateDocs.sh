@@ -8,7 +8,7 @@
 
 copy=$1
 
-if [ `which doxygen` != "" ]
+if [ `which doxygen 2> /dev/null` != "" ]
 then
     pdfName=CrombieToolsManual.pdf
     doxygen docs/CrombieDocs.cfg
@@ -22,7 +22,7 @@ then
     if [ "$USER" = "dabercro" ] && [ "$copy" = "copy" ]
     then
         targetDir=/afs/cern.ch/user/d/dabercro/www/CrombieToolsDocs
-        if [ `which gtar` = "" ]  # Macs use BSD tar by default, so I've installed gtar
+        if [ `which gtar 2> /dev/null` = "" ]  # Macs use BSD tar by default, so I've installed gtar
         then
             useTar=tar
         else

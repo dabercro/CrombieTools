@@ -12,7 +12,7 @@ from multiprocessing import Process, Queue
 from time import time
 from copy import copy
 
-## Number of processors from environment
+"""Number of processors from environment"""
 DefaultNumProcs = os.environ.get('CrombieNLocalProcs') or 1
 
 def RunParallel(object, functionName, parametersLists, procs=DefaultNumProcs):
@@ -77,10 +77,10 @@ def RunParallel(object, functionName, parametersLists, procs=DefaultNumProcs):
 def RunOnDirectory(object, procs=DefaultNumProcs):
     """ Runs an object over a directory.
 
-    @param object has GetInDirectory and RunOnFile function members. 
+    @param object has GetInDirectory() and RunOnFile() function members. 
     This function then runs the object's over all the files in that directory.
+    @param procs is the maximum number of processes to start.
     """
-
     theFiles = []
 
     if not 'GetInDirectory' in dir(object):

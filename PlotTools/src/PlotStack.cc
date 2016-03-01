@@ -28,10 +28,7 @@ PlotStack::PlotStack() :
   fLimitTreeDir(""),
   fDebug(false),
   fDumpRootName("")
-{
-  fFriends.resize(0);
-  fDataFiles.resize(0);
-}
+{ }
 
 //--------------------------------------------------------------------
 PlotStack::~PlotStack()
@@ -50,40 +47,40 @@ PlotStack::UseLimitTree(TString limitFile, TString region, TString mcConfig, TSt
 
   fLimitFile = TFile::Open(limitFile);
   fLimitRegion = region;
-  ReadMCConfig(mcConfig,MCReader::kBackground);
+  ReadMCConfig(mcConfig,FileConfigReader::kBackground);
   if (signalConfig != "")
-    ReadMCConfig(signalConfig,MCReader::kSignal);
+    ReadMCConfig(signalConfig,FileConfigReader::kSignal);
 }
 
 //--------------------------------------------------------------------
 std::vector<TH1D*>
 PlotStack::GetHistList(Int_t NumXBins, Double_t *XBins, HistType type)
 {
-  std::vector<MCFileInfo*> *FileInfo = &fMCFileInfo;
+  std::vector<FileInfo*> *theFileInfo = &fMCFileInfo;
   TString tempCutHolder = "";
   UInt_t numFiles = 0;
 
   if (type == kSignal)
-    FileInfo = &fSignalFileInfo;
+    theFileInfo = &fSignalFileInfo;
 
   if (fLimitFile) {
     ResetTree();
     if (type == kData)
       AddTree((TTree*) fLimitFile->Get(TString("data_") + fLimitRegion));
     else {
-      numFiles = (*FileInfo).size();
+      numFiles = (*theFileInfo).size();
       for (UInt_t iFile = 0; iFile != numFiles; ++iFile)
-        AddTree((TTree*) fLimitFile->Get((*FileInfo)[iFile]->fTreeName + "_" + fLimitRegion));
+        AddTree((TTree*) fLimitFile->Get((*theFileInfo)[iFile]->fTreeName + "_" + fLimitRegion));
     }
   }
   else {
     TreeContainer *tempContainer = NULL;
 
     if (type == kData) {
-      numFiles = fDataFiles.size();
+      numFiles = fDataFileInfo.size();
       tempContainer = fDataContainer;
-      for (UInt_t iFile = 0; iFile != fDataFiles.size(); ++iFile)
-        tempContainer->AddFile(fDataFiles[iFile]);
+      for (UInt_t iFile = 0; iFile != numFiles; ++iFile)
+        tempContainer->AddFile(fDataFileInfo[iFile]->fFileName);
     }
     else {
       if (type == kMC)
@@ -92,9 +89,9 @@ PlotStack::GetHistList(Int_t NumXBins, Double_t *XBins, HistType type)
       else
         tempContainer = fSignalContainer;
       
-      numFiles = (*FileInfo).size();
+      numFiles = (*theFileInfo).size();
       for (UInt_t iFile = 0; iFile != numFiles; ++iFile)
-        tempContainer->AddFile((*FileInfo)[iFile]->fFileName);
+        tempContainer->AddFile((*theFileInfo)[iFile]->fFileName);
     }
     SetTreeList(tempContainer->ReturnTreeList());
   }
@@ -113,7 +110,7 @@ PlotStack::GetHistList(Int_t NumXBins, Double_t *XBins, HistType type)
 
   if (fUsingLumi && type != kData) {
     for (UInt_t iFile = 0; iFile < numFiles; iFile++)
-      theHists[iFile]->Scale((*FileInfo)[iFile]->fXSecWeight);
+      theHists[iFile]->Scale((*theFileInfo)[iFile]->fXSecWeight);
   }
   return theHists;
 }

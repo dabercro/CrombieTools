@@ -3,9 +3,9 @@
 
 #include "TreeContainer.h"
 #include "PlotHists.h"
-#include "MCReader.h"
+#include "FileConfigReader.h"
 
-class PlotStack : public PlotHists , public MCReader
+class PlotStack : public PlotHists , public FileConfigReader
 {
  public:
   PlotStack();
@@ -24,9 +24,6 @@ class PlotStack : public PlotHists , public MCReader
   void SetTreeName       ( TString name )             { fTreeName = name;                         }
   void AddFriend         ( TString name )             { fFriends.push_back(name);                 }
   
-  // Add files as data
-  void AddDataFile       ( TString FileName )         { fDataFiles.push_back(AddInDir(FileName)); }
-
   // The multipliers for Data can be set separately
   void SetDataWeights    ( TString weight )           { fDataWeights = weight;                    }
   // The multipliers for MC can be set separately
@@ -53,7 +50,6 @@ class PlotStack : public PlotHists , public MCReader
  private:
   TString               fTreeName;                  // Stores name of tree from file
   std::vector<TString>  fFriends;                   // Stores list of friends
-  std::vector<TString>  fDataFiles;                 // List of data files
   
   TreeContainer        *fDataContainer;             // A TreeContainer for data
   TreeContainer        *fMCContainer;               // A TreeContainer for MC

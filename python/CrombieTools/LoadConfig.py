@@ -12,22 +12,29 @@ import subprocess
 def LoadEnv(configs):
     """Sources bash files and loads the resulting environment into os.environ
     
-    @param configs is a list of file names that should be searched for
+    @param configs is a list of file names that should be searched for.
+    A string for a single configuration file is also accepted.
     """
-    for config in configs:
-        if os.path.exists(config):
-            configContents = subprocess.Popen(['bash','-c','source ' + config + '; env'],stdout = subprocess.PIPE)
-            for line in configContents.stdout:
-                if type(line) == bytes:
-                    (key,sep,value) = line.decode('utf-8').partition('=')
-                elif type(line) == str:
-                    (key,sep,value) = line.partition('=')
-                else:
-                    print('Not sure how to handle subprocess output. Contact Dan.')
-                    break
-                os.environ[str(key)] = str(value).strip('\n')
+    if type(configs) == str:
+        LoadEnv([configs])
+    elif type(configs) == list:
+        for config in configs:
+            if os.path.exists(config):
+                configContents = subprocess.Popen(['bash','-c','source ' + config + '; env'],stdout = subprocess.PIPE)
+                for line in configContents.stdout:
+                    if type(line) == bytes:
+                        (key,sep,value) = line.decode('utf-8').partition('=')
+                    elif type(line) == str:
+                        (key,sep,value) = line.partition('=')
+                    else:
+                        print('Not sure how to handle subprocess output. Contact Dan.')
+                        break
+                    os.environ[str(key)] = str(value).strip('\n')
 
-            configContents.communicate()
+                configContents.communicate()
+    else:
+        print 'You passed an invalid argument type to CrombieTools.LoadConfig.LoadEnv()'
+        exit()
 
 def LoadModuleFromEnv(EnvVarName):
     """Loads and returns a python file named in the environment as a module.
@@ -40,10 +47,10 @@ def LoadModuleFromEnv(EnvVarName):
             return __import__(os.environ[EnvVarName].strip('.py'), globals(), locals(), [], -1)
     return None
 
-## List of configuration files that this module looks for automatically.
+"""List of configuration files that this module tries to load automatically."""
 CrombieConfigs = ['CrombieSlimmingConfig.sh','CrombieAnalysisConfig.sh']
 
 LoadEnv(CrombieConfigs)
 
-## Sub module set by the [$CrombieCutsFile](@ref md_docs_ENVCONFIG) environment variable.
+"""Sub module set by the [$CrombieCutsFile](@ref md_docs_ENVCONFIG) environment variable."""
 cuts = LoadModuleFromEnv('CrombieCutsFile')

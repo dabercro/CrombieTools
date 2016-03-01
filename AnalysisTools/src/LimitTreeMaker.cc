@@ -72,45 +72,48 @@ LimitTreeMaker::MakeTrees()
   for (UInt_t iRegion = 0; iRegion != fRegionNames.size(); ++iRegion) {
     TString regionName = fRegionNames[iRegion];
 
-    UInt_t numFiles = fMCFileInfo.size() + fSignalFileInfo.size() + fExceptionFileNames[regionName].size();
-    UInt_t sumofMC = fMCFileInfo.size() + fSignalFileInfo.size();
+    UInt_t numData = fDataFileInfo.size();
+    UInt_t numDataBackground = numData + fMCFileInfo.size();
+    UInt_t sumOfStandard = numDataBackground + fSignalFileInfo.size();
+    UInt_t numFiles = sumOfStandard + fExceptionFileNames[regionName].size();
     for (UInt_t iFile = 0; iFile != numFiles; ++iFile) {
-      try  {
-        if (iFile % fReportFrequency == 0 && fReportFrequency < numFiles) {
-          std::cout << fOutputFileName << " : ";
-          for (UInt_t jRegion = 0; jRegion != fRegionNames.size(); ++jRegion) {
-            if (jRegion == iRegion)
-              std::cout << "[[" << fRegionNames[jRegion] << "]], ";
-            else
-              std::cout << fRegionNames[jRegion] << ", ";
-          }
-          std::cout << "   " << iFile << " / " << numFiles << " Files." << std::endl;
+      if (iFile % fReportFrequency == 0 && fReportFrequency < numFiles) {
+        std::cout << fOutputFileName << " : ";
+        for (UInt_t jRegion = 0; jRegion != fRegionNames.size(); ++jRegion) {
+          if (jRegion == iRegion)
+            std::cout << "[[" << fRegionNames[jRegion] << "]], ";
+          else
+            std::cout << fRegionNames[jRegion] << ", ";
         }
+        std::cout << "   " << iFile << " / " << numFiles << " Files." << std::endl;
       }
-      catch (...) {
-        std::cout << "Exception occured on file " << iFile << std::endl;
-      }
+
       TString fileName;
       TString outTreeName;
       Float_t XSec;
 
-      if (iFile < fMCFileInfo.size()) {
-        outTreeName = fMCFileInfo[iFile]->fTreeName;
-        fileName = fMCFileInfo[iFile]->fFileName;
-        XSec = fMCFileInfo[iFile]->fXSec;
+      if (iFile < numData) {
+        outTreeName = fDataFileInfo[iFile]->fTreeName;
+        fileName = fDataFileInfo[iFile]->fFileName;
+        XSec = fDataFileInfo[iFile]->fXSec;
       }
-      else if (iFile < sumofMC) {
-        outTreeName = fSignalFileInfo[iFile - fMCFileInfo.size()]->fTreeName;
-        fileName = fSignalFileInfo[iFile - fMCFileInfo.size()]->fFileName;
-        XSec = fSignalFileInfo[iFile - fMCFileInfo.size()]->fXSec;
+      else if (iFile < numDataBackground) {
+        outTreeName = fMCFileInfo[iFile - numData]->fTreeName;
+        fileName = fMCFileInfo[iFile - numData]->fFileName;
+        XSec = fMCFileInfo[iFile - numData]->fXSec;
+      }
+      else if (iFile < sumOfStandard) {
+        outTreeName = fSignalFileInfo[iFile - numDataBackground]->fTreeName;
+        fileName = fSignalFileInfo[iFile - numDataBackground]->fFileName;
+        XSec = fSignalFileInfo[iFile - numDataBackground]->fXSec;
       }
       else {
-        fileName = (fExceptionFileNames[regionName])[iFile - sumofMC];
-        outTreeName = (fExceptionTreeNames[regionName])[iFile - sumofMC];
-        XSec =  (fExceptionXSecs[regionName])[iFile - sumofMC];
+        fileName = (fExceptionFileNames[regionName])[iFile - sumOfStandard];
+        outTreeName = (fExceptionTreeNames[regionName])[iFile - sumOfStandard];
+        XSec =  (fExceptionXSecs[regionName])[iFile - sumOfStandard];
       }
 
-      if (iFile < sumofMC) {
+      if (iFile < sumOfStandard) {
         if (fExceptionSkip[regionName].find(outTreeName) != fExceptionSkip[regionName].end())
           continue;
         if (fExceptionSkip[regionName].find(fileName) != fExceptionSkip[regionName].end())

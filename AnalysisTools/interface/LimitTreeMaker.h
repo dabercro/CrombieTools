@@ -11,7 +11,7 @@
 #include <vector>
 #include "TString.h"
 #include "InOutDirectoryHolder.h"
-#include "MCReader.h"
+#include "FileConfigReader.h"
 
 /**
    @class LimitTreeMaker
@@ -20,7 +20,7 @@
    with a tree for each control region and each file read in. Only works if you have
    write access to /tmp/$USER since it uses the space to hold trees while copying. */
 
-class LimitTreeMaker : public MCReader
+class LimitTreeMaker : public FileConfigReader
 {
  public:
   LimitTreeMaker()                                                                        { LimitTreeMaker("limittree.root");           }

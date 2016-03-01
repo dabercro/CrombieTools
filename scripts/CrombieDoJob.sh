@@ -57,7 +57,7 @@ ERRORFOUND=0
 for file in `ls $OutputBase*.root`
 do
     $CrombieCheckerScript $file
-    if [ "$?" -eq "1" ]
+    if [ "$?" -ne "0" ]
     then
         ERRORFOUND=1
         echo "" >> $ERRORLOG

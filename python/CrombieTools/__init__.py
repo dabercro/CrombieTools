@@ -10,14 +10,16 @@ the package.
 
 import ROOT
 import os
+import re
 
 __all__ = ['AnalysisTools','CommonTools','PlotTools','SkimmingTools','Parallelization']
 
 ROOT.gROOT.SetBatch(True)
 
-crombieDir = os.environ['CROMBIEPATH']
+"""Location of CrombieTools package, based on environment."""
+CrombieDir = os.environ['CROMBIEPATH']
 
-if crombieDir == '':
+if CrombieDir == '':
     print('#########################################################')
     print('#                                                       #')
     print('#   CROMBIEPATH variable is not set!                    #')
@@ -29,9 +31,10 @@ if crombieDir == '':
     exit(1)
 
 for package in __all__:
-    if os.path.exists(crombieDir + '/' + package + '/interface'):
-        ROOT.gSystem.AddIncludePath('-I' + crombieDir + '/' + package + '/interface/')
+    if os.path.exists(CrombieDir + '/' + package + '/interface'):
+        ROOT.gSystem.AddIncludePath('-I' + CrombieDir + '/' + package + '/interface/')
 
+"""Key -- Class to load : Value -- List of classes that must be loaded first."""
 dependencies = { 'FlatSkimmer' :         ['GoodLumiFilter'],
                  'PlotFitParameters' :   ['Plot2D'],
                  'PlotROC' :             ['PlotHists'],
@@ -41,14 +44,13 @@ dependencies = { 'FlatSkimmer' :         ['GoodLumiFilter'],
                  'TmvaClassifier' :      ['TreeContainer','PlotHists']
                  }
 
-
 def Load(className):
     """ Loads a class from Crombie Tools into ROOT.
 
-    The function pointer for the constructor is returned.
-    This can also load PlotUtils functions into the ROOT
-    module, but it would be much better to import what
-    you need from CrombieTools.PlotTools.PlotUtils
+    @param className is the name of a class in the Crombie Tools package.
+    @returns the function pointer for the constructor, except in the case of PlotUtils.
+    In that case, 0 is returned. It would be much better to import what
+    you need from CrombieTools.PlotTools.PlotUtils.
     """
     if not className in dir(ROOT):
         if type(dependencies.get(className)) == list:
@@ -57,7 +59,7 @@ def Load(className):
 
         toLoad = ''
         for package in __all__:
-            checkFile = crombieDir + '/' + package + '/src/' + className + '.cc'
+            checkFile = CrombieDir + '/' + package + '/src/' + className + '.cc'
             if os.path.exists(checkFile):
                 toLoad = checkFile
                 break
@@ -76,8 +78,26 @@ def Load(className):
     return getattr(ROOT,className)
 
 def DirFromEnv(envVar):
-    """ Creates a directory stored in an environment variable."""
+    """ Creates a directory stored in an environment variable.
+
+    Generally does not need to be called by the user. Multiple submodules make use of this command.
+    @param envVar is the name of the environment variable containing a directory name.
+    """
     if type(os.environ.get(envVar)) == str:
         if not os.path.exists(os.environ[envVar]):
             os.makedirs(os.environ[envVar])
 
+def Nminus1Cut(inCut,varToRemove):
+    """ A function for getting N - 1 plots.
+
+    Given a cutstring and a variable name, all comparison expressions with that variable are removed.
+    @param inCut is the full cutstring
+    @param varToRemove is the variable to remove from the cutstring (usually a variable being plotted).
+    @returns a version of the cutstring without any comparisons to varToRemove.
+    """
+    holdCut = str(inCut)
+    matches = re.findall(r'[\w\.]*\s*[=<>]*\s*' + varToRemove + '\s*[=<>]*\s*[\w\.]*',holdCut)
+    for match in matches:
+        holdCut= holdCut.replace(match,'(1)',1)
+
+    return holdCut
