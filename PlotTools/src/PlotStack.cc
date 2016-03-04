@@ -138,6 +138,14 @@ PlotStack::MakeCanvas(TString FileBase, Int_t NumXBins, Double_t *XBins,
   fSignalContainer = new TreeContainer();
   fSignalContainer->SetTreeName(fTreeName);
 
+  std::vector<TFile*> TemplateFiles;
+  TFile *templateFile = NULL;
+
+  for (UInt_t iTemp = 0; iTemp != fTemplateEntries.size(); ++iTemp) {
+    templateFile = TFile::Open(fTemplateFiles[iTemp]);
+    TemplateFiles.push_back(templateFile);
+  }
+
   for (UInt_t iFriend = 0; iFriend != fFriends.size(); ++iFriend) {
     fDataContainer->AddFriendName(fFriends[iFriend]);
     fMCContainer->AddFriendName(fFriends[iFriend]);
@@ -180,6 +188,19 @@ PlotStack::MakeCanvas(TString FileBase, Int_t NumXBins, Double_t *XBins,
     }
     else
       tempMCHist->Add(MCHists[iHist]);
+  }
+
+  for (UInt_t iTemp = 0; iTemp != fTemplateEntries.size(); ++iTemp) {
+    for (UInt_t iHist = 0; iHist != HistHolders.size(); ++iHist) {
+      if (fTemplateEntries[iTemp] == HistHolders[iHist]->fEntry) {
+        TH1D *templateHist = (TH1D*) TemplateFiles[iTemp]->Get(fTemplateHists[iTemp]);
+        TH1D *toFormat = (TH1D*) templateHist->Rebin(NumXBins,"",XBins);
+        toFormat->SetFillStyle(HistHolders[iHist]->fHist->GetFillStyle());
+        toFormat->SetFillColor(HistHolders[iHist]->fHist->GetFillColor());
+        toFormat->SetMarkerSize(HistHolders[iHist]->fHist->GetMarkerSize());
+        HistHolders[iHist]->fHist = toFormat;
+      }
+    }
   }
 
   if (fDumpRootName != "") {
@@ -250,6 +271,9 @@ PlotStack::MakeCanvas(TString FileBase, Int_t NumXBins, Double_t *XBins,
   delete fDataContainer;
   delete fMCContainer;
   delete fSignalContainer;
+
+  for (UInt_t iTemp = 0; iTemp != fTemplateEntries.size(); ++iTemp)
+    TemplateFiles[iTemp]->Close();
 }
 
 //--------------------------------------------------------------------
