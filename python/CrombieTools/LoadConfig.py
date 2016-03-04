@@ -52,5 +52,7 @@ CrombieConfigs = ['CrombieSlimmingConfig.sh','CrombieAnalysisConfig.sh']
 
 LoadEnv(CrombieConfigs)
 
-"""Sub module set by the [$CrombieCutsFile](@ref md_docs_ENVCONFIG) environment variable."""
+""" Sub module set by the [$CrombieCutsFile](@ref md_docs_ENVCONFIG) environment variable.
+@todo Figure out a way to centralize the cuts functions so that a user can't mess them up.
+"""
 cuts = LoadModuleFromEnv('CrombieCutsFile')

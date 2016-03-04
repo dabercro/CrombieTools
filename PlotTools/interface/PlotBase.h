@@ -65,10 +65,13 @@ class PlotBase
   
   /// Set the default tree pointer for each line in the plot
   inline    void         SetDefaultTree           ( TTree *tree )                                 { fDefaultTree = tree;         }
-  /// Set the default weight for each line in the plot
+  /// Set the default weight for each line in the plot.
   inline    void         SetDefaultWeight         ( TString cut )                                 { fDefaultCut = cut;           }
   /// Set the default expression to be plotted on the x-axis for each line in the plot
   inline    void         SetDefaultExpr           ( TString expr )                                { fDefaultExpr = expr;         }
+
+  /// Get the default weight.
+  inline    TString      GetDefaultWeight         ()       const                                  { return fDefaultCut;          }
 
   /// Can store multiple trees at once for plots. Each tree plots its own line.
   inline    void         SetTreeList              ( std::vector<TTree*> treelist )                { fInTrees = treelist;         }
