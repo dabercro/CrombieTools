@@ -84,6 +84,10 @@ PlotHists::MakeHists(Int_t NumXBins, Double_t *XBins)
   if (fPrintTests) {
     for (UInt_t iHist = 0; iHist != theHists.size(); ++iHist) {
 
+      std::cout << std::endl;
+      std::cout << "Integral: " << theHists[iHist]->Integral("width") << std::endl;
+      std::cout << std::endl;
+
       if (fDataIndex != -1)
         std::cout << "chi2 test: " << fLegendEntries[iHist] << " " << theHists[fDataIndex]->Chi2Test(theHists[iHist],"UW") << std::endl;
 
