@@ -94,6 +94,7 @@ def Nminus1Cut(inCut,varToRemove):
     @param inCut is the full cutstring
     @param varToRemove is the variable to remove from the cutstring (usually a variable being plotted).
     @returns a version of the cutstring without any comparisons to varToRemove.
+    @todo I want this to ignore cuts next to an '||'? Or I have the weird '&&' veto thing... That's trickier to fix
     """
     holdCut = str(inCut)
     matches = re.findall(r'[\w\.]*\s*[=<>]*\s*' + varToRemove + '\s*[=<>]*\s*[\w\.]*',holdCut)
