@@ -40,7 +40,7 @@ float uPara(float met, float metPhi, float zPhi)
 }
 
 /// Phi of a mother of two particles
-float vectorSumPhi(float pt1, float phi1, float pt2, float phi2
+float vectorSumPhi(float pt1, float phi1, float pt2, float phi2)
 {
   TLorentzVector vec1;
   TLorentzVector vec2;
@@ -52,14 +52,14 @@ float vectorSumPhi(float pt1, float phi1, float pt2, float phi2
 }
 
 /// Pt of a mother of two particles
-float vectorSumPt(float pt1, float phi1, float pt2, float phi2
+float vectorSumPt(float pt1, float phi1, float pt2, float phi2)
 {
   return sqrt( pow(pt1*cos(phi1) + pt2*cos(phi2),2) +
 	       pow(pt1*sin(phi1) + pt2*sin(phi2),2) );
 }
 
 /// Pt of a mother of three particles
-float vectorSum3Pt(float pt1, float phi1, float pt2, float phi2,float pt3, float phi3
+float vectorSum3Pt(float pt1, float phi1, float pt2, float phi2,float pt3, float phi3)
 {
   return sqrt( pow(pt1*cos(phi1) + pt2*cos(phi2) + pt3*cos(phi3),2) +
 	       pow(pt1*sin(phi1) + pt2*sin(phi2) + pt3*sin(phi3),2) );
