@@ -4,8 +4,7 @@ import ROOT
 import os, argparse
 from multiprocessing import Process, Queue
 from time import time
-import GoodLumiFilter
-import FlatSkimmer
+from CrombieTools.SkimmingTools.FlatSkimmer import newFlatSkimmer, MakeFilter
 
 parser = argparse.ArgumentParser(description = 'Slims the contents of one directory into another one')
 
@@ -56,8 +55,8 @@ if not os.path.exists(outDir):
 
 def skim(inQueue):
     running = True
-    goodRunFilter = GoodLumiFilter.MakeFilter(GoodRunsFile)
-    skimmer = FlatSkimmer.newFlatSkimmer()
+    goodRunFilter = MakeFilter(GoodRunsFile)
+    skimmer = newFlatSkimmer()
     skimmer.SetInDirectory(inDir)
     skimmer.SetOutDirectory(outDir)
     skimmer.SetGoodLumiFilter(goodRunFilter)
