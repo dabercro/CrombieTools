@@ -9,6 +9,7 @@ Submodule of CrombieTools.
 
 import os
 from multiprocessing import Process, Queue
+import Queue.Empty
 from time import time
 from copy import copy
 

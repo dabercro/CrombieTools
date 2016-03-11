@@ -2,7 +2,8 @@
 
 import ROOT
 import os, argparse
-from multiprocessing import Process, Queue
+from multiprocessing import Process
+import Queue
 from time import time
 from CrombieTools.SkimmingTools.FlatSkimmer import newFlatSkimmer, MakeFilter
 
@@ -93,7 +94,7 @@ def skim(inQueue):
     del goodRunFilter
 ##
 
-theQueue     = Queue()
+theQueue     = Queue.Queue()
 theProcesses = []
 
 def GetSize(name):
