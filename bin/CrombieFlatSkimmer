@@ -84,7 +84,7 @@ def skim(inQueue):
             ##
             else:
                 print inFileName + " already processed!"
-        except:
+        except Queue.Empty:
             print "Worker finished..."
             running = False
         ##
