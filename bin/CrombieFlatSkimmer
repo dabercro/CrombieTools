@@ -80,7 +80,7 @@ def skim(inQueue):
             print "About to process " + inFileName
             if not os.path.isfile(outDir + "/" + inFileName):
                 startTime = time()
-                skimmer.Slim(inFileName)
+                skimmer.Skim(inFileName)
                 print "Finished " + inFileName + " ... Elapsed time: " + str(time() - startTime) + " seconds"
             ##
             else:
