@@ -8,6 +8,14 @@
 ClassImp(GoodLumiFilter)
 
 //--------------------------------------------------------------------
+GoodLumiFilter::GoodLumiFilter()
+{ }
+
+//--------------------------------------------------------------------
+GoodLumiFilter::~GoodLumiFilter()
+{ }
+
+//--------------------------------------------------------------------
 Bool_t GoodLumiFilter::IsGood(UInt_t run, UInt_t lumi)
 {
   if (run == 1 || fGoodLumis.size() == 0)

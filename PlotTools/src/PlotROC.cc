@@ -1,3 +1,8 @@
+/**
+  @file   PlotROC.cc
+  Defines function members of the PlotROC class.
+  @author Daniel Abercrombie <dabercro@mit.edu> */
+
 #include <iostream>
 
 #include "PlotROC.h"
@@ -6,27 +11,24 @@ ClassImp(PlotROC)
 
 //--------------------------------------------------------------------
 PlotROC::PlotROC()
-{
-  fROCVars.resize(0);
-  fInTrees.resize(2);
-  fInCuts.resize(2);
-  SetNormalizedHists(true);
-}
+{ }
+
+//--------------------------------------------------------------------
+PlotROC::~PlotROC()
+{ }
 
 //--------------------------------------------------------------------
 TGraph*
 PlotROC::MakeROC(TString CutVar, Int_t NumBins)
 {
-  SetDefaultExpr(CutVar);
-
   // Get the minimum and maximum values of the histograms
   TH1F *htemp;
-  fInTrees[0]->Draw(fDefaultExpr,fInCuts[0]);
+  fSignalTree->Draw(CutVar,fSignalCut);
   htemp = (TH1F*) gPad->GetPrimitive("htemp");
   Double_t XMin = htemp->GetXaxis()->GetBinLowEdge(1);
   Int_t   NBins = htemp->GetNbinsX();
   Double_t XMax = htemp->GetXaxis()->GetBinLowEdge(NBins) + htemp->GetXaxis()->GetBinWidth(NBins);
-  fInTrees[1]->Draw(fDefaultExpr,fInCuts[1]);
+  fBackgroundTree->Draw(CutVar,fBackgroundCut);
   htemp = (TH1F*) gPad->GetPrimitive("htemp");
   Double_t checkM = htemp->GetXaxis()->GetBinLowEdge(1);
   if (XMin > checkM)
@@ -36,25 +38,51 @@ PlotROC::MakeROC(TString CutVar, Int_t NumBins)
   if (XMax < checkM)
     XMax = checkM;
   
-  std::vector<TH1D*> theHists = MakeHists(NumBins, XMin, XMax);
+  fPlotHists.SetDefaultExpr(CutVar);
+  fPlotHists.ResetTree();
+  fPlotHists.ResetWeight();
+  fPlotHists.AddTreeWeight(fSignalTree,fSignalCut);
+  fPlotHists.AddTreeWeight(fBackgroundTree,fBackgroundCut);
+
+  std::vector<TH1D*> theHists = fPlotHists.MakeHists(NumBins, XMin, XMax);
   const Int_t numPoints = NumBins + 1;
   Double_t XVals[numPoints];
   Double_t RevXVals[numPoints];
   Double_t YVals[numPoints];
   Double_t RevYVals[numPoints];
-  for (Int_t i0 = 0; i0 < numPoints; i0++) {
-    Double_t sigArea  = theHists[0]->Integral();
-    Double_t backArea = theHists[1]->Integral();
-    XVals[i0]    = theHists[0]->Integral(i0,numPoints)/sigArea;
-    RevXVals[i0] = theHists[0]->Integral(0,numPoints-i0)/sigArea;
-    YVals[i0]    = theHists[1]->Integral(i0,numPoints)/backArea;
-    RevYVals[i0] = theHists[1]->Integral(0,numPoints-i0)/backArea;
+
+  Double_t sigArea  = theHists[0]->Integral();
+  Double_t backArea = theHists[1]->Integral();
+  if (fPlotType == kROC) {
+    for (Int_t iPoint = 0; iPoint < numPoints; iPoint++) {
+      XVals[iPoint]    = theHists[0]->Integral(iPoint,numPoints)/sigArea;
+      RevXVals[iPoint] = theHists[0]->Integral(0,numPoints-iPoint)/sigArea;
+      YVals[iPoint]    = theHists[1]->Integral(iPoint,numPoints)/backArea;
+      RevYVals[iPoint] = theHists[1]->Integral(0,numPoints-iPoint)/backArea;
+    }
   }
+  else if (fPlotType == kSignificance) {
+    for (Int_t iPoint = 0; iPoint < numPoints; iPoint++) {
+      XVals[iPoint] = theHists[0]->GetXaxis()->GetBinLowEdge(iPoint);
+      RevXVals[iPoint] = theHists[0]->GetXaxis()->GetBinLowEdge(iPoint);
+
+      sigArea  = theHists[0]->Integral(iPoint,numPoints);
+      backArea = theHists[1]->Integral(iPoint,numPoints);
+      YVals[iPoint] = sigArea / sqrt(sigArea + backArea);
+
+      sigArea  = theHists[0]->Integral(0,numPoints - iPoint);
+      backArea = theHists[1]->Integral(0,numPoints - iPoint);
+      RevYVals[iPoint] = sigArea / sqrt(sigArea + backArea);
+    }
+  }
+
   TGraph *rocCurve    = new TGraph(numPoints,XVals,YVals);
   TGraph *revRocCurve = new TGraph(numPoints,RevXVals,RevYVals);
   delete theHists[0];
   delete theHists[1];
-  if (revRocCurve->Integral() < rocCurve->Integral()) {
+  theHists.resize(0);
+
+  if (revRocCurve->Integral() > rocCurve->Integral()) {
     delete rocCurve;
     return revRocCurve;
   }
@@ -80,6 +108,9 @@ void
 PlotROC::MakeCanvas(TString FileBase, Int_t NumBins, TString XLabel,
                     TString YLabel, Bool_t logY, Bool_t logX)
 {
+  if (fAxisMin == fAxisMax)
+    SetAxisMinMax(0.0,1.0);
+
   std::vector<TGraph*> rocs = MakeROCs(NumBins);
   BaseCanvas(FileBase,rocs,XLabel,YLabel,logY,logX);
 

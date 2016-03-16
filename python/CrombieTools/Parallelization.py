@@ -8,8 +8,8 @@ Submodule of CrombieTools.
 """
 
 import os
-from multiprocessing import Process, Queue
-import Queue.Empty
+from multiprocessing import Process
+import Queue
 from time import time
 from copy import copy
 

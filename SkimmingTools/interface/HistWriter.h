@@ -19,14 +19,13 @@
 class HistWriter
 {
  public:
-  /// Constructor where the output file and histogram names are set.
-  HistWriter( TString fileName, TString histName );
+  HistWriter( TString fileName = "output.root", TString histName = "corrections" );
+  virtual ~HistWriter();
+
   /// Writes a histogram based on a configuration file.
   void                  MakeHist          ( TString configName );
 
   /// Default constructor
-  HistWriter()                                                   { HistWriter("output.root", "corrections");  }
-  virtual ~HistWriter() {}
 
   /// Sets the output names and reads the configuration file at the same time.
   void                  MakeHist          ( TString fileName, TString histName, TString configName )

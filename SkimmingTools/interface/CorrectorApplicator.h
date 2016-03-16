@@ -21,12 +21,11 @@
 class CorrectorApplicator : public InDirectoryHolder
 {
  public:
+  CorrectorApplicator( TString name = "", Bool_t saveAll = true );
+  virtual ~CorrectorApplicator();
+
   /// Apply the corrections to a given file.
   void                 ApplyCorrections     ( TString fileName );
-
-  CorrectorApplicator( TString name, Bool_t saveAll );
-  CorrectorApplicator()                                                   { CorrectorApplicator("", true);          }
-  virtual ~CorrectorApplicator() {} ;
 
   /// Set the name of the input tree for each of the Corrector objects to read.
   void                 SetInputTreeName     ( TString tree )              { fInputTreeName = tree;                  }

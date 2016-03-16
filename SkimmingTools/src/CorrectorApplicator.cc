@@ -19,6 +19,10 @@ CorrectorApplicator::CorrectorApplicator(TString name, Bool_t saveAll) :
   fName(name),
   fSaveAll(saveAll)
 { }
+
+//--------------------------------------------------------------------
+CorrectorApplicator::~CorrectorApplicator()
+{ }
   
 //--------------------------------------------------------------------
 

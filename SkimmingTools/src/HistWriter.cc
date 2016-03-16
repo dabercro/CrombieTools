@@ -19,6 +19,10 @@ HistWriter::HistWriter(TString fileName, TString histName) :
 { }
 
 //--------------------------------------------------------------------
+HistWriter::~HistWriter()
+{ }
+
+//--------------------------------------------------------------------
 
 /**
    Reads the configuration file given by configName. The configuration

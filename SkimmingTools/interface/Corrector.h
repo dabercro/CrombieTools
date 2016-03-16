@@ -27,6 +27,9 @@
 class Corrector
 {
  public:
+  /// Constructor setting the name of a branch it would like to write to.
+  Corrector( TString name = "correction" );
+  virtual ~Corrector();
 
   /// Set the file containing the correction histogram by name.
   virtual   void        SetCorrectionFile ( TString fileName );
@@ -37,12 +40,6 @@ class Corrector
 
   /// Evaluate the TTree pointer fInTree at its current entry.
   Float_t               Evaluate          ();
-
-  /// Constructor setting the name of a branch it would like to write to.
-  Corrector( TString name );
-  virtual ~Corrector();
-  /// Default constructor
-  Corrector()                                                   { Corrector("correction");                                 }
 
   /// Get the name of the branch that this Corrector would like to write to.
   TString               GetName           () const              { return fName;                                            }

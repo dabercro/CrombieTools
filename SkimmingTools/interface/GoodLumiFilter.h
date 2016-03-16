@@ -20,11 +20,11 @@
 class GoodLumiFilter
 {
  public:
+  GoodLumiFilter();
+  virtual ~GoodLumiFilter();
+
   /// Returns if event with a given run and lumi number is good
   Bool_t          IsGood    ( UInt_t run, UInt_t lumi );
-
-  GoodLumiFilter() {}
-  virtual ~GoodLumiFilter() {}
 
   /// Add a good run and lumi number
   void            AddLumi   ( UInt_t run, UInt_t lumi )      { fGoodLumis[run].insert(lumi); }

@@ -27,12 +27,12 @@
 class FlatSkimmer : public InOutDirectoryHolder
 {
  public:
+  FlatSkimmer();
+  virtual ~FlatSkimmer();
+  
   void         Skim                 ( TString fileName );
   void         AddEventFilter       ( TString filterName );
 
-  FlatSkimmer() {};
-  virtual ~FlatSkimmer() {};
-  
   /// Set GoodLumiFilter to determine good events
   void         SetGoodLumiFilter    ( GoodLumiFilter *filter )   { fGoodLumiFilter = *filter;    }
   /// Set cut that events must pass

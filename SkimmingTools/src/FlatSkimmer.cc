@@ -16,6 +16,14 @@
 ClassImp(FlatSkimmer)
 
 //--------------------------------------------------------------------
+FlatSkimmer::FlatSkimmer()
+{ }
+
+//--------------------------------------------------------------------
+FlatSkimmer::~FlatSkimmer()
+{ }
+
+//--------------------------------------------------------------------
 
 /**
    Adds an event filter list to be removed during skimming.

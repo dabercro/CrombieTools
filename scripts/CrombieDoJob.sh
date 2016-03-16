@@ -1,15 +1,16 @@
 #! /bin/bash
 
 outFile=$1
-cmsbase=$2
+
+env
 
 macroDir=$LS_SUBCWD
 
 source $macroDir/CrombieSlimmingConfig.sh
 
-if [ "$cmsbase" != "" ]
+if [ "$CMSSW_BASE" != "" ]
 then
-    cd $cmsbase/src
+    cd $CMSSW_BASE/src
     eval `scram runtime -sh`
     cd -
 fi
