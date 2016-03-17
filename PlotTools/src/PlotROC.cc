@@ -68,11 +68,11 @@ PlotROC::MakeROC(TString CutVar, Int_t NumBins)
 
       sigArea  = theHists[0]->Integral(iPoint,numPoints);
       backArea = theHists[1]->Integral(iPoint,numPoints);
-      YVals[iPoint] = sigArea / sqrt(sigArea + backArea);
+      YVals[iPoint] = (backArea + sigArea == 0) ? 0 : sigArea / sqrt(sigArea + backArea);
 
       sigArea  = theHists[0]->Integral(0,numPoints - iPoint);
       backArea = theHists[1]->Integral(0,numPoints - iPoint);
-      RevYVals[iPoint] = sigArea / sqrt(sigArea + backArea);
+      YVals[iPoint] = (backArea + sigArea == 0) ? 0 : sigArea / sqrt(sigArea + backArea);
     }
   }
 
