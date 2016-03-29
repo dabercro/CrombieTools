@@ -147,10 +147,18 @@ LimitTreeMaker::MakeTrees()
       
       // Setup the branches to keep
       std::map<TString, Float_t> addresses;
+      std::map<TString, Int_t>   intAddresses;
       for (UInt_t iKeep = 0; iKeep != fKeepBranches.size(); ++iKeep) {
-        addresses[fKeepBranches[iKeep]] = 0.0;
-        outTree->Branch(fKeepBranches[iKeep],&addresses[fKeepBranches[iKeep]],fKeepBranches[iKeep] + "/F");
-        loopTree->SetBranchAddress(fKeepBranches[iKeep],&addresses[fKeepBranches[iKeep]]);
+        if (fKeepBranchIsInt[iKeep]) {
+          intAddresses[fKeepBranches[iKeep]] = 0.0;
+          outTree->Branch(fKeepBranches[iKeep],&intAddresses[fKeepBranches[iKeep]],fKeepBranches[iKeep] + "/F");
+          loopTree->SetBranchAddress(fKeepBranches[iKeep],&intAddresses[fKeepBranches[iKeep]]);
+        }
+        else {
+          addresses[fKeepBranches[iKeep]] = 0.0;
+          outTree->Branch(fKeepBranches[iKeep],&addresses[fKeepBranches[iKeep]],fKeepBranches[iKeep] + "/F");
+          loopTree->SetBranchAddress(fKeepBranches[iKeep],&addresses[fKeepBranches[iKeep]]);
+        }
       }
       
       // Get the all histogram and calculate x-section weight
@@ -192,6 +200,7 @@ LimitTreeMaker::MakeTrees()
       tempFile->Close();
       inFile->Close();
       addresses.clear();
+      intAddresses.clear();
     }
   }
 }

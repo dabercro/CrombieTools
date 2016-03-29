@@ -38,7 +38,8 @@ class LimitTreeMaker : public FileConfigReader
   inline    void    SetTreeName              ( TString tree )                             { fTreeName = tree;                           }
   /// Add friends to input tree. @todo I don't think this works.
   inline    void    AddFriendName            ( TString tree )                             { fFriendNames.push_back(tree);               }
-  inline    void    AddKeepBranch            ( TString branch )                           { fKeepBranches.push_back(branch);            }
+  inline    void    AddKeepBranch            ( TString branch, Bool_t isInt = false )     { fKeepBranches.push_back(branch);
+                                                                                            fKeepBranchIsInt.push_back(isInt); }
   inline    void    AddWeightBranch          ( TString branch )                           { fWeightBranch.push_back(branch);            }
   inline    void    AddRegion                ( TString regionName, TString regionCut )
                                                                 { fRegionNames.push_back(regionName); fRegionCuts.push_back(regionCut); }
@@ -60,6 +61,7 @@ class LimitTreeMaker : public FileConfigReader
   TString                   fTreeName;
   std::vector<TString>      fFriendNames;
   std::vector<TString>      fKeepBranches;
+  std::vector<Bool_t>       fKeepBranchIsInt;
   std::vector<TString>      fWeightBranch;
   std::vector<TString>      fRegionNames;
   std::vector<TString>      fRegionCuts;
