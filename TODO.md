@@ -31,3 +31,9 @@
 @todo Check tdrStyle stuff out and investigate CrombieStyle
 
 @todo Revisit legend options in PlotBase
+
+@todo Add dotted lines and arrows to PlotBase to indicate cuts
+
+@todo Add label maker in PlotBase
+
+@todo Add Simulation (instead of Preliminary) option, make CMS writing default

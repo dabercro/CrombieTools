@@ -6,13 +6,14 @@
 #  copy the resulting files to CERN's AFS space.
 #  \author Daniel Abercrombie
 
-copy=$1
+ copy=$1
+where=$2
 
 if [ `which doxygen 2> /dev/null` != "" ]
 then
     pdfName=CrombieToolsManual.pdf
     doxygen docs/CrombieDocs.cfg
-    if [ "$copy" != "test" ]     # In this case, I'm just testing Doxygen configs
+    if [ "$copy" != "test" ]                     # In this case, I'm just testing making html fast
     then
         cd docs/latex
         make
@@ -21,14 +22,32 @@ then
     fi
     if [ "$USER" = "dabercro" ] && [ "$copy" = "copy" ]
     then
-        targetDir=/afs/cern.ch/user/d/dabercro/www/CrombieToolsDocs
-        if [ `which gtar 2> /dev/null` = "" ]  # Macs use BSD tar by default, so I've installed gtar
+
+        case $where in
+            lxplus)
+                targetHost=lxplus.cern.ch
+                targetDir=/afs/cern.ch/user/d/dabercro/www/CrombieToolsDocs
+                ;;
+            athena)
+                targetHost=athena.dialup.mit.edu
+                targetDir=/afs/athena.mit.edu/user/d/a/dabercro/www/CrombieToolsDocs
+                ;;
+
+            *)                                   # Default location, because passwordless
+                targetHost=t3desk003.mit.edu
+                targetDir=/home/dabercro/public_html/CrombieToolsDocs
+                ;;
+        esac
+
+        if [ `which gtar 2> /dev/null` = "" ]    # Macs use BSD tar by default, so I've installed gtar
         then
             useTar=tar
         else
             useTar=gtar
         fi
-        $useTar -czf - docs/html/* docs/latex/$pdfName | ssh lxplus.cern.ch "cd $targetDir ; rm -rf search ; tar -xzf - ; mv docs/html/* . ; mv docs/latex/$pdfName ."
+        echo "Copying documentation to $targetHost."
+        $useTar -czf - docs/html/* docs/latex/$pdfName |
+            ssh $targetHost "mkdir -p $targetDir 2> /dev/null ; cd $targetDir ; rm -rf search ; tar -xzf - ; mv docs/html/* . ; mv docs/latex/$pdfName ."
     fi
 else
     echo "You need the 'doxygen' package to" 

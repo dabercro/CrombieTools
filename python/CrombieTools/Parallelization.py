@@ -47,7 +47,7 @@ def RunParallel(object, functionName, parametersLists, procs=DefaultNumProcs):
                 parameters = inQueue.get(True,1)
                 print('About to process ' + str(parameters))
                 startTime = time()
-                functionToRun(*inFileName)
+                functionToRun(*parametersLists)
                 print('Finished ' + str(parameters) + ' ... Elapsed time: ' + str(time() - startTime) + ' seconds')
             except Queue.Empty:
                 print('Worker finished...')
@@ -61,7 +61,7 @@ def RunParallel(object, functionName, parametersLists, procs=DefaultNumProcs):
     for parameters in parametersLists:
         theQueue.put(parameters)
 
-    for worker in range(numMaxProcesses):
+    for worker in range(procs):
         aProcess = Process(target=skim, args=(theQueue,))
         aProcess.start()
         theProcesses.append(aProcess)
@@ -99,4 +99,4 @@ def RunOnDirectory(object, procs=DefaultNumProcs):
         if inFileName.endswith('.root'):
             theFiles.append([inFileName])
 
-    runParallel(object,'RunOnFile',theFiles,procs)
+    RunParallel(object,'RunOnFile',theFiles,procs)
