@@ -1,11 +1,15 @@
 #! /usr/bin/python
 
+# This file is rather depreciated. You would be advised to fill the skimmer by hand
+
 import ROOT
 import os, argparse
 from multiprocessing import Process
 import Queue
 from time import time
+
 from CrombieTools.SkimmingTools.FlatSkimmer import newFlatSkimmer, MakeFilter
+from CrombieTools.Parallelization import RunOnDirectory
 
 parser = argparse.ArgumentParser(description = 'Slims the contents of one directory into another one')
 
@@ -24,19 +28,6 @@ parser.add_argument('--duplicate','-d', action = 'store_true', dest = 'doDuplica
 
 args = parser.parse_args()
 
-numMaxProcesses = args.numMaxProcesses
-GoodRunsFile = args.GoodRunsFile
-copyObjects  = args.copyObjects
-inDir        = args.inDir
-outDir       = args.outDir
-treeName     = args.treeName
-runNum       = args.runExpr
-lumiNum      = args.lumiExpr
-theCut       = args.cut
-reportFreq   = args.reportFreq
-filters      = args.filters
-doDuplicate  = args.doDuplicate
-
 if inDir == outDir:
     print ""
     print " ################################################################"
@@ -48,72 +39,20 @@ if inDir == outDir:
     parser.print_help()
     print ""
     exit(-1)
-##
 
 if not os.path.exists(outDir):
     os.makedirs(outDir)
-##
 
-def skim(inQueue):
-    running = True
-    goodRunFilter = MakeFilter(GoodRunsFile)
-    skimmer = newFlatSkimmer()
-    skimmer.SetInDirectory(inDir)
-    skimmer.SetOutDirectory(outDir)
-    skimmer.SetGoodLumiFilter(goodRunFilter)
-    skimmer.SetTreeName(treeName)
-    skimmer.SetRunExpr(runNum)
-    skimmer.SetLumiExpr(lumiNum)
-    skimmer.SetCut(theCut)
-    skimmer.SetReportFrequency(reportFreq)
-    skimmer.SetCheckDuplicates(doDuplicate)
+goodRunFilter = MakeFilter(args.GoodRunsFile)
+skimmer = newFlatSkimmer()
+skimmer.SetInDirectory(args.inDir)
+skimmer.SetOutDirectory(args.outDir)
+skimmer.SetGoodLumiFilter(goodRunFilter)
+skimmer.SetTreeName(args.treeName)
+skimmer.SetRunExpr(args.runNum)
+skimmer.SetLumiExpr(args.lumiNum)
+skimmer.SetCut(args.cut)
+skimmer.SetReportFrequency(args.reportFreq)
+skimmer.SetCheckDuplicates(args.doDuplicate)
 
-    for filt in filters:
-        skimmer.AddEventFilter(filt)
-    ##
-    for obj in copyObjects:
-        skimmer.AddCopyObject(obj)
-    ##
-    while running:
-        try:
-            inFileName = inQueue.get(True,1)
-            print "About to process " + inFileName
-            if not os.path.isfile(outDir + "/" + inFileName):
-                startTime = time()
-                skimmer.Skim(inFileName)
-                print "Finished " + inFileName + " ... Elapsed time: " + str(time() - startTime) + " seconds"
-            ##
-            else:
-                print inFileName + " already processed!"
-        except Queue.Empty:
-            print "Worker finished..."
-            running = False
-        ##
-    ##
-    del skimmer
-    del goodRunFilter
-##
-
-theQueue     = Queue.Queue()
-theProcesses = []
-
-def GetSize(name):
-    return os.path.getsize(inDir + '/' + name)
-##
-
-for inFileName in sorted(os.listdir(inDir), key=GetSize, reverse=True):
-    if inFileName.endswith(".root"):
-        theQueue.put(inFileName)
-##
-
-for worker in range(numMaxProcesses):
-    aProcess = Process(target=skim, args=(theQueue,))
-    aProcess.start()
-    theProcesses.append(aProcess)
-##
-
-for aProccess in theProcesses:
-    aProccess.join()
-##
-
-print "All done!"
+RunOnDirectory(skimmer, args.numMaxProcesses)

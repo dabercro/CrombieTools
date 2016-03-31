@@ -9,6 +9,8 @@ the package.
 """
 
 import ROOT
+ROOT.PyConfig.IgnoreCommandLineOptions = True
+
 import os
 import re
 
