@@ -28,7 +28,7 @@ parser.add_argument('--duplicate','-d', action = 'store_true', dest = 'doDuplica
 
 args = parser.parse_args()
 
-if inDir == outDir:
+if args.inDir == args.outDir:
     print ""
     print " ################################################################"
     print " #                                                              #"
@@ -40,8 +40,8 @@ if inDir == outDir:
     print ""
     exit(-1)
 
-if not os.path.exists(outDir):
-    os.makedirs(outDir)
+if not os.path.exists(args.outDir):
+    os.makedirs(args.outDir)
 
 goodRunFilter = MakeFilter(args.GoodRunsFile)
 skimmer = newFlatSkimmer()
@@ -49,8 +49,8 @@ skimmer.SetInDirectory(args.inDir)
 skimmer.SetOutDirectory(args.outDir)
 skimmer.SetGoodLumiFilter(goodRunFilter)
 skimmer.SetTreeName(args.treeName)
-skimmer.SetRunExpr(args.runNum)
-skimmer.SetLumiExpr(args.lumiNum)
+skimmer.SetRunExpr(args.runExpr)
+skimmer.SetLumiExpr(args.lumiExpr)
 skimmer.SetCut(args.cut)
 skimmer.SetReportFrequency(args.reportFreq)
 skimmer.SetCheckDuplicates(args.doDuplicate)

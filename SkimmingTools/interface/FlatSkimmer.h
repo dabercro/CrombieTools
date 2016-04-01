@@ -33,6 +33,9 @@ class FlatSkimmer : public InOutDirectoryHolder
   void         Skim                 ( TString fileName );
   void         AddEventFilter       ( TString filterName );
 
+  /// Copy this FlatSkimmer for parallelization
+  FlatSkimmer* Copy                 ();
+  
   /// Set GoodLumiFilter to determine good events
   void         SetGoodLumiFilter    ( GoodLumiFilter *filter )   { fGoodLumiFilter = *filter;    }
   /// Set cut that events must pass
@@ -54,7 +57,7 @@ class FlatSkimmer : public InOutDirectoryHolder
 
   /// Wrapper to be used by CrombieTools.Parallelization.RunOnDirectory()
   void         RunOnFile            ( TString name )             { Skim(name);                   }
-  
+
  private:
   std::set<TString>    fEventFilter;             ///< Events to skim out
   GoodLumiFilter       fGoodLumiFilter;          ///< GoodLumiFilter for this FlatSkimmer

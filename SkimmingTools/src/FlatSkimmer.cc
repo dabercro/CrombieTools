@@ -129,3 +129,12 @@ void FlatSkimmer::Skim(TString fileName)
     std::cout << "Not Checking" << std::endl;
 
 }
+
+//--------------------------------------------------------------------
+FlatSkimmer*
+FlatSkimmer::Copy()
+{
+  FlatSkimmer *newSkimmer = new FlatSkimmer();
+  *newSkimmer = *this;
+  return newSkimmer;
+}

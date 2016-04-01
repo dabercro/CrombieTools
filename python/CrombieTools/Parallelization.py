@@ -8,38 +8,43 @@ Submodule of CrombieTools.
 """
 
 import os
-from multiprocessing import Process
-import Queue
+from multiprocessing import Process, Queue
+from Queue import Empty
 from time import time
-from copy import copy
 
 """Number of processors from environment"""
 DefaultNumProcs = os.environ.get('CrombieNLocalProcs') or 1
 
-def RunParallel(object, functionName, parametersLists, procs=DefaultNumProcs):
+def RunParallel(objectToRun, functionName, parametersLists, procs=DefaultNumProcs):
     """ Starts parallel processes.
 
-    @param object is an object that can be copied and run independently when
+    @param objectToRun is an objectToRun that can be copied and run independently when
     Python's shallow copy.copy() is called on it.
     @param functionName is the str name of the function that will be run in multiple instances.
     @param parametersLists is a list of lists. Each sublist contains the parameters for the functionName.
     @param procs is the maximum number of processors that will be used.
     """
+
     totStartTime = time()
 
-    if not functionName in dir(object):
+    if 'Copy' not in dir(objectToRun):
+        print('Object not copyable.')
+        print('Exiting...')
+        exit(1)
+
+    if not functionName in dir(objectToRun):
         print('You gave an invalid function name!')
         exit(1)
 
-    if 'GetOutDirectory' in dir(object):
-        if not os.path.exists(object.GetOutDirectory()):
-            os.makedirs(object.GetOutDirectory())
+    if 'GetOutDirectory' in dir(objectToRun):
+        outDir = objectToRun.GetOutDirectory().Data()
+        if not os.path.exists(outDir):
+            os.makedirs(outDir)
 
     def skim(inQueue):
         running = True
 
-        ## @todo Make sure all classes I'm interested in running parallel work as shallow copies. This should be done in tests.
-        objCopy = copy(object)
+        objCopy = objectToRun.Copy()
         functionToRun = getattr(objCopy,functionName)
 
         while running:
@@ -47,9 +52,9 @@ def RunParallel(object, functionName, parametersLists, procs=DefaultNumProcs):
                 parameters = inQueue.get(True,1)
                 print('About to process ' + str(parameters))
                 startTime = time()
-                functionToRun(*parametersLists)
+                functionToRun(*parameters)
                 print('Finished ' + str(parameters) + ' ... Elapsed time: ' + str(time() - startTime) + ' seconds')
-            except Queue.Empty:
+            except Empty:
                 print('Worker finished...')
                 running = False
 
@@ -69,28 +74,26 @@ def RunParallel(object, functionName, parametersLists, procs=DefaultNumProcs):
     for aProccess in theProcesses:
         aProccess.join()
 
-    print('All done!')
-    print()
-    print('Total time: ' + str(time() - totStartTime) + ' seconds')
-    print()
+    print('All done!\n')
+    print('Total time: ' + str(time() - totStartTime) + ' seconds\n')
 
     
-def RunOnDirectory(object, procs=DefaultNumProcs):
-    """ Runs an object over a directory.
+def RunOnDirectory(objectToRun, procs=DefaultNumProcs):
+    """ Runs an objectToRun over a directory.
 
-    @param object has GetInDirectory() and RunOnFile() function members. 
-    This function then runs the object's over all the files in that directory.
+    @param objectToRun has GetInDirectory() and RunOnFile() function members. 
+    This function then runs the objectToRun's over all the files in that directory.
     @param procs is the maximum number of processes to start.
     """
     theFiles = []
 
-    if not 'GetInDirectory' in dir(object):
+    if not 'GetInDirectory' in dir(objectToRun):
         print('##########################################')
         print('# Missing GetInDirectory in this object. #')
         print('##########################################')
         exit(1)
 
-    inDir = object.GetInDirectory()
+    inDir = objectToRun.GetInDirectory().Data()
 
     def GetSize(name):
         return os.path.getsize(inDir + '/' + name)
@@ -99,4 +102,4 @@ def RunOnDirectory(object, procs=DefaultNumProcs):
         if inFileName.endswith('.root'):
             theFiles.append([inFileName])
 
-    RunParallel(object,'RunOnFile',theFiles,procs)
+    RunParallel(objectToRun,'RunOnFile',theFiles,procs)
