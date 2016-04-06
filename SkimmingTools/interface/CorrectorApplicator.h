@@ -33,7 +33,7 @@ class CorrectorApplicator : public InDirectoryHolder
   /// If this is the same as the input tree, the branch must not already exist.
   void                 SetOutputTreeName    ( TString tree )              { fOutputTreeName = tree;                 }
   /// Add a Corrector object to the CorrectorApplicator
-  void                 AddCorrector         ( Corrector* corrector )      { fCorrectors.push_back(*corrector);      }
+  void                 AddCorrector         ( Corrector* corrector )      { fCorrectors.push_back(corrector);       }
   /// Add a branch name to include by multiplication into the main output branch of the CorrectorApplicator.
   void                 AddFactorToMerge     ( TString factor )            { fMergeFactors.push_back(factor);        }
   /// @todo make all frequency reports in a centralized class
@@ -47,7 +47,7 @@ class CorrectorApplicator : public InDirectoryHolder
   Bool_t                    fSaveAll;                          ///< Bool to save other Corrector results to tree too.
   TString                   fInputTreeName = "events";         ///< Input tree name.
   TString                   fOutputTreeName = "corrections";   ///< Output tree name.
-  std::vector<Corrector>    fCorrectors;                       ///< Vector of corrector objects.
+  std::vector<Corrector*>   fCorrectors;                       ///< Vector of corrector pointers.
   std::vector<TString>      fMergeFactors;                     ///< Vector of branches to merge.
   Int_t                     fReportFrequency = 100000;
 

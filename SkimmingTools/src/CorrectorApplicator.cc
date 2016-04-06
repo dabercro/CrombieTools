@@ -51,12 +51,12 @@ void CorrectorApplicator::ApplyCorrections(TString fileName)
     }
     if (fSaveAll) {
       for (UInt_t iCorrector = 0; iCorrector != fCorrectors.size(); ++iCorrector) {
-        if (theTree->GetBranch(fCorrectors[iCorrector].GetName())) {
-          std::cout << "Branch " << fCorrectors[iCorrector].GetName() << " already exists in " << fileName << std::endl;
+        if (theTree->GetBranch(fCorrectors[iCorrector]->GetName())) {
+          std::cout << "Branch " << fCorrectors[iCorrector]->GetName() << " already exists in " << fileName << std::endl;
           theFile->Close();
           exit(0);
         }
-        if (fCorrectors[iCorrector].GetName() == fName) {
+        if (fCorrectors[iCorrector]->GetName() == fName) {
           std::cout << "Corrector has same name as merged name: " << fName << std::endl;
           theFile->Close();
           exit(0);
@@ -77,9 +77,9 @@ void CorrectorApplicator::ApplyCorrections(TString fileName)
     fillBranches.push_back(outTree->Branch(fName,&Addresses[fName],fName+"/F"));
   }
   for (UInt_t iCorrector = 0; iCorrector != fCorrectors.size(); ++iCorrector) {
-    fCorrectors[iCorrector].SetInTree(theTree);
+    fCorrectors[iCorrector]->SetInTree(theTree);
     if (fSaveAll) {
-      TString checkName = fCorrectors[iCorrector].GetName();
+      TString checkName = fCorrectors[iCorrector]->GetName();
       if (!outTree->GetBranch(checkName)) {
         Addresses[checkName] = 1.0;
         fillBranches.push_back(outTree->Branch(checkName,&Addresses[checkName],checkName+"/F"));
@@ -110,16 +110,16 @@ void CorrectorApplicator::ApplyCorrections(TString fileName)
     }
     if (fSaveAll) {
       for (UInt_t iCorrector = 0; iCorrector != fCorrectors.size(); ++iCorrector)
-        Addresses[fCorrectors[iCorrector].GetName()] = 1.0;
+        Addresses[fCorrectors[iCorrector]->GetName()] = 1.0;
     }
     
     // Evaluate the correctors and save the factor values
     for (UInt_t iCorrector = 0; iCorrector != fCorrectors.size(); ++iCorrector) {
-      tempValue = fCorrectors[iCorrector].Evaluate();
+      tempValue = fCorrectors[iCorrector]->Evaluate();
       if (fName != "")
         Addresses[fName] *= tempValue;
       if (fSaveAll)
-        Addresses[fCorrectors[iCorrector].GetName()] *= tempValue;
+        Addresses[fCorrectors[iCorrector]->GetName()] *= tempValue;
     }
 
     // Fill all the branches
