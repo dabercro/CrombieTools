@@ -149,23 +149,23 @@ class PlotBase
   
  protected:
 
-  UInt_t                     fPlotCounter = 0;        ///< This is used so that making scratch plots does not overlap
+  UInt_t                     fPlotCounter = 0;           ///< This is used so that making scratch plots does not overlap
   
-  TTree*                     fDefaultTree = NULL;     ///< Default Tree if needed
-  TString                    fDefaultCut = "";        ///< Default cut if needed
-  TString                    fDefaultExpr = "";       ///< Default resolution expression if needed
+  TTree*                     fDefaultTree = NULL;        ///< Default Tree if needed
+  TString                    fDefaultCut = "";           ///< Default cut if needed
+  TString                    fDefaultExpr = "";          ///< Default resolution expression if needed
   
-  Double_t                   l1 = 0.6;                ///< First X value of legend location
-  Double_t                   l2 = 0.7;                ///< First Y value of legend location
-  Double_t                   l3 = 0.9;                ///< Second X value of legend location
-  Double_t                   l4 = 0.9;                ///< Second Y value of legend location
-  Int_t                      fLegendBorderSize = 0;   ///< Border size of legend
+  Double_t                   l1 = 0.6;                   ///< First X value of legend location
+  Double_t                   l2 = 0.7;                   ///< First Y value of legend location
+  Double_t                   l3 = 0.9;                   ///< Second X value of legend location
+  Double_t                   l4 = 0.9;                   ///< Second Y value of legend location
+  Int_t                      fLegendBorderSize = 0;      ///< Border size of legend
   
-  std::vector<TTree*>        fInTrees;                ///< Holds all the trees for each line if needed
-  std::vector<TString>       fInCuts;                 ///< Holds the cuts for the trees if needed
-  std::vector<TString>       fInExpr;                 ///< Holds multiple resolution expressions if needed
+  std::vector<TTree*>        fInTrees;                   ///< Holds all the trees for each line if needed
+  std::vector<TString>       fInCuts;                    ///< Holds the cuts for the trees if needed
+  std::vector<TString>       fInExpr;                    ///< Holds multiple resolution expressions if needed
   
-  Bool_t                     fIncludeErrorBars = false;  ///< Option to include error bars
+  Bool_t                     fIncludeErrorBars = true;   ///< Option to include error bars
 
   /**
      Minimum value of the y-axis.
@@ -173,20 +173,20 @@ class PlotBase
      then both values are ignored and the axis height
      is determined by the first line plotted. */
   Float_t                    fAxisMin = 0.0;
-  Float_t                    fAxisMax = 0.0;          ///< Maximum value of the y-axis. 
+  Float_t                    fAxisMax = 0.0;             ///< Maximum value of the y-axis. 
 
-  Int_t                      fDataIndex;              ///< Index in the plotter of the data line
-  Bool_t                     fMakeRatio;              ///< Bool to make a ratio plot on bottom of image
-  Int_t                      fRatioIndex;             ///< Pick which line to set as 1 in ratio plot
+  Int_t                      fDataIndex;                 ///< Index in the plotter of the data line
+  Bool_t                     fMakeRatio;                 ///< Bool to make a ratio plot on bottom of image
+  Int_t                      fRatioIndex;                ///< Pick which line to set as 1 in ratio plot
   Float_t                    fRatioMin;
   Float_t                    fRatioMax;
   TString                    fRatioTitle;
   Int_t                      fRatioGrid;
   Int_t                      fRatioDivisions;
   Bool_t                     fOptimDivisions;
-  Bool_t                     fOnlyRatioWithData;      ///< Suppresses the ratio of extra MC
+  Bool_t                     fOnlyRatioWithData;         ///< Suppresses the ratio of extra MC
 
-  std::vector<TString>       fLegendEntries;          ///< Number of legend entries should match number of lines
+  std::vector<TString>       fLegendEntries;             ///< Number of legend entries should match number of lines
 
   /// Takes number of bins, min and max, and dumps it into an already allocated array
   inline    void             ConvertToArray       ( Int_t NumXBins, Double_t MinX, Double_t MaxX, Double_t *XBins );
@@ -195,33 +195,33 @@ class PlotBase
   template<class T>  void    BaseCanvas           ( TString FileBase, std::vector<T*> theLines,
 						    TString XLabel, TString YLabel, Bool_t logY, Bool_t logX = false );
 
-  Bool_t                     bPDF = true;             ///< If true, BaseCanvas will create a .pdf file
-  Bool_t                     bPNG = true;             ///< If true, BaseCanvas will create a .png file
-  Bool_t                     bC = true;               ///< If true, BaseCanvas will create a .C macro
+  Bool_t                     bPDF = true;                ///< If true, BaseCanvas will create a .pdf file
+  Bool_t                     bPNG = true;                ///< If true, BaseCanvas will create a .png file
+  Bool_t                     bC = true;                  ///< If true, BaseCanvas will create a .C macro
 
  private:
 
-  TString                    fCanvasName = "canvas";  ///< The name of the output canvas
-  Int_t                      fCanvasWidth = 600;      ///< The width of the output canvas
-  Int_t                      fCanvasHeight = 600;     ///< The height of the output canvas
-  Float_t                    fTitleOffset = 1.0;      ///< The offset of the Y-axis title to account for large numbers
-  Float_t                    fFontSize = 0.04;        ///< The size of the font used in the axis titles
-  Int_t                      fDefaultLineWidth = 2;   ///< Line width to make all plots
-  Int_t                      fDefaultLineStyle = 1;   ///< Line style to use on all plots
+  TString                    fCanvasName = "canvas";     ///< The name of the output canvas
+  Int_t                      fCanvasWidth = 600;         ///< The width of the output canvas
+  Int_t                      fCanvasHeight = 600;        ///< The height of the output canvas
+  Float_t                    fTitleOffset = 1.0;         ///< The offset of the Y-axis title to account for large numbers
+  Float_t                    fFontSize = 0.04;           ///< The size of the font used in the axis titles
+  Int_t                      fDefaultLineWidth = 2;      ///< Line width to make all plots
+  Int_t                      fDefaultLineStyle = 1;      ///< Line style to use on all plots
   
-  std::vector<Color_t>       fLineColors;             ///< Colors of each of the lines
-  std::vector<Int_t>         fLineWidths;             ///< Widths of each of the lines
-  std::vector<Int_t>         fLineStyles;             ///< Styles of each of the lines
+  std::vector<Color_t>       fLineColors;                ///< Colors of each of the lines
+  std::vector<Int_t>         fLineWidths;                ///< Widths of each of the lines
+  std::vector<Int_t>         fLineStyles;                ///< Styles of each of the lines
 
-  Bool_t                     fLegendFill = false;     ///< Gives fill option to legend drawing
-  Int_t                      fDrawFirst;              ///< Can force one of the lines to be drawn first
+  Bool_t                     fLegendFill = false;        ///< Gives fill option to legend drawing
+  Int_t                      fDrawFirst;                 ///< Can force one of the lines to be drawn first
 
-  TString                    fLumiLabel = "";         ///< Label used to show luminosity
-  Bool_t                     fIsCMSPrelim = false;    ///< Bool to determine if CMS Preliminary should be written
+  TString                    fLumiLabel = "";            ///< Label used to show luminosity
+  Bool_t                     fIsCMSPrelim = false;       ///< Bool to determine if CMS Preliminary should be written
 
   /// Use this to get certain draw options correct (for data, for example)
   template<class T>  void    LineDrawing          ( std::vector<T*> theLines, Int_t index, Bool_t same );
-  std::vector<TObject*>      fDeleteThese;          ///< Vector of object pointers to free memory at the end
+  std::vector<TObject*>      fDeleteThese;               ///< Vector of object pointers to free memory at the end
 
   /// Options for histograms
   TString                    GetOpts              ( TH1* )         { return "hist";      }

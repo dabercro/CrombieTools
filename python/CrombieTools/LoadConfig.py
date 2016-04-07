@@ -48,7 +48,7 @@ def LoadModuleFromEnv(EnvVarName):
     return None
 
 """List of configuration files that this module tries to load automatically."""
-CrombieConfigs = ['CrombieSlimmingConfig.sh','CrombieAnalysisConfig.sh']
+CrombieConfigs = ['CrombieAnalysisConfig.sh','CrombiePlotterConfig.sh','CrombieSlimmingConfig.sh']
 
 LoadEnv(CrombieConfigs)
 

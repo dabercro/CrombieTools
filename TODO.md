@@ -1,5 +1,10 @@
 # Project Todo List
 
+@todo Make a tool that shows the diff between two directories <br>
+      Show if files are missing <br>
+      Show if certain trees are missing certain events <br>
+      Compare variable distributions
+
 @todo Make cuts template good at returning N-1 plots and a wrapper for this in CrombieTools.PlotTools.PlotStack
 
 @todo Document code

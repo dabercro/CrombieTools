@@ -6,8 +6,8 @@
 
    @author Daniel Abercrombie <dabercro@mit.edu> */
 
-#ifndef CROMBIETOOLS_COMMONTOOLS_MCREADER_H
-#define CROMBIETOOLS_COMMONTOOLS_MCREADER_H
+#ifndef CROMBIETOOLS_COMMONTOOLS_FILECONFIGREADER_H
+#define CROMBIETOOLS_COMMONTOOLS_FILECONFIGREADER_H
 
 #include <fstream>
 #include <vector>
@@ -73,7 +73,7 @@ class FileConfigReader : public InOutDirectoryHolder
                                                                 { SetFileType(type); ReadMCConfig(config,fileDir); }
 
  protected:
-  Double_t   fLuminosity = 2245.0;                        ///< The Luminosity in inverse pb
+  Double_t   fLuminosity = 2000.0;                        ///< The Luminosity in inverse pb
   TString    fDataTreeName = "data";                      ///< The base name of the data in a limit tree
   TString    fDataEntry = "Data";                         ///< The legend entry for data
   TString    fAllHistName = "htotal";                     ///< The all histogram name used ingenerating cross section weights
@@ -81,8 +81,16 @@ class FileConfigReader : public InOutDirectoryHolder
   std::vector<FileInfo*>  fMCFileInfo;                    ///< Vector of background FileInfo objects
   std::vector<FileInfo*>  fSignalFileInfo;                ///< Vector of signal FileInfo objects
 
+  /// Allows reader to avoid skipping when reading in exception configs
+  void       SetKeepAllFiles                ( Bool_t keep )                             { fKeepAllFiles = keep;    }
+  /// Allows reader to avoid skipping when reading in exception configs
+  void       SetMultiplyLumi                ( Bool_t doMultiply )                    { fMultiplyLumi = doMultiply; }
+  
+
  private:
   FileType     fFileType = kBackground;                   ///< Type of files in the next config
+  Bool_t       fKeepAllFiles = false;                     ///< Keeps FileInfo stored usually deleted by exception configs
+  Bool_t       fMultiplyLumi = true;                      ///< Returns XSecWeight with luminosity multiplied
   
 };
 
@@ -115,7 +123,8 @@ void FileConfigReader::AddFile(TString treeName, TString fileName, Double_t XSec
 {
   FileInfo* tempInfo = new FileInfo(treeName,AddInDir(fileName),XSec,
                                     entry,colorstyle,fAllHistName);
-  tempInfo->fXSecWeight *= fLuminosity;
+  if (fMultiplyLumi)
+    tempInfo->fXSecWeight *= fLuminosity;
   if (fFileType == kBackground)
     fMCFileInfo.push_back(tempInfo);
   else if (fFileType == kSignal)
@@ -160,11 +169,13 @@ void FileConfigReader::ReadMCConfig(TString config, TString fileDir)
   while (!configFile.eof()) {
     configFile >> LimitTreeName >> FileName;
     if (LimitTreeName == "skip") {
-      for (UInt_t iFile = 0; iFile != (*FileInfo).size(); ++iFile) {
-        if ((*FileInfo)[iFile]->fFileName == AddInDir(FileName)) {
-          delete (*FileInfo)[iFile];
-          (*FileInfo).erase((*FileInfo).begin() + iFile);
-          break;
+      if (!fKeepAllFiles) {
+        for (UInt_t iFile = 0; iFile != (*FileInfo).size(); ++iFile) {
+          if ((*FileInfo)[iFile]->fFileName == AddInDir(FileName)) {
+            delete (*FileInfo)[iFile];
+            (*FileInfo).erase((*FileInfo).begin() + iFile);
+            break;
+          }
         }
       }
     }

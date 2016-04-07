@@ -3,6 +3,8 @@
    Defines the TreeContainer class.
    @author Daniel Abercrombie <dabercro@mit.edu> */
 
+/// @todo: Get rid of TreeContainer and do everything with TChain
+
 #ifndef CROMBIETOOLS_COMMONTOOLS_TREECONTAINER_H
 #define CROMBIETOOLS_COMMONTOOLS_TREECONTAINER_H
 

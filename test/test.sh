@@ -36,9 +36,9 @@ then
     echo "Just kidding, I didn't really submit anything... At least, I shouldn't have ;^)"
 fi
 
-cd $here/analysis
+cd $here/plotter
 
-source CrombieAnalysisConfig.sh     # This should source the slimming config too
+source CrombiePlotterConfig.sh     # This should source the slimming config too
 
 if [ "${host:0:6}" != "lxplus" ]
 then
@@ -74,8 +74,10 @@ echo "Adding corrections to .root Files!"
 # Figure out something for reweighter...
 # Make up a good runs file
 # Run Skimmer to cut out based on some variable to eliminate background
+# Run the RootDiff that I still have to make to show what changed with Skimmers
+# Compare this diff to some default diff stored here
 
-cd $here/analysis
+cd $here/plotter
 
 # Make limit tree
 # Make stacks with MC configs
