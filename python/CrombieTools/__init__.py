@@ -42,10 +42,11 @@ ROOT.gROOT.LoadMacro(CrombieDir + '/PlotTools/interface/KinematicFunctions.h')
 dependencies = { 'FlatSkimmer' :         ['GoodLumiFilter'],
                  'PlotFitParameters' :   ['Plot2D'],
                  'PlotROC' :             ['PlotHists'],
-                 'PlotStack' :           ['TreeContainer','PlotHists'],
+                 'PlotStack' :           ['FileConfigReader','TreeContainer','PlotHists'],
                  'CorrectorApplicator' : ['Corrector'],
                  'Reweighter' :          ['PlotStack'],
-                 'TmvaClassifier' :      ['TreeContainer','PlotHists']
+                 'TmvaClassifier' :      ['TreeContainer','PlotHists'],
+                 'LimitTreeMaker' :      ['FileConfigReader']
                  }
 
 def Load(className):
@@ -57,7 +58,7 @@ def Load(className):
     you need from CrombieTools.PlotTools.PlotUtils.
     """
     if not className in dir(ROOT):
-        if type(dependencies.get(className)) == list:
+        if type(dependencies.get(className)) is list:
             for depend in dependencies[className]:
                 Load(depend)
 
