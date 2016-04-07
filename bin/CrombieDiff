@@ -3,6 +3,8 @@
 import os, sys
 import argparse
 
+from ROOT import TFile
+
 sys.path.insert(0, os.environ['CROMBIEPATH'] + '/scripts')
 
 from CrombieTreeFinder import GetNumEntries
@@ -11,6 +13,8 @@ parser = argparse.ArgumentParser(description = 'Checks two directories to make s
                                                ' and number of events in the tree and hist for each file')
 
 parser.add_argument('dirs', metavar='DIRECTORY', nargs=2, help='The names of the two directories to compare.')
+parser.add_argument('--treename', '-t', metavar='TREENAME', nargs=1, dest='treename', default='events',
+                    help='The name of the trees to friend.')
 
 args = parser.parse_args()
 
@@ -31,12 +35,24 @@ for fileName in os.listdir(args.dirs[0]):
         print(fileName + ' is in ' + args.dirs[0] + ', but not in ' + args.dirs[1])
 
     else:
-        tree0 = GetNumEntries(args.dirs[0] + '/' + fileName, 'TTree')
-        tree1 = GetNumEntries(args.dirs[1] + '/' + fileName, 'TTree')
-        if tree0 != tree1:
-            print(fileName + ' has different number of events in trees: ' + str(tree0) + '     ' + str(tree1))
-
         hist0 = GetNumEntries(args.dirs[0] + '/' + fileName, 'TH1')
         hist1 = GetNumEntries(args.dirs[1] + '/' + fileName, 'TH1')
         if hist0 != hist1:
             print(fileName + ' has different number of events in hists: ' + str(hist0) + '     ' + str(hist1))
+
+        tree0 = GetNumEntries(args.dirs[0] + '/' + fileName, 'TTree')
+        tree1 = GetNumEntries(args.dirs[1] + '/' + fileName, 'TTree')
+        if tree0 != tree1:
+            print(fileName + ' has different number of events in trees: ' + str(tree0) + '     ' + str(tree1))
+        else:
+            file0 = TFile(args.dirs[0] + '/' + fileName)
+            tree0 = getattr(file0,args.treename)
+
+            tree0.AddFriend('tree1_thefriend=' + args.treename, args.dirs[1] + '/' + fileName)
+
+            for branch in tree0.GetListOfBranches():
+                numDiff = tree0.GetEntries(branch.GetName() + ' != tree1_thefriend.' + branch.GetName())
+                if numDiff != 0:
+                    print(fileName + ' has different values in: ' + branch.GetName() + ' (' + str(numDiff) + '/' + str(tree1) + ')')
+
+            file0.Close()
