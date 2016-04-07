@@ -1,7 +1,5 @@
 #! /usr/bin/python
 
-# This file is rather depreciated. You would be advised to fill the skimmer by hand
-
 import ROOT
 import os, argparse
 from multiprocessing import Process

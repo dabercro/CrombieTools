@@ -1,63 +1,80 @@
 #!/usr/bin/python
 
-import os, sys
 import argparse
-
-from ROOT import TFile
-
+import os
+import sys
 sys.path.insert(0, os.environ['CROMBIEPATH'] + '/scripts')
 
 from CrombieTreeFinder import GetNumEntries
+from CrombieTools.Parallelization import RunOnDirectory
 
-parser = argparse.ArgumentParser(description = 'Checks two directories to make sure they have the same number of files' + 
-                                               ' and number of events in the tree and hist for each file')
+class CrombieDiffDoer:
+    def __init__(self, dir0, dir1, treeName, skipBranches):
+        self.dir0 = dir0.rstrip('/')
+        self.dir1 = dir1.rstrip('/')
+        self.treeName = treeName
+        self.skipBranches = skipBranches
 
-parser.add_argument('dirs', metavar='DIRECTORY', nargs=2, help='The names of the two directories to compare.')
-parser.add_argument('--treename', '-t', metavar='TREENAME', nargs=1, dest='treename', default='events',
-                    help='The name of the trees to friend.')
-parser.add_argument('--skip-branches', '-s', metavar = 'BRANCHES', nargs = '*', dest = 'skipbranches', default = [], 
-                    help = 'Set branches to skip comparison.')
+    def GetInDirectory(self):
+        return self.dir0
 
-args = parser.parse_args()
+    def Copy(self):
+        return CrombieDiffDoer(self.dir0, self.dir1, self.treeName, self.skipBranches)
 
-for fileName in os.listdir(args.dirs[1]):
-    if '.root' not in fileName:
-        continue
+    def RunOnFile(self, fileName):
+        from ROOT import TFile
+        if not os.path.exists(self.dir1 + '/' + fileName):
+            print('WARNING: ' + fileName + ' is in ' + self.dir0 + ', but not in ' + self.dir1)
 
-    if not os.path.exists(args.dirs[0] + '/' + fileName):
-        print(fileName + ' is in ' + args.dirs[1] + ', but not in ' + args.dirs[0])
-
-print('\nGoing on to compare number of events:         ' + args.dirs[0] + ' --to-- ' + args.dirs[1] + '\n')
-
-for fileName in os.listdir(args.dirs[0]):
-    if '.root' not in fileName:
-        continue
-
-    if not os.path.exists(args.dirs[1] + '/' + fileName):
-        print(fileName + ' is in ' + args.dirs[0] + ', but not in ' + args.dirs[1])
-
-    else:
-        hist0 = GetNumEntries(args.dirs[0] + '/' + fileName, 'TH1')
-        hist1 = GetNumEntries(args.dirs[1] + '/' + fileName, 'TH1')
-        if hist0 != hist1:
-            print(fileName + ' has different number of events in hists: ' + str(hist0) + '     ' + str(hist1))
-
-        tree0 = GetNumEntries(args.dirs[0] + '/' + fileName, 'TTree')
-        tree1 = GetNumEntries(args.dirs[1] + '/' + fileName, 'TTree')
-        if tree0 != tree1:
-            print(fileName + ' has different number of events in trees: ' + str(tree0) + '     ' + str(tree1))
         else:
-            file0 = TFile(args.dirs[0] + '/' + fileName)
-            tree0 = getattr(file0,args.treename)
+            hist0 = GetNumEntries(self.dir0 + '/' + fileName, 'TH1')
+            hist1 = GetNumEntries(self.dir1 + '/' + fileName, 'TH1')
+            if hist0 != hist1:
+                print(fileName + ' has different number of events in hists: ' + str(hist0) + '     ' + str(hist1))
 
-            tree0.AddFriend('tree1_thefriend=' + args.treename, args.dirs[1] + '/' + fileName)
+            tree0 = GetNumEntries(self.dir0 + '/' + fileName, 'TTree')
+            tree1 = GetNumEntries(self.dir1 + '/' + fileName, 'TTree')
+            if tree0 != tree1:
+                print(fileName + ' has different number of events in trees: ' + str(tree0) + '     ' + str(tree1))
+            else:
+                file0 = TFile(self.dir0 + '/' + fileName)
+                tree0 = getattr(file0,self.treeName)
 
-            for branch in tree0.GetListOfBranches():
-                if branch.GetName() in args.skipbranches:
-                    continue
+                tree0.AddFriend('tree1_thefriend=' + self.treeName, self.dir1 + '/' + fileName)
+
+                for branch in tree0.GetListOfBranches():
+                    if branch.GetName() in self.skipBranches:
+                        continue
                 
-                numDiff = tree0.GetEntries(branch.GetName() + ' != tree1_thefriend.' + branch.GetName())
-                if numDiff != 0:
-                    print(fileName + ' has different values in: ' + branch.GetName() + ' (' + str(numDiff) + '/' + str(tree1) + ')')
+                    numDiff = tree0.GetEntries(branch.GetName() + ' != tree1_thefriend.' + branch.GetName())
+                    if numDiff != 0:
+                        print(fileName + ' has different values in: ' + branch.GetName() + ' (' + str(numDiff) + '/' + str(tree1) + ')')
 
-            file0.Close()
+                file0.Close()
+
+if __name__ == '__main__':
+
+    parser = argparse.ArgumentParser(description = 'Checks two directories to make sure they have the same number of files' + 
+                                                   ' and number of events in the tree and hist for each file')
+
+    parser.add_argument('dirs', metavar='DIRECTORY', nargs=2, help='The names of the two directories to compare.')
+    parser.add_argument('--numproc', '-n', metavar = 'NUM', type = int, dest = 'numMaxProcesses', default = 1, help = 'Number of processes that FlatSkimmer will spawn.')
+    parser.add_argument('--treename', '-t', metavar='TREENAME', nargs=1, dest='treename', default='events',
+                        help='The name of the trees to friend.')
+    parser.add_argument('--skip-branches', '-s', metavar = 'BRANCHES', nargs = '*', dest = 'skipbranches', default = [], 
+                        help = 'Set branches to skip comparison.')
+    
+    args = parser.parse_args()
+    
+    for fileName in os.listdir(args.dirs[1]):
+        if '.root' not in fileName:
+            continue
+
+        if not os.path.exists(args.dirs[0] + '/' + fileName):
+            print('WARNING: ' + fileName + ' is in ' + args.dirs[1] + ', but not in ' + args.dirs[0])
+
+    print('\nGoing on to compare number of events:         ' + args.dirs[0] + ' --to-- ' + args.dirs[1] + '\n')
+    
+    differ = CrombieDiffDoer(args.dirs[0], args.dirs[1], args.treename, args.skipbranches)
+
+    RunOnDirectory(differ, args.numMaxProcesses, printing=False)

@@ -8,7 +8,7 @@ def GetNumEntries(fileName, className):
 
     testFile = ROOT.TFile(fileName)
     for testKey in testFile.GetListOfKeys():
-        if testKey.GetClassName() == className:
+        if className in testKey.GetClassName():
             testTree = testFile.Get(testKey.GetName())
             NumberOfEvents = testTree.GetEntries()
             if __name__ == '__main__':

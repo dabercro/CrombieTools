@@ -15,7 +15,7 @@ from time import time
 """Number of processors from environment"""
 DefaultNumProcs = os.environ.get('CrombieNLocalProcs') or 1
 
-def RunParallel(objectToRun, functionName, parametersLists, procs=DefaultNumProcs):
+def RunParallel(objectToRun, functionName, parametersLists, procs=DefaultNumProcs, printing=True):
     """ Starts parallel processes.
 
     @param objectToRun is an objectToRun that can be copied and run independently when
@@ -37,7 +37,7 @@ def RunParallel(objectToRun, functionName, parametersLists, procs=DefaultNumProc
         exit(1)
 
     if 'GetOutDirectory' in dir(objectToRun):
-        outDir = objectToRun.GetOutDirectory().Data()
+        outDir = str(objectToRun.GetOutDirectory())
         if not os.path.exists(outDir):
             os.makedirs(outDir)
 
@@ -50,12 +50,18 @@ def RunParallel(objectToRun, functionName, parametersLists, procs=DefaultNumProc
         while running:
             try:
                 parameters = inQueue.get(True,1)
-                print('About to process ' + str(parameters))
+                if printing:
+                    print('About to process ' + str(parameters))
+
                 startTime = time()
                 functionToRun(*parameters)
-                print('Finished ' + str(parameters) + ' ... Elapsed time: ' + str(time() - startTime) + ' seconds')
+                if printing:
+                    print('Finished ' + str(parameters) + ' ... Elapsed time: ' + str(time() - startTime) + ' seconds')
+
             except Empty:
-                print('Worker finished...')
+                if printing:
+                    print('Worker finished...')
+
                 running = False
 
         del objCopy
@@ -78,7 +84,7 @@ def RunParallel(objectToRun, functionName, parametersLists, procs=DefaultNumProc
     print('Total time: ' + str(time() - totStartTime) + ' seconds\n')
 
     
-def RunOnDirectory(objectToRun, procs=DefaultNumProcs):
+def RunOnDirectory(objectToRun, procs=DefaultNumProcs, printing=True):
     """ Runs an objectToRun over a directory.
 
     @param objectToRun has GetInDirectory() and RunOnFile() function members. 
@@ -93,7 +99,7 @@ def RunOnDirectory(objectToRun, procs=DefaultNumProcs):
         print('##########################################')
         exit(1)
 
-    inDir = objectToRun.GetInDirectory().Data()
+    inDir = str(objectToRun.GetInDirectory())
 
     def GetSize(name):
         return os.path.getsize(inDir + '/' + name)
@@ -102,4 +108,4 @@ def RunOnDirectory(objectToRun, procs=DefaultNumProcs):
         if inFileName.endswith('.root'):
             theFiles.append([inFileName])
 
-    RunParallel(objectToRun,'RunOnFile',theFiles,procs)
+    RunParallel(objectToRun,'RunOnFile',theFiles,procs,printing)
