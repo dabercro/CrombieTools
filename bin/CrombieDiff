@@ -15,6 +15,8 @@ parser = argparse.ArgumentParser(description = 'Checks two directories to make s
 parser.add_argument('dirs', metavar='DIRECTORY', nargs=2, help='The names of the two directories to compare.')
 parser.add_argument('--treename', '-t', metavar='TREENAME', nargs=1, dest='treename', default='events',
                     help='The name of the trees to friend.')
+parser.add_argument('--skip-branches', '-s', metavar = 'BRANCHES', nargs = '*', dest = 'skipbranches', default = [], 
+                    help = 'Set branches to skip comparison.')
 
 args = parser.parse_args()
 
@@ -51,6 +53,9 @@ for fileName in os.listdir(args.dirs[0]):
             tree0.AddFriend('tree1_thefriend=' + args.treename, args.dirs[1] + '/' + fileName)
 
             for branch in tree0.GetListOfBranches():
+                if branch.GetName() in args.skipbranches:
+                    continue
+                
                 numDiff = tree0.GetEntries(branch.GetName() + ' != tree1_thefriend.' + branch.GetName())
                 if numDiff != 0:
                     print(fileName + ' has different values in: ' + branch.GetName() + ' (' + str(numDiff) + '/' + str(tree1) + ')')
