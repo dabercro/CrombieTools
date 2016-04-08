@@ -1,4 +1,4 @@
-#! /bin/bash
+#!/bin/bash
 
 target=$1
  input=$2

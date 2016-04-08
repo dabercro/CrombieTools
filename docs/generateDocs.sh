@@ -1,4 +1,4 @@
-#! /bin/bash
+#!/bin/bash
 
 ## \file generateDocs.sh
 #  Generates Doxygen files if doxygen is installed.

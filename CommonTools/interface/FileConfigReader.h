@@ -12,6 +12,7 @@
 #include <vector>
 #include "TColor.h"
 #include "TString.h"
+#include "TChain.h"
 
 #include "InOutDirectoryHolder.h"
 #include "FileInfo.h"
@@ -33,7 +34,10 @@ class FileConfigReader : public InOutDirectoryHolder
   enum FileType { kBackground = 0, kSignal, kData };
 
   /// Returns a vector of file names that have been read from the configs
-  std::vector<TString> ReturnFileNames      ( FileType type = kBackground );
+  std::vector<TString> ReturnFileNames      ( FileType type = kBackground, TString limitName = "" );
+
+  /// Returns a TChain of files that match the FileType and name for the LimitTreeMaker
+  TChain*              ReturnTChain         ( TString treeName = "events", FileType type = kBackground, TString limitName = "" );
 
   /// Add a data file
   void                 AddDataFile          ( TString fileName );
@@ -93,6 +97,7 @@ class FileConfigReader : public InOutDirectoryHolder
   FileType     fFileType = kBackground;                   ///< Type of files in the next config
   Bool_t       fKeepAllFiles = false;                     ///< Keeps FileInfo stored usually deleted by exception configs
   Bool_t       fMultiplyLumi = true;                      ///< Returns XSecWeight with luminosity multiplied
+  std::vector<TObject*> fDeleteThese;                     ///< Vector of object pointers to free memory at the end
   
 };
 

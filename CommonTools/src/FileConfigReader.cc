@@ -22,11 +22,18 @@ FileConfigReader::~FileConfigReader()
 
   for (UInt_t iInfo = 0; iInfo != fSignalFileInfo.size(); ++iInfo)
     delete fSignalFileInfo[iInfo];
+
+  for (UInt_t iInfo = 0; iInfo != fDataFileInfo.size(); ++iInfo)
+    delete fDataFileInfo[iInfo];
+
+  for (UInt_t iDelete = 0; iDelete != fDeleteThese.size(); ++iDelete)
+    delete fDeleteThese[iDelete];
+  fDeleteThese.clear();
 }
 
 //--------------------------------------------------------------------
 std::vector<TString>
-FileConfigReader::ReturnFileNames(FileType type)
+FileConfigReader::ReturnFileNames(FileType type, TString limitName)
 {
   std::vector<TString> output;
   std::vector<FileInfo*> *fileInfo;
@@ -46,10 +53,27 @@ FileConfigReader::ReturnFileNames(FileType type)
       exit(1);
     }
 
-  for (std::vector<FileInfo*>::iterator iInfo = fileInfo->begin(); iInfo != fileInfo->end(); ++iInfo)
+  for (std::vector<FileInfo*>::iterator iInfo = fileInfo->begin(); iInfo != fileInfo->end(); ++iInfo) {
+    if (limitName != "" && (*iInfo)->fTreeName != limitName)
+      continue;
+
     output.push_back((*iInfo)->fFileName);
+  }
  
   return output;
+}
+
+//--------------------------------------------------------------------
+TChain*
+FileConfigReader::ReturnTChain(TString treeName, FileType type, TString limitName)
+{
+  TChain *theChain = new TChain(treeName, treeName + "_chain");
+  std::vector<TString> fileList = ReturnFileNames(type, limitName);
+  for (std::vector<TString>::iterator iFile = fileList.begin(); iFile != fileList.end(); ++iFile)
+    theChain->Add(iFile->Data());
+
+  fDeleteThese.push_back(theChain);
+  return theChain;
 }
 
 //--------------------------------------------------------------------

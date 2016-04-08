@@ -249,7 +249,7 @@ PlotBase::PlotBase() :
 
 //--------------------------------------------------------------------
 PlotBase::~PlotBase()
-{}
+{ }
 
 //--------------------------------------------------------------------
 void PlotBase::AddLine(TTree *tree, TString cut, TString expr)

@@ -1,4 +1,4 @@
-#! /usr/bin/python
+#!/usr/bin/env python
 
 from CrombieTools.AnalysisTools.LimitTreeMaker import *
 import CrombieTools.LoadConfig

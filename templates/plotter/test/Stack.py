@@ -1,4 +1,4 @@
-#! /usr/bin/python
+#!/usr/bin/env python
 
 from CrombieTools.PlotTools.PlotStack import *
 from array import array
