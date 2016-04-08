@@ -32,10 +32,9 @@ FileConfigReader::~FileConfigReader()
 }
 
 //--------------------------------------------------------------------
-std::vector<TString>
-FileConfigReader::ReturnFileNames(FileType type, TString limitName)
+std::vector<FileInfo*>*
+FileConfigReader::GetFileInfo(FileType type)
 {
-  std::vector<TString> output;
   std::vector<FileInfo*> *fileInfo;
   switch (type)
     {
@@ -52,6 +51,28 @@ FileConfigReader::ReturnFileNames(FileType type, TString limitName)
       std::cout << "What case is that?" << std::endl;
       exit(1);
     }
+  return fileInfo;
+} 
+
+//--------------------------------------------------------------------
+std::set<TString>
+FileConfigReader::ReturnTreeNames(FileType type)
+{
+  std::set<TString> output;
+  std::vector<FileInfo*> *fileInfo = GetFileInfo(type);
+
+  for (std::vector<FileInfo*>::iterator iInfo = fileInfo->begin(); iInfo != fileInfo->end(); ++iInfo)
+    output.insert((*iInfo)->fTreeName);
+ 
+  return output;
+}
+
+//--------------------------------------------------------------------
+std::vector<TString>
+FileConfigReader::ReturnFileNames(FileType type, TString limitName)
+{
+  std::vector<TString> output;
+  std::vector<FileInfo*> *fileInfo = GetFileInfo(type);
 
   for (std::vector<FileInfo*>::iterator iInfo = fileInfo->begin(); iInfo != fileInfo->end(); ++iInfo) {
     if (limitName != "" && (*iInfo)->fTreeName != limitName)

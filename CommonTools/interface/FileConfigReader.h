@@ -9,6 +9,7 @@
 #ifndef CROMBIETOOLS_COMMONTOOLS_FILECONFIGREADER_H
 #define CROMBIETOOLS_COMMONTOOLS_FILECONFIGREADER_H
 
+#include <set>
 #include <vector>
 #include "TColor.h"
 #include "TString.h"
@@ -32,6 +33,9 @@ class FileConfigReader : public InOutDirectoryHolder
   /// Differentiates between background, signal MC and data.
   /// @todo add some sort of DataFile addition
   enum FileType { kBackground = 0, kSignal, kData };
+
+  /// Returns a vector of limit tree names that have been read from the configs
+  std::set<TString>    ReturnTreeNames      ( FileType type = kBackground);
 
   /// Returns a vector of file names that have been read from the configs
   std::vector<TString> ReturnFileNames      ( FileType type = kBackground, TString limitName = "" );
@@ -94,6 +98,8 @@ class FileConfigReader : public InOutDirectoryHolder
   
 
  private:
+  /// Return a pointer to a proper vector of FileInfo
+  std::vector<FileInfo*> *GetFileInfo       ( FileType type ); 
   FileType     fFileType = kBackground;                   ///< Type of files in the next config
   Bool_t       fKeepAllFiles = false;                     ///< Keeps FileInfo stored usually deleted by exception configs
   Bool_t       fMultiplyLumi = true;                      ///< Returns XSecWeight with luminosity multiplied

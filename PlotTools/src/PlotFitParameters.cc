@@ -3,7 +3,10 @@
 #include "TFitResult.h"
 #include "TMath.h"
 #include "TH2D.h"
+#include "TH1D.h"
+#include "TH1F.h"
 #include "TMatrixDSym.h"
+#include "TProfile.h"
 
 #include "PlotFitParameters.h"
 
@@ -11,8 +14,7 @@ ClassImp(PlotFitParameters)
 
 //--------------------------------------------------------------------
 PlotFitParameters::PlotFitParameters() :
-  fFitXBins(0),
-  fMeans(0)
+  fFitXBins(0)
 {
   fMeans.resize(0);
   fFunctionComponents.resize(0);
@@ -39,7 +41,7 @@ PlotFitParameters::GetMeans(Int_t NumXBins, const Double_t *XBins)
 {
   fFitXBins = NumXBins;
   UInt_t NumPlots = 0;
-
+  
   if (fInTrees.size() > 0)
     NumPlots = fInTrees.size();
   else if (fInCuts.size() > 0)
@@ -63,10 +65,21 @@ PlotFitParameters::GetMeans(Int_t NumXBins, const Double_t *XBins)
     if (fInExprXs.size() != 0)
       fInExprX = fInExprXs[iPlot];
 
-    TProfile *tempProfile;
+    TH1 *tempProfile;
 
-    tempProfile = new TProfile(tempName+"prof",tempName+"prof",NumXBins,XBins);
-    inTree->Draw(fInExprX+":"+fInExprX+">>"+tempName+"prof",inCut);
+    if (fCutStyle == kBinned) {
+      tempProfile = new TProfile(tempName+"prof",tempName+"prof",NumXBins,XBins);
+      inTree->Draw(fInExprX+":"+fInExprX+">>"+tempName+"prof",inCut);
+    }
+    else {
+      tempProfile = new TH1F(tempName+"prof",tempName+"prof",NumXBins,XBins);
+      Int_t addBin = (fCutStyle == kLessThan) ? 1 : 0;
+      for (Int_t iBin = 0; iBin != NumXBins; ++iBin) {
+        tempProfile->SetBinContent(iBin + 1, XBins[iBin + addBin]);
+        tempProfile->SetBinError(iBin + 1, 0);
+      }
+    }
+
     fMeans.push_back(tempProfile);
   }
 }
@@ -95,12 +108,29 @@ PlotFitParameters::DoFit(TF1* fitFunc, TF1* looseFunc, TH2D* histToFit,
     for (UInt_t iParam = 0; iParam != fGuessParams.size(); ++iParam)
       fitFunc->SetParameter(fGuessParams[iParam],fGuesses[iParam]);
     
+    TH1D *projection;
+    switch (fCutStyle)
+      {
+      case kBinned:
+        projection = histToFit->ProjectionY(tempName+"_py",iXBin+1,iXBin+1);
+        break;
+      case kLessThan:
+        projection = histToFit->ProjectionY(tempName+"_py",0,iXBin+1);
+        break;
+      case kGreaterThan:
+        projection = histToFit->ProjectionY(tempName+"_py",iXBin+1,  NumXBins);
+        break;
+      default:
+        std::cout << "What case is that?" << std::endl;
+        exit(1);
+      }
+
     if (fLooseFunction != "") {
-      histToFit->ProjectionY(tempName+"_py",iXBin+1,iXBin+1)->Fit(looseFunc,fFitOptions,"",MinY,MaxY);
+      projection->Fit(looseFunc,fFitOptions,"",MinY,MaxY);
       for (UInt_t iParam = 0; iParam != fParamFrom.size(); ++iParam)
         fitFunc->SetParameter(fParamTo[iParam],looseFunc->GetParameter(fParamFrom[iParam]));
     }
-    TFitResultPtr fitResult = histToFit->ProjectionY(tempName+"_py",iXBin+1,iXBin+1)->Fit(fitFunc,fFitOptions + "S","",MinY,MaxY);
+    TFitResultPtr fitResult = projection->Fit(fitFunc,fFitOptions + "S","",MinY,MaxY);
     if (fDumpingFits) {
       TString dumpName;
       Int_t lower = XBins[iXBin];
@@ -137,6 +167,8 @@ PlotFitParameters::DoFit(TF1* fitFunc, TF1* looseFunc, TH2D* histToFit,
 std::vector<TGraphErrors*>
 PlotFitParameters::MakeGraphs(TString ParameterExpr)
 {
+  Double_t epsilon = 0.001;
+
   TGraphErrors *tempGraph;
   std::vector<TGraphErrors*> theGraphs;
 
@@ -146,22 +178,46 @@ PlotFitParameters::MakeGraphs(TString ParameterExpr)
     tempGraph = new TGraphErrors(fFitXBins);
 
     for (Int_t iXBin = 0; iXBin != fFitXBins; ++iXBin) {
+
+      // First set the center value of the line being drawn
       for (Int_t iParam = 0; iParam != parameterHolder.GetNpar(); ++iParam) {
-	Int_t parNumInFit = fFits[iLine][iXBin]->GetParNumber(parameterHolder.GetParName(iParam));
-	parameterHolder.SetParameter(iParam,fFits[iLine][iXBin]->GetParameter(parNumInFit));
-	parameterHolder.SetParError(iParam,fFits[iLine][iXBin]->GetParError(parNumInFit));
+        Int_t parNumInFit = fFits[iLine][iXBin]->GetParNumber(parameterHolder.GetParName(iParam));
+        parameterHolder.SetParameter(iParam,fFits[iLine][iXBin]->GetParameter(parNumInFit));
+        parameterHolder.SetParError(iParam,fFits[iLine][iXBin]->GetParError(parNumInFit));
       }
 
       tempGraph->SetPoint(iXBin,fMeans[iLine]->GetBinContent(iXBin + 1),parameterHolder.Eval(0));
+
+      // Next set the error
       Double_t error2 = 0;
 
       for (Int_t iParam = 0; iParam != parameterHolder.GetNpar(); ++iParam) {
-	TString replaceExpr = ParameterExpr.ReplaceAll(TString("[") + TString(parameterHolder.GetParName(iParam)).Strip(TString::kLeading,'p') + TString("]"),'x');
-	TF1 errorFunc("errorFunc",replaceExpr);
-	for (Int_t jParam = 0; jParam != errorFunc.GetNpar(); ++jParam)
-	  errorFunc.SetParameter(jParam,parameterHolder.GetParameter(errorFunc.GetParName(jParam)));
-	Double_t error = errorFunc.Derivative(parameterHolder.GetParameter(iParam)) * parameterHolder.GetParError(iParam);
-	error2 += error*error;
+        // Just take the derivative for the first order
+        ParameterExpr.ReplaceAll(TString("[") + TString(parameterHolder.GetParName(iParam)).Strip(TString::kLeading,'p') + TString("]"), 'x');
+        TF1 errorFunc("errorFunc",ParameterExpr);
+        for (Int_t jParam = 0; jParam != errorFunc.GetNpar(); ++jParam)
+          errorFunc.SetParameter(jParam,parameterHolder.GetParameter(errorFunc.GetParName(jParam)));
+        Double_t iDerivative = errorFunc.Derivative(parameterHolder.GetParameter(iParam));
+        Double_t error = iDerivative * parameterHolder.GetParError(iParam);
+        error2 += error*error;
+        ParameterExpr.ReplaceAll('x', TString("[") + TString(parameterHolder.GetParName(iParam)).Strip(TString::kLeading,'p') + TString("]"));
+
+        for (Int_t jParam = iParam + 1; jParam != parameterHolder.GetNpar(); ++jParam) {
+          // For second order, take the other derivative
+          ParameterExpr.ReplaceAll(TString("[") + TString(parameterHolder.GetParName(jParam)).Strip(TString::kLeading,'p') + TString("]"), 'x');
+
+          TF1 errorFunc2("errorFunc2",ParameterExpr);
+          for (Int_t kParam = 0; kParam != errorFunc2.GetNpar(); ++kParam)
+            errorFunc2.SetParameter(kParam,parameterHolder.GetParameter(errorFunc.GetParName(kParam)));
+          Double_t jDerivative = errorFunc2.Derivative(parameterHolder.GetParameter(jParam));
+
+          // Fetch the value from the covariance matrix
+          error2 += 2 * iDerivative * jDerivative *
+            (*fCovs[iLine][iXBin])(fFits[iLine][iXBin]->GetParNumber(parameterHolder.GetParName(iParam)),
+                                   fFits[iLine][iXBin]->GetParNumber(parameterHolder.GetParName(jParam)));
+
+          ParameterExpr.ReplaceAll('x', TString("[") + TString(parameterHolder.GetParName(jParam)).Strip(TString::kLeading,'p') + TString("]"));
+        }
       }
 
       tempGraph->SetPointError(iXBin,fMeans[iLine]->GetBinError(iXBin + 1),TMath::Sqrt(error2));
