@@ -103,15 +103,15 @@ def RunOnDirectory(objectToRun, procs=DefaultNumProcs, printing=True):
 
     outDir = None
     if 'GetOutDirectory' in dir(objectToRun):
-        outDir = objectToRun.GetOutDirectory()
+        outDir = str(objectToRun.GetOutDirectory())
 
     def GetSize(name):
-        return os.path.getsize(inDir + '/' + name)
+        return os.path.getsize(inDir + name)
 
     for inFileName in sorted(os.listdir(inDir), key=GetSize, reverse=True):
         if inFileName.endswith('.root'):
-            if outDir and os.path.exists(outDir + '/' + inFileName):
-                print(inFileName + ' already exists in ' + outDir + '... Skipping.')
+            if outDir and os.path.exists(outDir + inFileName):
+                print(outDir + inFileName + ' already exists !!! ... Skipping.')
                 continue
             theFiles.append([inFileName])
 
