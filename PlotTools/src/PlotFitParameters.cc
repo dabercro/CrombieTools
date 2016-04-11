@@ -108,22 +108,27 @@ PlotFitParameters::DoFit(TF1* fitFunc, TF1* looseFunc, TH2D* histToFit,
     for (UInt_t iParam = 0; iParam != fGuessParams.size(); ++iParam)
       fitFunc->SetParameter(fGuessParams[iParam],fGuesses[iParam]);
     
-    TH1D *projection;
+    Int_t lowerBin;
+    Int_t upperBin;
     switch (fCutStyle)
       {
       case kBinned:
-        projection = histToFit->ProjectionY(tempName+"_py",iXBin+1,iXBin+1);
+        lowerBin = iXBin + 1;
+        upperBin = iXBin + 1;
         break;
       case kLessThan:
-        projection = histToFit->ProjectionY(tempName+"_py",0,iXBin+1);
+        lowerBin = 1;
+        upperBin = iXBin + 1;
         break;
       case kGreaterThan:
-        projection = histToFit->ProjectionY(tempName+"_py",iXBin+1,  NumXBins);
+        lowerBin = iXBin + 1;
+        upperBin = NumXBins;
         break;
       default:
         std::cout << "What case is that?" << std::endl;
         exit(1);
       }
+    TH1D *projection = histToFit->ProjectionY(tempName+"_py",lowerBin,upperBin);
 
     if (fLooseFunction != "") {
       projection->Fit(looseFunc,fFitOptions,"",MinY,MaxY);
@@ -133,9 +138,9 @@ PlotFitParameters::DoFit(TF1* fitFunc, TF1* looseFunc, TH2D* histToFit,
     TFitResultPtr fitResult = projection->Fit(fitFunc,fFitOptions + "S","",MinY,MaxY);
     if (fDumpingFits) {
       TString dumpName;
-      Int_t lower = XBins[iXBin];
-      Int_t upper = XBins[iXBin + 1];
-      dumpName.Form("DumpFit_%04d_%dTo%d",fNumFitDumps,lower,upper);
+      Double_t lower = XBins[lowerBin - 1];
+      Double_t upper = XBins[upperBin];
+      dumpName.Form("DumpFit_%04d_%.2fTo%.2f",fNumFitDumps,lower,upper);
       std::vector<TF1*> components;
       for (UInt_t iFunc = 0; iFunc < fFunctionComponents.size(); iFunc++) {
         TF1 *tempComponent = new TF1(dumpName,fFunctionComponents[iFunc],MinY,MaxY);

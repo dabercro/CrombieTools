@@ -41,7 +41,7 @@ def RunParallel(objectToRun, functionName, parametersLists, procs=DefaultNumProc
         if not os.path.exists(outDir):
             os.makedirs(outDir)
 
-    def skim(inQueue):
+    def runOnQueue(inQueue):
         running = True
 
         objCopy = objectToRun.Copy()
@@ -73,7 +73,7 @@ def RunParallel(objectToRun, functionName, parametersLists, procs=DefaultNumProc
         theQueue.put(parameters)
 
     for worker in range(procs):
-        aProcess = Process(target=skim, args=(theQueue,))
+        aProcess = Process(target=runOnQueue, args=(theQueue,))
         aProcess.start()
         theProcesses.append(aProcess)
 
@@ -101,11 +101,18 @@ def RunOnDirectory(objectToRun, procs=DefaultNumProcs, printing=True):
 
     inDir = str(objectToRun.GetInDirectory())
 
+    outDir = None
+    if 'GetOutDirectory' in dir(objectToRun):
+        outDir = objectToRun.GetOutDirectory()
+
     def GetSize(name):
         return os.path.getsize(inDir + '/' + name)
 
     for inFileName in sorted(os.listdir(inDir), key=GetSize, reverse=True):
         if inFileName.endswith('.root'):
+            if outDir and os.path.exists(outDir + '/' + inFileName):
+                print(inFileName + ' already exists in ' + outDir + '... Skipping.')
+                continue
             theFiles.append([inFileName])
 
     RunParallel(objectToRun,'RunOnFile',theFiles,procs,printing)
