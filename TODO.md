@@ -1,17 +1,10 @@
 # Project Todo List
 
-@todo Make a tool that shows the diff between two directories <br>
-      Show if files are missing <br>
-      Show if certain trees are missing certain events <br>
-      Compare variable distributions
-
 @todo Make cuts template good at returning N-1 plots and a wrapper for this in CrombieTools.PlotTools.PlotStack
 
 @todo Document code
 
 @todo Make tests
-
-@todo Write a tool that compares files after slimming/skimming.
 
 @todo Make Histogram systematics adding function (AddSys(fileName,histName,startBin=1,endBin=0)) <br>
       This may be more of a PlotUtils kind of thing <br>
@@ -33,9 +26,7 @@
       Add multiple lines for other files, can watch MC that way <br>
       Adjust to use triggers
 
-@todo Check tdrStyle stuff out and investigate CrombieStyle
-
-@todo Revisit legend options in PlotBase
+@todo Check tdrStyle stuff out and consider making CrombieStyle
 
 @todo Add dotted lines and arrows to PlotBase to indicate cuts
 

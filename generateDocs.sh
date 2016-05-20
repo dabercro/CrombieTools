@@ -12,10 +12,10 @@ where=$2
 if [ `which doxygen 2> /dev/null` != "" ]
 then
     pdfName=CrombieToolsManual.pdf
-    doxygen CrombieDocs.cfg
+    doxygen docs/CrombieDocs.cfg
     if [ "$copy" != "test" ]                     # In this case, I'm just testing making html fast
     then
-        cd latex
+        cd docs/latex
         make
         mv refman.pdf $pdfName
         cd -
@@ -46,8 +46,8 @@ then
             useTar=gtar
         fi
         echo "Copying documentation to $targetHost."
-        $useTar -czf - html/* latex/$pdfName |
-            ssh $targetHost "mkdir -p $targetDir 2> /dev/null ; cd $targetDir ; rm -rf search ; tar -xzf - ; mv html/* . ; mv latex/$pdfName ."
+        $useTar -czf - docs/html/* docs/latex/$pdfName |
+            ssh $targetHost "mkdir -p $targetDir 2> /dev/null ; cd $targetDir ; rm -rf search ; tar -xzf - ; mv docs/html/* . ; mv docs/latex/$pdfName ."
     fi
 else
     echo "You need the 'doxygen' package to" 

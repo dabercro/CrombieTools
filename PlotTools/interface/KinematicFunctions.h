@@ -5,6 +5,9 @@
   @author Daniel Abercrombie <dabercro@mit.edu>
   @author Zeynep Demiragli <zeynep.demiragli@cern.ch> */
 
+#ifndef KINEMATICFUNCTIONS_H
+#define KINEMATICFUNCTIONS_H
+
 #include "TLorentzVector.h"
 
 /// Calculate deltaPhi between two particles
@@ -101,3 +104,5 @@ float transverseMass(float lepPt, float lepPhi, float met,  float metPhi)
   double cosDPhi = cos(deltaPhi(lepPhi,metPhi));
   return sqrt(2*lepPt*met*(1-cosDPhi));
 }
+
+#endif
