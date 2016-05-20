@@ -11,9 +11,9 @@ ROOT.gROOT.LoadMacro('slimmer.cc+')
 
 # Load any other needed macros here
 
-if sys.argv[1] == "compile":
+if len(sys.argv) == 0:
     exit()
-else:
+elif len(sys.argv) == 3:
     if not os.path.isfile(sys.argv[2]):
         ROOT.slimmer(sys.argv[1],
                      sys.argv[2])
