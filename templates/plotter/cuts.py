@@ -33,7 +33,7 @@ def cut(category, region):
 
 def dataMCCuts(region, isData):
     key = 'default'
-    if additions.Get(region):
+    if additions.get(region):
         key = region
 
     index = 1

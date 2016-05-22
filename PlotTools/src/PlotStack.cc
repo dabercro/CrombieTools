@@ -160,9 +160,11 @@ PlotStack::MakeCanvas(TString FileBase, Int_t NumXBins, Double_t *XBins,
   if (fSignalFileInfo.size() != 0)
     SignalHists = GetHistList(NumXBins,XBins,kSignal);
 
-  SetRatioIndex(0);
-  SetOnlyRatioWithData(true);
   SetLegendFill(true);
+  if (fMakeRatio) {
+    SetRatioIndex(0);
+    SetOnlyRatioWithData(true);
+  }
 
   TH1D *DataHist = (TH1D*) DataHists[0]->Clone("DataHist");
   DataHist->Reset("M");

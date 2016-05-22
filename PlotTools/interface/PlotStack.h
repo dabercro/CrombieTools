@@ -50,6 +50,9 @@ class PlotStack : public PlotHists , public FileConfigReader
                                                         fTemplateHists.push_back(histName); 
                                                         fTemplateEntries.push_back(LegendEntry);  }
 
+  /// Use to suppress ratio pad if wanted
+  void SetMakeRatio      ( Bool_t make )              { fMakeRatio = make;                        }
+
  protected:
   /// Determines type of histogram being drawn.
   enum HistType { kData = 0, kMC, kSignal };
@@ -81,6 +84,7 @@ class PlotStack : public PlotHists , public FileConfigReader
 
   Bool_t                fDebug;                     ///< Dumps yield tests
   TString               fDumpRootName;              ///< File where each histogram in stack is dumped
+  Bool_t                fMakeRatio = true;          ///< Bool to make ratio pad
 
   ClassDef(PlotStack,1)
 };

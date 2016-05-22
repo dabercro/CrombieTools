@@ -52,5 +52,9 @@ skimmer.SetLumiExpr(args.lumiExpr)
 skimmer.SetCut(args.cut)
 skimmer.SetReportFrequency(args.reportFreq)
 skimmer.SetCheckDuplicates(args.doDuplicate)
+for copyObject in args.copyObjects:
+    skimmer.AddCopyObject(copyObject)
+for eventFilter in args.filters:
+    skimmer.AddEventFilter(eventFilter)
 
 RunOnDirectory(skimmer, args.numMaxProcesses)

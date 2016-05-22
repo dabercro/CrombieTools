@@ -7,7 +7,7 @@ plotter         = newStackPlotter()
 def SetupFromEnv(aPlotter = plotter):
     from .. import LoadConfig
     DirFromEnv('CrombieOutPlotDir')
-    if os.path.exists('CrombieAnalysisConfig.sh'):
+    if os.path.exists('CrombieAnalysisConfig.sh') or os.path.exists('CrombiePlotterConfig.sh'):
         def readMC(config):
             aPlotter.ReadMCConfig(config,aPlotter.kBackground)
         def readSignal(config):
@@ -29,7 +29,7 @@ def SetupFromEnv(aPlotter = plotter):
                     target[0](float(os.environ[target[1]]))
 
     else:
-        print 'Could not find CrombieAnalysisConfig.sh'
+        print 'Could not find CrombieAnalysisConfig.sh or CrombiePlotterConfig.sh'
 
 def SetCuts(category,region,aPlotter = plotter):
     """ Sets cuts based on category and region.
