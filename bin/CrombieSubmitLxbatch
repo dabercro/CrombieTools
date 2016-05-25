@@ -8,6 +8,14 @@ then
     exit 1
 fi
 
+if [ "$fresh" = "fresh" ]
+then
+    if [ -d $CrombieTempDir ]
+    then
+        rm $CrombieTempDir/*.root 2> /dev/null
+    fi
+fi
+
 if [ ! -d bout ]
 then
     mkdir bout
@@ -29,7 +37,7 @@ then
     rootNames=`ls $CrombieTempDir/$CrombieFileBase\_*_*.txt | sed 's/.txt/.root/'`
     for outFile in $rootNames
     do
-        if [ ! -f $outFile -o "$fresh" = "fresh" ]
+        if [ ! -f $outFile ]
         then
             echo Making: $outFile
             command="bsub -q $CrombieQueue -n $CrombieNBatchProcs -o bout/out.%J $CROMBIEPATH/scripts/CrombieDoJob.sh $outFile"
@@ -48,6 +56,6 @@ fi
 
 if [ "$ranOnFile" -eq 0 ]
 then
-    cat $haddFile | xargs -n2 -P6 $CROMBIEPATH/scripts/haddArgs.sh 
+    cat $haddFile | xargs -n2 -P$CrombieNLocalProcs $CROMBIEPATH/scripts/haddArgs.sh 
     echo "All files merged!"
 fi
