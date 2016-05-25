@@ -1,6 +1,6 @@
 #!/bin/bash
 
-fresh=$1
+export fresh=$1
 
 source CrombieSlimmingConfig.sh
 
@@ -24,12 +24,13 @@ if [ "$fresh" != "hadd" ]
 then
     countFiles=`ls $CrombieTempDir/TerminalRunning/*.txt.running  2> /dev/null | wc -l`
 
+    if [ ! -d $CrombieTempDir/TerminalRunning ]
+    then
+        mkdir -p $CrombieTempDir/TerminalRunning
+    fi
+
     if [ "$countFiles" -eq "0" -a "$fresh" != "resub" ]
     then
-        if [ ! -d $CrombieTempDir/TerminalRunning ]
-        then
-            mkdir -p $CrombieTempDir/TerminalRunning
-        fi
         $CROMBIEPATH/scripts/CrombieDumpFileList.sh
         if [ "$?" -ne "0" ]
         then

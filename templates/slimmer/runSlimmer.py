@@ -18,4 +18,4 @@ elif len(sys.argv) == 3:
         ROOT.slimmer(sys.argv[1],
                      sys.argv[2])
     else:
-        print sys.argv[2] + " already exists!! Skipping..."
+        print(sys.argv[2] + ' already exists!! Skipping...')

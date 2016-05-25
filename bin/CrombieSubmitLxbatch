@@ -1,19 +1,15 @@
 #!/bin/bash
 
-fresh=$1
+export fresh=$1
+
+echo "=========================================================" >> `pwd`/LxbatchFileChecks.log
+echo "Ran CrombieSubmitLxbatch at "`date -u` >> `pwd`/LxbatchFileChecks.log
+echo "=========================================================" >> `pwd`/LxbatchFileChecks.log
 
 if [ "$CMSSW_BASE" = "" ]
 then
     echo "Require you to be cmsenv somewhere"
     exit 1
-fi
-
-if [ "$fresh" = "fresh" ]
-then
-    if [ -d $CrombieTempDir ]
-    then
-        rm $CrombieTempDir/*.root 2> /dev/null
-    fi
 fi
 
 if [ ! -d bout ]
