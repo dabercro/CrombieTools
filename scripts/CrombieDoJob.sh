@@ -8,6 +8,12 @@ macroDir=$LS_SUBCWD
 
 source $macroDir/CrombieSlimmingConfig.sh
 
+eosServer = "eoscms"
+if [ "$CrombieUseCernBox" -eq "1" ]
+then
+    eosServer = "eosuser"
+fi
+
 if [ "$CMSSW_BASE" != "" ]
 then
     cd $CMSSW_BASE/src
@@ -36,7 +42,7 @@ echo ""
 RUNNING=0
 NUM=0
 
-$CrombieSlimmerScript compile
+$CrombieSlimmerScript
 
 OutputBase="lxbatchTmpOutput"
 CommandList="ArgsForThisJob.txt"
@@ -44,8 +50,9 @@ echo "" > $CommandList
 
 for file in `cat "${outFile%.*}".txt`
 do
-    echo root://eoscms/$file $OutputBase\_$NUM.root
-    echo root://eoscms/$file $OutputBase\_$NUM.root >> $CommandList
+    echoCommand="echo root://$eosServer/$file $OutputBase\_$NUM.root"
+    $echoCommand
+    $echoCommand >> $CommandList
     NUM=$((NUM + 1))
 done
 

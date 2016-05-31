@@ -23,12 +23,13 @@ fi
 if [ "$CrombieDirList" = "" ]
 then
     CrombieDirList=$CrombieTempDir/CrombieDirList.txt
+    logDir=bout
     if [ "$isEOS" = "eos" ]
     then
-        if [ ! -d bout ]
+        if [ ! -d $logDir ]
         then
-            echo "Making log output directory as bout"
-            mkdir bout
+            echo "Making log output directory as $logDir"
+            mkdir $logDir
         fi 
         /afs/cern.ch/project/eos/installation/0.3.84-aquamarine/bin/eos.select ls $CrombieEosDir > $CrombieDirList
     else
@@ -75,6 +76,10 @@ do
         do
             if [ "${inFile##*_}" = "pilot.root" -o "${inFile##*.}" != "root" ]
             then
+                continue
+            elif echo $inFile | grep "/failed/"
+            then
+                echo "Found a failed job. Resubmit that. I'm skipping for now."
                 continue
             fi
             inFile="${inFile##*$CrombieEosDir/$dir/}"
