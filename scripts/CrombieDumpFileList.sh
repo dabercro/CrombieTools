@@ -20,6 +20,13 @@ else
     fi
 fi
 
+eosCommand=/afs/cern.ch/project/eos/installation/0.3.84-aquamarine/bin/eos.select
+
+if [ "$CrombieUseCernBox" -eq "1" ]
+then
+    eosCommand=/afs/cern.ch/project/eos/installation/0.3.84-aquamarine.user/bin/eos.select
+fi
+
 if [ "$CrombieDirList" = "" ]
 then
     CrombieDirList=$CrombieTempDir/CrombieDirList.txt
@@ -31,7 +38,7 @@ then
             echo "Making log output directory as $logDir"
             mkdir $logDir
         fi 
-        /afs/cern.ch/project/eos/installation/0.3.84-aquamarine/bin/eos.select ls $CrombieEosDir > $CrombieDirList
+        $eosCommand ls $CrombieEosDir > $CrombieDirList
     else
         if [ ! -d $CrombieRegDir ]
         then
@@ -72,7 +79,7 @@ do
 
     if [ "$isEOS" = "eos" ]
     then
-        for inFile in `/afs/cern.ch/project/eos/installation/0.3.84-aquamarine/bin/eos.select find $CrombieEosDir/$dir`
+        for inFile in `$eosCommand find $CrombieEosDir/$dir`
         do
             if [ "${inFile##*_}" = "pilot.root" -o "${inFile##*.}" != "root" ]
             then
