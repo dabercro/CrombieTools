@@ -1,8 +1,9 @@
 from .. import Load
 
 newFitPlotter = Load('PlotFitParameters')
+plotter       = newFitPlotter()
 
-def setupResolution(aPlotter):
+def setupResolution(aPlotter=plotter):
     aPlotter.SetLooseFit('[2] * TMath::Gaus(x,[0],[1])')
     aPlotter.SetFunction('[4]*([3]/[1]*TMath::Gaus(x,[0],[1]) + (1 - [3])/[2]*TMath::Gaus(x,[0],[2]))')
 
@@ -16,5 +17,3 @@ def setupResolution(aPlotter):
 def newResolutionPlotter():
     aPlotter = newFitPlotter()
     return setupResolution(aPlotter)
-
-plotter       = newFitPlotter()

@@ -1,10 +1,6 @@
 #!/usr/bin/env python
 
-import ROOT
 import os, argparse
-from multiprocessing import Process
-import Queue
-from time import time
 
 from CrombieTools.SkimmingTools.FlatSkimmer import newFlatSkimmer, MakeFilter
 from CrombieTools.Parallelization import RunOnDirectory

@@ -17,10 +17,8 @@ Corrector::Corrector(TString name) :
 //--------------------------------------------------------------------
 Corrector::~Corrector()
 {
-  if (fCorrectionFile != NULL) {
-    if (fCorrectionFile->IsOpen())
-      fCorrectionFile->Close();
-  }
+  if (fCorrectionFile != NULL && fCorrectionFile->IsOpen() && !fIsCopy)
+    fCorrectionFile->Close();
 
   if (fCutFormula != NULL)
     delete fCutFormula;
@@ -161,4 +159,13 @@ void Corrector::SetMinMax()
     fMins.push_back(theAxis->GetBinCenter(theAxis->GetFirst()));
     fMaxs.push_back(theAxis->GetBinCenter(theAxis->GetLast()));
   }
+}
+
+//--------------------------------------------------------------------
+Corrector* Corrector::Copy()
+{
+  Corrector *newCorrector = new Corrector();
+  *newCorrector = *this;
+  newCorrector->fIsCopy = true;
+  return newCorrector;
 }

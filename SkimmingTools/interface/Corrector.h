@@ -31,6 +31,9 @@ class Corrector
   Corrector( TString name = "correction" );
   virtual ~Corrector();
 
+  /// Copy this Corrector for parallelization
+  Corrector* Copy                         ();
+
   /// Set the file containing the correction histogram by name.
   virtual   void        SetCorrectionFile ( TString fileName );
   /// Set the correction histogram name within the correction file.
@@ -74,6 +77,7 @@ class Corrector
   std::vector<TTreeFormula*>  fFormulas;              ///< Formulae of fInExpressions
   std::vector<Double_t>       fMins;                  ///< Minimum possible values of each axis
   std::vector<Double_t>       fMaxs;                  ///< Maximum possible values of each axis
+  Bool_t                      fIsCopy = false;        ///< Track if instance is a copy
   /// Evaluate one of the formulae
   Double_t                    GetFormulaResult            ( Int_t index );
 

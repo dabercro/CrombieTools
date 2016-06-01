@@ -24,6 +24,9 @@ class CorrectorApplicator : public InDirectoryHolder
   CorrectorApplicator( TString name = "", Bool_t saveAll = true );
   virtual ~CorrectorApplicator();
 
+  /// Copy this CorrectorApplicator for parallelization
+  CorrectorApplicator* Copy                 ();
+
   /// Apply the corrections to a given file.
   void                 ApplyCorrections     ( TString fileName );
 

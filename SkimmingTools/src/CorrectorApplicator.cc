@@ -139,3 +139,13 @@ void CorrectorApplicator::ApplyCorrections(TString fileName)
   theFile->Close();
 
 }
+
+//--------------------------------------------------------------------
+CorrectorApplicator* CorrectorApplicator::Copy()
+{
+  CorrectorApplicator *newCorrectorApplicator = new CorrectorApplicator();
+  *newCorrectorApplicator = *this;
+  for (UInt_t iCorrector = 0; iCorrector != this->fCorrectors.size(); ++iCorrector)
+    newCorrectorApplicator->fCorrectors[iCorrector] = this->fCorrectors[iCorrector]->Copy();
+  return newCorrectorApplicator;
+}

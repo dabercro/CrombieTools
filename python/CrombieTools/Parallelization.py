@@ -13,7 +13,7 @@ from Queue import Empty
 from time import time
 
 """Number of processors from environment"""
-DefaultNumProcs = os.environ.get('CrombieNLocalProcs') or 1
+DefaultNumProcs = int(os.environ.get('CrombieNLocalProcs') or 1)
 
 def RunParallel(objectToRun, functionName, parametersLists, procs=DefaultNumProcs, printing=True):
     """ Starts parallel processes.
