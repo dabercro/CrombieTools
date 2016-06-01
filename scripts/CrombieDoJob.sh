@@ -2,16 +2,16 @@
 
 outFile=$1
 
-env
-
 macroDir=$LS_SUBCWD
 
 source $macroDir/CrombieSlimmingConfig.sh
 
-eosServer = "eoscms"
-if [ "$CrombieUseCernBox" -eq "1" ]
+env
+
+eosServer=eoscms
+if [ "$CrombieUseCernBox" = "1" ]
 then
-    eosServer = "eosuser"
+    eosServer=eosuser
 fi
 
 if [ "$CMSSW_BASE" != "" ]

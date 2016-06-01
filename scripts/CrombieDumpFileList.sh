@@ -22,7 +22,7 @@ fi
 
 eosCommand=/afs/cern.ch/project/eos/installation/0.3.84-aquamarine/bin/eos.select
 
-if [ "$CrombieUseCernBox" -eq "1" ]
+if [ "$CrombieUseCernBox" = "1" ]
 then
     eosCommand=/afs/cern.ch/project/eos/installation/0.3.84-aquamarine.user/bin/eos.select
 fi
