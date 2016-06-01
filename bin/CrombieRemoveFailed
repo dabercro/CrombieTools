@@ -4,7 +4,7 @@ for f in `ls failed`
 do
     if [ -f $f ]
     then
-        if [ `stat -c &s $f` -ge `stat -c &s failed/$f` ]
+        if [ `stat -c %s $f` -ge `stat -c %s failed/$f` ]
         then
             rm failed/$f
         else
