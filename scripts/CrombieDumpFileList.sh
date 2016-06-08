@@ -89,7 +89,6 @@ do
                 echo "Found a failed job. Resubmit that. I'm skipping for now."
                 continue
             fi
-            inFile="${inFile##*$CrombieEosDir/$dir/}"
             
             if [ "$fileInCount" -eq "$CrombieFilesPerJob" ]
             then
@@ -98,7 +97,7 @@ do
                 currentConfig=$CrombieTempDir/$CrombieFileBase\_$reasonableName\_$count.txt
                 > $currentConfig
             fi
-            echo $CrombieEosDir/$dir/$inFile >> $currentConfig
+            echo $inFile >> $currentConfig
             fileInCount=$((fileInCount + 1))
         done
     else
