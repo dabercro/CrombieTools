@@ -48,8 +48,8 @@ float vectorSumPhi(float pt1, float phi1, float pt2, float phi2)
   TLorentzVector vec1;
   TLorentzVector vec2;
   TLorentzVector vec3;
-  vec1.SetPtEtaPhiM(pt1,phi1,0,0);
-  vec2.SetPtEtaPhiM(pt2,phi2,0,0);
+  vec1.SetPtEtaPhiM(pt1,0,phi1,0);
+  vec2.SetPtEtaPhiM(pt2,0,phi2,0);
   vec3 = vec1 + vec2;
   return vec3.Phi();
 }
@@ -74,8 +74,8 @@ float vectorSumMass(float pt1, float eta1, float phi1, float mass1, float pt2, f
   TLorentzVector vec1;
   TLorentzVector vec2;
   TLorentzVector vec3;
-  vec1.SetPtEtaPhiM(pt1,phi1,eta1,mass1);
-  vec2.SetPtEtaPhiM(pt2,phi2,eta2,mass2);
+  vec1.SetPtEtaPhiM(pt1,eta1,phi1,mass1);
+  vec2.SetPtEtaPhiM(pt2,eta2,phi2,mass2);
   vec3 = vec1 + vec2;
   return vec3.M();
 }
@@ -92,8 +92,8 @@ float vectorSumEta(float pt1, float eta1, float phi1, float pt2, float eta2, flo
   TLorentzVector vec1;
   TLorentzVector vec2;
   TLorentzVector vec3;
-  vec1.SetPtEtaPhiM(pt1,phi1,eta1,0);
-  vec2.SetPtEtaPhiM(pt2,phi2,eta2,0);
+  vec1.SetPtEtaPhiM(pt1,eta1,phi1,0);
+  vec2.SetPtEtaPhiM(pt2,eta2,phi2,0);
   vec3 = vec1 + vec2;
   return vec3.Eta();
 }
