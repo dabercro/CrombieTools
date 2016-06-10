@@ -50,7 +50,13 @@ echo "" > $CommandList
 
 for file in `cat "${outFile%.*}".txt`
 do
-    echoCommand="echo root://$eosServer/$file $OutputBase\_$NUM.root"
+    if [ "${file:0:7}" = "root://" ]
+    then
+        echoCommand="echo $file $OutputBase\_$NUM.root"
+    else
+        echoCommand="echo root://$eosServer/$file $OutputBase\_$NUM.root"
+    fi
+
     $echoCommand
     $echoCommand >> $CommandList
     NUM=$((NUM + 1))
