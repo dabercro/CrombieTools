@@ -24,6 +24,11 @@ export haddFile=$CrombieTempDir/myHadd.txt
 if [ "$fresh" != "resub" ]
 then
     $CROMBIEPATH/scripts/CrombieDumpFileList.sh eos
+    if [ $? -ne 0 ]
+    then
+        echo "Crashed while dumping file list."
+        exit 1
+    fi
 fi
 
 ranOnFile=0

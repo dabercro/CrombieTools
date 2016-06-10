@@ -50,23 +50,23 @@ then                                                          # (samples) to run
     CrombieDirList=$CrombieTempDir/CrombieDirList.txt         # But if unspecified, we dump all of them
     if [ "$isEOS" = "eos" ]
     then
-        if [ "$usingMultEOS" = "1" ]                          # If using MultiEOS, prepare to read Dir List
+        if [ "$usingMultiEOS" = "1" ]                         # If using MultiEOS, prepare to read Dir List
         then
             > $CrombieDirList
             eoshost=eoscms.cern.ch
             for line in `cat $CrombieEosDir`
             do
-                clean=`echo $line | sed 's/ //g'`
-                if [ "${clean%%=*}" = "eoshost" ]
+                if [ "${line%%=*}" = "eoshost" ]
                 then
-                    eoshost=${clean##*=}
+                    eoshost=${line##*=}
                     echo "eoshost="$eoshost >> $CrombieDirList
                 else
                     echo "eosdir="$line >> $CrombieDirList
-                    if [ "${eoshost%%.*}" -eq "eoscms" ]
+                    if [ "${eoshost%%.*}" = "eoscms" ]
                     then
                         eosCommand=$eosCMS
-                    elif [ "${eoshost%%.*}" -eq "eosuser" ]
+                    elif [ "${eoshost%%.*}" = "eosuser" ]
+                    then
                         eosCommand=$eosUSER
                     else
                         echo "Bad host found in config: $eoshost"
@@ -115,10 +115,11 @@ do
     if [ "${dir%%=*}" = "eoshost" ]
     then
         eoshost=${dir##*=}
-        if [ "${eoshost%%.*}" -eq "eoscms" ]
+        if [ "${eoshost%%.*}" = "eoscms" ]
         then
             eosCommand=$eosCMS
-        elif [ "${eoshost%%.*}" -eq "eosuser" ]
+        elif [ "${eoshost%%.*}" = "eosuser" ]
+        then
             eosCommand=$eosUSER
         else
             echo "Bad host found in config: $eoshost"
