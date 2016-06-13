@@ -11,6 +11,7 @@
 
 #include "TString.h"
 
+#include "ProgressReporter.h"
 #include "InOutDirectoryHolder.h"
 #include "GoodLumiFilter.h"
 
@@ -24,7 +25,7 @@
    taking out events based on a cut string, event filters, a GoodLumiFilter,
    and duplicate events. */
 
-class FlatSkimmer : public InOutDirectoryHolder
+class FlatSkimmer : public InOutDirectoryHolder, public ProgressReporter
 {
  public:
   FlatSkimmer();
@@ -48,8 +49,6 @@ class FlatSkimmer : public InOutDirectoryHolder
   void         SetLumiExpr          ( TString expr )             { fLumiExpr = expr;             }
   /// Set branch name for event number
   void         SetEventExpr         ( TString expr )             { fEventExpr = expr;            }
-  /// @todo make all frequency reports in a centralized class
-  void         SetReportFrequency   ( Int_t freq )               { fReportFreq = freq;           }
   /// Set flag to check for duplicate events
   void         SetCheckDuplicates   ( Bool_t check )             { fCheckDuplicates = check;     }
   /// Add name of TObject to copy from input file to output file unchanged
@@ -66,7 +65,6 @@ class FlatSkimmer : public InOutDirectoryHolder
   TString              fRunExpr = "runNum";      ///< Branch for run number
   TString              fLumiExpr = "lumiNum";    ///< Branch for lumi number
   TString              fEventExpr = "eventNum";  ///< Branch for event number
-  Int_t                fReportFreq = 100000;
   Int_t                fCheckDuplicates = false; ///< Flag to check duplicates
   std::vector<TString> fCopyObjects;             ///< List of TObject names to also copy from original file
   

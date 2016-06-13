@@ -54,6 +54,7 @@ void FlatSkimmer::AddEventFilter(TString filterName){
 
 void FlatSkimmer::Skim(TString fileName)
 {
+  SetReportFile(fileName);
   TFile *inFile = TFile::Open(AddInDir(fileName));
   TTree *inTree = (TTree*) inFile->Get(fTreeName);
   TTreeFormula *cutter = new TTreeFormula("cutter",fCut,inTree);
@@ -76,12 +77,10 @@ void FlatSkimmer::Skim(TString fileName)
   Int_t filtered   = 0;
   Int_t duplicates = 0;
 
-  Long64_t nentries = inTree->GetEntriesFast();
+  Long64_t nentries = SetNumberOfEntries(inTree);
 
   for (Long64_t iEntry = 0; iEntry != nentries; ++iEntry) {
-    if (iEntry % fReportFreq == 0)
-      std::cout << "Processing " << fileName << " ... " << (float(iEntry)/nentries)*100 << "%" << std::endl;
-
+    ReportProgress(iEntry);
     inTree->GetEntry(iEntry);
     if (fGoodLumiFilter.IsGood(runNum,lumiNum)) {
       if (cutter->EvalInstance()) {
