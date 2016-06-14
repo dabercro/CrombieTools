@@ -101,16 +101,13 @@ Float_t Corrector::Evaluate()
       else if (fNumDims == 2) {
         Double_t evalX = GetFormulaResult(0);
         Double_t evalY = GetFormulaResult(1);
-        return fCorrectionHist->GetBinContent(fCorrectionHist->FindBin(evalX),
-                                              fCorrectionHist->FindBin(evalY));
+        return fCorrectionHist->GetBinContent(fCorrectionHist->FindBin(evalX,evalY));
       }
       else if (fNumDims == 3) {
         Double_t evalX = GetFormulaResult(0);
         Double_t evalY = GetFormulaResult(1);
         Double_t evalZ = GetFormulaResult(2);
-        return fCorrectionHist->GetBinContent(fCorrectionHist->FindBin(evalX),
-                                              fCorrectionHist->FindBin(evalY),
-                                              fCorrectionHist->FindBin(evalZ));
+        return fCorrectionHist->GetBinContent(fCorrectionHist->FindBin(evalX,evalY,evalZ));
       }
       else
         return 1.0;
