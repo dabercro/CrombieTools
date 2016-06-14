@@ -13,7 +13,8 @@
 /**
    @ingroup commongroup
    @class ProgressReporter
-   This class is used to report progress of various codes that run over every event in a file */
+   This class is used to report progress of various codes that run over every event in a file 
+   @todo Make this class load trees for files. */
 
 class ProgressReporter
 {
@@ -23,6 +24,8 @@ class ProgressReporter
 
   /// Sets the frequency of reporting progress to terminal
   void      SetReportFrequency   ( Long64_t freq )             { fReportFreq = freq;           }
+
+ protected:
   /// Sets the number of entries to process
   void      SetNumberOfEntries   ( Long64_t nentries )         { fNumberOfEntries = nentries;  }
   /// Sets the number of entries to process from a tree
@@ -37,9 +40,10 @@ class ProgressReporter
       std::cout << "Processing " << fReportFile << " ... " << (float(entry)/fNumberOfEntries)*100 << "%" << std::endl;
   }
 
+  Long64_t      fNumberOfEntries = 0;    ///< Number of entries being run over
+
  private:
   Long64_t      fReportFreq = 100000;    ///< Number of events between each frequency report
-  Long64_t      fNumberOfEntries = 0;    ///< Number of entries being run over
   TString       fReportFile = "";        ///< Name of the file being run on
 };
 

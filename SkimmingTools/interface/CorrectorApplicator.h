@@ -8,6 +8,7 @@
 
 #include <vector>
 #include "TString.h"
+#include "ProgressReporter.h"
 #include "InDirectoryHolder.h"
 #include "Corrector.h"
 
@@ -18,7 +19,7 @@
 
    Applies multiple Corrector objects to a tree in a file. */
 
-class CorrectorApplicator : public InDirectoryHolder
+class CorrectorApplicator : public InDirectoryHolder, public ProgressReporter
 {
  public:
   CorrectorApplicator( TString name = "", Bool_t saveAll = true );
@@ -39,8 +40,6 @@ class CorrectorApplicator : public InDirectoryHolder
   void                 AddCorrector         ( Corrector* corrector )      { fCorrectors.push_back(corrector);       }
   /// Add a branch name to include by multiplication into the main output branch of the CorrectorApplicator.
   void                 AddFactorToMerge     ( TString factor )            { fMergeFactors.push_back(factor);        }
-  /// @todo make all frequency reports in a centralized class
-  void                 SetReportFrequency   ( Int_t freq )                { fReportFrequency = freq;                }
 
   /// Wrapper for CrombieTools.Parallelization.RunOnDirectory() to use.
   void                 RunOnFile            ( TString fileName )          { ApplyCorrections(fileName);             }
@@ -52,7 +51,6 @@ class CorrectorApplicator : public InDirectoryHolder
   TString                   fOutputTreeName = "corrections";   ///< Output tree name.
   std::vector<Corrector*>   fCorrectors;                       ///< Vector of corrector pointers.
   std::vector<TString>      fMergeFactors;                     ///< Vector of branches to merge.
-  Int_t                     fReportFrequency = 100000;
 
   ClassDef(CorrectorApplicator,1)
 };

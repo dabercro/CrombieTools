@@ -37,6 +37,7 @@ CorrectorApplicator::~CorrectorApplicator()
 
 void CorrectorApplicator::ApplyCorrections(TString fileName)
 {
+  SetReportFile(fileName);
   TFile* theFile = new TFile(AddInDir(fileName),"UPDATE");
   TTree* theTree = (TTree*) theFile->Get(fInputTreeName);
   TTree* outTree;
@@ -95,11 +96,10 @@ void CorrectorApplicator::ApplyCorrections(TString fileName)
   }
 
   // Now loop through the tree and apply the corrections
-  Long64_t nentries = theTree->GetEntriesFast();
+  Long64_t nentries = SetNumberOfEntries(theTree);
   Float_t tempValue = 1.0;
   for (Long64_t iEntry = 0; iEntry != nentries; ++iEntry) {
-    if (iEntry % fReportFrequency == 0)
-      std::cout << "Processing " << fileName << " ... " << (float(iEntry)/nentries)*100 << "%" << std::endl;
+    ReportProgress(iEntry);
 
     theTree->GetEntry(iEntry);
     // First reset all of the addressed floats to 1.0, merge factors for master factor
