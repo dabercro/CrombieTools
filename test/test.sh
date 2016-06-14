@@ -59,7 +59,7 @@ do
     echo "Generating pretend $sample."
     ./runSlimmer.py $sample.root ${outBase}_$sample.root
     ls ${outBase}_$sample.root
-    $CrombieCheckerScript ${outBase}_$sample.root test
+    $CrombieCheckerScript ${outBase}_$sample.root
     if [ $? -ne 0 ]
     then
         echo "ERROR: Tree not found!"
