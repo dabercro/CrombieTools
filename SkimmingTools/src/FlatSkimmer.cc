@@ -28,7 +28,7 @@ FlatSkimmer::~FlatSkimmer()
 /**
    Adds an event filter list to be removed during skimming.
    And event filter list must be a text file consisting of events to
-   remove in the format \<RunNumber\>:\<LumiNumber\>:\<EventNumber\>.
+   remove in the format \<RunNumber>:\<LumiNumber>:\<EventNumber>.
    Multiple event filters can be added. */
 
 void FlatSkimmer::AddEventFilter(TString filterName){
