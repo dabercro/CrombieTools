@@ -6,6 +6,7 @@ testDir="test"
 
 for dir in `ls $CROMBIEPATH/templates`
 do
+    
     if [ ! -d $dir ]
     then
         mkdir $dir
@@ -34,3 +35,7 @@ do
         fi
     done
 done
+
+location=`pwd`
+mv docs/results.tex docs/${location##*/}.tex
+mkdir docs/figs

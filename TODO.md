@@ -34,5 +34,3 @@
 @todo Add Simulation (instead of Preliminary) option, make CMS writing default
 
 @todo Add templates for creating presentations and documenting study progress
-
-@todo Fix doxygen errors
