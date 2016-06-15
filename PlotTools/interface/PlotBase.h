@@ -399,19 +399,22 @@ void PlotBase::LineDrawing(std::vector<T*> theLines, Int_t index, Bool_t same)
   TString options = GetOpts(theLines[0]);
   if (index == fDataIndex)
     options = "PE";
-  if (same) {
-    if (options != "")
-      options += ",";
-    options += "same";
-  }
-  theLines[index]->Draw(options);
+  if (options != "")
+    options += ",";
+  options += "same";
+
   if (fRatioIndex != -1 && index != fDataIndex) {
     T* tempLine = (T*) theLines[fRatioIndex]->Clone();
     tempLine->SetFillColor(kGray);
     tempLine->SetFillStyle(3001);
+    if (!same)
+      tempLine->Draw("e2");
+    theLines[index]->Draw(options);
     tempLine->Draw("e2,same");
     fDeleteThese.push_back(tempLine);
   }
+  else
+    theLines[index]->Draw(options);
 }
 
 //--------------------------------------------------------------------
