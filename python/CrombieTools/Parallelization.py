@@ -23,6 +23,7 @@ def RunParallel(objectToRun, functionName, parametersLists, procs=DefaultNumProc
     @param functionName is the str name of the function that will be run in multiple instances.
     @param parametersLists is a list of lists. Each sublist contains the parameters for the functionName.
     @param procs is the maximum number of processors that will be used.
+    @param printing tells which files are about to be processed and how long they took if True.
     """
 
     totStartTime = time()
@@ -90,6 +91,7 @@ def RunOnDirectory(objectToRun, procs=DefaultNumProcs, printing=True):
     @param objectToRun has GetInDirectory() and RunOnFile() function members. 
     This function then runs the objectToRun's over all the files in that directory.
     @param procs is the maximum number of processes to start.
+    @param printing tells which files are about to be processed and how long they took if True.
     """
     theFiles = []
 

@@ -62,6 +62,7 @@ def MakePlots(categories,regions,exprArgs,aPlotter = plotter):
 
     @param categories is a list of categories to plot.
     @param regions is a list of the regions to plot.
+    @param exprArgs is a list of lists of parameters to be used in PlotStack::MakeCanvas.
     @param aPlotter is the plotter to use to plot. The default is the plotter defined in this module.
     """
     if not (type(categories) == list and type(regions) == list):

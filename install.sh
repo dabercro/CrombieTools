@@ -1,8 +1,9 @@
-#! /bin/bash
+#!/bin/bash
 
-# A simple install script for CrombieTools
+## @file install.sh
+#  A simple install script for CrombieTools
+#  @author Daniel Abercrombie <dabercro@mit.edu>
 
-profile=0
 here=`pwd`
 
 echo " # "

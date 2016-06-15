@@ -16,6 +16,7 @@ def MakeHist(inputFile,outputFile='',outputHist='',writer=histWriter):
            If left blank, the name is just the inputFile replaced with .txt changed to .root
     @param outputHist is the name of the histogram saved. If left blank, it uses the
            basename of the inputFile. (e.g. a/place/hist.txt -> 'hist').
+    @param writer specifies a HistWriter to use. This is probably rarely, if ever, needs to be changed.
     """
 
     import os.path as op

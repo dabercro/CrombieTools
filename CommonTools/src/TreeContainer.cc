@@ -14,13 +14,6 @@
 ClassImp(TreeContainer)
 
 //--------------------------------------------------------------------
-
-/**
-   TreeContainer Constructor.
-   @param fileName can either be the name of a single file or a directory.
-   If it's a file, that file is opened. If it's a directory, all the 
-   .root files in that directory are opened */
-
 TreeContainer::TreeContainer(TString fileName)
 {
   if (fileName != "") {
