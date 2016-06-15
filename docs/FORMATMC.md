@@ -12,7 +12,7 @@ The MC Config will keep track of these files, one row at a time.
 The order of the elements should be this:
 
 <pre>
-   \<LimitTreeName>    \<FileName>    \<CrossSection>    \<LegendEntry>    \<FillColorOrLineStyle>
+   &lt;LimitTreeName&gt;    &lt;FileName&gt;    &lt;CrossSection&gt;    &lt;LegendEntry&gt;    &lt;FillColorOrLineStyle&gt;
 </pre>
 
 The elements are space delimited.
@@ -80,7 +80,7 @@ If a line starts with the keyword `skip` instead of a tree name and then lists a
 A line like this simply contains:
 
 <pre>
-  skip    \<FileName>
+  skip    &lt;FileName&gt;
 </pre>
 
 A configuration file with lines like this can also contain lines like those in the base configuration.
