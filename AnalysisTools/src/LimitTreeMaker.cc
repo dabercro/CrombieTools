@@ -141,7 +141,7 @@ LimitTreeMaker::MakeTrees()
       if (XSec < 0 && fExceptionDataCuts[regionName] != "")
         theCut = TString("(") + theCut + ") && (" + fExceptionDataCuts[regionName] + ")";
 
-      TTree* loopTree = inTree->CopyTree(fRegionCuts[iRegion]);
+      TTree* loopTree = inTree->CopyTree(theCut);
       // Initialize output tree
       TFile* outFile = new TFile(AddOutDir(fOutputFileName),"UPDATE");
       TTree* outTree = new TTree(outTreeName + "_" + regionName,outTreeName + "_" + regionName);
