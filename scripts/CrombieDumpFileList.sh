@@ -24,6 +24,7 @@ fi
 
 if [ -f $CrombieEosDir ]
 then
+    CrombieEosDir=`cat $CrombieEosDir`         # Set list of EOS directories
     usingMultiEOS=1
 fi
 
@@ -32,12 +33,6 @@ fi
 eosCMS=/afs/cern.ch/project/eos/installation/0.3.84-aquamarine/bin/eos.select
 eosUSER=/afs/cern.ch/project/eos/installation/0.3.84-aquamarine.user/bin/eos.select
 
-eosCommand=$cmsCMS                             # Old behavior was to use a flag to determine which to use
-if [ "$CrombieUseCernBox" = "1" ]              # This is unnecessary when specifying multiple EOS directories to run on
-then
-    eosCommand=$eosUSER
-fi
-
 logDir=bout                                    # Make a log directory
 if [  ! -d $logDir -a "$isEOS" = "eos" ]       # if running on EOS
 then
@@ -45,47 +40,65 @@ then
     mkdir $logDir
 fi 
 
-if [ "$CrombieDirList" = "" ]                                 # User can specify a list of directories
-then                                                          # (samples) to run on
-    CrombieDirList=$CrombieTempDir/CrombieDirList.txt         # But if unspecified, we dump all of them
-    if [ "$isEOS" = "eos" ]
-    then
-        if [ "$usingMultiEOS" = "1" ]                         # If using MultiEOS, prepare to read Dir List
+trackEOS=0                                     # % 2 == 0 will be CMS, % 2 == 1 will be USER
+eosCommand=$eosCMS
+
+RunOnList=$CrombieTempDir/RunOnList.txt
+if [ "$isEOS" = "eos" ]
+then
+    > $RunOnList
+    for line in `cat $CrombieEosDir`
+    do
+        dirContent=`$eosCommand ls $line`
+        if [ "$dirContent" = "" ]
         then
-            > $CrombieDirList
-            eoshost=eoscms.cern.ch
-            for line in `cat $CrombieEosDir`
-            do
-                if [ "${line%%=*}" = "eoshost" ]
-                then
-                    eoshost=${line##*=}
-                    echo "eoshost="$eoshost >> $CrombieDirList
-                else
-                    echo "eosdir="$line >> $CrombieDirList
-                    if [ "${eoshost%%.*}" = "eoscms" ]
+            trackEOS=$((trackEOS + 1))
+            if [ $((trackEOS % 2)) -eq 1 ]
+            then
+                eosCommand=$eosUSER
+                echo "eoshost=eosuser.cern.ch" >> $RunOnList
+            else
+                eosCommand=$eosCMS
+                echo "eoshost=eoscms.cern.ch" >> $RunOnList
+            fi
+            dirContent=`$eosCommand ls $line`
+            if [ "$dirContent" = "" ]
+            then
+                echo "Can't find $line in either instance of EOS..."
+                echo "Check configuration."
+                exit 1
+            fi
+        fi
+
+        for dir in "$dirContent"
+        do
+            if [ "$CrombieDirList" = "" ]
+            then
+                echo $dir >> $RunOnList
+            else
+                for inList in `cat $CrombieDirList`
+                do
+                    if [ "$dir" = "$inList" ]
                     then
-                        eosCommand=$eosCMS
-                    elif [ "${eoshost%%.*}" = "eosuser" ]
-                    then
-                        eosCommand=$eosUSER
-                    else
-                        echo "Bad host found in config: $eoshost"
-                        echo "Please check that."
-                        exit 1
+                        echo $dir >> $RunOnList
+                        break
                     fi
-                    $eosCommand ls $line >> $CrombieDirList
-                fi
-            done
-        else
-            $eosCommand ls $CrombieEosDir > $CrombieDirList
-        fi
+                done
+            fi
+        done
+    done
+else
+    if [ ! -d $CrombieRegDir ]
+    then
+        echo "$CrombieRegDir does not seem to exist. Maybe needs mounting."
+        exit 1
+    fi
+
+    if [ "$CrombieDirList" = "" ]
+    then
+        ls $CrombieRegDir > $RunOnList
     else
-        if [ ! -d $CrombieRegDir ]
-        then
-            echo "$CrombieRegDir does not seem to exist. Maybe needs mounting."
-            exit 1
-        fi
-        ls $CrombieRegDir > $CrombieDirList
+        cat $CrombieDirList > $RunOnList
     fi
 fi
 
@@ -98,19 +111,17 @@ lastDir=''
 count=0
 
 eoshost=eoscms.cern.ch
-if [ "$usingMultiEOS" = "1" ]
+if [ "$usingMultiEOS" -eq 1 ]
 then
     eosCommand=$eosCMS
 fi
 
-for dir in `cat $CrombieDirList`
+for dir in `cat $RunOnList`
 do
     if [ "${dir:0:1}" = "#" ]
     then
         continue
     fi
-
-    # Shitty redundant code needs to be fixed
 
     if [ "${dir%%=*}" = "eoshost" ]
     then
