@@ -47,9 +47,10 @@ RunOnList=$CrombieTempDir/RunOnList.txt
 if [ "$isEOS" = "eos" ]
 then
     > $RunOnList
-    for line in `cat $CrombieEosDir`
+    eosarr=(`echo $CrombieEosDir`)
+    for line in ${eosarr[@]}
     do
-        dirContent=`$eosCommand ls $line`
+        dirContent=(`$eosCommand ls $line`)
         if [ "$dirContent" = "" ]
         then
             trackEOS=$((trackEOS + 1))
@@ -70,7 +71,9 @@ then
             fi
         fi
 
-        for dir in "$dirContent"
+        echo "eosdir="$line >> $RunOnList
+
+        for dir in ${dirContent[@]}
         do
             if [ "$CrombieDirList" = "" ]
             then
