@@ -75,7 +75,7 @@ void CorrectorApplicator::ApplyCorrections(TString fileName)
   std::map<TString, Float_t> Addresses;
   if (fName != "") {
     Addresses[fName] = 1.0;
-    fillBranches.push_back(outTree->Branch(fName,&Addresses[fName],fName+"/F"));
+    fillBranches.push_back(outTree->Branch(fName,&(Addresses[fName]),fName+"/F"));
   }
   for (UInt_t iCorrector = 0; iCorrector != fCorrectors.size(); ++iCorrector) {
     fCorrectors[iCorrector]->SetInTree(theTree);
@@ -83,16 +83,16 @@ void CorrectorApplicator::ApplyCorrections(TString fileName)
       TString checkName = fCorrectors[iCorrector]->GetName();
       if (!outTree->GetBranch(checkName)) {
         Addresses[checkName] = 1.0;
-        fillBranches.push_back(outTree->Branch(checkName,&Addresses[checkName],checkName+"/F"));
+        fillBranches.push_back(outTree->Branch(checkName,&(Addresses[checkName]),checkName+"/F"));
       }
     }
   }
 
   // Get the addresses of factors to merge (will be just a branch)
-  std::vector<Float_t> mergeFactors;
+  std::map<TString,Float_t> mergeFactors;
   for (UInt_t iMerge = 0; iMerge != fMergeFactors.size(); ++iMerge) {
-    mergeFactors.push_back(0.0);
-    theTree->SetBranchAddress(fMergeFactors[iMerge],&mergeFactors[iMerge]);
+    mergeFactors[fMergeFactors[iMerge]] = 1.0;
+    theTree->SetBranchAddress(fMergeFactors[iMerge],&(mergeFactors[fMergeFactors[iMerge]]));
   }
 
   // Now loop through the tree and apply the corrections
@@ -105,8 +105,8 @@ void CorrectorApplicator::ApplyCorrections(TString fileName)
     // First reset all of the addressed floats to 1.0, merge factors for master factor
     if (fName != "") {
       Addresses[fName] = 1.0;
-      for (UInt_t iMerge = 0; iMerge != mergeFactors.size(); ++iMerge)
-        Addresses[fName] *= mergeFactors[iMerge];
+      for (UInt_t iMerge = 0; iMerge != fMergeFactors.size(); ++iMerge)
+        Addresses[fName] *= mergeFactors[fMergeFactors[iMerge]];
     }
     if (fSaveAll) {
       for (UInt_t iCorrector = 0; iCorrector != fCorrectors.size(); ++iCorrector)
@@ -129,6 +129,8 @@ void CorrectorApplicator::ApplyCorrections(TString fileName)
     }
     else
       outTree->Fill();
+
+    std::cout << Addresses[fName] << std::endl;
   }
 
   theFile->cd();
