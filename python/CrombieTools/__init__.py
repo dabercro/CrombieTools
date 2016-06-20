@@ -46,7 +46,8 @@ dependencies = { 'FlatSkimmer' :         ['GoodLumiFilter'],
                  'CorrectorApplicator' : ['Corrector'],
                  'Reweighter' :          ['PlotStack'],
                  'TmvaClassifier' :      ['TreeContainer','PlotHists'],
-                 'LimitTreeMaker' :      ['FileConfigReader']
+                 'LimitTreeMaker' :      ['FileConfigReader'],
+                 'XSecAdder' :           ['FileConfigReader'],
                  }
 
 def Load(className):
