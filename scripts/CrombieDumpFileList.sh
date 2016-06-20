@@ -1,5 +1,11 @@
 #!/bin/bash
 
+## @file CrombieDumpFileList.sh
+#  This is the file that creates the input files for running slimmers over EOS
+#  or other directories.
+#  @todo Clean me and give user more power for picking directories when multiple present
+#  @author Daniel Abercrombie <dabercro@mit.edu>
+
 isEOS=$1
 
 source CrombieSlimmingConfig.sh                # Get the slimming configuration
@@ -75,22 +81,45 @@ then
 
         for dir in ${dirContent[@]}
         do
-            if [ "$CrombieDirList" = "" ]
+
+            if [ "$CrombieDirList" != "" ]  # If a DirList (sample list) is set, make sure the proposed directory is present
             then
-                echo $dir >> $RunOnList
-            else
+                foundInList=0
                 for inList in `cat $CrombieDirList`
                 do
                     if [ "$dir" = "$inList" ]
                     then
-                        echo $dir >> $RunOnList
+                        foundInList=1
                         break
                     fi
                 done
+                if [ $foundInList -eq 0 ]   # If not present, don't append it to the RunOnList
+                then
+                    continue
+                fi
             fi
+
+            foundInRun=0                    # Do a quick check to make sure we didn't pick up a sample in another location
+            for check in `cat $RunOnList`   # Check samples found
+            do
+                if [ "$dir" = "$check" ]
+                then
+                    foundInRun=1            # Pass flag if sample already will be run on
+                    break
+                fi
+            done
+            
+            if [ $foundInRun -eq 0 ]
+            then
+                echo $dir >> $RunOnList     # Add to the RunOnList
+            fi
+
         done
     done
-else
+
+else                                        # If we're not using EOS
+    usingMultiEOS=0
+
     if [ ! -d $CrombieRegDir ]
     then
         echo "$CrombieRegDir does not seem to exist. Maybe needs mounting."
@@ -99,9 +128,9 @@ else
 
     if [ "$CrombieDirList" = "" ]
     then
-        ls $CrombieRegDir > $RunOnList
+        ls $CrombieRegDir > $RunOnList      # Dump the directory contents
     else
-        cat $CrombieDirList > $RunOnList
+        cat $CrombieDirList > $RunOnList    # Or just use the set directories
     fi
 fi
 
