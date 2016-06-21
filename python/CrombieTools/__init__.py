@@ -44,7 +44,6 @@ dependencies = { 'FlatSkimmer' :         ['GoodLumiFilter'],
                  'PlotROC' :             ['PlotHists'],
                  'PlotStack' :           ['TreeContainer','PlotHists'],
                  'CorrectorApplicator' : ['Corrector'],
-                 'Reweighter' :          ['PlotStack'],
                  'TmvaClassifier' :      ['TreeContainer','PlotHists'],
                  'HistAnalysis' :        ['PlotHists'],
                  }

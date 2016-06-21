@@ -38,7 +38,7 @@ fi
 
 cd $here/plotter
 
-source CrombiePlotterConfig.sh     # This should source the slimming config too
+source CrombiePlotterConfig.sh             # This should source the slimming config too
 
 if [ "${host:0:6}" != "lxplus" ]
 then
@@ -68,13 +68,12 @@ done
 
 echo "Making correction histogram!"
 ./makeHist.py
-# NEED TO MAKE THIS PARALLEL!
+# Figure out something for reweighter... Probably just one variable to cut on
 echo "Adding corrections to .root Files!"
 ./corrector.py
-# Figure out something for reweighter...
 # Make up a good runs file
 # Run Skimmer to cut out based on some variable to eliminate background
-# Run the RootDiff that I still have to make to show what changed with Skimmers
+# Run the RootDiff that I still have to show what changed with Skimmers
 # Compare this diff to some default diff stored here
 
 cd $here/plotter
