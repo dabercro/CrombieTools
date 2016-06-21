@@ -151,5 +151,5 @@ HistAnalysis::MakeReweightHist(TString OutFile, TString OutHist, TString PlotVar
 {
   Double_t XBins[NumBins+1];
   ConvertToArray(NumBins,MinX,MaxX,XBins);
-  DoScaleFactors(OutFile,OutHist,PlotVar,NumBins,XBins,TreeName);
+  MakeReweightHist(OutFile,OutHist,PlotVar,NumBins,XBins,TreeName);
 }
