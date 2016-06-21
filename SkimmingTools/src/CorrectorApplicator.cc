@@ -129,8 +129,6 @@ void CorrectorApplicator::ApplyCorrections(TString fileName)
     }
     else
       outTree->Fill();
-
-    std::cout << Addresses[fName] << std::endl;
   }
 
   theFile->cd();
