@@ -31,7 +31,6 @@ class FileConfigReader : public InOutDirectoryHolder
   FileConfigReader();
   virtual ~FileConfigReader();
 
-
   /// Differentiates between background, signal MC and data.
   /// @todo add some sort of DataFile addition
   enum FileType { kBackground = 0, kSignal, kData };
@@ -85,7 +84,7 @@ class FileConfigReader : public InOutDirectoryHolder
   /// Reads an MC configuration while changing the FileType
   inline    void       ReadMCConfig         ( TString config,  FileType type, TString fileDir = "" ) 
                                                                 { SetFileType(type); ReadMCConfig(config,fileDir); }
-  
+
  protected:
   Double_t   fLuminosity = 2000.0;                        ///< The Luminosity in inverse pb
   TString    fDataTreeName = "data";                      ///< The base name of the data in a limit tree
@@ -99,7 +98,6 @@ class FileConfigReader : public InOutDirectoryHolder
   void       SetKeepAllFiles                ( Bool_t keep )                             { fKeepAllFiles = keep;    }
   /// Allows reader to avoid skipping when reading in exception configs
   void       SetMultiplyLumi                ( Bool_t doMultiply )                    { fMultiplyLumi = doMultiply; }
-  
 
  private:
   /// Return a pointer to a proper vector of FileInfo
@@ -262,40 +260,81 @@ void FileConfigReader::ReadMCConfig(TString config, TString fileDir)
   if (fFileType == kSignal)
     FileInfo = &fSignalFileInfo;
 
+  std::vector<UInt_t> SplitSamples;
+
   while (!configFile.eof()) {
-    configFile >> LimitTreeName >> FileName;
-    if (LimitTreeName == "skip") {
-      if (!fKeepAllFiles) {
-        for (UInt_t iFile = 0; iFile != (*FileInfo).size(); ++iFile) {
-          if ((*FileInfo)[iFile]->fFileName == AddInDir(FileName)) {
-            delete (*FileInfo)[iFile];
-            (*FileInfo).erase((*FileInfo).begin() + iFile);
-            break;
+    configFile >> LimitTreeName;
+
+    // Do the checking here for merging groups
+    if (LimitTreeName == "INGROUP") 
+      SplitSamples.push_back((*FileInfo).size());
+    else if (LimitTreeName == "ENDGROUP") {
+
+      // Get the uncertainties for each sample
+      std::vector<Double_t> Uncerts;
+      SplitSamples.push_back((*FileInfo).size());
+      for (UInt_t iSample = 0; iSample != SplitSamples.size() - 1; ++iSample) {
+        Double_t Uncert = 0.0;
+        for (UInt_t iFile = SplitSamples[iSample]; iFile != SplitSamples[iSample + 1]; ++iFile)
+          Uncert += (*FileInfo)[iFile]->fXSec * (*FileInfo)[iFile]->fXSecWeight;
+        Uncerts.push_back(Uncert);
+      }
+
+      // Get the weights from the uncertainties
+      std::vector<Double_t> Weights;
+      Double_t SumOfWeights = 0.0;
+      for (UInt_t iSample = 0; iSample != SplitSamples.size() - 1; ++iSample) {
+        Double_t Weight = 1.0;
+        for (UInt_t iUncert = 0; iUncert != Uncerts.size(); ++iUncert) {
+          if (iSample != iUncert)
+            Weight *= Uncerts[iUncert];
+        }
+        Weights.push_back(Weight);
+        SumOfWeights += Weight;
+      }
+
+      // Apply the weights
+      for (UInt_t iSample = 0; iSample != SplitSamples.size() - 1; ++iSample) {
+        for (UInt_t iFile = SplitSamples[iSample]; iFile != SplitSamples[iSample + 1]; ++iFile)
+          (*FileInfo)[iFile]->fXSecWeight *= Weights[iSample]/SumOfWeights;
+      }
+
+    }
+    else {
+      configFile >> FileName;
+      if (LimitTreeName == "skip") {
+        if (!fKeepAllFiles) {
+          for (UInt_t iFile = 0; iFile != (*FileInfo).size(); ++iFile) {
+            if ((*FileInfo)[iFile]->fFileName == AddInDir(FileName)) {
+              delete (*FileInfo)[iFile];
+              (*FileInfo).erase((*FileInfo).begin() + iFile);
+              break;
+            }
           }
         }
       }
-    }
-    else {
-      configFile >> XSec >> LegendEntry >> ColorStyleEntry;
-      if (LegendEntry == ".")
-        LegendEntry = currLegend;
-      else
-        currLegend = LegendEntry;
-      
-      if (ColorStyleEntry == ".")
-        ColorStyleEntry = currColorStyle;
-      else if (ColorStyleEntry == "rgb") {
-        ++newColors;
-        ColorStyleEntry = TString::Format("%i",5000 + newColors);
-        currColorStyle = ColorStyleEntry;
-        configFile >> red >> green >> blue;
-        TColor* setColor = new TColor(ColorStyleEntry.Atoi(),red.Atof()/255,green.Atof()/255,blue.Atof()/255);
+      else {
+        configFile >> XSec >> LegendEntry >> ColorStyleEntry;
+        if (LegendEntry == ".")
+          LegendEntry = currLegend;
+        else
+          currLegend = LegendEntry;
+        
+        if (ColorStyleEntry == ".")
+          ColorStyleEntry = currColorStyle;
+        else if (ColorStyleEntry == "rgb") {
+          ++newColors;
+          ColorStyleEntry = TString::Format("%i",5000 + newColors);
+          currColorStyle = ColorStyleEntry;
+          configFile >> red >> green >> blue;
+          TColor* setColor = new TColor(ColorStyleEntry.Atoi(),red.Atof()/255,green.Atof()/255,blue.Atof()/255);
+        }
+        else
+          currColorStyle = ColorStyleEntry;
+        
+        if (ColorStyleEntry != "" && !LimitTreeName.BeginsWith('#'))
+          AddFile(LimitTreeName, FileName, XSec.Atof(), LegendEntry.ReplaceAll("_"," "), ColorStyleEntry.Atoi());
       }
-      else
-        currColorStyle = ColorStyleEntry;
-
-      if (ColorStyleEntry != "" && !LimitTreeName.BeginsWith('#'))
-        AddFile(LimitTreeName, FileName, XSec.Atof(), LegendEntry.ReplaceAll("_"," "), ColorStyleEntry.Atoi());
     }
   }
   configFile.close();

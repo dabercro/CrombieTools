@@ -24,7 +24,7 @@
 class HistAnalysis : public FileConfigReader, private PlotHists
 {
  public:
-  HistAnalysis()           {}
+  HistAnalysis()           { SetMultiplyLumi(true); }
   virtual ~HistAnalysis()  {}
 
   /// Sets the signal MC based on the limit tree name and which config to use
