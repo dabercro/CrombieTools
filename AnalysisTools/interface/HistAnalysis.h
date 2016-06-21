@@ -38,6 +38,8 @@ class HistAnalysis : public FileConfigReader, private PlotHists
   /// Sets various other cut levels for scalefactors
   void    AddScaleFactorCut  ( TString cut, TString name )                    { fScaleFactorCuts.push_back(cut);
                                                                                 fCutNames.push_back(name);              }
+  /// Sets the format string for the scale factor table
+  void    SetFormat          ( TString format )                               { fFormat = format;                       }
   /// Different methods of doing cut and count
   enum    ScaleFactorMethod { kCutAndCount = 0 };
   /// Does scale factors between background-subtracted data and signal MC
@@ -48,8 +50,14 @@ class HistAnalysis : public FileConfigReader, private PlotHists
   void    DoScaleFactors     ( TString PlotVar, Int_t NumBins, Double_t MinX, Double_t MaxX,
                                ScaleFactorMethod  method = kCutAndCount, Bool_t NormalizeBackground = true,
                                TString TreeName = "events" );
-  
-  void    SetFormat          ( TString format )                               { fFormat = format;                       }
+
+  /// Reweights based on some expression in MC to match data shape and makes a histogram for CorrectionApplicator to use
+  void    MakeReweightHist   ( TString OutFile, TString OutHist, TString PlotVar,
+                               Int_t NumBins, Double_t *XBins, TString TreeName = "events" );
+
+  /// Reweights based on some expression in MC with easier to use binning
+  void    MakeReweightHist   ( TString OutFile, TString OutHist, TString PlotVar,
+                               Int_t NumBins, Double_t MinX, Double_t MaxX, TString TreeName = "events" );
 
  private:
 

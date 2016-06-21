@@ -1,6 +1,7 @@
 #include <iostream>
 
 #include "TH1D.h"
+#include "TH1F.h"
 #include "TMath.h"
 
 #include "PlotBase.h"
@@ -119,4 +120,36 @@ HistAnalysis::DoScaleFactors(TString PlotVar, Int_t NumBins, Double_t MinX, Doub
   Double_t XBins[NumBins+1];
   ConvertToArray(NumBins,MinX,MaxX,XBins);
   DoScaleFactors(PlotVar,NumBins,XBins,method,NormalizeBackground,TreeName);
+}
+
+//--------------------------------------------------------------------
+void
+HistAnalysis::MakeReweightHist(TString OutFile, TString OutHist, TString PlotVar, Int_t NumBins, Double_t *XBins, TString TreeName)
+{
+  // First create the data histogram
+  TH1F *dataHist = new TH1F("dataHist","dataHist",NumBins,XBins);
+  dataHist->Sumw2();
+  ReturnTChain(TreeName,kData)->Draw(PlotVar + ">>dataHist",fBaseCut);
+
+  // Then create the mc histogram
+  TH1F *mcHist = new TH1F("mcHist","mcHist",NumBins,XBins);
+  mcHist->Sumw2();
+  ReturnTChain(TreeName,kBackground)->Draw(PlotVar + ">>mcHist",TString("(") + fBaseCut + ")*(" + fMCWeight + ")");
+
+  dataHist->Scale(1.0/dataHist->Integral());
+  mcHist->Scale(1.0/mcHist->Integral());
+
+  dataHist->Divide(mcHist);
+
+  TFile *theFile = new TFile(OutFile,"RECREATE");
+  theFile->WriteTObject(dataHist,OutHist);
+}
+
+//--------------------------------------------------------------------
+void
+HistAnalysis::MakeReweightHist(TString OutFile, TString OutHist, TString PlotVar, Int_t NumBins, Double_t MinX, Double_t MaxX, TString TreeName)
+{
+  Double_t XBins[NumBins+1];
+  ConvertToArray(NumBins,MinX,MaxX,XBins);
+  DoScaleFactors(OutFile,OutHist,PlotVar,NumBins,XBins,TreeName);
 }

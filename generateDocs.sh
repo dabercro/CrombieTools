@@ -13,20 +13,6 @@ if [ `which doxygen 2> /dev/null` != "" ]
 then
 
     pdfName=CrombieToolsManual.pdf
-    doxygen docs/CrombieDocs.cfg
-
-    if [ "$copy" != "test" ]                     # In this case, I'm just testing making html fast
-    then
-        cd docs/latex
-        make
-        mv refman.pdf $pdfName
-        cd -
-    fi
-
-    if [ `cat doxygen.log | wc -l` -eq 0 ]
-    then
-        rm doxygen.log
-    fi
 
     if [ "$USER" = "dabercro" ] && [ "$copy" = "copy" ]
     then
@@ -56,6 +42,23 @@ then
         echo "Copying documentation to $targetHost."
         $useTar -czf - docs/html/* docs/latex/$pdfName |
             ssh $targetHost "mkdir -p $targetDir 2> /dev/null ; cd $targetDir ; rm -rf search ; tar -xzf - ; mv docs/html/* . ; mv docs/latex/$pdfName ."
+
+        exit 0
+    fi
+
+    doxygen docs/CrombieDocs.cfg
+
+    if [ "$copy" != "test" ]                     # In this case, I'm just testing making html fast
+    then
+        cd docs/latex
+        make
+        mv refman.pdf $pdfName
+        cd -
+    fi
+
+    if [ `cat doxygen.log | wc -l` -eq 0 ]
+    then
+        rm doxygen.log
     fi
 
 else
