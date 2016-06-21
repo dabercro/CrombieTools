@@ -2,4 +2,4 @@
 Submodule of CrombieTools.
 """
 
-__all__ = ['FileConfigReader','TreeContainer']
+__all__ = ['TreeContainer']

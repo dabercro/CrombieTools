@@ -42,12 +42,11 @@ ROOT.gROOT.LoadMacro(CrombieDir + '/PlotTools/interface/KinematicFunctions.h')
 dependencies = { 'FlatSkimmer' :         ['GoodLumiFilter'],
                  'PlotFitParameters' :   ['Plot2D'],
                  'PlotROC' :             ['PlotHists'],
-                 'PlotStack' :           ['FileConfigReader','TreeContainer','PlotHists'],
+                 'PlotStack' :           ['TreeContainer','PlotHists'],
                  'CorrectorApplicator' : ['Corrector'],
                  'Reweighter' :          ['PlotStack'],
                  'TmvaClassifier' :      ['TreeContainer','PlotHists'],
-                 'LimitTreeMaker' :      ['FileConfigReader'],
-                 'XSecAdder' :           ['FileConfigReader'],
+                 'HistAnalysis' :        ['PlotHists'],
                  }
 
 def Load(className):

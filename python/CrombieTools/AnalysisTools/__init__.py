@@ -1,1 +1,1 @@
-__all__ = ['CutflowMaker','LimitTreeMaker','TmvaClassifier']
+__all__ = ['CutflowMaker','HistAnalysis','LimitTreeMaker','TmvaClassifier']

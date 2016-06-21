@@ -1,3 +1,9 @@
+/**
+  @file   PlotHist.h
+  Definition of PlotHist class.
+  @author Daniel Abercrombie <dabercro@mit.edu> */
+
+
 #ifndef CROMBIETOOLS_PLOTTOOLS_PLOTHISTS_H
 #define CROMBIETOOLS_PLOTTOOLS_PLOTHISTS_H
 
@@ -5,6 +11,12 @@
 #include "TCanvas.h"
 
 #include "PlotBase.h"
+
+/**
+   @ingroup plotgroup
+   @class PlotHists
+   A flexible class that plots histograms.
+   Many practical uses are mediated by other classes. */
 
 class PlotHists : public PlotBase
 {
