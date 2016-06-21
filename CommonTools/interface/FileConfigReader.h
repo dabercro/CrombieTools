@@ -299,6 +299,7 @@ void FileConfigReader::ReadMCConfig(TString config, TString fileDir)
           (*FileInfo)[iFile]->fXSecWeight *= Weights[iSample]/SumOfWeights;
       }
 
+      SplitSamples.resize(0);
     }
     else {
       configFile >> FileName;
