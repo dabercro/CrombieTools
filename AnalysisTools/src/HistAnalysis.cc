@@ -24,21 +24,24 @@ HistAnalysis::DoScaleFactors(TString PlotVar, Int_t NumBins, Double_t *XBins,
   std::vector<TH1D*> dataHists = MakeHists(NumBins,XBins);
 
   // Then create the signal histograms
-  SetDefaultTree(ReturnTChain(TreeName,fSignalType,fSignalName));
+  SetDefaultTree(ReturnTChain(TreeName,fSignalType,fSignalName,kLegendEntry));
   ResetWeight();
-  AddWeight(fBaseCut);
+  AddWeight(TString("(") + fBaseCut + ")*(" + fMCWeight + ")");
   for (UInt_t iCut = 0; iCut != fScaleFactorCuts.size(); ++iCut)
     AddWeight(TString("(") + fBaseCut + " && " + fScaleFactorCuts[iCut] + ")*(" + fMCWeight + ")");
   std::vector<TH1D*> signalHists = MakeHists(NumBins,XBins);
 
   // Then create the background histograms
-  SetDefaultTree(ReturnTChain(TreeName,kBackground,fSignalName,false));
+  SetDefaultTree(ReturnTChain(TreeName,kBackground,fSignalName,kLegendEntry,false));
   std::vector<TH1D*> backgroundHists = MakeHists(NumBins,XBins);
 
   // Subtract out the background
+  Double_t scale = -1.0;
+  if (NormalizeBackground)
+    scale *= dataHists[0]->Integral()/(backgroundHists[0]->Integral() + signalHists[0]->Integral());
+
   for (UInt_t iHist = 0; iHist != dataHists.size(); ++iHist)
-    dataHists[iHist]->Add(backgroundHists[iHist],-1.0);
-    
+    dataHists[iHist]->Add(backgroundHists[iHist],scale);
 
   std::vector<Double_t> data_yields;
   std::vector<Double_t> data_error;
@@ -76,7 +79,7 @@ HistAnalysis::DoScaleFactors(TString PlotVar, Int_t NumBins, Double_t *XBins,
   std::cout << " & No Cut";
   for (UInt_t iCut = 0; iCut != fCutNames.size(); ++iCut)
     std::cout << " & " << fCutNames[iCut];
-  std::cout << " \\" << std::endl;
+  std::cout << " \\\\" << std::endl;
   std::cout << "\\hline" << std::endl;
   
   std::cout << "Background Subtracted Data";
@@ -97,8 +100,10 @@ HistAnalysis::DoScaleFactors(TString PlotVar, Int_t NumBins, Double_t *XBins,
   std::cout << "Normalized Ratio";
   for (UInt_t iYield = 0; iYield != data_yields.size(); ++iYield) {
     std::cout << " & " << TString::Format(fFormat,data_yields[iYield]/mc_yields[iYield] * factor);
-    std::cout << " \\pm " << TString::Format(fFormat,TMath::Sqrt(pow(data_error[iYield],2) +
-                                                                pow(mc_error[iYield],2)));
+    std::cout << " \\pm " << TString::Format(fFormat,
+                                             TMath::Sqrt(pow(data_error[iYield]/mc_yields[iYield],2) +
+                                                         pow(data_yields[iYield]/pow(mc_yields[iYield],2) * mc_error[iYield],2)) *
+                                             factor);
   }
   std::cout << " \\\\" << std::endl;
   std::cout << "\\hline" << std::endl;

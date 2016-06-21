@@ -39,12 +39,13 @@ class FileConfigReader : public InOutDirectoryHolder
   /// Returns a vector of limit tree names that have been read from the configs
   std::set<TString>    ReturnTreeNames      ( FileType type = kBackground);
 
+  enum SearchBy { kLimitName = 0, kLegendEntry };
   /// Returns a vector of file names that have been read from the configs
-  std::vector<TString> ReturnFileNames      ( FileType type = kBackground, TString limitName = "", Bool_t match = true );
+  std::vector<TString> ReturnFileNames      ( FileType type = kBackground, TString limitName = "", SearchBy search = kLimitName, Bool_t match = true );
 
   /// Returns a TChain of files that match the FileType and name for the LimitTreeMaker
-  TChain*              ReturnTChain         ( TString treeName = "events", FileType type = kBackground, 
-                                              TString limitName = "", Bool_t match = true );
+  TChain*              ReturnTChain         ( TString treeName = "events", FileType type = kBackground,
+                                              TString limitName = "", SearchBy search = kLimitName, Bool_t match = true );
 
   /// Add a data file
   void                 AddDataFile          ( TString fileName );
@@ -169,14 +170,20 @@ FileConfigReader::ReturnTreeNames(FileType type)
 
 //--------------------------------------------------------------------
 std::vector<TString>
-FileConfigReader::ReturnFileNames(FileType type, TString limitName, Bool_t match)
+FileConfigReader::ReturnFileNames(FileType type, TString limitName, SearchBy search, Bool_t match)
 {
   std::vector<TString> output;
   std::vector<FileInfo*> *fileInfo = GetFileInfo(type);
 
   for (std::vector<FileInfo*>::iterator iInfo = fileInfo->begin(); iInfo != fileInfo->end(); ++iInfo) {
-    if (limitName != "" && (((*iInfo)->fTreeName != limitName && match) || ((*iInfo)->fTreeName == limitName && !match)))
-      continue;
+    if (search == kLimitName) {
+      if (limitName != "" && (((*iInfo)->fTreeName != limitName && match) || ((*iInfo)->fTreeName == limitName && !match)))
+        continue;
+    }
+    else if (search == kLegendEntry) {
+      if (limitName != "" && (((*iInfo)->fEntry != limitName && match) || ((*iInfo)->fEntry == limitName && !match)))
+        continue;
+    }
 
     output.push_back((*iInfo)->fFileName);
   }
@@ -186,10 +193,10 @@ FileConfigReader::ReturnFileNames(FileType type, TString limitName, Bool_t match
 
 //--------------------------------------------------------------------
 TChain*
-FileConfigReader::ReturnTChain(TString treeName, FileType type, TString limitName, Bool_t match)
+FileConfigReader::ReturnTChain(TString treeName, FileType type, TString limitName, SearchBy search, Bool_t match)
 {
   TChain *theChain = new TChain(treeName, treeName + "_chain");
-  std::vector<TString> fileList = ReturnFileNames(type, limitName, match);
+  std::vector<TString> fileList = ReturnFileNames(type, limitName, search, match);
   for (std::vector<TString>::iterator iFile = fileList.begin(); iFile != fileList.end(); ++iFile)
     theChain->Add(iFile->Data());
 

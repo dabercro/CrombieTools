@@ -5,6 +5,8 @@ newLimitTreeMaker = Load('LimitTreeMaker')
 
 def SetupFromEnv(ltm):
     from .. import LoadConfig
+
+    ## @todo place the FileConfigReader functions into its own setup function for other classes to call
     if os.path.exists('CrombieAnalysisConfig.sh'):
         DirFromEnv('CrombieOutLimitTreeDir')
         def readMC(config):
