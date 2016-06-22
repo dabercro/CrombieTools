@@ -237,4 +237,6 @@ do
     fi
 done
 
+cp $RunOnList $CrombieFullDir/.
+
 exit 0
