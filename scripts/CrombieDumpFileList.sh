@@ -186,7 +186,7 @@ do
     then 
         count=0
         lastDir=$reasonableName
-        echo $CrombieFullDir/$CrombieFileBase\_$reasonableName.root $CrombieTempDir/$CrombieFileBase\_$reasonableName"_*.root" >> $haddFile
+        echo $CrombieFullDir/$CrombieFileBase\_$reasonableName.root $CrombieTempDir/$CrombieFileBase\_$reasonableName"_[0-9]*.root" >> $haddFile
     fi
 
     if [ "$isEOS" = "eos" ]
