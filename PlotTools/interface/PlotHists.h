@@ -1,6 +1,6 @@
 /**
-  @file   PlotHist.h
-  Definition of PlotHist class.
+  @file   PlotHists.h
+  Definition of PlotHists class.
   @author Daniel Abercrombie <dabercro@mit.edu> */
 
 

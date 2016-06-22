@@ -1,1 +1,0 @@
-source ../plotter/CrombiePlotterConfig.sh
