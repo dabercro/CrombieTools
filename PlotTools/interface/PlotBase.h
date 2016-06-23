@@ -142,8 +142,10 @@ class PlotBase
 
   /// Set the luminosity label.
   inline    void         SetLumiLabel             ( TString lumi )                                { fLumiLabel = lumi;           }
-  /// Set the luminosity lable with a float in fb. @todo Make lumi label rounding setable
-  inline    void         SetLumiLabel             ( Float_t lumi )                  { fLumiLabel = TString::Format("%.2f",lumi); }
+  /// Set the luminosity format.
+  inline    void         SetLumiLabelFormat       ( TString format )                              { fLumiLabelFormat = format;   }
+  /// Set the luminosity lable with a float in fb.
+  inline    void         SetLumiLabel             ( Float_t lumi )        { fLumiLabel = TString::Format(fLumiLabelFormat,lumi); }
   /// If true, plot will have "CMS Preliminary" in the top.
   inline    void         SetIsCMSPrelim           ( Bool_t isPre )                                { fIsCMSPrelim = isPre;        }
   
@@ -216,6 +218,7 @@ class PlotBase
   Bool_t                     fLegendFill = false;        ///< Gives fill option to legend drawing
   Int_t                      fDrawFirst;                 ///< Can force one of the lines to be drawn first
 
+  TString                    fLumiLabelFormat = "%.1f";  ///< Format used for changing lumi numbers into string
   TString                    fLumiLabel = "";            ///< Label used to show luminosity
   Bool_t                     fIsCMSPrelim = false;       ///< Bool to determine if CMS Preliminary should be written
 
