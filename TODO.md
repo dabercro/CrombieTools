@@ -6,18 +6,9 @@
 
 @todo Make tests
 
-@todo Make Histogram systematics adding function (AddSys(fileName,histName,startBin=1,endBin=0)) <br>
-      This may be more of a PlotUtils kind of thing <br>
-      Error can apply to TGraphs too then...
-
-@todo __update Reweighter tool__ (decouple from PlotStack) <br>
-      Clean up LimitTreeMaker
-
 @todo Clean up/comment Submission scripts <br>
       Add Error checking for the config (Things should be filled) <br>
-      Check for running jobs and offer to kill them <br>
-      Make fresh flag in TempDir for Full, but don't remove full right away <br>
-      Don't make FullDir right away
+      Check for running jobs and offer to kill them
 
 @todo Mark eligible functions as const or inline
 
@@ -32,5 +23,3 @@
 @todo Add label maker in PlotBase
 
 @todo Add Simulation (instead of Preliminary) option, make CMS writing default
-
-@todo Add templates for creating presentations and documenting study progress

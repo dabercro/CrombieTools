@@ -1,6 +1,7 @@
 #include <iostream>
 #include "TLegend.h"
 
+#include "PlotUtils.h"
 #include "PlotHists.h"
 
 ClassImp(PlotHists)
@@ -15,7 +16,21 @@ PlotHists::PlotHists() :
 
 //--------------------------------------------------------------------
 PlotHists::~PlotHists()
-{}
+{
+  for (UInt_t iDelete = 0; iDelete != fDeleteUnc.size(); ++iDelete)
+    delete fDeleteUnc[iDelete];
+}
+
+//--------------------------------------------------------------------
+void
+PlotHists::AddUncertainty(UInt_t index, TString FileName, TString HistName, 
+                          Int_t startBin, Int_t endBin )
+{
+  fSysUncIndices.push_back(index);
+  UncertaintyInfo* Uncert = new UncertaintyInfo("", FileName, HistName, startBin, endBin);
+  fUncerts.push_back(Uncert);
+  fDeleteUnc.push_back(Uncert);
+}
 
 //--------------------------------------------------------------------
 std::vector<TH1D*>
@@ -111,6 +126,9 @@ PlotHists::MakeHists(Int_t NumXBins, Double_t *XBins)
     for (UInt_t iHist = 0; iHist != NumPlots; ++iHist)
       theHists[iHist]->Scale(normInt/theHists[iHist]->Integral("width"));
   }
+
+  for (UInt_t iUncert = 0; iUncert != fSysUncIndices.size(); ++iUncert)
+    ApplyUncertainty(theHists[fSysUncIndices[iUncert]], fUncerts[iUncert]);
 
   return theHists;
 }
