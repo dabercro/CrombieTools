@@ -85,7 +85,7 @@ void
 Division(TF1*& PlotFunc, TF1* RatioFunc)
 {
   TString plotString = TString("(") + PlotFunc->GetExpFormula() + TString(")");
-  TString ratString = TString("(") + RatioFunc->GetExpFormula().ReplaceAll('p','q') + TString(")");
+  TString ratString = TString("(") + RatioFunc->GetExpFormula().ReplaceAll(TString("[p"),TString("[q")) + TString(")");
   TF1 *tempFunc = new TF1("divided",plotString + TString("/") + ratString);
   for (Int_t iParam = 0; iParam != PlotFunc->GetNpar() + RatioFunc->GetNpar(); ++iParam) {
     if (iParam < PlotFunc->GetNpar()) {
