@@ -179,8 +179,6 @@ do
     fileInCount=$CrombieFilesPerJob
 
     reasonableName="${dir%%/*}"
-    reasonableName="${reasonableName%%_Tune*}"
-    reasonableName="${reasonableName%%-madgraph*}"
 
     if [ "$reasonableName" != "$lastDir" ]
     then 

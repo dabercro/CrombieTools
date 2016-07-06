@@ -2,15 +2,23 @@
 
 export fresh=$1
 
-echo "=========================================================" >> `pwd`/LxbatchFileChecks.log
-echo "Ran CrombieSubmitLxbatch at "`date -u` >> `pwd`/LxbatchFileChecks.log
-echo "=========================================================" >> `pwd`/LxbatchFileChecks.log
+if [ ! -f CrombieSlimmingConfig.sh ]
+then
+    echo "CrombieSlimmingConfig.sh isn't here."
+    echo "You should probably go somewhere else."
+    exit 1
+fi
+
 
 if [ "$CMSSW_BASE" = "" ]
 then
     echo "Require you to be cmsenv somewhere"
     exit 1
 fi
+
+echo "=========================================================" >> `pwd`/LxbatchFileChecks.log
+echo "Ran CrombieSubmitLxbatch at "`date -u` >> `pwd`/LxbatchFileChecks.log
+echo "=========================================================" >> `pwd`/LxbatchFileChecks.log
 
 if [ ! -d bout ]
 then

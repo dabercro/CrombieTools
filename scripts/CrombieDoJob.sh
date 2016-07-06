@@ -68,22 +68,29 @@ hadd $OutputBase.root $OutputBase\_*.root
 
 ERRORLOG=$macroDir/LxbatchFileChecks.log
 ERRORFOUND=0
+FATALERROR=0
 for file in `ls $OutputBase*.root`
 do
     $CrombieCheckerScript $file
     if [ "$?" -ne "0" ]
     then
+        if [ "$?" -eq "5" -o "$file" = "$OutputBase.root" ]
+        then
+            FATALERROR=1
+        fi
         ERRORFOUND=1
-        echo "" >> $ERRORLOG
         echo "Could not find acceptable output in $file" >> $ERRORLOG
         echo "Check output in job bout/out.$LSB_JOBID" >> $ERRORLOG
         echo "" >> $ERRORLOG
-        if [ "$file" = "$OutputBase.root" ]
-        then
-            exit 0
-        fi
     fi
 done
+
+if [ "$FATALERROR" -eq "1" ]
+then
+    echo "FATAL ERROR in bout/out.$LSB_JOBID" >> $ERRORLOG
+    echo "" >> $ERRORLOG
+    exit 0
+fi
 
 echo ""
 echo "Copying to $outFile"

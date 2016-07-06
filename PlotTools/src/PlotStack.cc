@@ -220,7 +220,8 @@ PlotStack::MakeCanvas(TString FileBase, Int_t NumXBins, Double_t *XBins,
     dumpFile->Close();
   }
 
-  std::sort(HistHolders.begin(),HistHolders.end(),SortHistHolders);
+  if (fSortBackground)
+    std::sort(HistHolders.begin(),HistHolders.end(),SortHistHolders);
 
   std::vector<TH1D*> AllHists;
   for (UInt_t iLarger = 0; iLarger != HistHolders.size(); ++iLarger) {

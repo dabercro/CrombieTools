@@ -7,6 +7,10 @@ def GetNumEntries(fileName, className):
     NumberOfEvents = 0
 
     testFile = ROOT.TFile(fileName)
+
+    if len(testFile.GetListOfKeys()) == 0:
+        return -1
+
     for testKey in testFile.GetListOfKeys():
         if className in testKey.GetClassName():
             testTree = testFile.Get(testKey.GetName())
@@ -30,7 +34,10 @@ if __name__ == '__main__':
         print('Error, file does not exist.')
         exit(1)
 
-    if NumberOfEvents != 0:
+    if NumberOfEvents < 0:
+        # This means that no keys were found in the file
+        exit(5)
+    elif NumberOfEvents != 0:
         exit(0)
     else:
         print('Did not successfully find tree with events.')
