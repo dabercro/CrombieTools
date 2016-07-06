@@ -15,6 +15,8 @@
 #include "TH1.h"
 #include "TString.h"
 
+#include "UncertaintyInfo.h"
+
 /**
    @ingroup commongroup
    Returns the XSection weight of each event.
@@ -56,7 +58,8 @@ struct FileInfo
 {
   /// The constructor fills all of the entries
   FileInfo ( TString treeName, TString fileName, Double_t XSec, 
-               TString entry, Int_t colorstyle, TString allHist ) {
+             TString entry, Int_t colorstyle, TString allHist,
+             UncertaintyInfo *uncInfo = 0 ) {
     fTreeName = treeName;
     fFileName = fileName;
     fXSec = XSec;
@@ -66,15 +69,17 @@ struct FileInfo
       fXSecWeight = -1;
     else
       fXSecWeight = GetXSecWeight(fFileName, fXSec, allHist);
+    fUncertaintyInfo = uncInfo;
   }
   virtual ~FileInfo()  {}
 
-  TString  fTreeName;    ///< Base name for the Limit Tree made by LimitTreeMaker
-  TString  fFileName;    ///< Name of the file
-  Double_t fXSec;        ///< Cross section of the sample contained in the file
-  TString  fEntry;       ///< Legend entry for that file
-  Int_t    fColorStyle;  ///< Fill color or line style (if signal) for that file
-  Double_t fXSecWeight;  ///< Weight determined by GetXSecWeight()
+  TString  fTreeName;                ///< Base name for the Limit Tree made by LimitTreeMaker
+  TString  fFileName;                ///< Name of the file
+  Double_t fXSec;                    ///< Cross section of the sample contained in the file
+  TString  fEntry;                   ///< Legend entry for that file
+  Int_t    fColorStyle;              ///< Fill color or line style (if signal) for that file
+  Double_t fXSecWeight;              ///< Weight determined by GetXSecWeight()
+  UncertaintyInfo *fUncertaintyInfo; ///< Structure to supply uncertainty weight to a file
 };
 
 #endif

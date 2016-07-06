@@ -19,7 +19,8 @@
    @class HistAnalysis
    Class for histogram-based analysis.
    This class handles MCConfigs and data and performs useful tasks
-   with the resulting histograms. */
+   with the resulting histograms.
+   @todo Much of this class is thrown together fast so make it cleaner and integrate with PlotStack. */
 
 class HistAnalysis : public FileConfigReader, private PlotHists
 {
@@ -58,6 +59,9 @@ class HistAnalysis : public FileConfigReader, private PlotHists
   /// Reweights based on some expression in MC with easier to use binning
   void    MakeReweightHist   ( TString OutFile, TString OutHist, TString PlotVar,
                                Int_t NumBins, Double_t MinX, Double_t MaxX, TString TreeName = "events" );
+
+  /// Does ratio plots between different selections for certain distributions
+  void    MakeRatioPlots     ( ) { }
 
  private:
 

@@ -1,15 +1,53 @@
 #ifndef CROMBIETOOLS_PLOTTOOLS_PLOTUTILS_H
 #define CROMBIETOOLS_PLOTTOOLS_PLOTUTILS_H
 
+#include "TFile.h"
 #include "TF1.h"
 #include "TH1D.h"
 #include "TH1.h"
 #include "TGraphErrors.h"
+#include "TMath.h"
+
+#include "UncertaintyInfo.h"
 
 /** @addtogroup plotgroup */
 /* @{ */
 
 //--------------------------------------------------------------------
+
+/** Applies an uncertainty file to a histogram.
+
+    @param theHist is the histogram to modify
+    @param theUnc is a pointer to the UncertaintyInfo to use
+
+    The error of the histogram is adjusted by the following for each bin.
+    \f[
+        e_{bin} = \sqrt{e_{bin,0}^2 + (y_{bin} \times unc_{bin})^2}
+    \f]
+ */
+
+void
+ApplyUncertainty(TH1* theHist, UncertaintyInfo* theUnc)
+{ 
+  TFile* uncHistFile = new TFile(theUnc->fFileName);
+  TH1* uncHist = (TH1*) uncHistFile->Get(theUnc->fHistName);
+
+  Int_t UncBin = theUnc->fStartBin;
+  for (Int_t iBin = 1; iBin != theHist->GetXaxis()->GetNbins(); ++iBin) {
+    theHist->SetBinError(iBin,
+                         TMath::Sqrt(pow(theHist->GetBinError(iBin),2) + 
+                                     pow(theHist->GetBinContent(iBin) * 
+                                         (uncHist->GetBinContent(UncBin) - 1),2)
+                                     ));
+    if (UncBin != theUnc->fEndBin)
+      UncBin += 1;
+  }
+
+  uncHistFile->Close();
+}
+
+//--------------------------------------------------------------------
+/// Sets the parameter errors in a TF1 to 0
 void
 SetZeroError(TF1* theFunc)
 { 
@@ -18,6 +56,7 @@ SetZeroError(TF1* theFunc)
 }
 
 //--------------------------------------------------------------------
+/// Sets the bin errors in a TH1 to 0
 void
 SetZeroError(TH1* theHist)
 { 
@@ -26,6 +65,7 @@ SetZeroError(TH1* theHist)
 }
 
 //--------------------------------------------------------------------
+/// Sets the point errors in a TGraphErrors to 0
 void
 SetZeroError(TGraphErrors* theGraph)
 { 
@@ -34,16 +74,18 @@ SetZeroError(TGraphErrors* theGraph)
 }
 
 //--------------------------------------------------------------------
+/// Does nothing, just here for template purposes
 void
 SetZeroError(TGraph*)
 { }
 
 //--------------------------------------------------------------------
+/// Divides two TF1 by each other, replacing the first one
 void
 Division(TF1*& PlotFunc, TF1* RatioFunc)
 {
   TString plotString = TString("(") + PlotFunc->GetExpFormula() + TString(")");
-  TString ratString = TString("(") + RatioFunc->GetExpFormula().ReplaceAll('p','q') + TString(")");
+  TString ratString = TString("(") + RatioFunc->GetExpFormula().ReplaceAll(TString("[p"),TString("[q")) + TString(")");
   TF1 *tempFunc = new TF1("divided",plotString + TString("/") + ratString);
   for (Int_t iParam = 0; iParam != PlotFunc->GetNpar() + RatioFunc->GetNpar(); ++iParam) {
     if (iParam < PlotFunc->GetNpar()) {
@@ -60,11 +102,13 @@ Division(TF1*& PlotFunc, TF1* RatioFunc)
 }
 
 //--------------------------------------------------------------------
+/// Does nothing, just here for template purposes
 void
 SetGraphErrorsForRatio(TGraph*, TGraph*, Int_t)
 { }
 
 //--------------------------------------------------------------------
+/// Sets errors after dividing two TGraphErrors
 void
 SetGraphErrorsForRatio(TGraphErrors* PlotGraph, TGraphErrors* RatioGraph, Int_t iPoint)
 {
@@ -75,6 +119,7 @@ SetGraphErrorsForRatio(TGraphErrors* PlotGraph, TGraphErrors* RatioGraph, Int_t 
 }
 
 //--------------------------------------------------------------------
+/// Divides two TGraphs
 void
 Division(TGraph* PlotGraph, TGraph* RatioGraph)
 {
@@ -94,6 +139,7 @@ Division(TGraph* PlotGraph, TGraph* RatioGraph)
 }
 
 //--------------------------------------------------------------------
+/// Divides two TH1s. If both contain bins with 0, the content is set to 1
 void
 Division(TH1* PlotHist, TH1* RatioHist)
 {
@@ -105,6 +151,7 @@ Division(TH1* PlotHist, TH1* RatioHist)
 }
 
 //--------------------------------------------------------------------
+/// Gets the ratios of two equally sized vectors of lines
 template<class T>
 std::vector<T*>
 GetRatioToLines(std::vector<T*> InLines, std::vector<T*> RatioLines)
@@ -120,6 +167,7 @@ GetRatioToLines(std::vector<T*> InLines, std::vector<T*> RatioLines)
 }
 
 //--------------------------------------------------------------------
+/// Gets the ratios of one vector of lines to a single line
 template<class T>
 std::vector<T*>
 GetRatioToLine(std::vector<T*> InLines, T* RatioGraph)
@@ -131,6 +179,7 @@ GetRatioToLine(std::vector<T*> InLines, T* RatioGraph)
 }
 
 //--------------------------------------------------------------------
+/// Gets the ratio of TGraphErrors to a single point
 std::vector<TGraphErrors*>
 GetRatioToPoint(std::vector<TGraphErrors*> InGraphs, Double_t RatioPoint, Double_t PointError = 0)
 {
@@ -145,6 +194,7 @@ GetRatioToPoint(std::vector<TGraphErrors*> InGraphs, Double_t RatioPoint, Double
 }
 
 //--------------------------------------------------------------------
+/// Gets the ratio of TH1Ds to a single point
 std::vector<TH1D*>
 GetRatioToPoint(std::vector<TH1D*> InHists, Double_t RatioPoint, Double_t PointError = 0)
 {
@@ -158,6 +208,7 @@ GetRatioToPoint(std::vector<TH1D*> InHists, Double_t RatioPoint, Double_t PointE
 }
 
 //--------------------------------------------------------------------
+/// Gets the ratio of TF1s to a single point
 std::vector<TF1*>
 GetRatioToPoint(std::vector<TF1*> InFuncs, Double_t RatioPoint, Double_t PointError = 0)
 {
