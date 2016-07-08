@@ -11,6 +11,10 @@ class PlotStack : public PlotHists , public FileConfigReader
   PlotStack();
   virtual ~PlotStack();
 
+  /// Copy this PlotStack for parallelization
+  PlotStack* Copy        ();
+
+  /// Use the LimitTree to plot stacks directly instead of reading the files directly, bad for N-1
   void UseLimitTree      ( TString limitFile, TString region, TString mcConfig, TString signalConfig = "" );
 
   /// Choose the binning of your plots and make then.

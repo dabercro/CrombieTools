@@ -1,5 +1,6 @@
 import os
 from .. import Load, DirFromEnv, Nminus1Cut
+from ..Parallelization import RunParallel
 
 newStackPlotter = Load('PlotStack')
 plotter         = newStackPlotter()
@@ -57,6 +58,36 @@ def ReadExceptionConfig(region,aPlotter = plotter):
     else:
         aPlotter.ReadMCConfig(os.environ['CrombieExcept_' + region])
 
+class ParallelStackContainer:
+    """A class that holds a PlotStack and copies it.
+
+    Makes the N minus 1 cuts on the object before calling PlotStack::MakeCanvas()
+    """
+
+    def __init__(self,plotter):
+        self.Plotter = plotter
+
+    def Copy(self):
+        return ParallelStackContainer(plotter.Copy())
+
+    def MakePlot(self,category,region,exprArg):
+        """Adjusts cut to N minus 1 and plots.
+
+        @param category is a string
+        @param region is a string
+        @param exprArg is a list of arguments for the plotter used in PlotStack.MakePlots()
+        """
+
+        SetCuts(category,region,self.Plotter)
+        holdCut = self.Plotter.GetDefaultWeight()
+        expr = list(exprArg)
+        self.Plotter.SetDefaultWeight(Nminus1Cut(holdCut, expr[0]))
+        self.Plotter.SetDefaultExpr(expr[0])
+        expr[0] = '_'.join([category,region,expr[0]])
+        self.Plotter.MakeCanvas(*expr)
+        self.Plotter.SetDefaultWeight(holdCut)
+
+
 def MakePlots(categories,regions,exprArgs,aPlotter = plotter):
     """ Shortcut to make plots for multiple categories and regions with the same setup.
 
@@ -65,18 +96,19 @@ def MakePlots(categories,regions,exprArgs,aPlotter = plotter):
     @param exprArgs is a list of lists of parameters to be used in PlotStack::MakeCanvas.
     @param aPlotter is the plotter to use to plot. The default is the plotter defined in this module.
     """
-    if not (type(categories) == list and type(regions) == list):
-        ## @todo Fix this to just call itself again with a list
-        print 'Even if not using multiple regions or categories, must be a list!'
-        return 0
+
+    if not type(categories) == list:
+        MakePlots([categories],regions,exprArgs,aPlotter)
+
+    if not type(categories) == list:
+        MakePlots(categories,[regions],exprArgs,aPlotter)
+
+    passToParallel = []
     for category in categories:
         for region in regions:
-            SetCuts(category,region,aPlotter)
             for exprArg in exprArgs:
-                holdCut = aPlotter.GetDefaultWeight()
-                expr = list(exprArg)
-                aPlotter.SetDefaultWeight(Nminus1Cut(holdCut, expr[0]))
-                aPlotter.SetDefaultExpr(expr[0])
-                expr[0] = '_'.join([category,region,expr[0]])
-                aPlotter.MakeCanvas(*expr)
-                aPlotter.SetDefaultWeight(holdCut)
+                passToParallel.append([category,region,exprArg])
+
+    RunParallel(ParallelStackContainer(aPlotter),MakePlot,passToParallel)
+
+    return 0

@@ -289,3 +289,12 @@ PlotStack::MakeCanvas(TString FileBase, Int_t NumXBins, Double_t MinX, Double_t 
   ConvertToArray(NumXBins,MinX,MaxX,XBins);
   MakeCanvas(FileBase,NumXBins,XBins,XLabel,YLabel,logY);
 }
+
+//--------------------------------------------------------------------
+PlotStack*
+PlotStack::Copy()
+{
+  PlotStack *newPlotter = new PlotStack();
+  *newPlotter = *this;
+  return newPlotter;
+}
