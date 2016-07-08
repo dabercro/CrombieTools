@@ -96,20 +96,19 @@ def MakePlots(categories,regions,exprArgs,aPlotter = plotter):
     @param aPlotter is the plotter to use to plot. The default is the plotter defined in this module.
     """
 
-    from ..Parallelization import RunParallel
-
     if not type(categories) == list:
         MakePlots([categories],regions,exprArgs,aPlotter)
 
-    if not type(categories) == list:
+    elif not type(categories) == list:
         MakePlots(categories,[regions],exprArgs,aPlotter)
 
-    passToParallel = []
-    for category in categories:
-        for region in regions:
-            for exprArg in exprArgs:
-                passToParallel.append([category,region,exprArg])
+    else:
+        from ..Parallelization import RunParallel
 
-    RunParallel(ParallelStackContainer(aPlotter),'MakePlot',passToParallel)
+        passToParallel = []
+        for category in categories:
+            for region in regions:
+                for exprArg in exprArgs:
+                    passToParallel.append([category,region,exprArg])
 
-    return 0
+        RunParallel(ParallelStackContainer(aPlotter),'MakePlot',passToParallel)

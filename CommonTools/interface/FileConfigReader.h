@@ -32,7 +32,6 @@ class FileConfigReader : public InOutDirectoryHolder
   virtual ~FileConfigReader();
 
   /// Differentiates between background, signal MC and data.
-  /// @todo add some sort of DataFile addition
   enum FileType { kBackground = 0, kSignal, kData };
 
   /// Returns a vector of limit tree names that have been read from the configs
