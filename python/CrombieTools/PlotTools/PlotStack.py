@@ -1,6 +1,5 @@
 import os
 from .. import Load, DirFromEnv, Nminus1Cut
-from ..Parallelization import RunParallel
 
 newStackPlotter = Load('PlotStack')
 plotter         = newStackPlotter()
@@ -97,6 +96,8 @@ def MakePlots(categories,regions,exprArgs,aPlotter = plotter):
     @param aPlotter is the plotter to use to plot. The default is the plotter defined in this module.
     """
 
+    from ..Parallelization import RunParallel
+
     if not type(categories) == list:
         MakePlots([categories],regions,exprArgs,aPlotter)
 
@@ -109,6 +110,6 @@ def MakePlots(categories,regions,exprArgs,aPlotter = plotter):
             for exprArg in exprArgs:
                 passToParallel.append([category,region,exprArg])
 
-    RunParallel(ParallelStackContainer(aPlotter),MakePlot,passToParallel)
+    RunParallel(ParallelStackContainer(aPlotter),'MakePlot',passToParallel)
 
     return 0

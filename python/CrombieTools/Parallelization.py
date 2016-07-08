@@ -67,6 +67,9 @@ def RunParallel(objectToRun, functionName, parametersLists, procs=DefaultNumProc
 
         del objCopy
 
+    if printing:
+        print('About to use {0} processers.'.format(procs))
+
     theQueue     = Queue()
     theProcesses = []
 
