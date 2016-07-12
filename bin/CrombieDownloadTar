@@ -1,0 +1,7 @@
+#!/bin/bash
+
+wget -O CrombiePlots.tar.gz "$1"
+
+tar -xzf CrombiePlots.tar.gz
+mv plots/* .
+rmdir plots

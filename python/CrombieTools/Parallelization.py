@@ -85,6 +85,7 @@ def RunParallel(objectToRun, functionName, parametersLists, procs=DefaultNumProc
         aProccess.join()
 
     print('All done!\n')
+    print('Total jobs: ' + str(len(parametersLists)))
     print('Total time: ' + str(time() - totStartTime) + ' seconds\n')
 
     

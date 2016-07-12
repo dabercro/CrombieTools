@@ -26,22 +26,6 @@ float deltaR(float eta1, float phi1, float eta2, float phi2)
   return sqrt((eta2-eta1)*(eta2-eta1)+deltaPhi(phi1,phi2)*deltaPhi(phi1,phi2));
 }
 
-/// Calculate uPerp given reconstructed MET and boson phi
-float uPerp(float met, float metPhi, float zPhi)
-{
-  TLorentzVector recoil;
-  recoil.SetPtEtaPhiM(met,0,metPhi + TMath::Pi() - zPhi,0);
-  return recoil.Py(); 
-}
-
-/// Calculate uPara given reconstructed MET and boson phi
-float uPara(float met, float metPhi, float zPhi)
-{
-  TLorentzVector recoil;
-  recoil.SetPtEtaPhiM(met,0,metPhi + TMath::Pi() - zPhi,0);
-  return recoil.Px(); 
-}
-
 /// Phi of a mother of two particles
 float vectorSumPhi(float pt1, float phi1, float pt2, float phi2)
 {
@@ -96,6 +80,40 @@ float vectorSumEta(float pt1, float eta1, float phi1, float pt2, float eta2, flo
   vec2.SetPtEtaPhiM(pt2,eta2,phi2,0);
   vec3 = vec1 + vec2;
   return vec3.Eta();
+}
+
+/// Calculate uPerp given reconstructed recoil and boson phi
+float uPerp(float recoil, float recoilPhi, float zPhi)
+{
+  TLorentzVector recoilvec;
+  recoilvec.SetPtEtaPhiM(recoil,0,recoilPhi + TMath::Pi() - zPhi,0);
+  return recoilvec.Py(); 
+}
+
+/// Calculate uPara given reconstructed recoil and boson phi
+float uPara(float recoil, float recoilPhi, float zPhi)
+{
+  TLorentzVector recoilvec;
+  recoilvec.SetPtEtaPhiM(recoil,0,recoilPhi + TMath::Pi() - zPhi,0);
+  return recoilvec.Px(); 
+}
+
+/// Calculate uPerp given reconstructed MET and boson pt and phi
+float uPerp(float met, float metPhi, float zPt, float zPhi)
+{
+  TLorentzVector metvec;
+  metvec.SetPtEtaPhiM(vectorSumPt(met,metPhi,zPt,zPhi),0,vectorSumPhi(met,metPhi,zPt,zPhi)
+                   + TMath::Pi() - zPhi,0);
+  return metvec.Py(); 
+}
+
+/// Calculate uPara given reconstructed MET and boson pt and phi
+float uPara(float met, float metPhi, float zPt, float zPhi)
+{
+  TLorentzVector metvec;
+  metvec.SetPtEtaPhiM(vectorSumPt(met,metPhi,zPt,zPhi),0,vectorSumPhi(met,metPhi,zPt,zPhi)
+                   + TMath::Pi() - zPhi,0);
+  return metvec.Px(); 
 }
 
 /// Calculates transverse mass given a lepton and MET

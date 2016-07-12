@@ -83,14 +83,20 @@ HistAnalysis::DoScaleFactors(TString PlotVar, Int_t NumBins, Double_t *XBins,
   std::cout << " \\\\" << std::endl;
   std::cout << "\\hline" << std::endl;
   
-  std::cout << "Background Subtracted Data";
+  if (fIsPresentation)
+    std::cout << "\\makecell{Background \\\\ Subtracted \\\\ Data}";
+  else
+    std::cout << "Background Subtracted Data";
   for (UInt_t iYield = 0; iYield != data_yields.size(); ++iYield) {
     std::cout << " & " << TString::Format(fFormat,data_yields[iYield]);
     std::cout << " \\pm " << TString::Format(fFormat,data_error[iYield]);
   }
   std::cout << " \\\\" << std::endl;
   
-  std::cout << "Truth-matched MC";
+  if (fIsPresentation)
+    std::cout << "\\makecell{Signal-\\\\ matched MC}";
+  else
+    std::cout << "Signal-matched MC";
   for (UInt_t iYield = 0; iYield != mc_yields.size(); ++iYield) {
     std::cout << " & " << TString::Format(fFormat,mc_yields[iYield]);
     std::cout << " \\pm " << TString::Format(fFormat,mc_error[iYield]);
@@ -98,7 +104,10 @@ HistAnalysis::DoScaleFactors(TString PlotVar, Int_t NumBins, Double_t *XBins,
   std::cout << " \\\\" << std::endl;
   std::cout << "\\hline" << std::endl;
   
-  std::cout << "Normalized Ratio";
+  if (fIsPresentation)
+    std::cout << "\\makecell{Normalized \\\\ Ratio}";
+  else
+    std::cout << "Normalized Ratio";
   for (UInt_t iYield = 0; iYield != data_yields.size(); ++iYield) {
     std::cout << " & " << TString::Format(fFormat,data_yields[iYield]/mc_yields[iYield] * factor);
     std::cout << " \\pm " << TString::Format(fFormat,

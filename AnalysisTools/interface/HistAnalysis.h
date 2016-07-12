@@ -63,6 +63,9 @@ class HistAnalysis : public FileConfigReader, private PlotHists
   /// Does ratio plots between different selections for certain distributions
   void    MakeRatioPlots     ( ) { }
 
+  /// Sets whether to print any tables for notes or presentations
+  void    SetIsPresentation  ( Bool_t ispresentation )                        { fIsPresentation = ispresentation;       }
+
  private:
 
   TString   fSignalName = "";             ///< Legend entry of the signal that we are using from the MCConfig
@@ -73,6 +76,8 @@ class HistAnalysis : public FileConfigReader, private PlotHists
   std::vector<TString> fCutNames;         ///< Vector of cut names to print out table
 
   TString   fFormat = "%.2f";             ///< Format string for the output tables
+
+  Bool_t    fIsPresentation = true;       ///< Stores if to make tables for presentation, alternative is note
 
   ClassDef(HistAnalysis,1)
 };
