@@ -79,12 +79,18 @@ class ParallelStackContainer:
 
         SetCuts(category,region,self.Plotter)
         holdCut = self.Plotter.GetDefaultWeight()
-        expr = list(exprArg)
+        expr = []
+        if type(exprArg[1]) == str:
+            self.Plotter.SetDataExpression(exprArg[0])
+            expr = list(exprArg[1:])
+        else:
+            expr = list(exprArg)
         self.Plotter.SetDefaultWeight(Nminus1Cut(holdCut, expr[0]))
         self.Plotter.SetDefaultExpr(expr[0])
         expr[0] = '_'.join([category,region,expr[0]])
         self.Plotter.MakeCanvas(*expr)
         self.Plotter.SetDefaultWeight(holdCut)
+        self.Plotter.SetDataExpression('')
 
 
 def MakePlots(categories,regions,exprArgs,aPlotter = plotter):
@@ -93,6 +99,10 @@ def MakePlots(categories,regions,exprArgs,aPlotter = plotter):
     @param categories is a list of categories to plot.
     @param regions is a list of the regions to plot.
     @param exprArgs is a list of lists of parameters to be used in PlotStack::MakeCanvas.
+                    Normally, the first expression is the default expression to be plotted.
+                    The basename of the output file is automatically set by this.
+                    If the second argument is also a string, then the first argument
+                    is passed to PlotStack::SetDataExpression().
     @param aPlotter is the plotter to use to plot. The default is the plotter defined in this module.
     """
 

@@ -58,6 +58,7 @@ PlotStack::GetHistList(Int_t NumXBins, Double_t *XBins, HistType type)
 {
   std::vector<FileInfo*> *theFileInfo = &fMCFileInfo;
   TString tempCutHolder = "";
+  TString tempExprHolder = "";
   UInt_t numFiles = 0;
 
   if (type == kSignal)
@@ -104,7 +105,15 @@ PlotStack::GetHistList(Int_t NumXBins, Double_t *XBins, HistType type)
     tempCutHolder = fDefaultCut;
     SetDefaultWeight(TString("(") + tempCutHolder + TString(")*(") + fMCWeights + TString(")"));
   }
+
+  if (type == kData && fDataExpression != "") {
+    tempExprHolder = fDefaultExpr;
+    SetDefaultExpr(fDataExpression);
+  }
   std::vector<TH1D*> theHists = MakeHists(NumXBins,XBins);
+  if (type == kData && fDataExpression != "")
+    SetDefaultExpr(tempExprHolder);
+
   if (tempCutHolder != "")
     SetDefaultWeight(tempCutHolder);
 

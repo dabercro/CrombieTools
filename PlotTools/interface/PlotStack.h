@@ -1,9 +1,24 @@
+/**
+  @file   PlotStack.h
+
+  Header of PlotStack class.
+
+  @author Daniel Abercrombie <dabercro@mit.edu> */
+
 #ifndef CROMBIETOOLS_PLOTTOOLS_PLOTSTACK_H
 #define CROMBIETOOLS_PLOTTOOLS_PLOTSTACK_H
 
 #include "TreeContainer.h"
 #include "PlotHists.h"
 #include "FileConfigReader.h"
+
+/**
+   @ingroup plotgroup
+   @class PlotStack
+   Class used for making stack plots.
+   Most easy way to use this class is through CrombieTools.PlotTools.PlotStack
+   convenience functions and using an [MC Configuration](@ref md_docs_FORMATMC).
+   Many appearance flags must be set through this class's methods though. */
 
 class PlotStack : public PlotHists , public FileConfigReader
 {
@@ -60,6 +75,9 @@ class PlotStack : public PlotHists , public FileConfigReader
   /// Use this to change the automatic sorting of backgrounds based on yields
   void SetSortBackground ( Bool_t doSort )            { fSortBackground = doSort;                 }
 
+  /// Use this to set a different expression for data from MC
+  void SetDataExpression ( TString expr )             { fDataExpression = expr;                   }
+
  protected:
   /// Determines type of histogram being drawn.
   enum HistType { kData = 0, kMC, kSignal };
@@ -93,6 +111,8 @@ class PlotStack : public PlotHists , public FileConfigReader
   TString               fDumpRootName;              ///< File where each histogram in stack is dumped
   Bool_t                fMakeRatio = true;          ///< Bool to make ratio pad
   Bool_t                fSortBackground = true;     ///< Bool to sort the backgrounds
+
+  TString               fDataExpression = "";       ///< Holds an alternative expression to plot data in
 
   ClassDef(PlotStack,1)
 };
