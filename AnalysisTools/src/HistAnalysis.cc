@@ -15,6 +15,8 @@ HistAnalysis::DoScaleFactors(TString PlotVar, Int_t NumBins, Double_t *XBins,
                              ScaleFactorMethod  method, Bool_t NormalizeBackground,
                              TString TreeName)
 {
+  ResetWeight();
+
   SetDefaultExpr(PlotVar);
 
   // First create the data histograms
