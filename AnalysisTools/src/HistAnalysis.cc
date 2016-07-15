@@ -23,7 +23,7 @@ HistAnalysis::DoScaleFactors(TString PlotVar, Int_t NumBins, Double_t *XBins,
   SetDefaultTree(ReturnTChain(TreeName,kData));
   AddWeight(fBaseCut);
   for (UInt_t iCut = 0; iCut != fScaleFactorCuts.size(); ++iCut)
-    AddWeight(fBaseCut + " && " + fScaleFactorCuts[iCut]);
+    AddWeight(fBaseCut + " && " + fDataSFCuts[iCut]);
   std::vector<TH1D*> dataHists = MakeHists(NumBins,XBins);
 
   // Then create the signal histograms
@@ -39,7 +39,7 @@ HistAnalysis::DoScaleFactors(TString PlotVar, Int_t NumBins, Double_t *XBins,
   std::vector<TH1D*> backgroundHists = MakeHists(NumBins,XBins);
 
   // Subtract out the background
-  Double_t scale = -1.0;
+  Double_t scale = -1.0 - fBackgroundChange;
   if (NormalizeBackground)
     scale *= dataHists[0]->Integral()/(backgroundHists[0]->Integral() + signalHists[0]->Integral());
 
@@ -91,7 +91,7 @@ HistAnalysis::DoScaleFactors(TString PlotVar, Int_t NumBins, Double_t *XBins,
     std::cout << "Background Subtracted Data";
   for (UInt_t iYield = 0; iYield != data_yields.size(); ++iYield) {
     std::cout << " & " << TString::Format(fFormat,data_yields[iYield]);
-    std::cout << " \\pm " << TString::Format(fFormat,data_error[iYield]);
+    std::cout << " $\\pm$ " << TString::Format(fFormat,data_error[iYield]);
   }
   std::cout << " \\\\" << std::endl;
   
@@ -101,7 +101,7 @@ HistAnalysis::DoScaleFactors(TString PlotVar, Int_t NumBins, Double_t *XBins,
     std::cout << "Signal-matched MC";
   for (UInt_t iYield = 0; iYield != mc_yields.size(); ++iYield) {
     std::cout << " & " << TString::Format(fFormat,mc_yields[iYield]);
-    std::cout << " \\pm " << TString::Format(fFormat,mc_error[iYield]);
+    std::cout << " $\\pm$ " << TString::Format(fFormat,mc_error[iYield]);
   }
   std::cout << " \\\\" << std::endl;
   std::cout << "\\hline" << std::endl;
@@ -112,7 +112,7 @@ HistAnalysis::DoScaleFactors(TString PlotVar, Int_t NumBins, Double_t *XBins,
     std::cout << "Normalized Ratio";
   for (UInt_t iYield = 0; iYield != data_yields.size(); ++iYield) {
     std::cout << " & " << TString::Format(fFormat,data_yields[iYield]/mc_yields[iYield] * factor);
-    std::cout << " \\pm " << TString::Format(fFormat,
+    std::cout << " $\\pm$ " << TString::Format(fFormat,
                                              TMath::Sqrt(pow(data_error[iYield]/mc_yields[iYield],2) +
                                                          pow(data_yields[iYield]/pow(mc_yields[iYield],2) * mc_error[iYield],2)) *
                                              factor);
@@ -132,6 +132,29 @@ HistAnalysis::DoScaleFactors(TString PlotVar, Int_t NumBins, Double_t MinX, Doub
   ConvertToArray(NumBins,MinX,MaxX,XBins);
   DoScaleFactors(PlotVar,NumBins,XBins,method,NormalizeBackground,TreeName);
 }
+
+
+//--------------------------------------------------------------------
+void
+HistAnalysis::AddScaleFactorCut(TString name, TString cut, TString datacut)
+{
+  fCutNames.push_back(name);
+  fScaleFactorCuts.push_back(cut);
+  if (datacut == "")
+    fDataSFCuts.push_back(cut);
+  else
+    fDataSFCuts.push_back(datacut);
+}
+
+//--------------------------------------------------------------------
+void
+HistAnalysis::ResetScaleFactorCuts()
+{
+  fScaleFactorCuts.resize(0);
+  fDataSFCuts.resize(0);
+  fCutNames.resize(0);
+}
+
 
 //--------------------------------------------------------------------
 void

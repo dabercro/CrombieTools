@@ -36,11 +36,9 @@ class HistAnalysis : public FileConfigReader, private PlotHists
   /// Sets the MC weight
   void    SetMCWeight        ( TString weight )                               { fMCWeight = weight;                     }
 
-  /// Sets various other cut levels for scalefactors
-  void    AddScaleFactorCut  ( TString cut, TString name )                    { fScaleFactorCuts.push_back(cut);
-                                                                                fCutNames.push_back(name);              }
   /// Sets the format string for the scale factor table
   void    SetFormat          ( TString format )                               { fFormat = format;                       }
+
   /// Different methods of doing cut and count
   enum    ScaleFactorMethod { kCutAndCount = 0 };
   /// Does scale factors between background-subtracted data and signal MC
@@ -52,6 +50,11 @@ class HistAnalysis : public FileConfigReader, private PlotHists
                                ScaleFactorMethod  method = kCutAndCount, Bool_t NormalizeBackground = true,
                                TString TreeName = "events" );
 
+  /// Sets various other cut levels for scalefactors
+  void    AddScaleFactorCut     (  TString name, TString cut, TString datacut = "" );
+  /// Resets the values saved for the scale factor cuts
+  void    ResetScaleFactorCuts  ();
+
   /// Reweights based on some expression in MC to match data shape and makes a histogram for CorrectionApplicator to use
   void    MakeReweightHist   ( TString OutFile, TString OutHist, TString PlotVar,
                                Int_t NumBins, Double_t *XBins, TString TreeName = "events" );
@@ -60,11 +63,10 @@ class HistAnalysis : public FileConfigReader, private PlotHists
   void    MakeReweightHist   ( TString OutFile, TString OutHist, TString PlotVar,
                                Int_t NumBins, Double_t MinX, Double_t MaxX, TString TreeName = "events" );
 
-  /// Does ratio plots between different selections for certain distributions
-  void    MakeRatioPlots     ( ) { }
-
   /// Sets whether to print any tables for notes or presentations
   void    SetIsPresentation  ( Bool_t ispresentation )                        { fIsPresentation = ispresentation;       }
+
+  void    ChangeBackground   ( Double_t factor )                               { fBackgroundChange = factor;             }
 
  private:
 
@@ -73,11 +75,14 @@ class HistAnalysis : public FileConfigReader, private PlotHists
   TString   fBaseCut = "1";               ///< Sets the cut to use for all events in the analysis
   TString   fMCWeight = "1";              ///< Weight for the MC histograms
   std::vector<TString> fScaleFactorCuts;  ///< Vector of cuts to do scale factor measurements on
+  std::vector<TString> fDataSFCuts;       ///< Vector of cuts on data to do scale factor measurements on
   std::vector<TString> fCutNames;         ///< Vector of cut names to print out table
 
   TString   fFormat = "%.2f";             ///< Format string for the output tables
 
   Bool_t    fIsPresentation = true;       ///< Stores if to make tables for presentation, alternative is note
+
+  Double_t   fBackgroundChange = 0.0;
 
   ClassDef(HistAnalysis,1)
 };

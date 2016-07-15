@@ -17,8 +17,9 @@ do
     then
         continue
     fi
+    title=${f%%.pdf}
     echo "\begin{frame}" >> $destination
-    echo "   \frametitle{$f}" >> $destination
+    echo "   \frametitle{\small ${title//_/\_}}" >> $destination
     echo "   \centering" >> $destination
     echo "   \includegraphics[width=0.7\linewidth]{$f}" >> $destination
     echo "\end{frame}" >> $destination
