@@ -9,7 +9,7 @@ fi
 destination=backup_slides.tex
 > $destination
 
-for found in `find figs -name "*.pdf"`
+for found in `find figs -name "*.pdf" | rev | sort | rev`
 do
     f=${found##figs/}
 
