@@ -1,5 +1,5 @@
 dir=$CROMBIEPATH/scripts
-files=($(basename $dir/*))
+files=($(basename $dir/*.sh $dir/*.py))
 
 subcommands=()
 

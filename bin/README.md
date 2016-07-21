@@ -1,3 +1,6 @@
+# This is now horribly out of date
+@todo fix this to describe the `crombie` subcommands.
+
 # Command Line Tools
 
 The following tools are all contained in `CrombieTools/bin`, which is added to your `$PATH` by the installation script.
