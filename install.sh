@@ -77,9 +77,9 @@ then
     echo "export CROMBIEDATE=\`date +%y%m%d\`" >> $profile
 fi
 
-completeline=". \$CROMBIEPATH/bin/crombie_subs.sh"
+completeline="test -f \$CROMBIEPATH/bin/crombie_subs.sh && . \$CROMBIEPATH/bin/crombie_subs.sh"
 
-if ! grep '^. \$CROMBIEPATH/bin/crombie_subs.sh' $profile > /dev/null
+if ! grep '^test -f \$CROMBIEPATH/bin/crombie_subs.sh' $profile > /dev/null
 then
     echo " #"
     echo " # Adding crombie autocomplete to your profile"
