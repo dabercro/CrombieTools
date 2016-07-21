@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 import ROOT
-import sys,os
+import sys, os
 
 def GetNumEntries(fileName, className):
     NumberOfEvents = 0

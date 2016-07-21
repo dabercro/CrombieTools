@@ -31,7 +31,7 @@ export haddFile=$CrombieTempDir/myHadd.txt
 
 if [ "$fresh" != "resub" ]
 then
-    $CROMBIEPATH/scripts/CrombieDumpFileList.sh eos
+    crombie dumpeosfiles eos
     if [ $? -ne 0 ]
     then
         echo "Crashed while dumping file list."
@@ -49,7 +49,7 @@ then
         if [ ! -f $outFile ]
         then
             echo Making: $outFile
-            command="bsub -q $CrombieQueue -n $CrombieNBatchProcs -o bout/out.%J $CROMBIEPATH/scripts/CrombieDoJob.sh $outFile"
+            command="bsub -q $CrombieQueue -n $CrombieNBatchProcs -o bout/out.%J crombie dojob $outFile"
             if [ "$fresh" = "test" ]
             then
                 echo $command
@@ -65,6 +65,6 @@ fi
 
 if [ "$ranOnFile" -eq 0 ]
 then
-    cat $haddFile | xargs -n2 -P$CrombieNLocalProcs $CROMBIEPATH/scripts/haddArgs.sh 
+    cat $haddFile | xargs -n2 -P$CrombieNLocalProcs crombie hadd
     echo "All files merged!"
 fi

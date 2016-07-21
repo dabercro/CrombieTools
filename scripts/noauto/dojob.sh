@@ -71,7 +71,7 @@ ERRORFOUND=0
 FATALERROR=0
 for file in `ls $OutputBase*.root`
 do
-    $CrombieCheckerScript $file
+    "$CrombieCheckerScript" $file
     if [ "$?" -ne "0" ]
     then
         if [ "$?" -eq "5" -o "$file" = "$OutputBase.root" ]

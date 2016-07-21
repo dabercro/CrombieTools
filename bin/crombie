@@ -1,0 +1,23 @@
+#!/bin/bash
+
+dir=$CROMBIEPATH/scripts
+subcommands=($dir/* $dir/*/*)
+
+executed=0
+
+for sub in "${subcommands[@]}"
+do
+    comm=$(basename $sub)
+    if [ "$1" = "${comm%%.*}" ]
+    then
+        $sub "${@:2}"
+        executed=1
+        break
+    fi
+done
+
+if [ $executed -eq 0 ]
+then    
+    echo "Command \"$1\" not supported."
+    exit 1
+fi

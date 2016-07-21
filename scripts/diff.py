@@ -5,7 +5,7 @@ import os
 import sys
 sys.path.insert(0, os.environ['CROMBIEPATH'] + '/scripts')
 
-from CrombieTreeFinder import GetNumEntries
+from findtree import GetNumEntries
 from CrombieTools.Parallelization import RunOnDirectory
 
 class CrombieDiffDoer:

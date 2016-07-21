@@ -31,7 +31,7 @@ then
 
     if [ "$countFiles" -eq "0" -a "$fresh" != "resub" ]
     then
-        $CROMBIEPATH/scripts/CrombieDumpFileList.sh
+        crombie dumpeosfiles
         if [ "$?" -ne "0" ]
         then
             echo "Something went wrong with File Dump. Exiting..."
@@ -83,5 +83,5 @@ then
     then
         rmdir $CrombieTempDir/TerminalRunning
     fi
-    cat $haddFile | xargs -n2 -P$CrombieNLocalProcs $CROMBIEPATH/scripts/haddArgs.sh
+    cat $haddFile | xargs -n2 -P$CrombieNLocalProcs crombie hadd
 fi
