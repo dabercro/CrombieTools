@@ -22,17 +22,17 @@ then                                       # unless we only want to quickly
             rm -rf $toRemove               # and READMEs
         fi
     done
-    CrombieClean
+    crombie clean
 fi
 
-CrombieWorkspace test
+crombie workspace test
 
 cd $here/slimmer
 
 host=`hostname`
 if [ "${host:0:6}" = "lxplus" ]
 then
-    CrombieSubmitLxplus test
+    crombie submit test
     echo "Just kidding, I didn't really submit anything... At least, I shouldn't have ;^)"
 fi
 
@@ -89,7 +89,7 @@ cd $here/plotter
 # Make more stack plots with BDT cuts
 # Make cutflow
 
-CompileCrombieTools
+crombie compile
 cd $here
 
 if [ "$fast" != "fast" ]

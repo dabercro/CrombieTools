@@ -5,7 +5,7 @@ subcommands=()
 
 for f in "${files[@]}"
 do
-    if [ "${f%%.*}" != "README" ]
+    if [ "${f%%.*}" != "README" -a "${f%%.*}" != "noauto" ]
     then
         subcommands+="${f%%.*} "
     fi

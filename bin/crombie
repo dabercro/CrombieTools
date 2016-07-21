@@ -1,23 +1,39 @@
 #!/bin/bash
 
-dir=$CROMBIEPATH/scripts
-subcommands=($dir/* $dir/*/*)
+dir=$CROMBIEPATH/scripts         # Location of scripts to run from crombie
+scripts=($dir/* $dir/*/*)        # Array of the scripts
 
-executed=0
+subcommands=()                   # Gather the subcommands in case the user calls for help
 
-for sub in "${subcommands[@]}"
+executed=0                       # Flag to see if proper command was called
+
+for sub in "${scripts[@]}"
 do
     comm=$(basename $sub)
-    if [ "$1" = "${comm%%.*}" ]
+    if [ "$comm" = "README.md" -o "$comm" = "noauto" ]
+    then
+        continue
+    elif [ "$1" = "${comm%%.*}" ]
     then
         $sub "${@:2}"
         executed=1
         break
     fi
+    subcommands+="${comm%%.*} "
 done
+
+if [ "$1" = "help" ]
+then
+    for sub in ${subcommands[@]}
+    do
+        echo $sub
+    done
+    executed=1
+fi
 
 if [ $executed -eq 0 ]
 then    
     echo "Command \"$1\" not supported."
+    echo "Type \"crombie help\" for more information."
     exit 1
 fi
