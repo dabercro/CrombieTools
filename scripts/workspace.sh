@@ -7,10 +7,7 @@ testDir="test"
 for dir in `ls $CROMBIEPATH/templates`
 do
     
-    if [ ! -d $dir ]
-    then
-        mkdir $dir
-    fi
+    test ! -d $dir && mkdir $dir
 
     if [ "$full" = "test" ]
     then
@@ -29,13 +26,19 @@ do
         then
             continue
         fi
-        if [ ! -f $dir/$file ]
-        then
-            cp $CROMBIEPATH/templates/$dir/$file $dir/$file
-        fi
+
+        test ! -f $dir/$file && cp $CROMBIEPATH/templates/$dir/$file $dir/$file
+
     done
 done
 
 location=`pwd`
-mv docs/results.tex docs/${location##*/}.tex
-mkdir docs/figs
+
+if [ ! -f docs/${location##*/}.tex ]
+then
+    mv docs/results.tex docs/${location##*/}.tex
+else
+    rm docs/results.tex
+fi
+
+test ! -d docs/figs && mkdir docs/figs

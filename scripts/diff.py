@@ -65,8 +65,9 @@ class CrombieDiffDoer:
 
 if __name__ == '__main__':
 
-    parser = argparse.ArgumentParser(description = 'Checks two directories to make sure they have the same number of files' + 
-                                                   ' and number of events in the tree and hist for each file')
+    parser = argparse.ArgumentParser(prog='crombie diff',
+        description = 'Checks two directories to make sure they have the same number of files' + 
+                      ' and number of events in the tree and hist for each file')
 
     parser.add_argument('dirs', metavar='DIRECTORY', nargs=2, help='The names of the two directories to compare.')
     parser.add_argument('--numproc', '-n', metavar = 'NUM', type=int, dest = 'numMaxProcesses', default = 1, help = 'Number of processes that FlatSkimmer will spawn.')

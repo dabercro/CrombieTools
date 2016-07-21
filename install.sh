@@ -77,15 +77,15 @@ then
     echo "export CROMBIEDATE=\`date +%y%m%d\`" >> $profile
 fi
 
-completeline="test -f \$CROMBIEPATH/bin/crombie_subs.sh && . \$CROMBIEPATH/bin/crombie_subs.sh"
+completeline="test -f \$CROMBIEPATH/bin/crombie_completion.sh && . \$CROMBIEPATH/bin/crombie_completion.sh"
 
-if ! grep '^test -f \$CROMBIEPATH/bin/crombie_subs.sh' $profile > /dev/null
+if ! grep '^test -f \$CROMBIEPATH/bin/crombie_completion.sh' $profile > /dev/null
 then
     echo " #"
     echo " # Adding crombie autocomplete to your profile"
     echo " #"
     echo "" >> $profile
-    echo "# Autocomplete for crombie subcommands." >> $profile
+    echo "# Auto completion for crombie subcommands." >> $profile
     echo $completeline >> $profile
 else
     echo " # Autocomplete already included"

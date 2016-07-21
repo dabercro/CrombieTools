@@ -5,7 +5,8 @@ import os, argparse
 from CrombieTools.SkimmingTools.FlatSkimmer import newFlatSkimmer, MakeFilter
 from CrombieTools.Parallelization import RunOnDirectory
 
-parser = argparse.ArgumentParser(description = 'Slims the contents of one directory into another one')
+parser = argparse.ArgumentParser(prog='crombie skim',
+    description = 'Slims the contents of one directory into another one')
 
 parser.add_argument('--numproc', '-n', metavar = 'NUM', type = int, dest = 'numMaxProcesses', default = 1, help = 'Number of processes that FlatSkimmer will spawn.')
 parser.add_argument('--indir', '-i', metavar = 'DIR', type = str, dest = 'inDir', default = '.', help = 'Directory that contains input files to be slimmed.')

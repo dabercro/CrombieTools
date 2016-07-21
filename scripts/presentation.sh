@@ -8,7 +8,7 @@ if [ ! -f $projName/docs/presentation.tex ]
 then
     echo ""
     echo "Must be called from within a directory that was set up by"
-    echo "CrombieWorkspace and initialized as a git repository."
+    echo "crombie workspace and initialized as a git repository."
     echo ""
     exit 0
 fi
