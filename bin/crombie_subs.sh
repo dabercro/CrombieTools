@@ -1,10 +1,12 @@
+
 dir=$CROMBIEPATH/scripts
-files=($(basename $dir/*.sh $dir/*.py))
+files=($dir/*.[p,s]?)
 
 subcommands=()
 
-for f in "${files[@]}"
+for f in ${files[@]}
 do
+    f=$(basename $f)
     if [ "${f%%.*}" != "README" -a "${f%%.*}" != "noauto" ]
     then
         subcommands+="${f%%.*} "

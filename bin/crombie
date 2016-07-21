@@ -1,11 +1,11 @@
 #!/bin/bash
 
-dir=$CROMBIEPATH/scripts                   # Location of scripts to run from crombie
-scripts=($dir/*.sh $dir/*.py $dir/*/*.sh)  # Array of the scripts
+dir=$CROMBIEPATH/scripts                 # Location of scripts to run from crombie
+scripts=($dir/*.[p,s]? $dir/*/*.[p,s]?)  # Array of the scripts
 
-subcommands=()                             # Gather the subcommands in case the user calls for help
+subcommands=()                           # Gather the subcommands in case the user calls for help
 
-executed=0                                 # Flag to see if proper command was called
+executed=0                               # Flag to see if proper command was called
 
 for sub in "${scripts[@]}"
 do
@@ -21,6 +21,7 @@ done
 
 if [ "$1" = "help" ]
 then
+    
     for sub in ${subcommands[@]}
     do
         echo $sub
