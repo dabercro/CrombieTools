@@ -21,6 +21,18 @@ _crombie_subs () {
     if [ "$prev" = "crombie" ]
     then
         COMPREPLY=( $(compgen -W "${subcommands[@]}" $cur ) )
+    elif [ "$prev" = "submitlxbatch" ]
+    then
+        COMPREPLY=( $(compgen -W "hadd test resub fresh" $cur ) )
+    elif [ "$prev" = "terminalslim" ]
+    then
+        COMPREPLY=( $(compgen -W "hadd resub fresh" $cur ) )
+    elif [ "$prev" = "presentation" ]
+    then
+        COMPREPLY=( $(compgen -W "$CROMBIEDATE" $cur ) )
+    elif [ "$prev" = "workspace" ]
+    then
+        COMPREPLY=( $(compgen -W "test" $cur ) )
     else
         COMPREPLY=()
     fi
@@ -29,4 +41,4 @@ _crombie_subs () {
 
 }
 
-complete -o default -F _crombie_subs crombie
+complete -o bashdefault -o default -F _crombie_subs crombie
