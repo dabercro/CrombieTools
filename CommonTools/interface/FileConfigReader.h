@@ -31,7 +31,10 @@ class FileConfigReader : public InOutDirectoryHolder
   FileConfigReader();
   virtual ~FileConfigReader();
 
-  /// Differentiates between background, signal MC and data.
+  /// Resets the information from the config files being held
+  void                 ResetConfig          ();
+
+  /// Differentiates between background, signal MC and data
   enum FileType { kBackground = 0, kSignal, kData };
 
   /// Returns a vector of limit tree names that have been read from the configs
@@ -115,14 +118,24 @@ FileConfigReader::FileConfigReader()
 //--------------------------------------------------------------------
 FileConfigReader::~FileConfigReader()
 {
+  ResetConfig();
+}
+
+//--------------------------------------------------------------------
+void
+FileConfigReader::ResetConfig()
+{
   for (UInt_t iInfo = 0; iInfo != fMCFileInfo.size(); ++iInfo)
     delete fMCFileInfo[iInfo];
+  fMCFileInfo.clear();
 
   for (UInt_t iInfo = 0; iInfo != fSignalFileInfo.size(); ++iInfo)
     delete fSignalFileInfo[iInfo];
+  fSignalFileInfo.clear();
 
   for (UInt_t iInfo = 0; iInfo != fDataFileInfo.size(); ++iInfo)
     delete fDataFileInfo[iInfo];
+  fDataFileInfo.clear();
 
   for (UInt_t iDelete = 0; iDelete != fDeleteThese.size(); ++iDelete)
     delete fDeleteThese[iDelete];
