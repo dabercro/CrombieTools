@@ -11,7 +11,7 @@ def SetupFromEnv(analyzer=histAnalysis):
     from .. import LoadConfig
     import os
 
-    ## @todo place the FileConfigReader functions into its own setup function for other classes to call
+    ## @todo centralize these FileConfigReader functions to avoid duplicate python
     def readMC(config):
         analyzer.ReadMCConfig(config,analyzer.kBackground)
     def readSignal(config):
