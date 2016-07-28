@@ -22,6 +22,12 @@ inVarsFile=$TreeName.txt
 h=$TreeName.h
 s=$TreeName.cc
 
+if [ ! -f $inVarsFile ]
+then
+    echo "$inVarsFile does not exist." >&2
+    exit 12
+fi
+
 if [ $h -nt $inVarsFile ] && [ $s -nt $inVarsFile ]
 then
     exit 0

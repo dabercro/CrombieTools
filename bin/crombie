@@ -5,33 +5,46 @@ scripts=($dir/*.[p,s]? $dir/*/*.[p,s]?)  # Array of the scripts
 
 subcommands=()                           # Gather the subcommands in case the user calls for help
 
-executed=0                               # Flag to see if proper command was called
-
-for sub in "${scripts[@]}"
+for sub in "${scripts[@]}"               # Compare the command to all the available scripts
 do
-    comm=$(basename $sub)
-    if [ "$1" = "${comm%%.*}" ]
+
+    comm=$(basename $sub)                # Get the basename and compare given subcommand with
+    if [ "$1" = "${comm%%.*}" ]          #   the stripped extension
     then
-        $sub "${@:2}"
-        executed=1
-        break
+
+        $sub "${@:2}"                    # If it matches, execute the script and give any other arguments
+        exitcode=$?                      # Get the exit code
+        if [ $exitcode -ne 0 ]           # If error, return some output to the user
+        then
+            echo "" >&2
+            echo "[ERROR] crombie ${@}: failed with exit code $exitcode" >&2
+            echo "" >&2
+            exit $exitcode               # Propogate the error
+        fi
+        exit 0                           # Stop checking and exit
+
     fi
-    subcommands+="${comm%%.*} "
+
+    subcommands+="${comm%%.*} "          # Hold list of subcommands in case user asks for help
+
 done
 
-if [ "$1" = "help" ]
+if [ "$1" = "help" ]                     # If a command wasn't executed, check for help
 then
-    
-    for sub in ${subcommands[@]}
+
+    echo ""
+    echo "Available subcommands:"
+    echo ""
+
+    for sub in ${subcommands[@]}         # If help, dump the subcommands for now
     do
         echo $sub
     done
-    executed=1
-fi
 
-if [ $executed -eq 0 ]
-then    
-    echo "Command \"$1\" not supported."
-    echo "Type \"crombie help\" for more information."
-    exit 1
+else                                     # If nothing valid entered, tell user and exit
+
+    echo "Subcommand \"$1\" not supported." >&2
+    echo "Type \"crombie help\" for more information." >&2
+    exit 7
+
 fi

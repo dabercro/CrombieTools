@@ -10,7 +10,7 @@
 ClassImp(HistAnalysis)
 
 //--------------------------------------------------------------------
-void
+Double_t
 HistAnalysis::DoScaleFactors(TString PlotVar, Int_t NumBins, Double_t *XBins,
                              ScaleFactorMethod  method, Bool_t NormalizeBackground,
                              TString TreeName)
@@ -74,63 +74,67 @@ HistAnalysis::DoScaleFactors(TString PlotVar, Int_t NumBins, Double_t *XBins,
     break;
 
   default:
-    std::cout << "I do not support that option right now." << std::endl;
+    std::cerr << "I do not support that option right now." << std::endl;
     break;
   }
 
-  std::cout << "\\hline" << std::endl;
-  std::cout << " & No Cut";
-  for (UInt_t iCut = 0; iCut != fCutNames.size(); ++iCut)
-    std::cout << " & " << fCutNames[iCut];
-  std::cout << " \\\\" << std::endl;
-  std::cout << "\\hline" << std::endl;
-  
-  if (fIsPresentation)
-    std::cout << "\\makecell{Background \\\\ Subtracted \\\\ Data}";
-  else
-    std::cout << "Background Subtracted Data";
-  for (UInt_t iYield = 0; iYield != data_yields.size(); ++iYield) {
-    std::cout << " & " << TString::Format(fFormat,data_yields[iYield]);
-    std::cout << " $\\pm$ " << TString::Format(fFormat,data_error[iYield]);
+  if (fPrintingMethod != kNone) {
+    std::cout << "\\hline" << std::endl;
+    std::cout << " & No Cut";
+    for (UInt_t iCut = 0; iCut != fCutNames.size(); ++iCut)
+      std::cout << " & " << fCutNames[iCut];
+    std::cout << " \\\\" << std::endl;
+    std::cout << "\\hline" << std::endl;
+    
+    if (fPrintingMethod == kPresentation)
+      std::cout << "\\makecell{Background \\\\ Subtracted \\\\ Data}";
+    else
+      std::cout << "Background Subtracted Data";
+    for (UInt_t iYield = 0; iYield != data_yields.size(); ++iYield) {
+      std::cout << " & " << TString::Format(fFormat,data_yields[iYield]);
+      std::cout << " $\\pm$ " << TString::Format(fFormat,data_error[iYield]);
+    }
+    std::cout << " \\\\" << std::endl;
+    
+    if (fPrintingMethod == kPresentation)
+      std::cout << "\\makecell{Signal-\\\\ matched MC}";
+    else
+      std::cout << "Signal-matched MC";
+    for (UInt_t iYield = 0; iYield != mc_yields.size(); ++iYield) {
+      std::cout << " & " << TString::Format(fFormat,mc_yields[iYield]);
+      std::cout << " $\\pm$ " << TString::Format(fFormat,mc_error[iYield]);
+    }
+    std::cout << " \\\\" << std::endl;
+    std::cout << "\\hline" << std::endl;
+    
+    if (fPrintingMethod == kPresentation)
+      std::cout << "\\makecell{Normalized \\\\ Ratio}";
+    else
+      std::cout << "Normalized Ratio";
+    for (UInt_t iYield = 0; iYield != data_yields.size(); ++iYield) {
+      std::cout << " & " << TString::Format(fFormat,data_yields[iYield]/mc_yields[iYield] * factor);
+      std::cout << " $\\pm$ " << TString::Format(fFormat,
+                                                 TMath::Sqrt(pow(data_error[iYield]/mc_yields[iYield],2) +
+                                                             pow(data_yields[iYield]/pow(mc_yields[iYield],2) * mc_error[iYield],2)) *
+                                                 factor);
+    }
+    std::cout << " \\\\" << std::endl;
+    std::cout << "\\hline" << std::endl;
   }
-  std::cout << " \\\\" << std::endl;
-  
-  if (fIsPresentation)
-    std::cout << "\\makecell{Signal-\\\\ matched MC}";
-  else
-    std::cout << "Signal-matched MC";
-  for (UInt_t iYield = 0; iYield != mc_yields.size(); ++iYield) {
-    std::cout << " & " << TString::Format(fFormat,mc_yields[iYield]);
-    std::cout << " $\\pm$ " << TString::Format(fFormat,mc_error[iYield]);
-  }
-  std::cout << " \\\\" << std::endl;
-  std::cout << "\\hline" << std::endl;
-  
-  if (fIsPresentation)
-    std::cout << "\\makecell{Normalized \\\\ Ratio}";
-  else
-    std::cout << "Normalized Ratio";
-  for (UInt_t iYield = 0; iYield != data_yields.size(); ++iYield) {
-    std::cout << " & " << TString::Format(fFormat,data_yields[iYield]/mc_yields[iYield] * factor);
-    std::cout << " $\\pm$ " << TString::Format(fFormat,
-                                             TMath::Sqrt(pow(data_error[iYield]/mc_yields[iYield],2) +
-                                                         pow(data_yields[iYield]/pow(mc_yields[iYield],2) * mc_error[iYield],2)) *
-                                             factor);
-  }
-  std::cout << " \\\\" << std::endl;
-  std::cout << "\\hline" << std::endl;
-  
+
+  return data_yields[data_yields.size()]/mc_yields[data_yields.size()] * factor;
+
 }
 
 //--------------------------------------------------------------------
-void
+Double_t
 HistAnalysis::DoScaleFactors(TString PlotVar, Int_t NumBins, Double_t MinX, Double_t MaxX, 
                              ScaleFactorMethod  method, Bool_t NormalizeBackground,
                              TString TreeName)
 {
   Double_t XBins[NumBins+1];
   ConvertToArray(NumBins,MinX,MaxX,XBins);
-  DoScaleFactors(PlotVar,NumBins,XBins,method,NormalizeBackground,TreeName);
+  return DoScaleFactors(PlotVar,NumBins,XBins,method,NormalizeBackground,TreeName);
 }
 
 

@@ -2,8 +2,8 @@
 
 if [ ! -d figs ]
 then
-    echo "You have no figs directory here!"
-    exit 0
+    echo "You have no figs directory here!" >&2
+    exit 10
 fi
 
 destination=backup_slides.tex
@@ -13,7 +13,7 @@ for found in `find figs -name "*.pdf" | rev | sort | rev`
 do
     f=${found##figs/}
 
-    if grep $f *.tex
+    if grep $f *.tex > /dev/null
     then
         continue
     fi

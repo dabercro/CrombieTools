@@ -32,7 +32,9 @@ class HistAnalysis : public FileConfigReader, private PlotHists
   void    SetSignalName      ( TString name, FileType type = kBackground )    { fSignalName = name; fSignalType = type; }
 
   /// Sets the base cut
-  void    SetBaseCut         ( TString cut )                                  { fBaseCut = cut;                         }
+  void    SetBaseCut         ( TString cut )                                  { fBaseCut = cut; fDataBaseCut = cut;     }
+  /// Sets the base cut for MC and Data
+  void    SetBaseCut         ( TString cut, TString datacut )                 { fBaseCut = cut; fDataBaseCut = datacut; }
   /// Sets the MC weight
   void    SetMCWeight        ( TString weight )                               { fMCWeight = weight;                     }
 
@@ -42,13 +44,13 @@ class HistAnalysis : public FileConfigReader, private PlotHists
   /// Different methods of doing cut and count
   enum    ScaleFactorMethod { kCutAndCount = 0 };
   /// Does scale factors between background-subtracted data and signal MC
-  void    DoScaleFactors     ( TString PlotVar, Int_t NumBins, Double_t *XBins,
-                               ScaleFactorMethod  method = kCutAndCount, Bool_t NormalizeBackground = true,
-                               TString TreeName = "events" );
+  Double_t  DoScaleFactors     ( TString PlotVar, Int_t NumBins, Double_t *XBins,
+                                 ScaleFactorMethod  method = kCutAndCount, Bool_t NormalizeBackground = true,
+                                 TString TreeName = "events" );
   /// Does scale factors between background-subtracted data and signal MC with easier binning
-  void    DoScaleFactors     ( TString PlotVar, Int_t NumBins, Double_t MinX, Double_t MaxX,
-                               ScaleFactorMethod  method = kCutAndCount, Bool_t NormalizeBackground = true,
-                               TString TreeName = "events" );
+  Double_t  DoScaleFactors     ( TString PlotVar, Int_t NumBins, Double_t MinX, Double_t MaxX,
+                                 ScaleFactorMethod  method = kCutAndCount, Bool_t NormalizeBackground = true,
+                                 TString TreeName = "events" );
 
   /// Sets various other cut levels for scalefactors
   void    AddScaleFactorCut     (  TString name, TString cut, TString datacut = "" );
@@ -63,26 +65,29 @@ class HistAnalysis : public FileConfigReader, private PlotHists
   void    MakeReweightHist   ( TString OutFile, TString OutHist, TString PlotVar,
                                Int_t NumBins, Double_t MinX, Double_t MaxX, TString TreeName = "events" );
 
+  /// Different methods of printing the scale factor tables
+  enum    PrintingMethod { kNone = 0, kPresentation, kNote };
   /// Sets whether to print any tables for notes or presentations
-  void    SetIsPresentation  ( Bool_t ispresentation )                        { fIsPresentation = ispresentation;       }
+  void    SetPrintingMethod  ( PrintingMethod method )                         { fPrintingMethod = method;               }
 
+  /// Sets the amount the background is scaled by
   void    ChangeBackground   ( Double_t factor )                               { fBackgroundChange = factor;             }
 
  private:
 
   TString   fSignalName = "";             ///< Legend entry of the signal that we are using from the MCConfig
   FileType  fSignalType = kBackground;    ///< Which MC list to get the signal files from
-  TString   fBaseCut = "1";               ///< Sets the cut to use for all events in the analysis
+  TString   fBaseCut = "1";               ///< Sets the cut to use for MC events in the analysis
+  TString   fDataBaseCut = "1";           ///< Sets the cut to use for data in the analysis
   TString   fMCWeight = "1";              ///< Weight for the MC histograms
   std::vector<TString> fScaleFactorCuts;  ///< Vector of cuts to do scale factor measurements on
   std::vector<TString> fDataSFCuts;       ///< Vector of cuts on data to do scale factor measurements on
   std::vector<TString> fCutNames;         ///< Vector of cut names to print out table
 
-  TString   fFormat = "%.2f";             ///< Format string for the output tables
+  TString   fFormat = "%.2f";                        ///< Format string for the output tables
+  PrintingMethod fPrintingMethod = kPresentation;    ///< Stores type of method to use for making scale factor tables
 
-  Bool_t    fIsPresentation = true;       ///< Stores if to make tables for presentation, alternative is note
-
-  Double_t   fBackgroundChange = 0.0;
+  Double_t  fBackgroundChange = 0.0;      ///< Amount the background is scaled by to test scale factor systematic uncertainties
 
   ClassDef(HistAnalysis,1)
 };

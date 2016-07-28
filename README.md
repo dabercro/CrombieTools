@@ -11,6 +11,7 @@ The backend is mostly classes written in C++.
 
 [Installation](INSTALL.md) <br>
 [Running Tests](test/README.md) <br>
+[Analysis Workspace](docs/WORKSPACE.md) <br>
 [Command Line Tools](bin/README.md) <br>
 [Environment Configuration Files](docs/ENVCONFIG.md) <br>
 [Creating Flat Trees and Skimming](docs/SLIMMING.md) <br>

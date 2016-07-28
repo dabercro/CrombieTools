@@ -1,66 +1,168 @@
-# This is now horribly out of date
-@todo fix this to describe the `crombie` subcommands.
-
 # Command Line Tools
 
-The following tools are all contained in `CrombieTools/bin`, which is added to your `$PATH` by the installation script.
-Now you should be able to call them from anywhere within your system.
+A number of scripts are available to the user through the `crombie` command line tool.
+They can be accessed by entering 
+
+`crombie &lt;subcommand&gt;` 
+
+The list of available subcommands are given below.
 
 <table cellpadding=20>
   <tr>
     <td align="left" valign="top">
-      <code>CleanEmacsBackups</code>
+      <code>backupslides</code>
     </td>
     <td align="left">
-       Searches the existing directory and all subdirectories for `*~` files and removes them.
+      From a [workspace](docs/WORKSPACE.md) `docs` directory or presentation subdirectory,
+      `crombie backupslides` searches the `figs` sub-directory for `.pdf` files.
+      If the `.pdf` file is not included in any `.tex` files in the local directory
+      (excluding `backup_slides.tex`), the `.pdf` image will be placed on a frame in
+      `backup_slides.tex` to be included in a presentation.
     </td>
   </tr>
   <tr>
     <td align="left" valign="top">
-      <code>CompileCrombieTools</code>
+      <code>clean</code>
     </td>
     <td align="left">
-      Compiles all of the objects in the package.
-      Can also take an optional argument to only compile named class (and dependencies).
-      Will only recompile the objects if cleaned or the source files have been changed.
-    </td>
-  </tr>
-  <tr>
-    <td align="left" valign="top">
-      <code>CrombieClean</code>
-    </td>
-    <td align="left">
-      Removes all files created by `CompileCrombieTools`.
+      Removes all files created by `crombie compile`.
       This can also take an optional arguments to only clean certain classes.
     </td>
   </tr>
   <tr>
     <td align="left" valign="top">
-      <code>CrombieSubmitLxbatch</code>
+      <code>compile</code>
     </td>
     <td align="left">
+      Compiles all of the objects in the package.
+      Can also take optional arguments to only compile named class (and dependencies).
+      Will only recompile the objects if cleaned or the source files have been changed.
     </td>
   </tr>
   <tr>
     <td align="left" valign="top">
-      <code>CrombieTerminalSlimming</code>
+      <code>diff</code>
+    </td>
+    <td align="left">
+      Compares the flat n-tuples withing two different directories.
+      Basic functionality is to compare the number of events in histograms and trees
+      inside each identically basenamed file.
+      Individual branches can also be compared.
+      Check `crombie diff -h` for more information.
+    </td>
+  </tr>
+  <tr>
+    <td align="left" valign="top">
+      <code>findtree</code>
+    </td>
+    <td align="left">
+      This checks if a `.root` file has a tree inside it, and if the tree has entries.
+    </td>
+  </tr>
+  <tr>
+    <td align="left" valign="top">
+      <code>maketree</code>
+    </td>
+    <td align="left">
+      This automatically generates a tree from a configuration file.
+      There is more information on these configuration files [here](docs/SLIMMING.md).
+    </td>
+  </tr>
+  <tr>
+    <td align="left" valign="top">
+      <code>presentation</code>
+    </td>
+    <td align="left">
+      From inside a [workspace's](docs/WORKSPACE.md) `docs` directory, this command
+      creates a dated directory and copies a local `presentation.tex` into that directory.
+      The copied file is named according to username, the workspace name, and the date.
+    </td>
+  </tr>
+  <tr>
+    <td align="left" valign="top">
+      <code>removefailed</code>
+    </td>
+    <td align="left">
+      In CRAB jobs, there are often partial N-tuples output in a `failed` directory in the output location.
+      `crombie removefailed` checks the `failed` directory and deletes each file inside if there is a larger
+      file located in the successfully completed files.
+      If the `failed` directory is cleared in this way, the directory is removed.
+    </td>
+  </tr>
+  <tr>
+    <td align="left" valign="top">
+      <code>submitlxbatch</code>
+    </td>
+    <td align="left">
+      `crombie submitlxbatch` sources a local [CrombieSlimmingConfig.sh](docs/ENVCONFIG.md) to set a number of variables
+      that are used to submit [slimming](docs/SLIMMING.md) jobs to LXBATCH.
+
+      There are additional subcommands available to `crombie submitlxbatch`.
+      <table cellpadding=10>
+        <tr>
+          <td align="left" valign="top">
+            <code>fresh</code>
+          </td>
+          <td align="left">
+            Deletes the files in [$CrombieTempDir](docs/ENVCONFIG.md) and resubmits all possible jobs.
+          </td>
+        </tr>
+        <tr>
+          <td align="left" valign="top">
+            <code>hadd</code>
+          </td>
+          <td align="left">
+            Does not submit jobs, but goes directly to hadding what finished [slimmed](docs/SLIMMING.md) files are available.
+          </td>
+        </tr>
+        <tr>
+          <td align="left" valign="top">
+            <code>resub</code>
+          </td>
+          <td align="left">
+            Resubmits using the existing `.txt` files inside [$CrombieTempDir](docs/ENVCONFIG.md).
+            The usual behavior is to recreate these files from the input directories every time.
+          </td>
+        </tr>
+        <tr>
+          <td align="left" valign="top">
+            <code>test</code>
+          </td>
+          <td align="left">
+            Instead of submitting jobs, the submit commands are echoed to stdout.
+            If all output files are available, the hadding step will still be attempted.
+          </td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+  <tr>
+    <td align="left" valign="top">
+      <code>terminalslim</code>
     </td>
     <td align="left">
       This tools allows for running the [slimmer](docs/SLIMMING.md) interactively in a shell.
-      Like `CrombieSubmitLxbatch`, this sources a local [CrombieSlimmingConfig.sh](docs/ENVCONFIG.md) to set a number of environment variables.
-      `CrombieTerminal` also comes with the same subcommands as `CrombieTerminalSlimming.
+      Like `submitlxbatch`, this sources a local [CrombieSlimmingConfig.sh](docs/ENVCONFIG.md) to set a number of environment variables.
+      `crombie terminalslim` also comes with the same subcommands as `crombie submitlxbatch`, except for `test`.
     </td>
   </tr>
   <tr>
     <td align="left" valign="top">
-      <code>CrombieWorkspace</code>
+      <code>update</code>
+    </td>
+    <td align="left">
+      This updates the Crombie Tools package to match the upstream of your current branch.
+    </td>
+  </tr>
+  <tr>
+    <td align="left" valign="top">
+      <code>workspace</code>
     </td>
     <td align="left">
       Copies a number of template files into the directory you call it from.
       These files are used to configure the Skimming tools.
-      For additional example files, give the optional argument <code>CrombieSetupWorkspace test</code>.
+      This is a [workspace](docs/WORKSPACE.md).
+      For additional example files, give the optional argument <code>crombie workspace test</code>.
     </td>
   </tr>
 </table>
-
-@todo Document CrombieSubmitLxbatch and subcommands for CrombieTerminalSlimming
