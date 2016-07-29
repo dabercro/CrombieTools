@@ -34,7 +34,7 @@ and have the following layout.
 
 Each subdirectory has distinct function, which are described below.
 
-## Slimming
+# Slimming
 
 The first thing that will often be needed in an analysis is slimming
 files into flat trees.
@@ -63,6 +63,7 @@ environment variables that may be set by other tools used by the user.
 The meanings of each variable is listed below.
 
 @todo Fill this table...
+# Environment Variables {#envconfig}
 
 <table cellpadding=20>
   <tr>
@@ -176,7 +177,7 @@ The environment variables used for the first step of changing ntuple formats
 must be present with those names, otherwise you might run into trouble when
 submitting jobs.
 
-### Generating flat trees for output
+## Generating flat trees for output
 
 @todo Update this section, and move it around, probably
 
@@ -197,7 +198,7 @@ You can then write the tree to a file via `WriteToFile(*TFile,"<WhatYouWantToCal
 There's also other overloaded write and creation function using a file name you specifiy with the initializer.
 See `slimmer.cc` for an example of how to write a flat tree writer using this class.
 
-### Skimming
+## Skimming
 
 The environment variables used for skimming the flat trees afterwards are
 actually optional, if you edit the file `slimmer/FlatSkimmer.sh` to accommodate that.
@@ -237,14 +238,14 @@ Here is the help message to help you understand how to customize this.
 
 After running `FlatSkimmer.sh`, you should have your small ntuples ready to work with.
 
-## Plotting
+# Plotting
 
-### Formatting MC Configuration Files
+# Formatting MC Configuration Files {#formatmc}
 
 Each analysis will probably make use of multiple MC Samples.
 You can keep track of those all with one simple MC Config.
 
-#### Base Configuration
+## Base Configuration
 
 You will generally have one main configuration file with most of your background samples listed.
 Signal samples should be kept in a separate configuration file, since these will be marked as signal or background when read.
@@ -312,7 +313,7 @@ The elements are space delimited.
   </tr>
 </table>
 
-#### Adjustment Configuration
+## Adjustment Configuration
 
 To avoid having duplicate entries in multple configurations, there is an easy way to switch out MC samples for different ones, while keeping the rest of the samples the same.
 If a line starts with the keyword `skip` instead of a tree name and then lists a file, the MCReader will erase the MCFileInfo for that file.
@@ -324,11 +325,11 @@ A configuration file with lines like this can also contain lines like those in t
 This makes it easy to swap out files.
 After reading one config, just read the adjusting configuration after before making limit trees or plotting.
 
-## Documentation
+# Documentation
 
 
 
-## Miscellaneous
+# Miscellaneous
 
 Other directories can of course be added by hand.
 There are certain ways to still source the old configuration files if you need it,

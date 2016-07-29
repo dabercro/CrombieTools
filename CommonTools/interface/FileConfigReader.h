@@ -23,7 +23,7 @@
 /**
    @ingroup commongroup
    @class FileConfigReader
-   This class reads a formatted [MC Config file](@ref md_docs_FORMATMC). */
+   This class reads a formatted [MC Config file](@ref formatmc). */
 
 class FileConfigReader : public InOutDirectoryHolder
 {
