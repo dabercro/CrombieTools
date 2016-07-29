@@ -17,7 +17,7 @@
    @class PlotStack
    Class used for making stack plots.
    Most easy way to use this class is through CrombieTools.PlotTools.PlotStack
-   convenience functions and using an [MC Configuration](@ref md_docs_FORMATMC).
+   convenience functions and using an [MC Configuration](@ref formatmc).
    Many appearance flags must be set through this class's methods though. */
 
 class PlotStack : public PlotHists , public FileConfigReader
@@ -52,7 +52,7 @@ class PlotStack : public PlotHists , public FileConfigReader
   /**
      Sets the legend entry that will be on the top of the stack.
      @param force should match a legend entry. It should have spaces instead of underscores
-                  if matching an entry in an [MC Configuration](md_docs_FORMATMC). */
+                  if matching an entry in an [MC Configuration](formatmc). */
   void SetForceTop       ( TString force )            { fForceTop = force;                        }
   /// Set the minimum fraction of background that shows up on the plot's legend separately
   void SetMinLegendFrac  ( Double_t frac )            { fMinLegendFrac = frac;                    }
@@ -81,7 +81,7 @@ class PlotStack : public PlotHists , public FileConfigReader
      @param fileName is the name of the file containing the histogram.
      @param histName is the name of the TH1 inside the file.
      @param LegendEntry is the entry in the legend. It does not require underscores for spaces
-                        like in the [MC Configurations](@ref md_docs_FORMATMC). */
+                        like in the [MC Configurations](@ref formatmc). */
   void InsertTemplate    ( TString fileName, TString histName, TString LegendEntry )
                                                       { fTemplateFiles.push_back(fileName); 
                                                         fTemplateHists.push_back(histName); 

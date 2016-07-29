@@ -247,7 +247,7 @@ void FileConfigReader::AddFile(TString treeName, TString fileName, Double_t XSec
 
 /**
    Reads in a configuration file assuming it has the format descrbed
-   in [Formatting MC Configs](@ref md_docs_FORMATMC). Contents of 
+   in [Formatting MC Configs](@ref formatmc). Contents of 
    this MC file is stored in one of two vectors FileInfo pointers. */
 
 void FileConfigReader::ReadMCConfig(TString config, TString fileDir)

@@ -2,6 +2,9 @@
   @file   CutflowMaker.h
 
   Header file for the CutflowMaker class.
+  @todo For plots in cutflow: <br>
+        Add multiple lines for other files, can watch MC that way <br>
+        Adjust to use triggers
 
   @author Daniel Abercrombie <dabercro@mit.edu> */
 

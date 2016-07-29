@@ -87,7 +87,7 @@ The list of available subcommands are given below.
     </td>
     <td align="left">
       This automatically generates a tree from a configuration file.
-      There is more information on these configuration files [here](docs/SLIMMING.md).
+      There is more information on these configuration files [here](@ref flattrees).
     </td>
   </tr>
   <tr>
@@ -116,8 +116,8 @@ The list of available subcommands are given below.
       <code>submitlxbatch</code>
     </td>
     <td align="left">
-      `crombie submitlxbatch` sources a local [CrombieSlimmingConfig.sh](docs/ENVCONFIG.md) to set a number of variables
-      that are used to submit [slimming](docs/SLIMMING.md) jobs to LXBATCH.
+      `crombie submitlxbatch` sources a local [CrombieSlimmingConfig.sh](@ref envconfig) to set a number of variables
+      that are used to submit [slimming](@ref slimming) jobs to LXBATCH.
 
       There are additional subcommands available to `crombie submitlxbatch`.
       <table cellpadding=10>
@@ -126,7 +126,7 @@ The list of available subcommands are given below.
             <code>fresh</code>
           </td>
           <td align="left">
-            Deletes the files in [$CrombieTempDir](docs/ENVCONFIG.md) and resubmits all possible jobs.
+            Deletes the files in [$CrombieTempDir](@ref envconfig) and resubmits all possible jobs.
           </td>
         </tr>
         <tr>
@@ -134,7 +134,7 @@ The list of available subcommands are given below.
             <code>hadd</code>
           </td>
           <td align="left">
-            Does not submit jobs, but goes directly to hadding what finished [slimmed](docs/SLIMMING.md) files are available.
+            Does not submit jobs, but goes directly to hadding what finished [slimmed](@ref slimming) files are available.
           </td>
         </tr>
         <tr>
@@ -142,7 +142,7 @@ The list of available subcommands are given below.
             <code>resub</code>
           </td>
           <td align="left">
-            Resubmits using the existing `.txt` files inside [$CrombieTempDir](docs/ENVCONFIG.md).
+            Resubmits using the existing `.txt` files inside [$CrombieTempDir](@ref envconfig).
             The usual behavior is to recreate these files from the input directories every time.
           </td>
         </tr>
@@ -163,8 +163,8 @@ The list of available subcommands are given below.
       <code>terminalslim</code>
     </td>
     <td align="left">
-      This tools allows for running the [slimmer](docs/SLIMMING.md) interactively in a shell.
-      Like `submitlxbatch`, this sources a local [CrombieSlimmingConfig.sh](docs/ENVCONFIG.md) to set a number of environment variables.
+      This tools allows for running the [slimmer](@ref slimming) interactively in a shell.
+      Like `submitlxbatch`, this sources a local [CrombieSlimmingConfig.sh](@ref envconfig) to set a number of environment variables.
       `crombie terminalslim` also comes with the same subcommands as `crombie submitlxbatch`, except for `test`.
     </td>
   </tr>

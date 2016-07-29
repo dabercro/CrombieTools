@@ -1,4 +1,4 @@
-# Analysis Workspace Explanation
+# Analysis Workspace {#workspace}
 
 A workspace is where all analysis-specific configurations are placed.
 You can create a workspace with the name `Workspace` like the following.
@@ -34,12 +34,11 @@ and have the following layout.
 
 Each subdirectory has distinct function, which are described below.
 
-# Slimming
+# Slimming {#slimming}
 
 The first thing that will often be needed in an analysis is slimming
 files into flat trees.
 There are two essential steps that this layout assumes you need.
-Tools to make these steps easier are available and are described [here](docs/SLIMMING.md).
 
 <ol>
 
@@ -62,8 +61,9 @@ The variables all start with `Crombie` to ensure that the names do not overlap w
 environment variables that may be set by other tools used by the user.
 The meanings of each variable is listed below.
 
-@todo Fill this table...
 # Environment Variables {#envconfig}
+
+@todo Fill this table...
 
 <table cellpadding=20>
   <tr>
@@ -177,7 +177,7 @@ The environment variables used for the first step of changing ntuple formats
 must be present with those names, otherwise you might run into trouble when
 submitting jobs.
 
-## Generating flat trees for output
+# Generating flat trees for output {#flattrees}
 
 @todo Update this section, and move it around, probably
 
@@ -198,7 +198,7 @@ You can then write the tree to a file via `WriteToFile(*TFile,"<WhatYouWantToCal
 There's also other overloaded write and creation function using a file name you specifiy with the initializer.
 See `slimmer.cc` for an example of how to write a flat tree writer using this class.
 
-## Skimming
+# Skimming
 
 The environment variables used for skimming the flat trees afterwards are
 actually optional, if you edit the file `slimmer/FlatSkimmer.sh` to accommodate that.
@@ -275,7 +275,7 @@ The elements are space delimited.
       This is the name of the file for the given sample.
       The file name does not need to be absolute, as the input directory is set in 
       FileConfigReader::SetInDirectory(), usually by reading
-      the [environment configuration](docs/ENVCONFIG.md).
+      the [environment configuration](@ref envconfig).
     </td>
   </tr>
   <tr>

@@ -1,5 +1,11 @@
 #!/bin/bash
 
+##
+# @todo Clean up/comment Submission scripts <br>
+#       Add Error checking for the config (Things should be filled) <br>
+#       Check for running jobs and offer to kill them
+#
+
 export fresh=$1
 
 if [ ! -f CrombieSlimmingConfig.sh ]

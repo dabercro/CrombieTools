@@ -46,7 +46,7 @@ def SetCuts(category,region,aPlotter = plotter):
     aPlotter.SetDataWeights(cuts.dataMCCuts(region,True))
 
 def ReadExceptionConfig(region,aPlotter = plotter):
-    """ Reads an [exception configuation](@ref md_docs_FORMATMC) file from the [environment](@ref md_docs_ENVCONFIG).
+    """ Reads an [exception configuation](@ref formatmc) file from the [environment](@ref envconfig).
 
     @param region is the region that needs a different configuration that's about to be plotted.
     @param aPlotter is the plotter that will be adjusted. The default is the plotter defined in this module.

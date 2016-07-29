@@ -1,5 +1,7 @@
 #!/bin/bash
 
+## @todo Make tests
+
 fast=$1
 
 here=`pwd`

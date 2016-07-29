@@ -3,7 +3,7 @@ Defines the CrombieTools.LoadConfig package
 @author Daniel Abercrombie <dabercro@mit.edu>
 
 @package CrombieTools.LoadConfig
-Package that loads local [configuration files](@ref md_docs_ENVCONFIG) into environment.
+Package that loads local [configuration files](@ref envconfig) into environment.
 """
 
 import os
@@ -52,7 +52,7 @@ CrombieConfigs = ['CrombieAnalysisConfig.sh','CrombiePlotterConfig.sh','CrombieS
 
 LoadEnv(CrombieConfigs)
 
-""" Sub module set by the [$CrombieCutsFile](@ref md_docs_ENVCONFIG) environment variable.
+""" Sub module set by the [$CrombieCutsFile](@ref envconfig) environment variable.
 @todo Figure out a way to centralize the cuts functions so that a user can't mess them up.
 """
 cuts = LoadModuleFromEnv('CrombieCutsFile')
