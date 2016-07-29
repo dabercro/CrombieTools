@@ -1,4 +1,4 @@
-# Command Line Tools
+# Command Line Tools Reference
 
 A number of scripts are available to the user through the `crombie` command line tool.
 They can be accessed by entering 
@@ -13,7 +13,7 @@ The list of available subcommands are given below.
       <code>backupslides</code>
     </td>
     <td align="left">
-      From a [workspace](docs/WORKSPACE.md) `docs` directory or presentation subdirectory,
+      From a [workspace](templates/README.md) `docs` directory or presentation subdirectory,
       `crombie backupslides` searches the `figs` sub-directory for `.pdf` files.
       If the `.pdf` file is not included in any `.tex` files in the local directory
       (excluding `backup_slides.tex`), the `.pdf` image will be placed on a frame in
@@ -48,7 +48,29 @@ The list of available subcommands are given below.
       Basic functionality is to compare the number of events in histograms and trees
       inside each identically basenamed file.
       Individual branches can also be compared.
-      Check `crombie diff -h` for more information.
+      The output of `crombie diff -h` is shown for more information.
+
+          usage: crombie diff [-h] [--numproc NUM] [--treename TREENAME]
+                              [--skip-branches [BRANCHES [BRANCHES ...]]] [--verbose]
+                              [--check-branch]
+                              DIRECTORY DIRECTORY
+          
+          Checks two directories to make sure they have the same number of files and
+          number of events in the tree and hist for each file
+          
+          positional arguments:
+            DIRECTORY             The names of the two directories to compare.
+          
+          optional arguments:
+            -h, --help            show this help message and exit
+            --numproc NUM, -n NUM
+                                  Number of processes that FlatSkimmer will spawn.
+            --treename TREENAME, -t TREENAME
+                                  The name of the trees to friend.
+            --skip-branches [BRANCHES [BRANCHES ...]], -s [BRANCHES [BRANCHES ...]]
+                                  Set branches to skip comparison.
+            --verbose, -v         Give a verbose checker to watch progress.
+            --check-branch, -b    Checks if two branches have the same entries.
     </td>
   </tr>
   <tr>
@@ -73,7 +95,7 @@ The list of available subcommands are given below.
       <code>presentation</code>
     </td>
     <td align="left">
-      From inside a [workspace's](docs/WORKSPACE.md) `docs` directory, this command
+      From inside a [workspace's](templates/README.md) `docs` directory, this command
       creates a dated directory and copies a local `presentation.tex` into that directory.
       The copied file is named according to username, the workspace name, and the date.
     </td>
@@ -161,7 +183,7 @@ The list of available subcommands are given below.
     <td align="left">
       Copies a number of template files into the directory you call it from.
       These files are used to configure the Skimming tools.
-      This is a [workspace](docs/WORKSPACE.md).
+      This is a [workspace](templates/README.md).
       For additional example files, give the optional argument <code>crombie workspace test</code>.
     </td>
   </tr>

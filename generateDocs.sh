@@ -55,8 +55,7 @@ then
         then                                                #   otherwise, make the LaTeX manual too
 
             cd docs/latex
-            make
-            mv refman.pdf $pdfName
+            make && mv refman.pdf $pdfName
             cd -
 
         fi

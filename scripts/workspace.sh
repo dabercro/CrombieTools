@@ -7,7 +7,15 @@ testDir="test"
 for dir in `ls $CROMBIEPATH/templates`
 do
     
-    test ! -d $dir && mkdir $dir
+    if [ -f $CROMBIEPATH/templates/$dir ]
+    then
+        continue
+    fi
+
+    if [ ! -d $dir ]
+    then
+        mkdir $dir
+    fi
 
     if [ "$full" = "test" ]
     then
@@ -27,7 +35,10 @@ do
             continue
         fi
 
-        test ! -f $dir/$file && cp $CROMBIEPATH/templates/$dir/$file $dir/$file
+        if [ ! -f $dir/$file ]
+        then
+            cp $CROMBIEPATH/templates/$dir/$file $dir/$file
+        fi
 
     done
 done
@@ -41,4 +52,7 @@ else
     rm docs/results.tex
 fi
 
-test ! -d docs/figs && mkdir docs/figs
+if [ ! -d docs/figs ]
+then
+    mkdir docs/figs
+fi
