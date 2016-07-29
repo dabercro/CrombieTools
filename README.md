@@ -13,13 +13,6 @@ The backend is mostly classes written in C++.
 [Running Tests](test/README.md) <br>
 [Analysis Workspace](docs/WORKSPACE.md) <br>
 [Command Line Tools](bin/README.md) <br>
-[Environment Configuration Files](docs/ENVCONFIG.md) <br>
 [Creating Flat Trees and Skimming](docs/SLIMMING.md) <br>
+[Environment Configuration Files](docs/ENVCONFIG.md) <br>
 [Formatting MC Configuration Files for Analysis](docs/FORMATMC.md) <br>
-[Plotting Tools](PlotTools/README.md) <br>
-[Other Analysis Tools](AnalysisTools/README.md) <br>
-[Helper Scripts](scripts/README.md) <br>
-
-## Notes
-
-Documentation is very not complete yet.

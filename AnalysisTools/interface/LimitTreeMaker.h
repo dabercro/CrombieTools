@@ -1,6 +1,8 @@
 /**
   @file   LimitTreeMaker.h
+
   Header file for the LimitTreeMaker class.
+
   @author Daniel Abercrombie <dabercro@mit.edu> */
 
 #ifndef CROMBIETOOLS_ANALYSISTOOLS_LIMITTREEMAKER_H
@@ -23,6 +25,7 @@
 class LimitTreeMaker : public FileConfigReader
 {
  public:
+  /// Default constructor, making the output file name "`limittree.root`".
   LimitTreeMaker()                                                                        { LimitTreeMaker("limittree.root");           }
   LimitTreeMaker( TString outputName );
   virtual ~LimitTreeMaker();

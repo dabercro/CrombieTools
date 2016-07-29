@@ -3,7 +3,7 @@
 A number of scripts are available to the user through the `crombie` command line tool.
 They can be accessed by entering 
 
-`crombie &lt;subcommand&gt;` 
+    crombie <subcommand>
 
 The list of available subcommands are given below.
 

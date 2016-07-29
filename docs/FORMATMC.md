@@ -11,9 +11,7 @@ Each sample should be contained in a single `.root` file.
 The MC Config will keep track of these files, one row at a time.
 The order of the elements should be this:
 
-<pre>
-   &lt;LimitTreeName&gt;    &lt;FileName&gt;    &lt;CrossSection&gt;    &lt;LegendEntry&gt;    &lt;FillColorOrLineStyle&gt;
-</pre>
+    <LimitTreeName>    <FileName>    <CrossSection>    <LegendEntry>    <FillColorOrLineStyle>
 
 The elements are space delimited.
 
@@ -34,7 +32,7 @@ The elements are space delimited.
     <td align="left" valign="top">
       This is the name of the file for the given sample.
       The file name does not need to be absolute, as the input directory is set in 
-      MCReader::SetInDirectory(), usually by reading
+      FileConfigReader::SetInDirectory(), usually by reading
       the [environment configuration](docs/ENVCONFIG.md).
     </td>
   </tr>
@@ -53,7 +51,7 @@ The elements are space delimited.
     <td align="left" valign="top">
       This is the legend entry that will be made in all of the stack plots using this config for the given file.
       If you want to have spaces in your legend entry, place `_` instead (since the elements of the config are space delimited).
-      These are all replaced with spaces by MCReader::ReadMCConfig().
+      These are all replaced with spaces by FileConfigReader::ReadMCConfig().
       Legend entries being repeated next to each other will cause multiple files to merge into the same stack element.
       A shortcut to using the legend entry in the previous line is to just put `.` as the Legend Entry.
     </td>
@@ -79,9 +77,7 @@ To avoid having duplicate entries in multple configurations, there is an easy wa
 If a line starts with the keyword `skip` instead of a tree name and then lists a file, the MCReader will erase the MCFileInfo for that file.
 A line like this simply contains:
 
-<pre>
-  skip    &lt;FileName&gt;
-</pre>
+    skip    <FileName>
 
 A configuration file with lines like this can also contain lines like those in the base configuration.
 This makes it easy to swap out files.

@@ -1,3 +1,10 @@
+/**
+  @file   PlotStack.cc
+
+  Source file of PlotStack, including the functions used for creating the histograms.
+
+  @author Daniel Abercrombie <dabercro@mit.edu> */
+
 #include <iostream>
 #include <algorithm>
 
@@ -11,23 +18,15 @@ ClassImp(PlotStack)
 
 //--------------------------------------------------------------------
 PlotStack::PlotStack() :
-  fTreeName("events"),
   fDataContainer(0),
   fMCContainer(0),
   fSignalContainer(0),
   fDataWeights(""),
   fMCWeights(""),
   fForceTop(""),
-  fMinLegendFrac(0.0),
-  fIgnoreInLinear(0.0),
-  fStackLineWidth(1),
-  fOthersColor(0),
-  fUsingLumi(true),
   fLimitFile(0),
   fLimitRegion(""),
-  fLimitTreeDir(""),
-  fDebug(false),
-  fDumpRootName("")
+  fLimitTreeDir("")
 { }
 
 //--------------------------------------------------------------------
