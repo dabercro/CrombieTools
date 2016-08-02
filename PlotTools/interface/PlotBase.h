@@ -4,7 +4,6 @@
   Definition of PlotBase class. Since PlotBase is never initialized directly as a class,
   the entire class definition is contained in this header file.
   @todo Add label maker in PlotBase
-  @todo Add Simulation (instead of Preliminary) option, make CMS writing default
 
   @author Daniel Abercrombie <dabercro@mit.edu> */
 
@@ -150,10 +149,14 @@ class PlotBase
   inline    void         SetLumiLabelFormat       ( TString format )                              { fLumiLabelFormat = format;   }
   /// Set the luminosity lable with a float in fb.
   inline    void         SetLumiLabel             ( Float_t lumi )        { fLumiLabel = TString::Format(fLumiLabelFormat,lumi); }
-  /// If true, plot will have "CMS Preliminary" in the top.
-  inline    void         SetIsCMSPrelim           ( Bool_t isPre )                                { fIsCMSPrelim = isPre;        }
+  /// Enums type of lables for plots
+  enum      CMSLabelType { kNone = 0, kPreliminary, kSimulation };
+  /// Set the type of CMS label for the plot
+  inline    void         SetCMSLabelType          ( CMSLabelType type )                           { fCMSLabelType = type;        }
   /// Adds a dotted line in order to show cuts.
   inline    void         AddCutLine               ( Double_t loc )                                { fCutLines.push_back(loc);    }
+  /// Resets the number of cut lines to plot
+  inline    void         ResetCutLines            ()                                              { fCutLines.resize(0);         }
   /// Sets the style for the cut lines.
   inline    void         SetCutLineStyle   ( Color_t color, Int_t width, Int_t style )   { fCutColor = color; fCutWidth = width; 
                                                                                                               fCutStyle = style; }
@@ -229,7 +232,7 @@ class PlotBase
 
   TString                    fLumiLabelFormat = "%.1f";  ///< Format used for changing lumi numbers into string
   TString                    fLumiLabel = "";            ///< Label used to show luminosity
-  Bool_t                     fIsCMSPrelim = false;       ///< Bool to determine if CMS Preliminary should be written
+  CMSLabelType               fCMSLabelType = kNone;      ///< Enum to determine what type of label to give
 
   /// Use this to get certain draw options correct (for data, for example)
   template<class T>  void    LineDrawing          ( std::vector<T*> theLines, Int_t index, Bool_t same );
@@ -644,7 +647,7 @@ void PlotBase::BaseCanvas(TString FileBase, std::vector<T*> theLines,
     fDeleteThese.push_back(latex2);
   }
 
-  if (fIsCMSPrelim) {
+  if (fCMSLabelType != kNone) {
     TLatex* latex3 = new TLatex();
     latex3->SetNDC();
     latex3->SetTextSize(0.035);
@@ -654,7 +657,12 @@ void PlotBase::BaseCanvas(TString FileBase, std::vector<T*> theLines,
     latex3->SetTextSize(0.030);
     latex3->SetTextFont(52);
     latex3->SetTextAlign(11);
-    latex3->DrawLatex(0.20, 0.96, "Preliminary");
+
+    if (fCMSLabelType == kPreliminary)
+      latex3->DrawLatex(0.20, 0.96, "Preliminary");
+    else if (fCMSLabelType == kSimulation)
+      latex3->DrawLatex(0.20, 0.96, "Simulation");
+
     fDeleteThese.push_back(latex3);
   }
 

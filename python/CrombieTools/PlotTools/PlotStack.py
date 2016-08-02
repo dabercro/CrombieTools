@@ -80,17 +80,27 @@ class ParallelStackContainer:
         SetCuts(category,region,self.Plotter)
         holdCut = self.Plotter.GetDefaultWeight()
         expr = []
-        if type(exprArg[1]) == str:
-            self.Plotter.SetDataExpression(exprArg[0])
+
+        if type(exprArg[0]) == dict:
+            # Different expressions for data and MC
+            self.Plotter.SetDataExpression(exprArg[0].get('data_expr',''))
+            # List cut lines to draw in a plot
+            for cut_line in exprArg[0].get('cut_lines',[]):
+                self.Plotter.AddCutLine(cut_line)
+
             expr = list(exprArg[1:])
+
         else:
             expr = list(exprArg)
+
         self.Plotter.SetDefaultWeight(Nminus1Cut(holdCut, expr[0]))
         self.Plotter.SetDefaultExpr(expr[0])
         expr[0] = '_'.join([category,region,expr[0]])
         self.Plotter.MakeCanvas(*expr)
         self.Plotter.SetDefaultWeight(holdCut)
+        # Reset and exceptional values for this plot
         self.Plotter.SetDataExpression('')
+        self.Plotter.ResetCutLines()
 
 
 def MakePlots(categories,regions,exprArgs,aPlotter = plotter):
@@ -98,11 +108,14 @@ def MakePlots(categories,regions,exprArgs,aPlotter = plotter):
 
     @param categories is a list of categories to plot.
     @param regions is a list of the regions to plot.
-    @param exprArgs is a list of lists of parameters to be used in PlotStack::MakeCanvas.
+    @param exprArgs is a list of lists of parameters to be used in PlotStack::MakeCanvas().
                     Normally, the first expression is the default expression to be plotted.
                     The basename of the output file is automatically set by this.
-                    If the second argument is also a string, then the first argument
-                    is passed to PlotStack::SetDataExpression().
+                    If the first argument is actually a dictionary, it will be passed basically as
+                    key word arguments to ParallelStackContainer.MakePlot() instead.
+                    Key words supported in dictionary and types:
+                        - data_expr takes a string
+                        - cut_lines takes a list of floats
     @param aPlotter is the plotter to use to plot. The default is the plotter defined in this module.
     """
 
