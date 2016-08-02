@@ -105,9 +105,9 @@ def Nminus1Cut(inCut,varToRemove,returnCuts=False):
     matches = re.findall(r'[0-9\.]*\s*[=<>]*\s*(?<!\w)' + varToRemove + '(?!\w)\s*[=<>]*\s*[0-9\.]*',holdCut)
     cutList = []
     for match in matches:
-        cutMatch = re.search(r'[\d\.]+',match)
+        cutMatch = re.search(r'(?<!\w)[\d\.]+(?!\w)', match)
         if cutMatch:
-            cutList.append(cutMatch.group())
+            cutList.append(float(cutMatch.group()))
         holdCut = holdCut.replace(match,'(1)',1)
 
     if returnCuts:

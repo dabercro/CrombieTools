@@ -79,19 +79,21 @@ class ParallelStackContainer:
 
         SetCuts(category,region,self.Plotter)
         holdCut = self.Plotter.GetDefaultWeight()
+
         expr = []
+        kwargs = {}
 
         if type(exprArg[0]) == dict:
-            # Different expressions for data and MC
-            self.Plotter.SetDataExpression(exprArg[0].get('data_expr',''))
-            # List cut lines to draw in a plot
-            for cut_line in exprArg[0].get('cut_lines', Nminus1Cut(holdCut, expr[1], True)):
-                self.Plotter.AddCutLine(cut_line)
-
+            kwargs = dict(exprArg[0])
             expr = list(exprArg[1:])
-
         else:
             expr = list(exprArg)
+
+        # Different expressions for data and MC
+        self.Plotter.SetDataExpression(kwargs.get('data_expr',''))
+        # List cut lines to draw in a plot
+        for cut_line in kwargs.get('cut_lines', Nminus1Cut(holdCut, expr[0], True)):
+            self.Plotter.AddCutLine(cut_line)
 
         self.Plotter.SetDefaultWeight(Nminus1Cut(holdCut, expr[0]))
         self.Plotter.SetDefaultExpr(expr[0])
