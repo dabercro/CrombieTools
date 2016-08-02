@@ -85,7 +85,7 @@ class ParallelStackContainer:
             # Different expressions for data and MC
             self.Plotter.SetDataExpression(exprArg[0].get('data_expr',''))
             # List cut lines to draw in a plot
-            for cut_line in exprArg[0].get('cut_lines',[]):
+            for cut_line in exprArg[0].get('cut_lines', Nminus1Cut(holdCut, expr[1], True)):
                 self.Plotter.AddCutLine(cut_line)
 
             expr = list(exprArg[1:])

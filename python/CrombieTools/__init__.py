@@ -91,18 +91,26 @@ def DirFromEnv(envVar):
         if not os.path.exists(os.environ[envVar]):
             os.makedirs(os.environ[envVar])
 
-def Nminus1Cut(inCut,varToRemove):
+def Nminus1Cut(inCut,varToRemove,returnCuts=False):
     """ A function for getting N - 1 plots.
 
     Given a cutstring and a variable name, all comparison expressions with that variable are removed.
     @param inCut is the full cutstring
     @param varToRemove is the variable to remove from the cutstring (usually a variable being plotted).
-    @returns a version of the cutstring without any comparisons to varToRemove.
+    @param returnCuts sets whether to return the cuts values (True) or the new cuts string (False).
+    @returns a version of the cutstring without any comparisons to varToRemove or the cuts values.
     @todo I want this to ignore cuts next to an '||'? Or I have the weird '&&' veto thing... That's trickier to fix
     """
     holdCut = str(inCut)
     matches = re.findall(r'[0-9\.]*\s*[=<>]*\s*(?<!\w)' + varToRemove + '(?!\w)\s*[=<>]*\s*[0-9\.]*',holdCut)
+    cutList = []
     for match in matches:
-        holdCut= holdCut.replace(match,'(1)',1)
+        cutMatch = re.search(r'[\d\.]+',match)
+        if cutMatch:
+            cutList.append(cutMatch.group())
+        holdCut = holdCut.replace(match,'(1)',1)
 
-    return holdCut
+    if returnCuts:
+        return cutList
+    else:
+        return holdCut
