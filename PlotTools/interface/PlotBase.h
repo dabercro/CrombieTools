@@ -3,7 +3,6 @@
 
   Definition of PlotBase class. Since PlotBase is never initialized directly as a class,
   the entire class definition is contained in this header file.
-  @todo Add dotted lines and arrows to PlotBase to indicate cuts
   @todo Add label maker in PlotBase
   @todo Add Simulation (instead of Preliminary) option, make CMS writing default
 
@@ -24,6 +23,8 @@
 #include "TGraphErrors.h"
 #include "TCanvas.h"
 #include "TLegend.h"
+#include "TColor.h"
+#include "TLine.h"
 
 #include "PlotUtils.h"
 
@@ -151,7 +152,12 @@ class PlotBase
   inline    void         SetLumiLabel             ( Float_t lumi )        { fLumiLabel = TString::Format(fLumiLabelFormat,lumi); }
   /// If true, plot will have "CMS Preliminary" in the top.
   inline    void         SetIsCMSPrelim           ( Bool_t isPre )                                { fIsCMSPrelim = isPre;        }
-  
+  /// Adds a dotted line in order to show cuts.
+  inline    void         AddCutLine               ( Double_t loc )                                { fCutLines.push_back(loc);    }
+  /// Sets the style for the cut lines.
+  inline    void         SetCutLineStyle   ( Color_t color, Int_t width, Int_t style )   { fCutColor = color; fCutWidth = width; 
+                                                                                                              fCutStyle = style; }
+
  protected:
 
   UInt_t                     fPlotCounter = 0;           ///< This is used so that making scratch plots does not overlap
@@ -234,6 +240,16 @@ class PlotBase
   /// Options for TGraphs
   TString                    GetOpts              ( TGraph* )      { return "";          }
 
+  std::vector<Double_t>      fCutLines;                  ///< Locations for dashed lines for cuts
+  Color_t                    fCutColor = kRed;           ///< Color of the cuts lines
+  Int_t                      fCutWidth = 2;              ///< Width of the cuts lines
+  Int_t                      fCutStyle = 2;              ///< Style of the cuts lines
+  Double_t                   fCutYMin = 0.0;             ///< Minimum value of cut line y
+  Double_t                   fCutYMax = 0.0;             ///< Maximum value of cut line y
+
+  /// Draws the cuts lines
+  void                       DrawCutLines         ();
+
 };
 
 //--------------------------------------------------------------------
@@ -262,15 +278,15 @@ void PlotBase::AddLine(TTree *tree, TString cut, TString expr)
 {
   // Check for defaults. If none, set the values for each line.
   if (fDefaultTree != NULL) {
-    std::cout << "Default tree already set! Check configuration..." << std::endl;
+    std::cerr << "Default tree already set! Check configuration..." << std::endl;
     exit(1);
   }
   if (fDefaultCut != "") {
-    std::cout << "Default cut already set! Check configuration..." << std::endl;
+    std::cerr << "Default cut already set! Check configuration..." << std::endl;
     exit(1);
   }
   if (fDefaultExpr != "") {
-    std::cout << "Default resolution expression already set! Check configuration..." << std::endl;
+    std::cerr << "Default resolution expression already set! Check configuration..." << std::endl;
     exit(1);
   }
   fInTrees.push_back(tree);
@@ -283,15 +299,15 @@ void PlotBase::AddTreeWeight(TTree *tree, TString cut)
 {
   // Check for defaults. If none, set the values for each line.
   if (fDefaultTree != NULL) {
-    std::cout << "Default tree already set! Check configuration..." << std::endl;
+    std::cerr << "Default tree already set! Check configuration..." << std::endl;
     exit(1);
   }
   if (fDefaultCut != "") {
-    std::cout << "Default cut already set! Check configuration..." << std::endl;
+    std::cerr << "Default cut already set! Check configuration..." << std::endl;
     exit(1);
   }
   if (fDefaultExpr == "") {
-    std::cout << "Please set default resolution expression first!" << std::endl;
+    std::cerr << "Please set default resolution expression first!" << std::endl;
     exit(1);
   }
   fInTrees.push_back(tree);
@@ -303,15 +319,15 @@ void PlotBase::AddTreeExpr(TTree *tree, TString expr)
 {
   // Check for defaults. If none, set the values for each line.
   if (fDefaultTree != NULL) {
-    std::cout << "Default tree already set! Check configuration..." << std::endl;
+    std::cerr << "Default tree already set! Check configuration..." << std::endl;
     exit(1);
   }
   if (fDefaultCut == "") {
-    std::cout << "Please set default cut first!" << std::endl;
+    std::cerr << "Please set default cut first!" << std::endl;
     exit(1);
   }
   if (fDefaultExpr != "") {
-    std::cout << "Default resolution expression already set! Check configuration..." << std::endl;
+    std::cerr << "Default resolution expression already set! Check configuration..." << std::endl;
     exit(1);
   }
   fInTrees.push_back(tree);
@@ -323,15 +339,15 @@ void PlotBase::AddWeightExpr(TString cut, TString expr)
 {
   // Check for defaults. If none, set the values for each line.
   if (fDefaultTree == NULL) {
-    std::cout << "Please set default tree first!" << std::endl;
+    std::cerr << "Please set default tree first!" << std::endl;
     exit(1);
   }
   if (fDefaultCut != "") {
-    std::cout << "Default cut already set! Check configuration..." << std::endl;
+    std::cerr << "Default cut already set! Check configuration..." << std::endl;
     exit(1);
   }
   if (fDefaultExpr != "") {
-    std::cout << "Default resolution expression already set! Check configuration..." << std::endl;
+    std::cerr << "Default resolution expression already set! Check configuration..." << std::endl;
     exit(1);
   }
   fInCuts.push_back(cut);
@@ -395,6 +411,20 @@ PlotBase::ConvertToArray(Int_t NumXBins, Double_t MinX, Double_t MaxX, Double_t 
 }
 
 //--------------------------------------------------------------------
+void
+PlotBase::DrawCutLines() {
+  // Draw the cuts lines
+  for (UInt_t iCut = 0; iCut != fCutLines.size(); ++iCut) {
+    TLine *aCutLine = new TLine(fCutLines[iCut], fCutYMin, fCutLines[iCut], fCutYMax);
+    aCutLine->SetLineColor(fCutColor);
+    aCutLine->SetLineWidth(fCutWidth);
+    aCutLine->SetLineStyle(fCutStyle);
+    fDeleteThese.push_back(aCutLine);
+    aCutLine->Draw("same");
+  }
+}
+
+//--------------------------------------------------------------------
 
 /**
   This is used instead of Draw for lines so that the draw options are set in one place */
@@ -402,6 +432,11 @@ PlotBase::ConvertToArray(Int_t NumXBins, Double_t MinX, Double_t MaxX, Double_t 
 template<class T>
 void PlotBase::LineDrawing(std::vector<T*> theLines, Int_t index, Bool_t same)
 {
+  if (!same) {
+    fCutYMin = theLines[index]->GetMinimum();
+    fCutYMax = theLines[index]->GetMaximum();
+  }
+  
   TString options = GetOpts(theLines[0]);
   if (index == fDataIndex)
     options = "PE";
@@ -513,7 +548,6 @@ void PlotBase::BaseCanvas(TString FileBase, std::vector<T*> theLines,
     if (logY)
       pad1->SetLogy();
 
-    gPad->RedrawAxis();
   }
 
   // If the first draw was not specified by the user, use the maximum found before
@@ -531,6 +565,7 @@ void PlotBase::BaseCanvas(TString FileBase, std::vector<T*> theLines,
   theLegend->Draw();
 
   gPad->RedrawAxis();
+  DrawCutLines();
 
   // If not a ratio plot, set the canvas to log
   if (!fMakeRatio) {
@@ -595,6 +630,7 @@ void PlotBase::BaseCanvas(TString FileBase, std::vector<T*> theLines,
       pad2->SetLogx();
 
     gPad->RedrawAxis();
+    DrawCutLines();
   }
 
   theCanvas->cd();
@@ -621,8 +657,6 @@ void PlotBase::BaseCanvas(TString FileBase, std::vector<T*> theLines,
     latex3->DrawLatex(0.20, 0.96, "Preliminary");
     fDeleteThese.push_back(latex3);
   }
-
-  gPad->RedrawAxis();
 
   // Now save the picture we just finished making
   if (bC)
