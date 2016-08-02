@@ -52,7 +52,7 @@ then
     rootNames=`ls $CrombieTempDir/$CrombieFileBase\_*_*.txt | sed 's/.txt//'`
     for outFile in $rootNames
     do
-        if [ ! -f $outFile ]
+        if [ ! -f $outFile.root ]
         then
             echo Making: $outFile
             command="bsub -q $CrombieQueue -n $CrombieNBatchProcs -o bout/out.%J crombie dojob $outFile"
