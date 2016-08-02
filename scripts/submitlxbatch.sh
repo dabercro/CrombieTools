@@ -49,7 +49,7 @@ ranOnFile=0
     
 if [ "$fresh" != "hadd" ]
 then
-    rootNames=`ls $CrombieTempDir/$CrombieFileBase\_*_*.txt | sed 's/.txt/.root/'`
+    rootNames=`ls $CrombieTempDir/$CrombieFileBase\_*_*.txt | sed 's/.txt//'`
     for outFile in $rootNames
     do
         if [ ! -f $outFile ]

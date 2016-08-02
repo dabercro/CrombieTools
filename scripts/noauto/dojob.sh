@@ -34,9 +34,9 @@ do
     cp $macroDir/$file $file
 done
 
-cp "${outFile%.*}".txt . 
+cp $outFile.txt . 
 
-echo "Trying to make $outFile"
+echo "Trying to make $outFile.root"
 echo ""
 
 RUNNING=0
@@ -48,7 +48,7 @@ OutputBase="lxbatchTmpOutput"
 CommandList="ArgsForThisJob.txt"
 echo "" > $CommandList
 
-for file in `cat "${outFile%.*}".txt`
+for file in `cat $outFile.txt`
 do
     if [ "${file:0:7}" = "root://" ]
     then
@@ -93,6 +93,6 @@ then
 fi
 
 echo ""
-echo "Copying to $outFile"
+echo "Copying to $outFile.root"
 
-cp $OutputBase.root $outFile
+cp $OutputBase.root $outFile.root
