@@ -45,15 +45,15 @@ source CrombieSlimmingConfig.sh        # Get needed environment variables
 
 # Check that needed environment variables are present
 
-"${CrombieFilesPerJob:?}"
-"${CrombieNBatchProcs:?}"
-"${CrombieQueue:?}"
-"${CrombieEosDir:?}"
-"${CrombieTempDir:?}"
-"${CrombieFullDir:?}"
-"${CrombieSlimmerScript:?}"
-"${CrombieJobScriptList:?}"
-"${CrombieCheckerScript:?}"
+echo "${CrombieFilesPerJob:?}" > /dev/null
+echo "${CrombieNBatchProcs:?}" > /dev/null
+echo "${CrombieQueue:?}" > /dev/null
+echo "${CrombieEosDir:?}" > /dev/null
+echo "${CrombieTempDir:?}" > /dev/null
+echo "${CrombieFullDir:?}" > /dev/null
+echo "${CrombieSlimmerScript:?}" > /dev/null
+echo "${CrombieJobScriptList:?}" > /dev/null
+echo "${CrombieCheckerScript:?}" > /dev/null
 
 export haddFile=$CrombieTempDir/myHadd.txt
 
@@ -99,7 +99,7 @@ fi
 
 if [ "$ranOnFile" -eq 0 ]              # If no jobs submitted or tested, hadd
 then
-    "${CrombieNLocalProcs:?}"
+    echo "${CrombieNLocalProcs:?}" > /dev/null
     cat $haddFile | xargs -n2 -P$CrombieNLocalProcs crombie hadd
     echo "All files merged!"
 fi
