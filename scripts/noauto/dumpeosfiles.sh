@@ -32,6 +32,8 @@ if [ -f $CrombieEosDir ]
 then
     CrombieEosDir=`cat $CrombieEosDir`         # Set list of EOS directories
     usingMultiEOS=1
+else
+    usingMultiEOS=0
 fi
 
 # There are now two instances of EOS that we can store Nero ntuples on
@@ -207,7 +209,7 @@ do
                 currentConfig=$CrombieTempDir/$CrombieFileBase\_$reasonableName\_$count.txt
                 > $currentConfig
             fi
-            if [ "$usingMultiEOS" -eq 1 ]
+            if [ $usingMultiEOS -eq 1 ]
             then
                 # Will eventually make this standard, I think
                 echo root://$eoshost/$inFile >> $currentConfig

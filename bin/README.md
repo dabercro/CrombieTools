@@ -1,4 +1,4 @@
-# Command Line Tools Reference
+# Command Line Tools Reference {#commandref}
 
 A number of scripts are available to the user through the `crombie` command line tool.
 They can be accessed by entering 

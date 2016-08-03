@@ -1,12 +1,18 @@
 #!/bin/bash
 
 ##
-# @todo Clean up/comment Submission scripts <br>
-#       Add Error checking for the config (Things should be filled) <br>
-#       Check for running jobs and offer to kill them
+# @file submitlxbatch.sh
+#
+# Script that is used to submit jobs to lxbatch.
+# See the [command line tool reference](@ref commandref)
+# for more information on subcommands.
+#
+# @author Daniel Abercrombie <dabercro@mit.edu>
 #
 
 export fresh=$1
+
+# Check for the configuration file
 
 if [ ! -f CrombieSlimmingConfig.sh ]
 then
@@ -15,6 +21,8 @@ then
     exit 1
 fi
 
+# Requires CMSSW to get ROOT, unfortunately
+## @todo Try to eliminate the dependency on CMSSW
 
 if [ "$CMSSW_BASE" = "" ]
 then
@@ -22,20 +30,36 @@ then
     exit 1
 fi
 
+# Record the submission in this log file
+
 echo "=========================================================" >> `pwd`/LxbatchFileChecks.log
 echo "Ran CrombieSubmitLxbatch at "`date -u` >> `pwd`/LxbatchFileChecks.log
 echo "=========================================================" >> `pwd`/LxbatchFileChecks.log
 
-if [ ! -d bout ]
+if [ ! -d bout ]                       # Make sure there's a place for the job's stdout.
 then
     mkdir bout
 fi
 
-source CrombieSlimmingConfig.sh
+source CrombieSlimmingConfig.sh        # Get needed environment variables
+
+# Check that needed environment variables are present
+
+"${CrombieFilesPerJob:?}"
+"${CrombieNBatchProcs:?}"
+"${CrombieQueue:?}"
+"${CrombieEosDir:?}"
+"${CrombieTempDir:?}"
+"${CrombieFullDir:?}"
+"${CrombieSlimmerScript:?}"
+"${CrombieJobScriptList:?}"
+"${CrombieCheckerScript:?}"
 
 export haddFile=$CrombieTempDir/myHadd.txt
 
-if [ "$fresh" != "resub" ]
+# Dump the list of files on EOS to run on
+
+if [ "$fresh" != "resub" -a "$fresh" != "hadd" ]
 then
     crombie dumpeosfiles eos
     if [ $? -ne 0 ]
@@ -45,32 +69,37 @@ then
     fi
 fi
 
-ranOnFile=0
-    
+ranOnFile=0                            # Keep track on if files are submitted or not
+
 if [ "$fresh" != "hadd" ]
 then
+
     rootNames=`ls $CrombieTempDir/$CrombieFileBase\_*_*.txt | sed 's/.txt//'`
     for outFile in $rootNames
     do
-        if [ ! -f $outFile.root ]
+        if [ ! -f $outFile.root ]      # Check each file to see if they exist, if not, submit
         then
-            echo Making: $outFile
+
+            echo "Making: $outFile"
             command="bsub -q $CrombieQueue -n $CrombieNBatchProcs -o bout/out.%J crombie dojob $outFile"
-            if [ "$fresh" = "test" ]
-            then
+
+            if [ "$fresh" = "test" ]   # Echo the command if a test
+            then                       #   otherwise, execute it
                 echo $command
             else
                 $command
             fi
-            ranOnFile=1
+
+            ranOnFile=1                # Job was submitted
         fi
     done
 else
     echo "Going directly to hadd step."
 fi
 
-if [ "$ranOnFile" -eq 0 ]
+if [ "$ranOnFile" -eq 0 ]              # If no jobs submitted or tested, hadd
 then
+    "${CrombieNLocalProcs:?}"
     cat $haddFile | xargs -n2 -P$CrombieNLocalProcs crombie hadd
     echo "All files merged!"
 fi
