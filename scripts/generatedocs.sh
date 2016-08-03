@@ -1,7 +1,7 @@
 #!/bin/bash
 
 ##
-#  @file generateDocs.sh
+#  @file generatedocs.sh
 #
 #  Generates Doxygen files if doxygen is installed.
 #  If the user is me (dabercro), also has a subcommand `copy`
@@ -15,6 +15,9 @@ where=$2
 
 if [ `which doxygen 2> /dev/null` != "" ]
 then
+
+    here=`pwd`
+    cd $CROMBIEPATH
 
     pdfName=CrombieToolsManual.pdf
 
@@ -67,6 +70,8 @@ then
 
         fi
     fi
+
+    cd $here
 
 else                                                        # If doxygen is not installed on system,
                                                             #   give user some info on doxygen installation
