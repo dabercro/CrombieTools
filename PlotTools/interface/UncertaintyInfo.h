@@ -3,7 +3,8 @@
 
    Defines the UncertaintyInfo class to apply to plots
 
-   @author Daniel Abercrombie <dabercro@mit.edu> */
+   @author Daniel Abercrombie <dabercro@mit.edu>
+*/
 
 #ifndef CROMBIETOOLS_COMMONTOOLS_UNCERTAINTYINFO_H
 #define CROMBIETOOLS_COMMONTOOLS_UNCERTAINTYINFO_H
@@ -15,7 +16,8 @@
 /**
    @ingroup commongroup
    @struct UncertaintyInfo
-   Structure holding information to apply uncertainties in certain plots. */
+   Structure holding information to apply uncertainties in certain plots.
+*/
 
 struct UncertaintyInfo
 {

@@ -3,7 +3,8 @@
   Header file containing various functions used to do quick kinematics cuts.
   @todo Optimize the functions here that use TLorentzVector. They are probably not needed.
   @author Daniel Abercrombie <dabercro@mit.edu>
-  @author Zeynep Demiragli <zeynep.demiragli@cern.ch> */
+  @author Zeynep Demiragli <zeynep.demiragli@cern.ch>
+*/
 
 #ifndef KINEMATICFUNCTIONS_H
 #define KINEMATICFUNCTIONS_H

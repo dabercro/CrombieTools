@@ -6,7 +6,8 @@
         Add multiple lines for other files, can watch MC that way <br>
         Adjust to use triggers
 
-  @author Daniel Abercrombie <dabercro@mit.edu> */
+  @author Daniel Abercrombie <dabercro@mit.edu>
+*/
 
 #ifndef CROMBIETOOLS_ANALYSISTOOLS_CUTFLOWMAKER_H
 #define CROMBIETOOLS_ANALYSISTOOLS_CUTFLOWMAKER_H
@@ -18,7 +19,8 @@
 /**
    @class CutflowMaker
    Makes cutflow plots or tables from given trees.
-   @todo make this derived from PlotBase to compare multiple cutflows. */
+   @todo make this derived from PlotBase to compare multiple cutflows.
+*/
 
 class CutflowMaker
 {
@@ -29,7 +31,8 @@ class CutflowMaker
   /**
      Add a cut to the cutflow.
      @param name is the name that the cut will have in the table or plot
-     @param cut is the cutstring applied to the tree left from the previous cut */
+     @param cut is the cutstring applied to the tree left from the previous cut
+  */
   inline void   AddCut             ( TString name, TString cut )       { fCutNames.push_back(name); fCuts.push_back(cut); }
   
   /// Set the size of the canvas for the cutflow plots

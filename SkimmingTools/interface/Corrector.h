@@ -3,7 +3,8 @@
 
    Header file for the Corrector class.
 
-   @author Daniel Abercrombie <dabercro@mit.edu> */
+   @author Daniel Abercrombie <dabercro@mit.edu>
+*/
 
 #ifndef CROMBIETOOLS_SKIMMINGTOOLS_CORRECTOR_H
 #define CROMBIETOOLS_SKIMMINGTOOLS_CORRECTOR_H
@@ -22,7 +23,8 @@
 
    A Corrector reads from a tree and histogram and returns a correction factor.
    The CorrectorApplicator facilitates this application by providing the trees 
-   and writes the result to a branch. */
+   and writes the result to a branch.
+*/
 
 class Corrector
 {
@@ -51,7 +53,8 @@ class Corrector
      Add an expression to read from the histogram.
      In most normal uses (reading from a TH1) this function needs to only be called once.
      If reading from a 2D histogram, call it twice. This gets the bin contents in the order
-     that the expressions were added. Up to 3D histograms is supported. */
+     that the expressions were added. Up to 3D histograms is supported.
+  */
   void                  AddInExpression   ( TString expres )    { fInExpressions.push_back(expres); ++fNumDims;            }
   /// Set a cut for the corrector.
   void                  SetInCut          ( TString cut )       { fInCut = cut;                                            }

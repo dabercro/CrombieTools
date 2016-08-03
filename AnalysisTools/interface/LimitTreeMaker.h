@@ -3,7 +3,8 @@
 
   Header file for the LimitTreeMaker class.
 
-  @author Daniel Abercrombie <dabercro@mit.edu> */
+  @author Daniel Abercrombie <dabercro@mit.edu>
+*/
 
 #ifndef CROMBIETOOLS_ANALYSISTOOLS_LIMITTREEMAKER_H
 #define CROMBIETOOLS_ANALYSISTOOLS_LIMITTREEMAKER_H
@@ -20,7 +21,8 @@
    Makes small flat trees for limit tools.
    Reads from a [config file](@ref formatmc) or multiple and creates one file
    with a tree for each control region and each file read in. Only works if you have
-   write access to /tmp/$USER since it uses the space to hold trees while copying. */
+   write access to /tmp/$USER since it uses the space to hold trees while copying.
+*/
 
 class LimitTreeMaker : public FileConfigReader
 {

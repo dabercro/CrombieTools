@@ -139,6 +139,13 @@ HistAnalysis::DoScaleFactors(TString PlotVar, Int_t NumBins, Double_t MinX, Doub
 
 
 //--------------------------------------------------------------------
+
+/**
+   @param name is the name that the cut will be given in the table that is printed out
+   @param cut is the cut string to apply for the scale factor cut
+   @param datacut is an optional argument in case you want to have a different cut on data
+*/
+
 void
 HistAnalysis::AddScaleFactorCut(TString name, TString cut, TString datacut)
 {

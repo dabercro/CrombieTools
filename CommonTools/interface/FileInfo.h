@@ -3,7 +3,8 @@
 
    Defines the FileInfo class and a function to get cross section weight.
 
-   @author Daniel Abercrombie <dabercro@mit.edu> */
+   @author Daniel Abercrombie <dabercro@mit.edu>
+*/
 
 #ifndef CROMBIETOOLS_COMMONTOOLS_FILEINFO_H
 #define CROMBIETOOLS_COMMONTOOLS_FILEINFO_H
@@ -29,7 +30,8 @@
 
    @returns output that should be multiplied by the
    luminosity (in pb) to get the overall scaling of the histogram.
-   This multiplication is done already in FileReader. */
+   This multiplication is done already in FileReader.
+*/
 
 Double_t GetXSecWeight(TString fileName, Double_t XSec, TString allHistName)
 {
@@ -52,7 +54,8 @@ Double_t GetXSecWeight(TString fileName, Double_t XSec, TString allHistName)
 /**
    @ingroup commongroup
    @struct FileInfo
-   Structure holding all the information desired from each file. */
+   Structure holding all the information desired from each file.
+*/
 
 struct FileInfo
 {

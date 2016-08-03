@@ -5,7 +5,8 @@
   the entire class definition is contained in this header file.
   @todo Add label maker in PlotBase
 
-  @author Daniel Abercrombie <dabercro@mit.edu> */
+  @author Daniel Abercrombie <dabercro@mit.edu>
+*/
 
 #ifndef CROMBIETOOLS_PLOTTOOLS_PLOTBASE_H
 #define CROMBIETOOLS_PLOTTOOLS_PLOTBASE_H
@@ -32,7 +33,8 @@
    @class PlotBase
    Base class for all plotting classes.
    PlotBase holds much of the parameters used for plotting various kinds of plots.
-   It also holds all of the functions that are used to create and save the canvas. */
+   It also holds all of the functions that are used to create and save the canvas.
+*/
 
 class PlotBase
 {
@@ -185,7 +187,8 @@ class PlotBase
      Minimum value of the y-axis.
      If fAxisMin is the same value as fAxisMax,
      then both values are ignored and the axis height
-     is determined by the first line plotted. */
+     is determined by the first line plotted.
+  */
   Float_t                    fAxisMin = 0.0;
   Float_t                    fAxisMax = 0.0;             ///< Maximum value of the y-axis. 
 
@@ -362,7 +365,8 @@ void PlotBase::AddWeightExpr(TString cut, TString expr)
 /**
    This function is designed to be lazy about putting legends
    There are nice enums, like kUpper, kLower and kLeft, kRight
-   The width and height are then fractions of the canvas */
+   The width and height are then fractions of the canvas
+*/
 
 void PlotBase::SetLegendLocation(LegendY yLoc, LegendX xLoc, Double_t xWidth, Double_t yWidth)
 {
@@ -430,7 +434,8 @@ PlotBase::DrawCutLines() {
 //--------------------------------------------------------------------
 
 /**
-  This is used instead of Draw for lines so that the draw options are set in one place */
+  This is used instead of Draw for lines so that the draw options are set in one place
+*/
 
 template<class T>
 void PlotBase::LineDrawing(std::vector<T*> theLines, Int_t index, Bool_t same)
@@ -466,7 +471,8 @@ void PlotBase::LineDrawing(std::vector<T*> theLines, Int_t index, Bool_t same)
 /**
    Main macro of the plotters.
    @todo Decouple all of the stuff in PlotBase that makes adjusting stack plots a pain
-   @todo Please make better comments for this very important function. */
+   @todo Please make better comments for this very important function.
+*/
 
 template<class T>
 void PlotBase::BaseCanvas(TString FileBase, std::vector<T*> theLines,

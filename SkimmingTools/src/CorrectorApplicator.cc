@@ -1,7 +1,8 @@
 /**
    @file CorrectorApplicator.cc
    Defines functions in the CorrectorApplicator class.
-   @author Daniel Abercrombie <dabercro@mit.edu> */
+   @author Daniel Abercrombie <dabercro@mit.edu>
+*/
 
 #include <iostream>
 #include <map>
@@ -33,7 +34,8 @@ CorrectorApplicator::~CorrectorApplicator()
    if fSaveAll is true. If multiple correctors have the same name,
    then the result of that branch is the product of the correctors.
    A product of all Corrector object results and any branches labelled
-   to be merged are stored in a branch called fName. */
+   to be merged are stored in a branch called fName.
+*/
 
 void CorrectorApplicator::ApplyCorrections(TString fileName)
 {

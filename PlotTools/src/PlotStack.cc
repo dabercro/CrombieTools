@@ -3,7 +3,8 @@
 
   Source file of PlotStack, including the functions used for creating the histograms.
 
-  @author Daniel Abercrombie <dabercro@mit.edu> */
+  @author Daniel Abercrombie <dabercro@mit.edu>
+*/
 
 #include <iostream>
 #include <algorithm>

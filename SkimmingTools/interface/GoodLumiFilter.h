@@ -1,7 +1,8 @@
 /**
    @file   GoodLumiFilter.h
    Header file for GoodLumiFilter class.
-   @author Daniel Abercrombie <dabercro@mit.edu> */
+   @author Daniel Abercrombie <dabercro@mit.edu>
+*/
 
 #ifndef CROMBIETOOLS_SKIMMINGTOOLS_GOODLUMIFILTER_H
 #define CROMBIETOOLS_SKIMMINGTOOLS_GOODLUMIFILTER_H
@@ -15,7 +16,8 @@
    @brief Created using CrombieTools.SkimmingTools.GoodLumiFilter.MakeFilter().
 
    Holds good events from JSON file and can return whether
-   a given event is good or not. */
+   a given event is good or not.
+*/
 
 class GoodLumiFilter
 {

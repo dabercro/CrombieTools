@@ -1,7 +1,8 @@
 /**
   @file   GoodLumiFilter.cc
   File describing GoodLumiFilter::IsGood()
-  @author Daniel Abercrombie <dabercro@mit.edu> */
+  @author Daniel Abercrombie <dabercro@mit.edu>
+*/
 
 #include "GoodLumiFilter.h"
 

@@ -1,7 +1,8 @@
 /**
   @file   FlatSkimmer.cc
   Describes FlatSkimmer class.
-  @author Daniel Abercrombie <dabercro@mit.edu> */
+  @author Daniel Abercrombie <dabercro@mit.edu>
+*/
 
 #include <fstream>
 #include <iostream>
@@ -29,7 +30,8 @@ FlatSkimmer::~FlatSkimmer()
    Adds an event filter list to be removed during skimming.
    And event filter list must be a text file consisting of events to
    remove in the format \<RunNumber>:\<LumiNumber>:\<EventNumber>.
-   Multiple event filters can be added. */
+   Multiple event filters can be added.
+*/
 
 void FlatSkimmer::AddEventFilter(TString filterName){
   std::ifstream filterFile;
@@ -50,7 +52,8 @@ void FlatSkimmer::AddEventFilter(TString filterName){
    possibly removing duplicate events. The duplicate events flag is false
    by default because it's a very expensive check.
    The function reports the number of events removed from the file from
-   each mechanism. */
+   each mechanism.
+*/
 
 void FlatSkimmer::Skim(TString fileName)
 {

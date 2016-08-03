@@ -1,7 +1,8 @@
 /**
   @file   XSecAdder.cc
   Describes the XSecAdder class.
-  @author Daniel Abercrombie <dabercro@mit.edu> */
+  @author Daniel Abercrombie <dabercro@mit.edu>
+*/
 
 #include <iostream>
 #include "TFile.h"

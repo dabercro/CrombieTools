@@ -1,7 +1,8 @@
 /**
   @file   HistAnalysis.h
   Definition of HistAnalysis class.
-  @author Daniel Abercrombie <dabercro@mit.edu> */
+  @author Daniel Abercrombie <dabercro@mit.edu>
+*/
 
 
 #ifndef CROMBIETOOLS_ANALYSISTOOLS_HISTANALYSIS_H
@@ -20,7 +21,8 @@
    Class for histogram-based analysis.
    This class handles MCConfigs and data and performs useful tasks
    with the resulting histograms.
-   @todo Much of this class is thrown together fast so make it cleaner and integrate with PlotStack. */
+   @todo Much of this class is thrown together fast so make it cleaner and integrate with PlotStack.
+*/
 
 class HistAnalysis : public FileConfigReader, private PlotHists
 {
@@ -29,20 +31,20 @@ class HistAnalysis : public FileConfigReader, private PlotHists
   virtual ~HistAnalysis()  {}
 
   /// Sets the signal MC based on the limit tree name and which config to use
-  void    SetSignalName      ( TString name, FileType type = kBackground )    { fSignalName = name; fSignalType = type; }
+  void      SetSignalName      ( TString name, FileType type = kBackground )    { fSignalName = name; fSignalType = type; }
 
   /// Sets the base cut
-  void    SetBaseCut         ( TString cut )                                  { fBaseCut = cut; fDataBaseCut = cut;     }
+  void      SetBaseCut         ( TString cut )                                  { fBaseCut = cut; fDataBaseCut = cut;     }
   /// Sets the base cut for MC and Data
-  void    SetBaseCut         ( TString cut, TString datacut )                 { fBaseCut = cut; fDataBaseCut = datacut; }
+  void      SetBaseCut         ( TString cut, TString datacut )                 { fBaseCut = cut; fDataBaseCut = datacut; }
   /// Sets the MC weight
-  void    SetMCWeight        ( TString weight )                               { fMCWeight = weight;                     }
+  void      SetMCWeight        ( TString weight )                               { fMCWeight = weight;                     }
 
   /// Sets the format string for the scale factor table
-  void    SetFormat          ( TString format )                               { fFormat = format;                       }
+  void      SetFormat          ( TString format )                               { fFormat = format;                       }
 
   /// Different methods of doing cut and count
-  enum    ScaleFactorMethod { kCutAndCount = 0 };
+  enum      ScaleFactorMethod { kCutAndCount = 0 };
   /// Does scale factors between background-subtracted data and signal MC
   Double_t  DoScaleFactors     ( TString PlotVar, Int_t NumBins, Double_t *XBins,
                                  ScaleFactorMethod  method = kCutAndCount, Bool_t NormalizeBackground = true,
@@ -52,26 +54,26 @@ class HistAnalysis : public FileConfigReader, private PlotHists
                                  ScaleFactorMethod  method = kCutAndCount, Bool_t NormalizeBackground = true,
                                  TString TreeName = "events" );
 
-  /// Sets various other cut levels for scalefactors
-  void    AddScaleFactorCut     (  TString name, TString cut, TString datacut = "" );
+  /// Sets various other cut levels for scalefactors.
+  void      AddScaleFactorCut  (  TString name, TString cut, TString datacut = "" );
   /// Resets the values saved for the scale factor cuts
-  void    ResetScaleFactorCuts  ();
+  void      ResetScaleFactorCuts  ();
 
   /// Reweights based on some expression in MC to match data shape and makes a histogram for CorrectionApplicator to use
-  void    MakeReweightHist   ( TString OutFile, TString OutHist, TString PlotVar,
-                               Int_t NumBins, Double_t *XBins, TString TreeName = "events" );
+  void      MakeReweightHist   ( TString OutFile, TString OutHist, TString PlotVar,
+                                 Int_t NumBins, Double_t *XBins, TString TreeName = "events" );
 
   /// Reweights based on some expression in MC with easier to use binning
-  void    MakeReweightHist   ( TString OutFile, TString OutHist, TString PlotVar,
-                               Int_t NumBins, Double_t MinX, Double_t MaxX, TString TreeName = "events" );
+  void      MakeReweightHist   ( TString OutFile, TString OutHist, TString PlotVar,
+                                 Int_t NumBins, Double_t MinX, Double_t MaxX, TString TreeName = "events" );
 
   /// Different methods of printing the scale factor tables
-  enum    PrintingMethod { kNone = 0, kPresentation, kNote };
+  enum      PrintingMethod { kNone = 0, kPresentation, kNote };
   /// Sets whether to print any tables for notes or presentations
-  void    SetPrintingMethod  ( PrintingMethod method )                         { fPrintingMethod = method;               }
+  void      SetPrintingMethod  ( PrintingMethod method )                         { fPrintingMethod = method;               }
 
   /// Sets the amount the background is scaled by
-  void    ChangeBackground   ( Double_t factor )                               { fBackgroundChange = factor;             }
+  void      ChangeBackground   ( Double_t factor )                               { fBackgroundChange = factor;             }
 
  private:
 

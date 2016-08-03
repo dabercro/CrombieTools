@@ -1,7 +1,8 @@
 /**
    @file TreeContainer.cc
    Defines the function members for the TreeContainer class.
-   @author Daniel Abercrombie <dabercro@mit.edu> */
+   @author Daniel Abercrombie <dabercro@mit.edu>
+*/
 
 #include <iostream>
 

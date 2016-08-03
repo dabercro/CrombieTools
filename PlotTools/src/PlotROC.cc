@@ -1,7 +1,8 @@
 /**
   @file   PlotROC.cc
   Defines function members of the PlotROC class.
-  @author Daniel Abercrombie <dabercro@mit.edu> */
+  @author Daniel Abercrombie <dabercro@mit.edu>
+*/
 
 #include <iostream>
 

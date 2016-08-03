@@ -1,7 +1,8 @@
 /**
    @file InDirectoryHolder.h
    Header file that defines InDirectoryHolder class.
-   @author Daniel Abercrombie <dabercro@mit.edu> */
+   @author Daniel Abercrombie <dabercro@mit.edu>
+*/
 
 #ifndef CROMBIETOOLS_COMMONTOOLS_INDIRECTORYHOLDER_H
 #define CROMBIETOOLS_COMMONTOOLS_INDIRECTORYHOLDER_H
@@ -12,7 +13,8 @@
 
 /**
    @ingroup commongroup
-   Helper function that prepends a directory name to a file. */
+   Helper function that prepends a directory name to a file.
+*/
 
 inline TString AddDirectory(TString dir, TString FileName)
 {
@@ -28,7 +30,8 @@ inline TString AddDirectory(TString dir, TString FileName)
    This class is used to facilitate running over files in a directory.
    
    Main purpose is to centralize function of adding input directory to the filename
-   when considering said file. */
+   when considering said file.
+*/
 
 class InDirectoryHolder
 {
@@ -42,14 +45,15 @@ class InDirectoryHolder
   inline TString    GetInDirectory     ()  const            { return fInDirectory;                                }
 
  protected:
-/**
-   A helper function that prepends the input directory to a filename.
-   @param FileName is the name of a file inside 
-   the fInDirectory or an absolute path.
-   @returns FileName with the input directory prepended,
-   unless absolute or fInDirectory is empty, 
-   where it is left alone. 
-   @todo Check if file exists in the input directory*/
+  /**
+     A helper function that prepends the input directory to a filename.
+     @param FileName is the name of a file inside 
+                     the fInDirectory or an absolute path.
+     @returns FileName with the input directory prepended,
+              unless absolute or fInDirectory is empty, 
+              where it is left alone. 
+     @todo Check if file exists in the input director
+  */
   inline TString    AddInDir    ( TString FileName ) const  { return AddDirectory(fInDirectory, FileName);        }
 
  private:

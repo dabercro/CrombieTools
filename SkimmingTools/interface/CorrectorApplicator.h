@@ -1,7 +1,8 @@
 /**
    @file CorrectorApplicator.h
    Header that defines the CorrectorApplicator class.
-   @author Daniel Abercrombie <dabercro@mit.edu> */
+   @author Daniel Abercrombie <dabercro@mit.edu>
+*/
 
 #ifndef CROMBIETOOLS_SKIMMINGTOOLS_CORRECTORAPPLICATOR_H
 #define CROMBIETOOLS_SKIMMINGTOOLS_CORRECTORAPPLICATOR_H
@@ -17,7 +18,8 @@
    @class CorrectorApplicator
    @brief Can be created using the CrombieTools.SkimmingTools.Corrector module.
 
-   Applies multiple Corrector objects to a tree in a file. */
+   Applies multiple Corrector objects to a tree in a file.
+*/
 
 class CorrectorApplicator : public InDirectoryHolder, public ProgressReporter
 {

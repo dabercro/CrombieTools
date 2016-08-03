@@ -1,7 +1,8 @@
 /**
   @file   PlotHists.h
   Definition of PlotHists class.
-  @author Daniel Abercrombie <dabercro@mit.edu> */
+  @author Daniel Abercrombie <dabercro@mit.edu>
+*/
 
 
 #ifndef CROMBIETOOLS_PLOTTOOLS_PLOTHISTS_H
@@ -19,7 +20,8 @@
    @ingroup plotgroup
    @class PlotHists
    A flexible class that plots histograms.
-   Many practical uses are mediated by other classes. */
+   Many practical uses are mediated by other classes.
+*/
 
 class PlotHists : public PlotBase
 {

@@ -1,7 +1,8 @@
 /**
    @file   HistWriter.h
    Header file for the HistWriter class.
-   @author Daniel Abercrombie <dabercro@mit.edu> */
+   @author Daniel Abercrombie <dabercro@mit.edu>
+*/
 
 #ifndef CROMBIETOOLS_SKIMMINGTOOLS_HISTWRITER_H
 #define CROMBIETOOLS_SKIMMINGTOOLS_HISTWRITER_H
@@ -14,7 +15,8 @@
    @class HistWriter
    @brief Can be created using the CrombieTools.SkimmingTools.HistWriter module.
 
-   Class used to write a histogram into a .root file from a .txt file. */
+   Class used to write a histogram into a .root file from a .txt file.
+*/
 
 class HistWriter
 {

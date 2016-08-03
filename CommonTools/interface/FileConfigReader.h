@@ -4,7 +4,8 @@
    Defines the FileConfigReader class. Since the FileConfigReader class is never used alone,
    the entire class it defined in this header.
 
-   @author Daniel Abercrombie <dabercro@mit.edu> */
+   @author Daniel Abercrombie <dabercro@mit.edu>
+*/
 
 #ifndef CROMBIETOOLS_COMMONTOOLS_FILECONFIGREADER_H
 #define CROMBIETOOLS_COMMONTOOLS_FILECONFIGREADER_H
@@ -23,7 +24,8 @@
 /**
    @ingroup commongroup
    @class FileConfigReader
-   This class reads a formatted [MC Config file](@ref formatmc). */
+   This class reads a formatted [MC Config file](@ref formatmc).
+*/
 
 class FileConfigReader : public InOutDirectoryHolder
 {
@@ -248,7 +250,8 @@ void FileConfigReader::AddFile(TString treeName, TString fileName, Double_t XSec
 /**
    Reads in a configuration file assuming it has the format descrbed
    in [Formatting MC Configs](@ref formatmc). Contents of 
-   this MC file is stored in one of two vectors FileInfo pointers. */
+   this MC file is stored in one of two vectors FileInfo pointers.
+*/
 
 void FileConfigReader::ReadMCConfig(TString config, TString fileDir)
 {

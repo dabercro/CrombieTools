@@ -1,7 +1,8 @@
 /**
   @file   Corrector.cc
   Describes the Corrector class.
-  @author Daniel Abercrombie <dabercro@mit.edu> */
+  @author Daniel Abercrombie <dabercro@mit.edu>
+*/
 
 #include <iostream>
 #include "TAxis.h"
@@ -85,8 +86,9 @@ Double_t Corrector::GetFormulaResult(Int_t index)
 
 /**
    @returns value of correction histogram using the expressions added 
-   through AddInExpression(), unless the event does not pass the cut
-   set by SetInCut(). In that case, a value of 1 is returned. */
+            through AddInExpression(), unless the event does not pass the cut
+            set by SetInCut(). In that case, a value of 1 is returned.
+*/
 
 Float_t Corrector::Evaluate()
 {

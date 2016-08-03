@@ -1,7 +1,8 @@
 /**
    @file ProgressReporter.h
    Header file that defines ProgressReporter class.
-   @author Daniel Abercrombie <dabercro@mit.edu> */
+   @author Daniel Abercrombie <dabercro@mit.edu>
+*/
 
 #ifndef CROMBIETOOLS_COMMONTOOLS_PROGRESSREPORTER_H
 #define CROMBIETOOLS_COMMONTOOLS_PROGRESSREPORTER_H
@@ -14,7 +15,8 @@
    @ingroup commongroup
    @class ProgressReporter
    This class is used to report progress of various codes that run over every event in a file 
-   @todo Make this class load trees for files. */
+   @todo Make this class load trees for files.
+*/
 
 class ProgressReporter
 {

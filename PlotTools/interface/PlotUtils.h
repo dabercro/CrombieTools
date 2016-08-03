@@ -15,16 +15,17 @@
 
 //--------------------------------------------------------------------
 
-/** Applies an uncertainty file to a histogram.
+/**
+   Applies an uncertainty file to a histogram.
 
-    @param theHist is the histogram to modify
-    @param theUnc is a pointer to the UncertaintyInfo to use
+   @param theHist is the histogram to modify
+   @param theUnc is a pointer to the UncertaintyInfo to use
 
-    The error of the histogram is adjusted by the following for each bin.
-    \f[
-        e_{bin} = \sqrt{e_{bin,0}^2 + (y_{bin} \times unc_{bin})^2}
-    \f]
- */
+   The error of the histogram is adjusted by the following for each bin.
+   \f[
+     e_{bin} = \sqrt{e_{bin,0}^2 + (y_{bin} \times unc_{bin})^2}
+   \f]
+*/
 
 void
 ApplyUncertainty(TH1* theHist, UncertaintyInfo* theUnc)

@@ -1,7 +1,8 @@
 /**
   @file   PlotROC.h
   Header file for PlotROC class definition.
-  @author Daniel Abercrombie <dabercro@mit.edu> */
+  @author Daniel Abercrombie <dabercro@mit.edu>
+*/
 
 #ifndef CROMBIETOOLS_PLOTTOOLS_PLOTROC_H
 #define CROMBIETOOLS_PLOTTOOLS_PLOTROC_H
@@ -19,7 +20,8 @@
    @brief Plotter for ROC curves and significance plots.
 
    The plotter takes signal and background trees and scans cuts over a given variable.
-   Multiple variables can be scanned this way at the same time to determine the best discriminators. */
+   Multiple variables can be scanned this way at the same time to determine the best discriminators.
+*/
 
 class PlotROC : public PlotBase
 {

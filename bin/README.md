@@ -89,10 +89,26 @@ The list of available subcommands are given below.
     </td>
     <td align="left">
       If you have doxygen installed, this command will automatically generate the
-      documentation for Crombie Tools. There are two subcommands, `test` and `copy`.
-      `test` will generate the html only (default also makes a LaTeX manual).
-      `copy` will copy the documentation to a server through ssh.
-      See the file itself for how to change server locations.
+      documentation for Crombie Tools. There are two subcommands.
+      <table cellpadding=10>
+        <tr>
+          <td align="left" valign="top">
+            <code>copy</code>
+          </td>
+          <td align="left">
+            Will copy the documentation to a server through ssh.
+            See the file itself for how to change server locations.
+          </td>
+        </tr>
+        <tr>
+          <td align="left" valign="top">
+            <code>test</code>
+          </td>
+          <td align="left">
+            Will generate the html only (default also makes a LaTeX manual).
+          </td>
+        </tr>
+      </table>
     </td>
   </tr>
   <tr>

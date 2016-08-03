@@ -1,7 +1,8 @@
 /**
    @file TreeContainer.h
    Defines the TreeContainer class.
-   @author Daniel Abercrombie <dabercro@mit.edu> */
+   @author Daniel Abercrombie <dabercro@mit.edu>
+*/
 
 #ifndef CROMBIETOOLS_COMMONTOOLS_TREECONTAINER_H
 #define CROMBIETOOLS_COMMONTOOLS_TREECONTAINER_H
@@ -18,7 +19,8 @@
    @brief Can be called from the CrombieTools.CommonTools.TreeContainer module.
 
    Capable of holding many trees and skimming them. Probably just a poor reimplementation
-   of TChain, but I have code that depends on this now. */
+   of TChain, but I have code that depends on this now.
+*/
 
 class TreeContainer
 {
@@ -28,7 +30,8 @@ class TreeContainer
      TreeContainer Constructor.
      @param fileName can either be the name of a single file or a directory.
             If it's a file, that file is opened. If it's a directory, all the 
-            .root files in that directory are opened */
+            .root files in that directory are opened
+  */
   TreeContainer(TString fileName = "");
   virtual ~TreeContainer();
   

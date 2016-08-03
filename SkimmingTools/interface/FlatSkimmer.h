@@ -1,7 +1,8 @@
 /**
    @file   FlatSkimmer.h
    Header file for the FlatSkimmer class.
-   @author Daniel Abercrombie <dabercro@mit.edu> */
+   @author Daniel Abercrombie <dabercro@mit.edu>
+*/
 
 #ifndef CROMBIETOOLS_SKIMMINGTOOLS_FLATSKIMMER_H
 #define CROMBIETOOLS_SKIMMINGTOOLS_FLATSKIMMER_H
@@ -23,7 +24,8 @@
    Skims events out of a flat tree.
    Takes files from one directory, and writes copies to another directory, 
    taking out events based on a cut string, event filters, a GoodLumiFilter,
-   and duplicate events. */
+   and duplicate events.
+*/
 
 class FlatSkimmer : public InOutDirectoryHolder, public ProgressReporter
 {

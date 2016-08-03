@@ -3,7 +3,8 @@
 
    Header file for the XSecAdder class.
 
-   @author Daniel Abercrombie <dabercro@mit.edu> */
+   @author Daniel Abercrombie <dabercro@mit.edu>
+*/
 
 #ifndef CROMBIETOOLS_SKIMMINGTOOLS_XSECADDER_H
 #define CROMBIETOOLS_SKIMMINGTOOLS_XSECADDER_H
@@ -17,7 +18,8 @@
    @brief Can be created using the CrombieTools.SkimmingTools.XSecAdder module.
 
    A XSecAdder reads from a config file and adds a branch for a XSec weight.
-   Still needs to be multiplied by Luminosity to get proper number of events. */
+   Still needs to be multiplied by Luminosity to get proper number of events.
+*/
 
 class XSecAdder : public FileConfigReader
 {
