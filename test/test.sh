@@ -1,7 +1,5 @@
 #!/bin/bash
 
-## @todo Make tests
-
 fast=$1
 
 here=`pwd`
@@ -68,18 +66,24 @@ do
     fi
 done
 
+echo "Skimming with good runs!"
+./FlatSkimmer.sh
 echo "Making correction histogram!"
 ./makeHist.py
-# Figure out something for reweighter... Probably just one variable to cut on
 echo "Adding corrections to .root Files!"
 ./corrector.py
-# Make up a good runs file
-# Run Skimmer to cut out based on some variable to eliminate background
-# Run the RootDiff that I still have to show what changed with Skimmers
-# Compare this diff to some default diff stored here
+
+cd $here
+
+mkdir txtoutput
+echo "Running crombie diff"
+crombie diff FullOut SkimOut > txtoutput/diffoutput.txt
+echo "Comparing output..."
+diff txtoutput/diffoutput.txt diffoutput.txt
 
 cd $here/plotter
 
+./Stack.py
 # Make limit tree
 # Make stacks with MC configs
 # Make stacks using limit trees
@@ -90,6 +94,8 @@ cd $here/plotter
 # Include systematics
 # Make more stack plots with BDT cuts
 # Make cutflow
+
+## @todo Make tests
 
 crombie compile
 cd $here

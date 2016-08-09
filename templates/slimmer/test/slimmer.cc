@@ -1,5 +1,6 @@
 #include <iostream>
 
+#include "TH1F.h"
 #include "TRandom2.h"
 #include "TString.h"
 #include "OutTree.h"
@@ -12,18 +13,37 @@ enum dataType
 
 void slimmer(TString inFileName, TString outFileName)
 {
-  TRandom2 *gen = new TRandom2(1234);
-  UInt_t numEvents = 10000;
+  UInt_t seed = 1234;
+  UInt_t numEvents = 20000;
+
+  if (inFileName == "Data.root")
+    seed += 100;
+  else
+    numEvents += 10000;
+
+  if (inFileName == "Signal.root")
+    seed += 1000;
+  if (inFileName == "MC1.root")
+    seed += 1;
+  if (inFileName == "MC2.root")
+    seed += 2;
+  if (inFileName == "MC3.root")
+    seed += 3;
+
+  TRandom2 *gen = new TRandom2(seed);
   OutTree *output = new OutTree("test",outFileName);
 
   Float_t genHolder = 0;
   dataType holdType = kNotData;
+
+  TH1F *htotal = new TH1F("htotal", "htotal", 1, -1, 1);
 
   // I should have a distribution to plot for signal
   // distribution for background (weight the MC, do Data correctly)
   // Different distributions for signal and background discriminators
 
   for (UInt_t iEvent = 0; iEvent != numEvents; ++iEvent) {
+    htotal->Fill(0);
 
     output->lumiNum = iEvent % 100 + 1;
     output->eventNum  = iEvent + 1;
@@ -79,6 +99,7 @@ void slimmer(TString inFileName, TString outFileName)
     output->Fill();
   }
 
+  output->ReturnFile()->WriteTObject(htotal, "htotal");
   output->Write();
   delete output;
   delete gen;

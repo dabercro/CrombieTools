@@ -17,7 +17,10 @@
 #include "FileConfigReader.h"
 
 /**
+   @ingroup analysisgroup
    @class LimitTreeMaker
+   @brief Can be created using the CrombieTools.AnalysisTools.LimitTreeMaker module.
+
    Makes small flat trees for limit tools.
    Reads from a [config file](@ref formatmc) or multiple and creates one file
    with a tree for each control region and each file read in. Only works if you have
@@ -43,11 +46,15 @@ class LimitTreeMaker : public FileConfigReader
   inline    void    SetTreeName              ( TString tree )                             { fTreeName = tree;                           }
   /// Add friends to input tree. @todo I don't think this works.
   inline    void    AddFriendName            ( TString tree )                             { fFriendNames.push_back(tree);               }
+  /// Adds a branch to keep in the limit tree
   inline    void    AddKeepBranch            ( TString branch, Bool_t isInt = false )     { fKeepBranches.push_back(branch);
                                                                                             fKeepBranchIsInt.push_back(isInt); }
+  /// Adds a name of a branch to multiply into the weights branch
   inline    void    AddWeightBranch          ( TString branch )                           { fWeightBranch.push_back(branch);            }
+  /// Adds a region by name and cut
   inline    void    AddRegion                ( TString regionName, TString regionCut )
                                                                 { fRegionNames.push_back(regionName); fRegionCuts.push_back(regionCut); }
+  /// Sets the name of the output weight branch
   inline    void    SetOutputWeightBranch    ( TString branch )                           { fOutputWeightBranch = branch;               }
 
   inline    void    ExceptionSkip            ( TString region, TString outTreeName )      { fExceptionSkip[region].insert(outTreeName); }

@@ -63,7 +63,7 @@ The meanings of each variable is listed below.
 
 # Environment Variables {#envconfig}
 
-@todo Fill this table...
+These are the environment variables used in the slimming and skimming of an analysis.
 
 <table cellpadding=20>
   <tr>
@@ -71,6 +71,10 @@ The meanings of each variable is listed below.
       <code>CrombieFilesPerJob</code>
     </td>
     <td align="left">
+      This specifies the number of files on EOS each LXBATCH job will read.
+      Keep this constant between resubmissions, because it directly determines which files
+      are run together.
+      The other variables setting up the queue and number of cores won't change anything.
     </td>
   </tr>
   <tr>
@@ -78,6 +82,10 @@ The meanings of each variable is listed below.
       <code>CrombieNBatchProcs</code>
     </td>
     <td align="left">
+      The number of cores used in each LXBATCH job.
+      If you really need a fast turn around for a resubmission, change this instead of the number 
+      of jobs per file.
+      It's recommended that you use 4 cores for the 2nw4cores queue and 1 core for all others.
     </td>
   </tr>
   <tr>
@@ -85,6 +93,8 @@ The meanings of each variable is listed below.
       <code>CrombieQueue</code>
     </td>
     <td align="left">
+      Specifies which LXBATCH queue will be submitted to.
+      Examples are `8nm`, `1nh`, `8nh`, `1nd`, `2nd`, `1nw`, `2nw`, and `2nw4cores`.
     </td>
   </tr>
   <tr>
@@ -92,6 +102,8 @@ The meanings of each variable is listed below.
       <code>CrombieNLocalProcs</code>
     </td>
     <td align="left">
+      The number of processors used for local slimming, skimming, plotting, etc.
+      The default number uses all available processors, which is perhaps not always desired.
     </td>
   </tr>
   <tr>
@@ -99,6 +111,9 @@ The meanings of each variable is listed below.
       <code>CrombieFileBase</code>
     </td>
     <td align="left">
+      Each file name of the flat files you'll work with start with `<base>_` and that base is
+      set here so that your LXBATCH jobs make the correct name.
+      These namespaces are useful for knowing what each ntuple was used for previously.
     </td>
   </tr>
   <tr>
@@ -106,6 +121,13 @@ The meanings of each variable is listed below.
       <code>CrombieEosDir</code>
     </td>
     <td align="left">
+      This can be one of two things.
+
+        - A directory on EOS where you will look for all datasets.
+        - A local .txt file which has a list of directories to look for datasets.
+
+      The submission tool will figure out which one of the two you set this variable
+      as by checking if a local file with that name exists.
     </td>
   </tr>
   <tr>
@@ -113,6 +135,9 @@ The meanings of each variable is listed below.
       <code>CrombieRegDir</code>
     </td>
     <td align="left">
+      `crombie terminalslim` does not run on EOS necessarily, like `crombie submitlxbatch` does.
+      This is the variable that sets what folder to look in for datasets.
+      Note that this only takes a relative directory, not a list of directories.
     </td>
   </tr>
   <tr>
@@ -120,6 +145,9 @@ The meanings of each variable is listed below.
       <code>CrombieTempDir</code>
     </td>
     <td align="left">
+      A location to store the direct LXBATCH output.
+      This is the directory that will be checked when the tool is trying to determine
+      what files have and have not been successfully created.
     </td>
   </tr>
   <tr>
@@ -127,6 +155,10 @@ The meanings of each variable is listed below.
       <code>CrombieFullDir</code>
     </td>
     <td align="left">
+      This is simply location of the hadded LXBATCH output.
+      That is, all the files of the same dataset will be combined.
+      This directory will also hold a list of the original locations of the datasets
+      on EOS so that differences in dataset location can be detected for separate runs.
     </td>
   </tr>
   <tr>
@@ -134,6 +166,9 @@ The meanings of each variable is listed below.
       <code>CrombieSkimDir</code>
     </td>
     <td align="left">
+      This is the location of the flat trees run through a good runs skim as well
+      as any other cuts added.
+      This is not a necessary variable, but is used in the template of `FlatSkimmer.sh`.
     </td>
   </tr>
   <tr>
@@ -141,6 +176,9 @@ The meanings of each variable is listed below.
       <code>CrombieDirList</code>
     </td>
     <td align="left">
+      If left blank, all of the datasets in the `CrombieEosDir` or `CrombieRegDir` will be run on.
+      Otherwise, this variable should name a local .txt file that has a list of datasets that
+      you want to run on.
     </td>
   </tr>
   <tr>
@@ -148,6 +186,15 @@ The meanings of each variable is listed below.
       <code>CrombieSlimmerScript</code>
     </td>
     <td align="left">
+      This names the script that the LXBATCH job will run.
+      Make sure that the script is executable (`chmod +x`),
+      and that it takes two arguments:
+
+        - The input file name
+        - The output file name
+
+      If no arguments are passed, make sure the script compiles everything
+      that it needs (with `LoadMacro('..+')` for example).
     </td>
   </tr>
   <tr>
@@ -155,6 +202,11 @@ The meanings of each variable is listed below.
       <code>CrombieJobScriptList</code>
     </td>
     <td align="left">
+      This variable names a local .txt file that names the relative paths of all files that should be copied
+      to the LXBATCH node for the job to be completed.
+      This will often include macros and headers needed.
+      All of these files must be in the `slimmer` subdirectory.
+      Full path names or using `..` will not work.
     </td>
   </tr>
   <tr>
@@ -162,6 +214,11 @@ The meanings of each variable is listed below.
       <code>CrombieCheckerScript</code>
     </td>
     <td align="left">
+      Names a script that checks the output of each file run on in the LXBATCH job.
+      The script should return a non-zero exit code if there is a problem with the output file.
+      The script should return exit code 5 for fatal errors that will abort the job.
+      The job will also abort for any non-zero exit code for the hadded output of the LXBATCH job.
+      These errors will be reported in a local file, `LxbatchFileChecks.log`.
     </td>
   </tr>
   <tr>
@@ -169,34 +226,46 @@ The meanings of each variable is listed below.
       <code>CrombieGoodRuns</code>
     </td>
     <td align="left">
+      This is a variable also only used by the template of `FlatSkimmer.sh`, so it's optional.
+      It names the location of the good runs JSON for the the skimmer to use.
     </td>
   </tr>
 </table>
 
-The environment variables used for the first step of changing ntuple formats
-must be present with those names, otherwise you might run into trouble when
-submitting jobs.
-
 # Generating flat trees for output {#flattrees}
 
-@todo Update this section, and move it around, probably
-
+There is a tool for generating flat tree classes for the user.
 The variables that you want to include in a flat tree can be specified in `OutTree.txt` or whatever you rename it to.
 The format of the configuration file is `<branchName>/<type>=<default>`.
 `<branchName>` should be easy to understand.
-Valid entries for `<type>` include `F`, `I`, or `O` for float, integer, and boolean, respectively.
-You can also use `VF`, `VI`, or `VO` for (pointers of) vectors of these types.
+Valid entries for `<type>` are the following:
+
+<table>
+  <tr><td>`F`</td><td>float</td></tr>
+  <tr><td>`I`</td><td>int</td></tr>
+  <tr><td>`i`</td><td>unsigned int</td></tr>
+  <tr><td>`L`</td><td>long</td></tr>
+  <tr><td>`l`</td><td>unsigned long</td></tr>
+  <tr><td>`O`</td><td>bool</td></tr>
+</table>      
+
+Any other types will be assumed to be TObjects.
+The header file for the listed TObject will be included automatically.
+This feature is not tested extensively since I don't use it.
+
+You can also preface a type with `V` for (pointers of) vectors of these types.
 After writing a tree configuration file with name `OutTree.txt`, just run
 
-    crombie maketree
+    crombie maketree OutTree
 
 This makes a class that contains your tree.
 This is done automatically for you in the default `runSlimmer.py` template.
-You can call each branch of the tree via a public member with the same name of the `<branchName>` and fill the whole tree with function `Fill()` at the end of each event.
+You can call each branch of the tree via a public member with the same name of the `<branchName>`
+and fill the whole tree with function `Fill()` at the end of each event.
 If you do not set a value for a particular event, the branch will be filled with `<default>`.
 You can then write the tree to a file via `WriteToFile(*TFile,"<WhatYouWantToCallTree>")`.
 There's also other overloaded write and creation function using a file name you specifiy with the initializer.
-See `slimmer.cc` for an example of how to write a flat tree writer using this class.
+See `slimmer.cc` for an example of how to write a flat tree using this class.
 
 # Skimming
 
@@ -238,7 +307,11 @@ Here is the help message to help you understand how to customize this.
 
 After running `FlatSkimmer.sh`, you should have your small ntuples ready to work with.
 
-# Plotting
+# Plotting {#plotting}
+
+The next subdirectory of a workspace is the plotting directory.
+This comes with it's own list of environment variables.
+@todo Make the plotter environment variables
 
 # Formatting MC Configuration Files {#formatmc}
 
@@ -327,7 +400,7 @@ After reading one config, just read the adjusting configuration after before mak
 
 # Documentation
 
-
+@todo Document the documentation subdirectory
 
 # Miscellaneous
 

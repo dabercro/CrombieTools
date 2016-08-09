@@ -10,7 +10,7 @@ corrector = MakeCorrector('fixWeight','example','0','testHist.root','hist')
 applicator.AddCorrector(corrector)
 applicator.AddFactorToMerge('weight')
 
-applicator.SetInDirectory(os.environ['CrombieFullDir'])
+applicator.SetInDirectory(os.environ['CrombieSkimDir'])
 
 corrector.SetInCut('1')
 applicator.ApplyCorrections('test_MC2.root')

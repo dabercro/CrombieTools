@@ -13,9 +13,9 @@
 #include "FileConfigReader.h"
 
 /**
-   @ingroup skimminggroup
+   @ingroup analysisgroup
    @class XSecAdder
-   @brief Can be created using the CrombieTools.SkimmingTools.XSecAdder module.
+   @brief Can be created using the CrombieTools.AnalysisTools.XSecAdder module.
 
    A XSecAdder reads from a config file and adds a branch for a XSec weight.
    Still needs to be multiplied by Luminosity to get proper number of events.

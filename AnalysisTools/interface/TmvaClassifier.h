@@ -1,10 +1,10 @@
-//--------------------------------------------------------------------------------------------------
-// TmvaClassifier
-//
-// This class does the classification
-//
-// Authors: D.Abercrombie
-//--------------------------------------------------------------------------------------------------
+/**
+  @file   TmvaClassifier.h
+
+  This is the header file that defines the TmvaClassifier class.
+
+  @author Daniel Abercrombie <dabercro@mit.edu>
+*/
 
 #ifndef CROMBIETOOLS_ANALYSISTOOLS_TMVACLASSIFIER_H
 #define CROMBIETOOLS_ANALYSISTOOLS_TMVACLASSIFIER_H
@@ -12,6 +12,12 @@
 #include <vector>
 
 #include "TString.h"
+
+/**
+   @ingroup analysisgroup
+   @class TmvaClassifier
+   @brief This class does the classification with BDTs.
+*/
 
 class TmvaClassifier
 {

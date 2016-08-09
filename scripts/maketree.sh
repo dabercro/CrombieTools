@@ -110,6 +110,7 @@ done
 
 echo "" >> $h
 echo "  TTree*  ReturnTree()                { return t;                             }" >> $h
+echo "  TFile*  ReturnFile()                { return fFile;                         }" >> $h
 echo "  void    Fill()                      { t->Fill(); Reset();                   }" >> $h
 echo "  void    Reset();" >> $h
 echo "  void    WriteToFile   ( TFile *f )  { f->WriteTObject(t, t->GetName());     }" >> $h

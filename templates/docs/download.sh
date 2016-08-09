@@ -2,6 +2,7 @@
 
 
 
-echo "#########################"
-echo "# Don't forget to crop! #"
-echo "#########################"
+for f in */*.pdf
+do
+    pdfcrop $f $f
+done
