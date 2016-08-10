@@ -68,6 +68,7 @@ void slimmer(TString inFileName, TString outFileName)
     }
 
     if (inFileName == "Signal.root" || holdType == kSignal) {   // Signal is 1/50 of the events
+      output->isSignal = 1;
       output->example = gen->Gaus(60.0,5.0);
       output->exampleDisc1 = sqrt(gen->Uniform());
       output->exampleDisc2 = sqrt(gen->Uniform());
@@ -77,6 +78,8 @@ void slimmer(TString inFileName, TString outFileName)
         output->eventNum += numEvents * 1;
         genHolder = gen->Uniform(0.0,10.0);
         output->example = genHolder * genHolder;
+        if (holdType == kMC1 && (output->example) < 40.0 && gen->Uniform() > (1.0 + (output->example - 40.0)/60.0))
+          continue;
       }
       else if (inFileName == "MC2.root" || holdType == kMC2) {  // MC2 is 2/5 - 1/50 of the events
         output->eventNum += numEvents * 2;

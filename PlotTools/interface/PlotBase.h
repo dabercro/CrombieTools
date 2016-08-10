@@ -126,8 +126,11 @@ class PlotBase
   inline    void         SetMakeRatio             ( Bool_t ratio )                                { fMakeRatio = ratio;          }
   /// Set which line will be '1' in the ratio plot.
   inline    void         SetRatioIndex            ( Int_t ratio )                                 { fRatioIndex = ratio;         }
-  /// If true, the ratio index will only be compared to the data index.
-  inline    void         SetOnlyRatioWithData     ( Bool_t only )                                 { fOnlyRatioWithData = only;   }
+  /**
+     Add a line to show in the ratio plot.
+     The line is specified by its index. If this list is empty, all of the lines appear in the ratio pad.
+  */
+  inline    void         AddRatioLine             ( Int_t line )                                  { fRatioLines.push_back(line); }
   /// Force the minimum and maximum values of the ratio pad.
   inline    void         SetRatioMinMax           ( Float_t min, Float_t max )               { fRatioMin = min; fRatioMax = max; }
   /// Set the y axis label of the ratio pad.
@@ -195,13 +198,13 @@ class PlotBase
   Int_t                      fDataIndex;                 ///< Index in the plotter of the data line
   Bool_t                     fMakeRatio;                 ///< Bool to make a ratio plot on bottom of image
   Int_t                      fRatioIndex;                ///< Pick which line to set as 1 in ratio plot
-  Float_t                    fRatioMin;
-  Float_t                    fRatioMax;
-  TString                    fRatioTitle;
+  Float_t                    fRatioMin;                  ///< Minimum of the ratio pad
+  Float_t                    fRatioMax;                  ///< Maximum of the ratio pad
+  TString                    fRatioTitle;                ///< Label of the ratio pad
   Int_t                      fRatioGrid;
   Int_t                      fRatioDivisions;
   Bool_t                     fOptimDivisions;
-  Bool_t                     fOnlyRatioWithData;         ///< Suppresses the ratio of extra MC
+  std::vector<Int_t>         fRatioLines;                ///< Vector of line indices to show up in the ratio pad
 
   std::vector<TString>       fLegendEntries;             ///< Number of legend entries should match number of lines
 
@@ -271,7 +274,6 @@ PlotBase::PlotBase() :
   fRatioGrid(0),
   fRatioDivisions(504),
   fOptimDivisions (true),
-  fOnlyRatioWithData(false),
   fDrawFirst(-1)
 { }
 
@@ -456,7 +458,7 @@ void PlotBase::LineDrawing(std::vector<T*> theLines, Int_t index, Bool_t same)
     T* tempLine = (T*) theLines[fRatioIndex]->Clone();
     tempLine->SetFillColor(kGray);
     tempLine->SetFillStyle(3001);
-    if (!same)
+    if (!same && index == fRatioIndex)
       tempLine->Draw("e2");
     theLines[index]->Draw(options);
     tempLine->Draw("e2,same");
@@ -493,7 +495,7 @@ void PlotBase::BaseCanvas(TString FileBase, std::vector<T*> theLines,
 
   UInt_t NumPlots = theLines.size();
   // Initialize the canvas and legend
-  TCanvas *theCanvas = new TCanvas(fCanvasName,fCanvasName,fCanvasWidth,fCanvasHeight);
+  TCanvas *theCanvas = new TCanvas(fCanvasName, fCanvasName, fCanvasWidth, fCanvasHeight);
   theCanvas->SetTitle(";"+XLabel+";"+YLabel);
   TLegend *theLegend = new TLegend(l1,l2,l3,l4);
   theLegend->SetBorderSize(fLegendBorderSize);
@@ -518,9 +520,9 @@ void PlotBase::BaseCanvas(TString FileBase, std::vector<T*> theLines,
 
     // Add a formated legend entry
     if (fLegendFill && int(iLine) < fDataIndex)
-      theLegend->AddEntry(theLines[iLine],fLegendEntries[iLine],"f");
+      theLegend->AddEntry(theLines[iLine], fLegendEntries[iLine], "f");
     else
-      theLegend->AddEntry(theLines[iLine],fLegendEntries[iLine],"lp");
+      theLegend->AddEntry(theLines[iLine], fLegendEntries[iLine], "lp");
       
     // If the first draw is not set by user, check if maximum to draw first
     if (fDrawFirst == -1) {
@@ -561,15 +563,15 @@ void PlotBase::BaseCanvas(TString FileBase, std::vector<T*> theLines,
 
   // If the first draw was not specified by the user, use the maximum found before
   if (fDrawFirst == -1)
-    LineDrawing(theLines,plotFirst,false);
+    LineDrawing(theLines, plotFirst, false);
   else
-    LineDrawing(theLines,fDrawFirst,false);
+    LineDrawing(theLines, fDrawFirst, false);
   // Then loop through all the other lines to draw
   for (UInt_t iLine = 0; iLine != NumPlots; ++iLine)
-    LineDrawing(theLines,iLine,true);
+    LineDrawing(theLines, iLine, true);
   // Draw the data again at the end to ensure it's on top
   if (fDataIndex != -1)
-    LineDrawing(theLines,fDataIndex,true);
+    LineDrawing(theLines, fDataIndex, true);
 
   theLegend->Draw();
 
@@ -600,7 +602,7 @@ void PlotBase::BaseCanvas(TString FileBase, std::vector<T*> theLines,
     SetZeroError(ratioLine);
 
     // Then we make a set of lines that are divided by the ratio line
-    std::vector<T*> newLines = GetRatioToLine(theLines,ratioLine);
+    std::vector<T*> newLines = GetRatioToLine(theLines, ratioLine);
 
     // Now we do formatting for all of the lines
     for (UInt_t iLine = 0; iLine != NumPlots; ++iLine) {
@@ -609,7 +611,7 @@ void PlotBase::BaseCanvas(TString FileBase, std::vector<T*> theLines,
       newLines[iLine]->GetXaxis()->SetLabelSize(fFontSize/(1 - ratioFrac));
       newLines[iLine]->GetYaxis()->SetLabelSize(fFontSize/(1 - ratioFrac));
       newLines[iLine]->GetYaxis()->SetTitleOffset((1 - ratioFrac)/ratioFrac * fTitleOffset);
-      newLines[iLine]->GetYaxis()->SetNdivisions(fRatioDivisions,fOptimDivisions);
+      newLines[iLine]->GetYaxis()->SetNdivisions(fRatioDivisions, fOptimDivisions);
       newLines[iLine]->GetYaxis()->SetTitle(fRatioTitle);
       newLines[iLine]->GetYaxis()->CenterTitle();
       if (fRatioMin != fRatioMax) {
@@ -619,19 +621,20 @@ void PlotBase::BaseCanvas(TString FileBase, std::vector<T*> theLines,
       newLines[iLine]->SetFillColor(0);
     }
 
-    // If we only want the two lines (like top of stack and data) just draw those
+    // If we only want some lines (like top of stack and data) just draw those
     // I know I looped over all the lines, but the performance hit is negligible and it makes for less buggy code
-    if (fOnlyRatioWithData) {
+    if (fRatioLines.size() != 0) {
       // Make the ratio line much less distinguished
       newLines[fRatioIndex]->SetLineColor(1);
-      LineDrawing(newLines,fRatioIndex,false);
-      LineDrawing(newLines,fDataIndex,true);
+      LineDrawing(newLines, fRatioIndex, false);
+      for (UInt_t iLine = 0; iLine != fRatioLines.size(); ++iLine)
+        LineDrawing(newLines, fRatioLines[iLine], true);
     }
     // Otherwise draw everything
     else {
-      newLines[plotFirst];
+      LineDrawing(newLines, plotFirst, false);
       for (UInt_t iLine = 0; iLine < NumPlots; iLine++)
-        LineDrawing(newLines,iLine,true);
+        LineDrawing(newLines, iLine, true);
     }
 
     // There is no log Y on the ratio plot

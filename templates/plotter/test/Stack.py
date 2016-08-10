@@ -10,7 +10,7 @@ plotter.AddDataFile(os.environ['CrombieFileBase'] + '_Data.root')
 plotter.SetTreeName('test')
 plotter.SetEventsPer(1.0)
 
-plotter.SetRatioMinMax(0.5, 1.5)
+plotter.SetRatioMinMax(0.0, 2.0)
 
 def SetupArgs():
     return [

@@ -87,6 +87,10 @@ echo "Adding corrections to .root Files!"
 
 cd $here/plotter
 
+./AddXSec.py
+./reweight.py
+./corrector.py
+
 ./Stack.py
 # Make limit tree
 # Make stacks with MC configs

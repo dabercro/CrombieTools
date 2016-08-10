@@ -9,6 +9,7 @@ regionCuts = {
     'signal' : 'exampleDisc1 > 0.5',
     'unblinded' : 'exampleDisc1 > 0.5',
     'uncorrected' : 'exampleDisc1 > 0.5',
+    'control' : 'exampleDisc1 < 0.5 && isSignal == 0',
     }
 
 # These are just for the users to loop over
@@ -23,13 +24,14 @@ def joinCuts(toJoin=regionCuts.keys(), cuts=regionCuts):
 
 # A weight applied to all MC
 
-defaultMCWeight = 'allWeights'
+defaultMCWeight = 'allWeights * reweight'
 
 # Additional weights applied to certain control regions
 
 region_weights    = { # key : [Data,MC]
     'signal'      : ['0', defaultMCWeight],
     'uncorrected' : ['1', 'weight'],
+    'control'     : ['1', 'allWeights'],
     'default'     : ['1', defaultMCWeight]
     }
 

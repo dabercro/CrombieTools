@@ -24,19 +24,19 @@ HistAnalysis::DoScaleFactors(TString PlotVar, Int_t NumBins, Double_t *XBins,
   AddWeight(fBaseCut);
   for (UInt_t iCut = 0; iCut != fScaleFactorCuts.size(); ++iCut)
     AddWeight(fBaseCut + " && " + fDataSFCuts[iCut]);
-  std::vector<TH1D*> dataHists = MakeHists(NumBins,XBins);
+  std::vector<TH1D*> dataHists = MakeHists(NumBins, XBins);
 
   // Then create the signal histograms
-  SetDefaultTree(ReturnTChain(TreeName,fSignalType,fSignalName,kLegendEntry));
+  SetDefaultTree(ReturnTChain(TreeName, fSignalType, fSignalName, kLegendEntry));
   ResetWeight();
   AddWeight(TString("(") + fBaseCut + ")*(" + fMCWeight + ")");
   for (UInt_t iCut = 0; iCut != fScaleFactorCuts.size(); ++iCut)
     AddWeight(TString("(") + fBaseCut + " && " + fScaleFactorCuts[iCut] + ")*(" + fMCWeight + ")");
-  std::vector<TH1D*> signalHists = MakeHists(NumBins,XBins);
+  std::vector<TH1D*> signalHists = MakeHists(NumBins, XBins);
 
   // Then create the background histograms
-  SetDefaultTree(ReturnTChain(TreeName,kBackground,fSignalName,kLegendEntry,false));
-  std::vector<TH1D*> backgroundHists = MakeHists(NumBins,XBins);
+  SetDefaultTree(ReturnTChain(TreeName, kBackground, fSignalName, kLegendEntry, false));
+  std::vector<TH1D*> backgroundHists = MakeHists(NumBins, XBins);
 
   // Subtract out the background
   Double_t scale = -1.0 - fBackgroundChange;
@@ -44,7 +44,7 @@ HistAnalysis::DoScaleFactors(TString PlotVar, Int_t NumBins, Double_t *XBins,
     scale *= dataHists[0]->Integral()/(backgroundHists[0]->Integral() + signalHists[0]->Integral());
 
   for (UInt_t iHist = 0; iHist != dataHists.size(); ++iHist)
-    dataHists[iHist]->Add(backgroundHists[iHist],scale);
+    dataHists[iHist]->Add(backgroundHists[iHist], scale);
 
   std::vector<Double_t> data_yields;
   std::vector<Double_t> data_error;
@@ -172,22 +172,36 @@ void
 HistAnalysis::MakeReweightHist(TString OutFile, TString OutHist, TString PlotVar, Int_t NumBins, Double_t *XBins, TString TreeName)
 {
   // First create the data histogram
-  TH1F *dataHist = new TH1F("dataHist","dataHist",NumBins,XBins);
+  TH1F *dataHist = new TH1F("dataHist", "dataHist", NumBins, XBins);
   dataHist->Sumw2();
-  ReturnTChain(TreeName,kData)->Draw(PlotVar + ">>dataHist",fBaseCut);
+  ReturnTChain(TreeName, kData)->Draw(PlotVar + ">>dataHist", fBaseCut);
 
   // Then create the mc histogram
-  TH1F *mcHist = new TH1F("mcHist","mcHist",NumBins,XBins);
+  TH1F *mcHist = new TH1F("mcHist", "mcHist", NumBins, XBins);
   mcHist->Sumw2();
-  ReturnTChain(TreeName,kBackground)->Draw(PlotVar + ">>mcHist",TString("(") + fBaseCut + ")*(" + fMCWeight + ")");
+  TTree *mcTree = NULL;
+  if (fSignalName != "") {
+    TH1F *backgroundHist = new TH1F("backHist", "backHist", NumBins, XBins);
+    ReturnTChain(TreeName, fSignalType, fSignalName, kLegendEntry, false)->
+      Draw(PlotVar + ">>backHist", TString("(") + fBaseCut + ")*(" + fMCWeight + ")");
+
+    dataHist->Add(backgroundHist, -1.0);
+    delete backgroundHist;
+    mcTree = ReturnTChain(TreeName, fSignalType, fSignalName, kLegendEntry);
+  }
+  else
+    mcTree = ReturnTChain(TreeName, kBackground);
+  mcTree->Draw(PlotVar + ">>mcHist", TString("(") + fBaseCut + ")*(" + fMCWeight + ")");
 
   dataHist->Scale(1.0/dataHist->Integral());
   mcHist->Scale(1.0/mcHist->Integral());
 
   dataHist->Divide(mcHist);
 
-  TFile *theFile = new TFile(OutFile,"RECREATE");
-  theFile->WriteTObject(dataHist,OutHist);
+  TFile *theFile = new TFile(OutFile, "RECREATE");
+  theFile->WriteTObject(dataHist, OutHist);
+  delete dataHist;
+  delete mcHist;
 }
 
 //--------------------------------------------------------------------
@@ -195,6 +209,6 @@ void
 HistAnalysis::MakeReweightHist(TString OutFile, TString OutHist, TString PlotVar, Int_t NumBins, Double_t MinX, Double_t MaxX, TString TreeName)
 {
   Double_t XBins[NumBins+1];
-  ConvertToArray(NumBins,MinX,MaxX,XBins);
-  MakeReweightHist(OutFile,OutHist,PlotVar,NumBins,XBins,TreeName);
+  ConvertToArray(NumBins, MinX, MaxX, XBins);
+  MakeReweightHist(OutFile, OutHist, PlotVar, NumBins, XBins, TreeName);
 }

@@ -5,15 +5,14 @@ import CrombieTools.LoadConfig
 from CrombieTools.Parallelization import RunOnDirectory
 import os
 
-applicator = MakeApplicator('allWeights',True,'test','test',5000)
-corrector = MakeCorrector('fixWeight', 'example', '0', 'testHist.root', 'hist')
+applicator = MakeApplicator('', True, 'test', 'test', 10000)
+corrector = MakeCorrector('reweight', 'example', '0', 'example_reweight.root', 'weight')
 applicator.AddCorrector(corrector)
-applicator.AddFactorToMerge('weight')
 
 applicator.SetInDirectory(os.environ['CrombieFullDir'])
 
 corrector.SetInCut('1')
-applicator.ApplyCorrections('test_MC2.root')
+applicator.ApplyCorrections('test_MC1.root')
 
 print('Now running in parallel!')
 

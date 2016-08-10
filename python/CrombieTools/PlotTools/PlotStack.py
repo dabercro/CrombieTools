@@ -1,36 +1,23 @@
 import os
 from .. import Load, DirFromEnv, Nminus1Cut
+from ..CommonTools.FileConfigReader import *
 
 newStackPlotter = Load('PlotStack')
 plotter         = newStackPlotter()
 
+
 def SetupFromEnv(aPlotter = plotter):
-    from .. import LoadConfig
+    """A function that sets up a plotter after sourcing a config file."""
+
+    SetupConfigFromEnv(aPlotter)
+
     DirFromEnv('CrombieOutPlotDir')
-    if os.path.exists('CrombieAnalysisConfig.sh') or os.path.exists('CrombiePlotterConfig.sh'):
-        def readMC(config):
-            aPlotter.ReadMCConfig(config,aPlotter.kBackground)
-        def readSignal(config):
-            aPlotter.ReadMCConfig(config,aPlotter.kSignal)
+    SetFunctionFromEnv([
+            (aPlotter.SetLuminosity, 'CrombieLuminosity'),
+            (aPlotter.SetOutDirectory, 'CrombieOutPlotDir'),
+            (aPlotter.SetLimitTreeDir, 'CrombieOutLimitTreeDir'),
+            ])
 
-        targets = [[aPlotter.SetLuminosity, 'CrombieLuminosity'],
-                   [aPlotter.SetInDirectory, 'CrombieInFilesDir'],
-                   [aPlotter.SetOutDirectory, 'CrombieOutPlotDir'],
-                   [aPlotter.SetLimitTreeDir, 'CrombieOutLimitTreeDir'],
-                   [readMC,'CrombieMCConfig'],
-                   [readSignal,'CrombieSignalConfig']
-                   ]
-        for target in targets:
-            if os.environ.get(target[1]) == None:
-                print 'Cannot find ' + target[1] + ' in config'
-            else:
-                try:
-                    target[0](os.environ[target[1]])
-                except:
-                    target[0](float(os.environ[target[1]]))
-
-    else:
-        print 'Could not find CrombieAnalysisConfig.sh or CrombiePlotterConfig.sh'
 
 def SetCuts(category,region,aPlotter = plotter):
     """ Sets cuts based on category and region.
@@ -46,6 +33,7 @@ def SetCuts(category,region,aPlotter = plotter):
     aPlotter.SetMCWeights(cuts.dataMCCuts(region,False))
     aPlotter.SetDataWeights(cuts.dataMCCuts(region,True))
 
+
 def ReadExceptionConfig(region,aPlotter = plotter):
     """ Reads an [exception configuation](@ref formatmc) file from the [environment](@ref envconfig).
 
@@ -57,6 +45,7 @@ def ReadExceptionConfig(region,aPlotter = plotter):
         print 'Region ' + region + ' does not have an except config set!'
     else:
         aPlotter.ReadMCConfig(os.environ['CrombieExcept_' + region])
+
 
 class ParallelStackContainer:
     """A class that holds a PlotStack and copies it.

@@ -5,3 +5,4 @@ example/F=0
 exampleDisc1/F=0
 exampleDisc2/F=0
 weight/F=1
+isSignal/O=0

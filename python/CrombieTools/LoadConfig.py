@@ -9,6 +9,23 @@ Package that loads local [configuration files](@ref envconfig) into environment.
 import os
 import subprocess
 
+
+def SetFunctionFromEnv(targets):
+    """Calls functions using environment variables
+
+    @param targets is a list of tuples, each containing a function and
+                   the environment variable to use as an argument
+    """
+    for func, envname in targets:
+        if os.environ.get(envname) == None:
+            print 'Cannot find ' + envname + ' in config'
+        else:
+            try:
+                func(os.environ[envname])
+            except:
+                func(float(os.environ[envname]))
+
+
 def LoadEnv(configs):
     """Sources bash files and loads the resulting environment into os.environ
     
@@ -36,6 +53,7 @@ def LoadEnv(configs):
         print 'You passed an invalid argument type to CrombieTools.LoadConfig.LoadEnv()'
         exit()
 
+
 def LoadModuleFromEnv(EnvVarName):
     """Loads and returns a python file named in the environment as a module.
     
@@ -46,6 +64,7 @@ def LoadModuleFromEnv(EnvVarName):
         if os.path.exists(os.environ[EnvVarName]):
             return __import__(os.environ[EnvVarName].strip('.py'), globals(), locals(), [], -1)
     return None
+
 
 """List of configuration files that this module tries to load automatically."""
 CrombieConfigs = ['CrombieAnalysisConfig.sh','CrombiePlotterConfig.sh','CrombieSlimmingConfig.sh']

@@ -170,11 +170,6 @@ PlotStack::MakeCanvas(TString FileBase, Int_t NumXBins, Double_t *XBins,
     SignalHists = GetHistList(NumXBins,XBins,kSignal);
 
   SetLegendFill(true);
-  if (fMakeRatio) {
-    SetRatioIndex(0);
-    SetOnlyRatioWithData(true);
-  }
-
   TH1D *DataHist = (TH1D*) DataHists[0]->Clone("DataHist");
   DataHist->Reset("M");
 
@@ -267,9 +262,19 @@ PlotStack::MakeCanvas(TString FileBase, Int_t NumXBins, Double_t *XBins,
   AddLegendEntry("Data",1);
   SetDataIndex(int(AllHists.size()));
   AllHists.push_back(DataHist);
+
   for (UInt_t iHist = 0; iHist != SignalHists.size(); ++iHist) {
+    if (fMakeRatio)
+      AddRatioLine(int(AllHists.size()));
+    if (AllHists.size() != 0)
+      SignalHists[iHist]->Add(AllHists[0]);
     AllHists.push_back(SignalHists[iHist]);
     AddLegendEntry(fSignalFileInfo[iHist]->fEntry,1,2,fSignalFileInfo[iHist]->fColorStyle);
+  }
+
+  if (fMakeRatio) {
+    SetRatioIndex(0);
+    AddRatioLine(fDataIndex);
   }
 
   BaseCanvas(AddOutDir(FileBase),AllHists,XLabel,YLabel,logY);
