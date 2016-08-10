@@ -19,7 +19,7 @@ void slimmer(TString inFileName, TString outFileName)
   if (inFileName == "Data.root")
     seed += 100;
   else
-    numEvents += 10000;
+    numEvents *= 5;
 
   if (inFileName == "Signal.root")
     seed += 1000;
@@ -43,6 +43,7 @@ void slimmer(TString inFileName, TString outFileName)
   // Different distributions for signal and background discriminators
 
   for (UInt_t iEvent = 0; iEvent != numEvents; ++iEvent) {
+    output->Reset();
     htotal->Fill(0);
 
     output->lumiNum = iEvent % 100 + 1;

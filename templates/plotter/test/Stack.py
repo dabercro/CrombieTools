@@ -10,6 +10,8 @@ plotter.AddDataFile(os.environ['CrombieFileBase'] + '_Data.root')
 plotter.SetTreeName('test')
 plotter.SetEventsPer(1.0)
 
+plotter.SetRatioMinMax(0.5, 1.5)
+
 def SetupArgs():
     return [
         ['example', 22, -5.0, 105.0, 'X Label', 'Y Label'],
@@ -17,4 +19,4 @@ def SetupArgs():
         ['exampleDisc2', 22, -0.05, 1.05, 'X Label', 'Y Label'],
         ]
 
-MakePlots(cuts.categories,cuts.regions,SetupArgs())
+MakePlots(cuts.categories, cuts.regions, SetupArgs(), False)

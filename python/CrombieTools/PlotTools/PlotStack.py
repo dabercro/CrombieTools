@@ -17,7 +17,8 @@ def SetupFromEnv(aPlotter = plotter):
                    [aPlotter.SetInDirectory, 'CrombieInFilesDir'],
                    [aPlotter.SetOutDirectory, 'CrombieOutPlotDir'],
                    [aPlotter.SetLimitTreeDir, 'CrombieOutLimitTreeDir'],
-                   [readMC,'CrombieMCConfig']
+                   [readMC,'CrombieMCConfig'],
+                   [readSignal,'CrombieSignalConfig']
                    ]
         for target in targets:
             if os.environ.get(target[1]) == None:
@@ -63,13 +64,14 @@ class ParallelStackContainer:
     Makes the N minus 1 cuts on the object before calling PlotStack::MakeCanvas()
     """
 
-    def __init__(self,plotter):
+    def __init__(self, plotter, overwrite):
         self.Plotter = plotter
+        self.Overwrite = overwrite
 
     def Copy(self):
-        return ParallelStackContainer(plotter.Copy())
+        return ParallelStackContainer(plotter.Copy(), self.Overwrite)
 
-    def MakePlot(self,category,region,exprArg):
+    def MakePlot(self, category, region, exprArg):
         """Adjusts cut to N minus 1 and plots.
 
         @param category is a string
@@ -77,7 +79,7 @@ class ParallelStackContainer:
         @param exprArg is a list of arguments for the plotter used in PlotStack.MakePlots()
         """
 
-        SetCuts(category,region,self.Plotter)
+        SetCuts(category, region, self.Plotter)
         holdCut = self.Plotter.GetDefaultWeight()
 
         expr = []
@@ -97,15 +99,17 @@ class ParallelStackContainer:
 
         self.Plotter.SetDefaultWeight(Nminus1Cut(holdCut, expr[0]))
         self.Plotter.SetDefaultExpr(expr[0])
-        expr[0] = '_'.join([category,region,expr[0]])
-        self.Plotter.MakeCanvas(*expr)
-        self.Plotter.SetDefaultWeight(holdCut)
-        # Reset and exceptional values for this plot
-        self.Plotter.SetDataExpression('')
-        self.Plotter.ResetCutLines()
+        expr[0] = '_'.join([category, region, expr[0]])
+        if (self.Overwrite or 
+            not os.path.exists(str(self.Plotter.GetOutDirectory()) + expr[0] + '.pdf')):
+            self.Plotter.MakeCanvas(*expr)
+            self.Plotter.SetDefaultWeight(holdCut)
+            # Reset and exceptional values for this plot
+            self.Plotter.SetDataExpression('')
+            self.Plotter.ResetCutLines()
 
 
-def MakePlots(categories,regions,exprArgs,aPlotter = plotter):
+def MakePlots(categories, regions, exprArgs, overwrite = True, aPlotter=plotter):
     """ Shortcut to make plots for multiple categories and regions with the same setup.
 
     @param categories is a list of categories to plot.
@@ -116,16 +120,20 @@ def MakePlots(categories,regions,exprArgs,aPlotter = plotter):
                     If the first argument is actually a dictionary, it will be passed basically as
                     key word arguments to ParallelStackContainer.MakePlot() instead.
                     Key words supported in dictionary and types:
+
                         - data_expr takes a string
                         - cut_lines takes a list of floats
+
+    @param overwrite overwrites old plots with the same name if set to true.
+                     Otherwise, those plots are skipped.
     @param aPlotter is the plotter to use to plot. The default is the plotter defined in this module.
     """
 
     if not type(categories) == list:
-        MakePlots([categories],regions,exprArgs,aPlotter)
+        MakePlots([categories], regions, exprArgs, aPlotter)
 
     elif not type(categories) == list:
-        MakePlots(categories,[regions],exprArgs,aPlotter)
+        MakePlots(categories, [regions], exprArgs, aPlotter)
 
     else:
         from ..Parallelization import RunParallel
@@ -134,6 +142,6 @@ def MakePlots(categories,regions,exprArgs,aPlotter = plotter):
         for category in categories:
             for region in regions:
                 for exprArg in exprArgs:
-                    passToParallel.append([category,region,exprArg])
+                    passToParallel.append([category, region, exprArg])
 
-        RunParallel(ParallelStackContainer(aPlotter),'MakePlot',passToParallel)
+        RunParallel(ParallelStackContainer(aPlotter, overwrite), 'MakePlot', passToParallel)

@@ -25,8 +25,8 @@ defaultMCWeight = 'mcWeight'
 
 # Additional weights applied to certain control regions
 
-additions    = { # key : [Data,MC]
-    'signal'  : ['0','1'],
+region_weights = { # key : [Data,MC]
+    'signal'  : ['0',defaultMCWeight],
     'default' : ['1',defaultMCWeight]
     }
 
@@ -40,14 +40,11 @@ def cut(category, region):
 
 def dataMCCuts(region, isData):
     key = 'default'
-    if region in additions.keys():
+    if region in region_weights.keys():
         key = region
 
     index = 1
     if isData:
         index = 0
 
-    if key == 'default' or index == 0:
-        return '(' + additions[key][index] + ')'
-    else:
-        return '((' + additions[key][index] + ')*(' + defaultMCWeight + '))'
+    return '(' + region_weights[key][index] + ')'

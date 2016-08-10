@@ -1,15 +1,15 @@
 
 Going on to compare number of events:         FullOut --to-- SkimOut
 
-test_MC1.root has different number of events in trees: 30000     7533
-test_MC2.root has different number of events in trees: 30000     7492
-test_MC3.root has different number of events in trees: 30000     7559
-test_Signal.root has different number of events in trees: 30000     22590
+test_MC2.root has different number of events in trees: 100000     24931
+test_MC1.root has different number of events in trees: 100000     25205
+test_MC3.root has different number of events in trees: 100000     25029
+test_Signal.root has different number of events in trees: 100000     75019
 test_Data.root has different number of events in trees: 20000     3991
 All done!
 
 Total jobs: 5
-Total time: 1.22811198235 seconds
+Total time: 1.23216414452 seconds
 
 Did not check individual branches. Enable with -b, if desired.
 

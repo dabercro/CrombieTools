@@ -6,8 +6,9 @@ categoryCuts = {
 
 
 regionCuts = {
-    'signal' : '1',
-    'unblinded' : '1',
+    'signal' : 'exampleDisc1 > 0.5',
+    'unblinded' : 'exampleDisc1 > 0.5',
+    'uncorrected' : 'exampleDisc1 > 0.5',
     }
 
 # These are just for the users to loop over
@@ -26,9 +27,10 @@ defaultMCWeight = 'allWeights'
 
 # Additional weights applied to certain control regions
 
-additions    = { # key : [Data,MC]
-    'signal'  : ['0','1'],
-    'default' : ['1',defaultMCWeight]
+region_weights    = { # key : [Data,MC]
+    'signal'      : ['0', defaultMCWeight],
+    'uncorrected' : ['1', 'weight'],
+    'default'     : ['1', defaultMCWeight]
     }
 
 # Do not change the names of these functions or required parameters
@@ -41,14 +43,11 @@ def cut(category, region):
 
 def dataMCCuts(region, isData):
     key = 'default'
-    if region in additions.keys():
+    if region in region_weights.keys():
         key = region
 
     index = 1
     if isData:
         index = 0
 
-    if key == 'default' or index == 0:
-        return '(' + additions[key][index] + ')'
-    else:
-        return '((' + additions[key][index] + ')*(' + defaultMCWeight + '))'
+    return '(' + region_weights[key][index] + ')'

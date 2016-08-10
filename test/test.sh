@@ -68,18 +68,22 @@ done
 
 echo "Skimming with good runs!"
 ./FlatSkimmer.sh
-echo "Making correction histogram!"
-./makeHist.py
-echo "Adding corrections to .root Files!"
-./corrector.py
 
 cd $here
 
 mkdir txtoutput
 echo "Running crombie diff"
 crombie diff FullOut SkimOut > txtoutput/diffoutput.txt
+
 echo "Comparing output..."
 diff txtoutput/diffoutput.txt diffoutput.txt
+
+cd $here/slimmer
+
+echo "Making correction histogram!"
+./makeHist.py
+echo "Adding corrections to .root Files!"
+./corrector.py
 
 cd $here/plotter
 
