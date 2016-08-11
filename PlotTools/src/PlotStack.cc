@@ -11,6 +11,7 @@
 
 #include "TFile.h"
 #include "TLegend.h"
+#include "TProfile.h"
 
 #include "HistHolder.h"
 #include "PlotStack.h"
@@ -47,12 +48,14 @@ PlotStack::UseLimitTree(TString limitFile, TString region, TString mcConfig, TSt
 
   fLimitFile = TFile::Open(limitFile);
   fLimitRegion = region;
-  ReadMCConfig(mcConfig,FileConfigReader::kBackground);
+  ReadMCConfig(mcConfig, FileConfigReader::kBackground);
   if (signalConfig != "")
-    ReadMCConfig(signalConfig,FileConfigReader::kSignal);
+    ReadMCConfig(signalConfig, FileConfigReader::kSignal);
 }
 
 //--------------------------------------------------------------------
+
+// @todo Move this function into FileConfigReader
 std::vector<TH1D*>
 PlotStack::GetHistList(Int_t NumXBins, Double_t *XBins, HistType type)
 {
@@ -65,52 +68,79 @@ PlotStack::GetHistList(Int_t NumXBins, Double_t *XBins, HistType type)
     theFileInfo = &fSignalFileInfo;
 
   if (fLimitFile) {
+
     ResetTree();
+
     if (type == kData)
       AddTree((TTree*) fLimitFile->Get(TString("data_") + fLimitRegion));
     else {
+
       numFiles = (*theFileInfo).size();
       for (UInt_t iFile = 0; iFile != numFiles; ++iFile)
         AddTree((TTree*) fLimitFile->Get((*theFileInfo)[iFile]->fTreeName + "_" + fLimitRegion));
+
     }
+
   }
   else {
+
     TreeContainer *tempContainer = NULL;
 
     if (type == kData) {
+
       numFiles = fDataFileInfo.size();
       tempContainer = fDataContainer;
       for (UInt_t iFile = 0; iFile != numFiles; ++iFile)
         tempContainer->AddFile(fDataFileInfo[iFile]->fFileName);
+
     }
     else {
+
       if (type == kMC)
         tempContainer = fMCContainer;
-      
       else
         tempContainer = fSignalContainer;
       
       numFiles = (*theFileInfo).size();
       for (UInt_t iFile = 0; iFile != numFiles; ++iFile)
         tempContainer->AddFile((*theFileInfo)[iFile]->fFileName);
+
     }
     SetTreeList(tempContainer->ReturnTreeList());
   }
 
   if (type == kData && fDataWeights != "") {
+
     tempCutHolder = fDefaultCut;
     SetDefaultWeight(TString("(") + tempCutHolder + TString(") && (") + fDataWeights + TString(")"));
+
   }
   else if (type != kData && fMCWeights != "") {
+
     tempCutHolder = fDefaultCut;
     SetDefaultWeight(TString("(") + tempCutHolder + TString(")*(") + fMCWeights + TString(")"));
+
   }
 
   if (type == kData && fDataExpression != "") {
+
     tempExprHolder = fDefaultExpr;
     SetDefaultExpr(fDataExpression);
+
   }
-  std::vector<TH1D*> theHists = MakeHists(NumXBins,XBins);
+
+  SetUncertaintyExpr("");
+
+  if (!fLimitFile && type == kMC && fSystematicBranches.size() > 0) {
+
+    // Create the systematics and apply them to each histogram
+    TString sys_expr = fSystematicBranches[0] + "*" + fSystematicBranches[0];
+    for (UInt_t iBranch = 1; iBranch != fSystematicBranches.size(); ++iBranch)
+      sys_expr += "+" + fSystematicBranches[iBranch] + "*" + fSystematicBranches[iBranch];
+
+  }
+
+  std::vector<TH1D*> theHists = MakeHists(NumXBins, XBins);
   if (type == kData && fDataExpression != "")
     SetDefaultExpr(tempExprHolder);
 
@@ -118,9 +148,12 @@ PlotStack::GetHistList(Int_t NumXBins, Double_t *XBins, HistType type)
     SetDefaultWeight(tempCutHolder);
 
   if (fUsingLumi && type != kData) {
+
     for (UInt_t iFile = 0; iFile < numFiles; iFile++)
       theHists[iFile]->Scale((*theFileInfo)[iFile]->fXSecWeight);
+
   }
+
   return theHists;
 }
 

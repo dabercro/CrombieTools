@@ -1,5 +1,7 @@
 # Command Line Tools Reference {#commandref}
 
+@brief Reference describing the tools available through the `crombie` command.
+
 A number of scripts are available to the user through the `crombie` command line tool.
 They can be accessed by entering 
 

@@ -34,17 +34,22 @@ class CorrectorApplicator : public InDirectoryHolder, public ProgressReporter
   void                 ApplyCorrections     ( TString fileName );
 
   /// Set the name of the input tree for each of the Corrector objects to read.
-  void                 SetInputTreeName     ( TString tree )              { fInputTreeName = tree;                  }
-  /// Set the name of the output tree for the correctors. 
-  /// If this is the same as the input tree, the branch must not already exist.
-  void                 SetOutputTreeName    ( TString tree )              { fOutputTreeName = tree;                 }
+  inline void          SetInputTreeName     ( TString tree )              { fInputTreeName = tree;                  }
+  /**
+     Set the name of the output tree for the correctors. 
+     If this is the same as the input tree, the branch must not already exist.
+  */
+  inline void          SetOutputTreeName    ( TString tree )              { fOutputTreeName = tree;                 }
   /// Add a Corrector object to the CorrectorApplicator
-  void                 AddCorrector         ( Corrector* corrector )      { fCorrectors.push_back(corrector);       }
+  inline void          AddCorrector         ( Corrector* corrector )      { fCorrectors.push_back(corrector);       }
   /// Add a branch name to include by multiplication into the main output branch of the CorrectorApplicator.
-  void                 AddFactorToMerge     ( TString factor )            { fMergeFactors.push_back(factor);        }
+  inline void          AddFactorToMerge     ( TString factor )            { fMergeFactors.push_back(factor);        }
 
   /// Wrapper for CrombieTools.Parallelization.RunOnDirectory() to use.
-  void                 RunOnFile            ( TString fileName )          { ApplyCorrections(fileName);             }
+  inline void          RunOnFile            ( TString fileName )          { ApplyCorrections(fileName);             }
+
+  /// Sets whether the common branch is an uncertainty or a scale factor.
+  inline void          SetIsUncertainty     ( Bool_t unc )                { fIsUncertainty = unc;                   }
 
  private:
   TString                   fName;                             ///< Name of the master output branch.
@@ -53,6 +58,7 @@ class CorrectorApplicator : public InDirectoryHolder, public ProgressReporter
   TString                   fOutputTreeName = "corrections";   ///< Output tree name.
   std::vector<Corrector*>   fCorrectors;                       ///< Vector of corrector pointers.
   std::vector<TString>      fMergeFactors;                     ///< Vector of branches to merge.
+  Bool_t                    fIsUncertainty = false;            ///< Determines how to merge the branches.
 
   ClassDef(CorrectorApplicator,1)
 };

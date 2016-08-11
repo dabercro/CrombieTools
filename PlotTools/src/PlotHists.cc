@@ -1,5 +1,5 @@
 #include <iostream>
-#include "TLegend.h"
+#include "TProfile.h"
 
 #include "PlotUtils.h"
 #include "PlotHists.h"
@@ -8,10 +8,8 @@ ClassImp(PlotHists)
 
 //--------------------------------------------------------------------
 PlotHists::PlotHists() :
-  fNormalizedHists(false),
   fNormalizeTo(-1),
-  fEventsPer(0),
-  fPrintTests(false)
+  fEventsPer(0)
 {}
 
 //--------------------------------------------------------------------
@@ -71,27 +69,43 @@ PlotHists::MakeHists(Int_t NumXBins, Double_t *XBins)
       inExpr = fInExpr[iPlot];
 
     TString tempName;
-    tempName.Form("Hist_%d",fPlotCounter);
+    tempName.Form("Hist_%d", fPlotCounter);
     fPlotCounter++;
-    tempHist = new TH1D(tempName,tempName,NumXBins,XBins);
+    tempHist = new TH1D(tempName, tempName, NumXBins, XBins);
     tempHist->Sumw2();
 
-    inTree->Draw(inExpr+">>"+tempName,inCut);
+    inTree->Draw(inExpr+">>"+tempName, inCut);
+
+    if (fUncExpr != "") {
+
+      // If there's an uncertainty expression, add systematics to the plot
+      tempName += "_unc";
+      TProfile *uncProfile = new TProfile(tempName, tempName, NumXBins, XBins);
+      inTree->Draw(fUncExpr+">>"+tempName, inCut);
+      for (Int_t iBin = 1; iBin != NumXBins + 1; ++iBin) {
+        Double_t content = tempHist->GetBinContent(iBin);
+        tempHist->SetBinError(iBin,
+                              TMath::Sqrt(pow(tempHist->GetBinError(iBin), 2) + 
+                                          content * content *
+                                          uncProfile->GetBinContent(iBin)));
+      }
+      delete uncProfile;
+    }
 
     theHists.push_back(tempHist);
   }
 
   if (fEventsPer > 0) {
     TString tempName;
-    tempName.Form("Hist_%d",fPlotCounter);
+    tempName.Form("Hist_%d", fPlotCounter);
     fPlotCounter++;
-    tempHist = new TH1D(tempName,tempName,NumXBins,XBins);
+    tempHist = new TH1D(tempName, tempName, NumXBins, XBins);
     for (Int_t iBin = 1; iBin != NumXBins + 1; ++iBin)
-      tempHist->SetBinContent(iBin,tempHist->GetBinWidth(iBin)/fEventsPer);
+      tempHist->SetBinContent(iBin, tempHist->GetBinWidth(iBin)/fEventsPer);
 
     SetZeroError(tempHist);
     for (UInt_t iHist = 0; iHist != theHists.size(); ++iHist)
-      Division(theHists[iHist],tempHist);
+      Division(theHists[iHist], tempHist);
 
     delete tempHist;
   }
@@ -104,7 +118,7 @@ PlotHists::MakeHists(Int_t NumXBins, Double_t *XBins)
       std::cout << std::endl;
 
       if (fDataIndex != -1)
-        std::cout << "chi2 test: " << fLegendEntries[iHist] << " " << theHists[fDataIndex]->Chi2Test(theHists[iHist],"UW") << std::endl;
+        std::cout << "chi2 test: " << fLegendEntries[iHist] << " " << theHists[fDataIndex]->Chi2Test(theHists[iHist], "UW") << std::endl;
 
       std::cout << fLegendEntries[iHist] << " -> Mean: " << theHists[iHist]->GetMean() << "+-" << theHists[iHist]->GetMeanError();
       std::cout                          << " RMS: " << theHists[iHist]->GetRMS() << "+-" << theHists[iHist]->GetRMSError() << std::endl;
@@ -138,8 +152,8 @@ std::vector<TH1D*>
 PlotHists::MakeHists(Int_t NumXBins, Double_t MinX, Double_t MaxX)
 {
   Double_t XBins[NumXBins+1];
-  ConvertToArray(NumXBins,MinX,MaxX,XBins);
-  return MakeHists(NumXBins,XBins);
+  ConvertToArray(NumXBins, MinX, MaxX, XBins);
+  return MakeHists(NumXBins, XBins);
 }
 
 //--------------------------------------------------------------------
@@ -147,8 +161,8 @@ void
 PlotHists::MakeCanvas(TString FileBase, Int_t NumXBins, Double_t *XBins,
                       TString XLabel, TString YLabel, Bool_t logY)
 {
-  std::vector<TH1D*> hists = MakeHists(NumXBins,XBins);
-  BaseCanvas(FileBase,hists,XLabel,YLabel,logY);
+  std::vector<TH1D*> hists = MakeHists(NumXBins, XBins);
+  BaseCanvas(FileBase, hists, XLabel, YLabel, logY);
 
   for (UInt_t i0 = 0; i0 != hists.size(); ++i0)
     delete hists[i0];
@@ -160,6 +174,6 @@ PlotHists::MakeCanvas(TString FileBase, Int_t NumXBins, Double_t MinX, Double_t 
                       TString XLabel, TString YLabel, Bool_t logY)
 {
   Double_t XBins[NumXBins+1];
-  ConvertToArray(NumXBins,MinX,MaxX,XBins);
-  MakeCanvas(FileBase,NumXBins,XBins,XLabel,YLabel,logY);
+  ConvertToArray(NumXBins, MinX, MaxX, XBins);
+  MakeCanvas(FileBase, NumXBins, XBins, XLabel, YLabel, logY);
 }

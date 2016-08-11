@@ -73,7 +73,7 @@ cd $here
 
 mkdir txtoutput
 echo "Running crombie diff"
-crombie diff FullOut SkimOut > txtoutput/diffoutput.txt
+crombie diff FullOut/ SkimOut/ | sort | tail -n 5 > txtoutput/diffoutput.txt
 
 echo "Comparing output..."
 diff txtoutput/diffoutput.txt diffoutput.txt

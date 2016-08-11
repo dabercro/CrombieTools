@@ -100,6 +100,9 @@ class PlotStack : public PlotHists , public FileConfigReader
   /// Use this to set a different expression for data from MC
   void SetDataExpression ( TString expr )             { fDataExpression = expr;                   }
 
+  /// Add branches that contain independent systematic uncertainties to show in the plots
+  void AddSystematicBranch ( TString branch )         { fSystematicBranches.push_back(branch);    }
+
  protected:
   /// Determines type of histogram being drawn.
   enum HistType { kData = 0, kMC, kSignal };
@@ -135,6 +138,7 @@ class PlotStack : public PlotHists , public FileConfigReader
   Bool_t                fSortBackground = true;     ///< Bool to sort the backgrounds
 
   TString               fDataExpression = "";       ///< Holds an alternative expression to plot data in
+  std::vector<TString>  fSystematicBranches;        ///< Vector of branches to apply as systematic uncertainties
 
   ClassDef(PlotStack,1)
 };

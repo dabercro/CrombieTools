@@ -175,7 +175,6 @@ class PlotBase
   /// Sets the style for the cut lines.
   inline    void         SetCutLineStyle   ( Color_t color, Int_t width, Int_t style )   { fCutColor = color; fCutWidth = width; 
                                                                                                               fCutStyle = style; }
-
  protected:
 
   UInt_t                     fPlotCounter = 0;           ///< This is used so that making scratch plots does not overlap

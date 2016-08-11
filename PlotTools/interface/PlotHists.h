@@ -32,7 +32,6 @@ class PlotHists : public PlotBase
   /// Add uncertainty factors to some index of histograms about to be made
   void                   AddUncertainty           ( UInt_t index, TString FileName, TString HistName, 
                                                     Int_t startBin = 1, Int_t endBin = 0 );
-
   /// This just return vectors of histograms for other uses
   std::vector<TH1D*>     MakeHists                ( Int_t NumXBins, Double_t *XBins );
   std::vector<TH1D*>     MakeHists                ( Int_t NumXBins, Double_t MinX, Double_t MaxX );
@@ -44,6 +43,8 @@ class PlotHists : public PlotBase
   virtual   void         MakeCanvas               ( TString FileBase, Int_t NumXBins, Double_t MinX, Double_t MaxX,
                                                     TString XLabel, TString YLabel, Bool_t logY = false);
 
+  /// Add uncertainty factors through branch expressions instead of a histogram
+  void                   SetUncertaintyExpr       ( TString expr )                       { fUncExpr = expr;       }
   /// We can set normalization to match a particular other hist (or just 1)
   void                   SetNormalizedHists       ( Bool_t b )                           { fNormalizedHists = b;  }
   /// Set index of which histogram to normalize to
@@ -61,13 +62,14 @@ class PlotHists : public PlotBase
 
  private:
   
-  Bool_t    fNormalizedHists;                     ///< Can normalize histograms in order to compare shapes
+  Bool_t    fNormalizedHists = false;             ///< Can normalize histograms in order to compare shapes
   Int_t     fNormalizeTo;                         ///< If not specified, normalized to 1
   Double_t  fEventsPer;                           ///< Histogram normalized to events per units of X axis
-  Bool_t    fPrintTests;                          ///< Can dump some compatibility tests of histograms
+  Bool_t    fPrintTests = false;                  ///< Can dump some compatibility tests of histograms
   std::vector<UInt_t>           fSysUncIndices;   ///< Indices of histograms to apply systematic uncertainties
   std::vector<UncertaintyInfo*> fUncerts;         ///< Uncertainties to apply to histograms
   std::vector<UncertaintyInfo*> fDeleteUnc;       ///< Uncertainties created by the class to delete at the end
+  TString   fUncExpr = "";                        ///< Branch expressions to add to the systematic uncertainty
   
   ClassDef(PlotHists,1)
 };

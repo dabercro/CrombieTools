@@ -10,6 +10,7 @@
 #include "TFile.h"
 #include "TTree.h"
 #include "TBranch.h"
+#include "TMath.h"
 
 #include "CorrectorApplicator.h"
 
@@ -76,8 +77,11 @@ void CorrectorApplicator::ApplyCorrections(TString fileName)
   std::vector<TBranch*> fillBranches;
   std::map<TString, Float_t> Addresses;
   if (fName != "") {
-    Addresses[fName] = 1.0;
-    fillBranches.push_back(outTree->Branch(fName,&(Addresses[fName]),fName+"/F"));
+    if (fIsUncertainty)
+      Addresses[fName] = 0.0;
+    else
+      Addresses[fName] = 1.0;
+    fillBranches.push_back(outTree->Branch(fName, &(Addresses[fName]), fName+"/F"));
   }
   for (UInt_t iCorrector = 0; iCorrector != fCorrectors.size(); ++iCorrector) {
     fCorrectors[iCorrector]->SetInTree(theTree);
@@ -85,7 +89,7 @@ void CorrectorApplicator::ApplyCorrections(TString fileName)
       TString checkName = fCorrectors[iCorrector]->GetName();
       if (!outTree->GetBranch(checkName)) {
         Addresses[checkName] = 1.0;
-        fillBranches.push_back(outTree->Branch(checkName,&(Addresses[checkName]),checkName+"/F"));
+        fillBranches.push_back(outTree->Branch(checkName, &(Addresses[checkName]), checkName+"/F"));
       }
     }
   }
@@ -104,11 +108,20 @@ void CorrectorApplicator::ApplyCorrections(TString fileName)
     ReportProgress(iEntry);
 
     theTree->GetEntry(iEntry);
-    // First reset all of the addressed floats to 1.0, merge factors for master factor
+    // First reset all of the addressed floats, merge factors for master factor
     if (fName != "") {
-      Addresses[fName] = 1.0;
-      for (UInt_t iMerge = 0; iMerge != fMergeFactors.size(); ++iMerge)
-        Addresses[fName] *= mergeFactors[fMergeFactors[iMerge]];
+      if (fIsUncertainty) {
+        Addresses[fName] = 0.0;
+        for (UInt_t iMerge = 0; iMerge != fMergeFactors.size(); ++iMerge)
+          Addresses[fName] += mergeFactors[fMergeFactors[iMerge]] *
+                              mergeFactors[fMergeFactors[iMerge]];
+
+      }
+      else {
+        Addresses[fName] = 1.0;
+        for (UInt_t iMerge = 0; iMerge != fMergeFactors.size(); ++iMerge)
+          Addresses[fName] *= mergeFactors[fMergeFactors[iMerge]];
+      }
     }
     if (fSaveAll) {
       for (UInt_t iCorrector = 0; iCorrector != fCorrectors.size(); ++iCorrector)
@@ -118,11 +131,18 @@ void CorrectorApplicator::ApplyCorrections(TString fileName)
     // Evaluate the correctors and save the factor values
     for (UInt_t iCorrector = 0; iCorrector != fCorrectors.size(); ++iCorrector) {
       tempValue = fCorrectors[iCorrector]->Evaluate();
-      if (fName != "")
-        Addresses[fName] *= tempValue;
+      if (fName != "") {
+        if (fIsUncertainty)
+          Addresses[fName] += tempValue * tempValue;
+        else
+          Addresses[fName] *= tempValue;
+      }
       if (fSaveAll)
         Addresses[fCorrectors[iCorrector]->GetName()] *= tempValue;
     }
+
+    if (fIsUncertainty)
+      Addresses[fName] = TMath::Sqrt(Addresses[fName]);
 
     // Fill all the branches
     if (fOutputTreeName == fInputTreeName) {

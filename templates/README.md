@@ -1,5 +1,7 @@
 # Analysis Workspace {#workspace}
 
+@brief Describes the layout of an analysis workspace created by `crombie workspace`.
+
 A workspace is where all analysis-specific configurations are placed.
 You can create a workspace with the name `Workspace` like the following.
 

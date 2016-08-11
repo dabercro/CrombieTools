@@ -12,8 +12,7 @@ ClassImp(HistAnalysis)
 //--------------------------------------------------------------------
 Double_t
 HistAnalysis::DoScaleFactors(TString PlotVar, Int_t NumBins, Double_t *XBins,
-                             ScaleFactorMethod  method, Bool_t NormalizeBackground,
-                             TString TreeName)
+                             ScaleFactorMethod  method, TString TreeName)
 {
   ResetWeight();
 
@@ -40,7 +39,7 @@ HistAnalysis::DoScaleFactors(TString PlotVar, Int_t NumBins, Double_t *XBins,
 
   // Subtract out the background
   Double_t scale = -1.0 - fBackgroundChange;
-  if (NormalizeBackground)
+  if (fNormalized)
     scale *= dataHists[0]->Integral()/(backgroundHists[0]->Integral() + signalHists[0]->Integral());
 
   for (UInt_t iHist = 0; iHist != dataHists.size(); ++iHist)
@@ -129,12 +128,11 @@ HistAnalysis::DoScaleFactors(TString PlotVar, Int_t NumBins, Double_t *XBins,
 //--------------------------------------------------------------------
 Double_t
 HistAnalysis::DoScaleFactors(TString PlotVar, Int_t NumBins, Double_t MinX, Double_t MaxX, 
-                             ScaleFactorMethod  method, Bool_t NormalizeBackground,
-                             TString TreeName)
+                             ScaleFactorMethod  method, TString TreeName)
 {
   Double_t XBins[NumBins+1];
   ConvertToArray(NumBins,MinX,MaxX,XBins);
-  return DoScaleFactors(PlotVar,NumBins,XBins,method,NormalizeBackground,TreeName);
+  return DoScaleFactors(PlotVar,NumBins,XBins,method,TreeName);
 }
 
 
@@ -181,6 +179,7 @@ HistAnalysis::MakeReweightHist(TString OutFile, TString OutHist, TString PlotVar
   TTree *mcTree = NULL;
   if (fSignalName != "") {
     TH1F *backgroundHist = new TH1F("backHist", "backHist", NumBins, XBins);
+    backgroundHist->Sumw2();
     ReturnTChain(TreeName, fSignalType, fSignalName, kLegendEntry, false)->
       Draw(PlotVar + ">>backHist", TString("(") + fBaseCut + ")*(" + fMCWeight + ")");
 
@@ -192,15 +191,24 @@ HistAnalysis::MakeReweightHist(TString OutFile, TString OutHist, TString PlotVar
     mcTree = ReturnTChain(TreeName, kBackground);
   mcTree->Draw(PlotVar + ">>mcHist", TString("(") + fBaseCut + ")*(" + fMCWeight + ")");
 
-  dataHist->Scale(1.0/dataHist->Integral());
-  mcHist->Scale(1.0/mcHist->Integral());
+  // Normalize for most applications, unless we are getting transfer factors or something
+  if (fNormalized) {
+    dataHist->Scale(1.0/dataHist->Integral());
+    mcHist->Scale(1.0/mcHist->Integral());
+  }
 
   dataHist->Divide(mcHist);
 
+  TH1F *uncHist = new TH1F("unc", "unc", NumBins, XBins);
+  for (Int_t iBin = 1; iBin != NumBins + 1; ++iBin)
+    uncHist->SetBinContent(iBin, dataHist->GetBinError(iBin)/dataHist->GetBinContent(iBin));
+
   TFile *theFile = new TFile(OutFile, "RECREATE");
   theFile->WriteTObject(dataHist, OutHist);
+  theFile->WriteTObject(uncHist, OutHist + "_unc");
   delete dataHist;
   delete mcHist;
+  delete uncHist;
 }
 
 //--------------------------------------------------------------------
