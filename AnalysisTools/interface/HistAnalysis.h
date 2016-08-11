@@ -12,7 +12,6 @@
 #include "TString.h"
 
 #include "FileConfigReader.h"
-#include "PlotHists.h"
 
 /**
    @ingroup analysisgroup
@@ -23,7 +22,7 @@
    @todo Much of this class is thrown together fast so make it cleaner and integrate with PlotStack.
 */
 
-class HistAnalysis : public FileConfigReader, private PlotHists
+class HistAnalysis : public FileConfigReader
 {
  public:
   HistAnalysis()           { SetMultiplyLumi(true); }

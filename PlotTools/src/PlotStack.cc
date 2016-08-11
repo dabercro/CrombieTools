@@ -20,142 +20,12 @@ ClassImp(PlotStack)
 
 //--------------------------------------------------------------------
 PlotStack::PlotStack() :
-  fDataContainer(0),
-  fMCContainer(0),
-  fSignalContainer(0),
-  fDataWeights(""),
-  fMCWeights(""),
-  fForceTop(""),
-  fLimitFile(0),
-  fLimitRegion(""),
-  fLimitTreeDir("")
+  fForceTop("")
 { }
 
 //--------------------------------------------------------------------
 PlotStack::~PlotStack()
-{
-  if (fLimitFile)
-    fLimitFile->Close();
-}
-
-//--------------------------------------------------------------------
-void
-PlotStack::UseLimitTree(TString limitFile, TString region, TString mcConfig, TString signalConfig)
-{
-  fUsingLumi = false;
-  if (!limitFile.Contains('/'))
-    limitFile = fLimitTreeDir + limitFile;
-
-  fLimitFile = TFile::Open(limitFile);
-  fLimitRegion = region;
-  ReadMCConfig(mcConfig, FileConfigReader::kBackground);
-  if (signalConfig != "")
-    ReadMCConfig(signalConfig, FileConfigReader::kSignal);
-}
-
-//--------------------------------------------------------------------
-
-// @todo Move this function into FileConfigReader
-std::vector<TH1D*>
-PlotStack::GetHistList(Int_t NumXBins, Double_t *XBins, HistType type)
-{
-  std::vector<FileInfo*> *theFileInfo = &fMCFileInfo;
-  TString tempCutHolder = "";
-  TString tempExprHolder = "";
-  UInt_t numFiles = 0;
-
-  if (type == kSignal)
-    theFileInfo = &fSignalFileInfo;
-
-  if (fLimitFile) {
-
-    ResetTree();
-
-    if (type == kData)
-      AddTree((TTree*) fLimitFile->Get(TString("data_") + fLimitRegion));
-    else {
-
-      numFiles = (*theFileInfo).size();
-      for (UInt_t iFile = 0; iFile != numFiles; ++iFile)
-        AddTree((TTree*) fLimitFile->Get((*theFileInfo)[iFile]->fTreeName + "_" + fLimitRegion));
-
-    }
-
-  }
-  else {
-
-    TreeContainer *tempContainer = NULL;
-
-    if (type == kData) {
-
-      numFiles = fDataFileInfo.size();
-      tempContainer = fDataContainer;
-      for (UInt_t iFile = 0; iFile != numFiles; ++iFile)
-        tempContainer->AddFile(fDataFileInfo[iFile]->fFileName);
-
-    }
-    else {
-
-      if (type == kMC)
-        tempContainer = fMCContainer;
-      else
-        tempContainer = fSignalContainer;
-      
-      numFiles = (*theFileInfo).size();
-      for (UInt_t iFile = 0; iFile != numFiles; ++iFile)
-        tempContainer->AddFile((*theFileInfo)[iFile]->fFileName);
-
-    }
-    SetTreeList(tempContainer->ReturnTreeList());
-  }
-
-  if (type == kData && fDataWeights != "") {
-
-    tempCutHolder = fDefaultCut;
-    SetDefaultWeight(TString("(") + tempCutHolder + TString(") && (") + fDataWeights + TString(")"));
-
-  }
-  else if (type != kData && fMCWeights != "") {
-
-    tempCutHolder = fDefaultCut;
-    SetDefaultWeight(TString("(") + tempCutHolder + TString(")*(") + fMCWeights + TString(")"));
-
-  }
-
-  if (type == kData && fDataExpression != "") {
-
-    tempExprHolder = fDefaultExpr;
-    SetDefaultExpr(fDataExpression);
-
-  }
-
-  SetUncertaintyExpr("");
-
-  if (!fLimitFile && type == kMC && fSystematicBranches.size() > 0) {
-
-    // Create the systematics and apply them to each histogram
-    TString sys_expr = fSystematicBranches[0] + "*" + fSystematicBranches[0];
-    for (UInt_t iBranch = 1; iBranch != fSystematicBranches.size(); ++iBranch)
-      sys_expr += "+" + fSystematicBranches[iBranch] + "*" + fSystematicBranches[iBranch];
-
-  }
-
-  std::vector<TH1D*> theHists = MakeHists(NumXBins, XBins);
-  if (type == kData && fDataExpression != "")
-    SetDefaultExpr(tempExprHolder);
-
-  if (tempCutHolder != "")
-    SetDefaultWeight(tempCutHolder);
-
-  if (fUsingLumi && type != kData) {
-
-    for (UInt_t iFile = 0; iFile < numFiles; iFile++)
-      theHists[iFile]->Scale((*theFileInfo)[iFile]->fXSecWeight);
-
-  }
-
-  return theHists;
-}
+{ }
 
 //--------------------------------------------------------------------
 void
@@ -173,12 +43,6 @@ PlotStack::MakeCanvas(TString FileBase, Int_t NumXBins, Double_t *XBins,
 
   SetLumiLabel(float(fLuminosity/1000.0));
   ResetLegend();
-  fDataContainer = new TreeContainer();
-  fDataContainer->SetTreeName(fTreeName);
-  fMCContainer = new TreeContainer();
-  fMCContainer->SetTreeName(fTreeName);
-  fSignalContainer = new TreeContainer();
-  fSignalContainer->SetTreeName(fTreeName);
 
   std::vector<TFile*> TemplateFiles;
   TFile *templateFile = NULL;
@@ -188,19 +52,13 @@ PlotStack::MakeCanvas(TString FileBase, Int_t NumXBins, Double_t *XBins,
     TemplateFiles.push_back(templateFile);
   }
 
-  for (UInt_t iFriend = 0; iFriend != fFriends.size(); ++iFriend) {
-    fDataContainer->AddFriendName(fFriends[iFriend]);
-    fMCContainer->AddFriendName(fFriends[iFriend]);
-    fSignalContainer->AddFriendName(fFriends[iFriend]);
-  }
-
   SetIncludeErrorBars(true);
-  std::vector<TH1D*> DataHists = GetHistList(NumXBins,XBins,kData);
+  std::vector<TH1D*> DataHists = GetHistList(NumXBins, XBins, kData);
   SetIncludeErrorBars(false);
-  std::vector<TH1D*> MCHists = GetHistList(NumXBins,XBins,kMC);
+  std::vector<TH1D*> MCHists = GetHistList(NumXBins, XBins, kBackground);
   std::vector<TH1D*> SignalHists;
   if (fSignalFileInfo.size() != 0)
-    SignalHists = GetHistList(NumXBins,XBins,kSignal);
+    SignalHists = GetHistList(NumXBins, XBins, kSignal);
 
   SetLegendFill(true);
   TH1D *DataHist = (TH1D*) DataHists[0]->Clone("DataHist");
@@ -216,49 +74,63 @@ PlotStack::MakeCanvas(TString FileBase, Int_t NumXBins, Double_t *XBins,
   HistHolders.resize(0);
 
   for (UInt_t iHist = 0; iHist != MCHists.size(); ++iHist) {
+
     if (fMCFileInfo[iHist]->fEntry != previousEntry) {
+
       previousEntry = fMCFileInfo[iHist]->fEntry;
       TString tempName;
       tempName.Format("StackedHist_%d",iHist);
       tempMCHist = (TH1D*) MCHists[iHist]->Clone(tempName);
-      tempHistHolder = new HistHolder(tempMCHist,fMCFileInfo[iHist]->fEntry,fMCFileInfo[iHist]->fColorStyle,
+      tempHistHolder = new HistHolder(tempMCHist, fMCFileInfo[iHist]->fEntry, fMCFileInfo[iHist]->fColorStyle,
                                       (fForceTop == fMCFileInfo[iHist]->fEntry));
       HistHolders.push_back(tempHistHolder);
+
     }
     else
       tempMCHist->Add(MCHists[iHist]);
+
   }
 
   for (UInt_t iTemp = 0; iTemp != fTemplateEntries.size(); ++iTemp) {
+
     for (UInt_t iHist = 0; iHist != HistHolders.size(); ++iHist) {
+
       if (fTemplateEntries[iTemp] == HistHolders[iHist]->fEntry) {
+
         /// @todo Make sure to include a template in the tests
         TH1D *templateHist = (TH1D*) TemplateFiles[iTemp]->Get(fTemplateHists[iTemp]);
-        TH1D *toFormat = (TH1D*) templateHist->Rebin(NumXBins,"",XBins);
+        TH1D *toFormat = (TH1D*) templateHist->Rebin(NumXBins, "", XBins);
         toFormat->SetFillStyle(HistHolders[iHist]->fHist->GetFillStyle());
         toFormat->SetFillColor(HistHolders[iHist]->fHist->GetFillColor());
         toFormat->SetMarkerSize(HistHolders[iHist]->fHist->GetMarkerSize());
         HistHolders[iHist]->fHist = toFormat;
+
       }
     }
   }
 
   if (fDumpRootName != "") {
+
     TH1D* tempHist;
     TFile* dumpFile = new TFile(fDumpRootName,"RECREATE");
+
     for (UInt_t iHist = 0; iHist != HistHolders.size(); ++iHist) {
+
       tempHist = (TH1D*) HistHolders[iHist]->fHist->Clone();
-      std::cout << HistHolders[iHist]->fEntry << "  :  " << tempHist->Integral(0,NumXBins + 1,"width") << std::endl;
+      std::cout << HistHolders[iHist]->fEntry << "  :  " << tempHist->Integral(0, NumXBins + 1, "width") << std::endl;
       dumpFile->WriteTObject(tempHist,HistHolders[iHist]->fEntry);
+
     }
+
     tempHist = (TH1D*) DataHist->Clone();
-    std::cout << "Data     :  " << tempHist->Integral(0,NumXBins + 1,"width") << std::endl;
-    dumpFile->WriteTObject(tempHist,"Data");
+    std::cout << "Data     :  " << tempHist->Integral(0, NumXBins + 1, "width") << std::endl;
+    dumpFile->WriteTObject(tempHist, "Data");
     dumpFile->Close();
+
   }
 
   if (fSortBackground)
-    std::sort(HistHolders.begin(),HistHolders.end(),SortHistHolders);
+    std::sort(HistHolders.begin(), HistHolders.end(), SortHistHolders);
 
   std::vector<TH1D*> AllHists;
   for (UInt_t iLarger = 0; iLarger != HistHolders.size(); ++iLarger) {
@@ -318,10 +190,6 @@ PlotStack::MakeCanvas(TString FileBase, Int_t NumXBins, Double_t *XBins,
     delete MCHists[iHist];
   for (UInt_t iHist = 0; iHist != DataHists.size(); ++iHist)
     delete DataHists[iHist];
-
-  delete fDataContainer;
-  delete fMCContainer;
-  delete fSignalContainer;
 
   for (UInt_t iTemp = 0; iTemp != fTemplateEntries.size(); ++iTemp)
     TemplateFiles[iTemp]->Close();

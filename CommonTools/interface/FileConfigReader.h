@@ -16,10 +16,14 @@
 #include <vector>
 #include "TColor.h"
 #include "TString.h"
+#include "TFile.h"
+#include "TTree.h"
 #include "TChain.h"
+#include "TH1D.h"
 
 #include "InOutDirectoryHolder.h"
 #include "FileInfo.h"
+#include "PlotHists.h"
 
 /**
    @ingroup commongroup
@@ -27,7 +31,7 @@
    This class reads a formatted [MC Config file](@ref formatmc).
 */
 
-class FileConfigReader : public InOutDirectoryHolder
+class FileConfigReader : public InOutDirectoryHolder, public PlotHists
 {
  public:
   FileConfigReader();
@@ -37,7 +41,11 @@ class FileConfigReader : public InOutDirectoryHolder
   void                 ResetConfig          ();
 
   /// Differentiates between background, signal MC and data
-  enum FileType { kBackground = 0, kSignal, kData };
+  enum FileType {
+    kBackground = 0,   ///< Specifies the standard model background files
+    kSignal,           ///< The signals in the analysis
+    kData,             ///< Real data from the detector
+  };
 
   /// Returns a vector of limit tree names that have been read from the configs
   std::set<TString>    ReturnTreeNames      ( FileType type = kBackground);
@@ -60,6 +68,11 @@ class FileConfigReader : public InOutDirectoryHolder
   void                 AddFile              ( TString treeName, TString fileName, Double_t XSec, 
                                               TString entry = "", Int_t colorstyle = 0 );
 
+  /// The multipliers for Data can be set separately.
+  inline    void       SetDataWeights       ( TString weight )                          { fDataWeights = weight;   }
+  /// The multipliers for MC can be set separately.
+  inline    void       SetMCWeights         ( TString weight )                          { fMCWeights = weight;     }
+  
   /// Default File adder with FileType changing
   inline    void       AddFile              ( TString treeName, TString fileName, Double_t XSec, 
                                               TString entry, Int_t colorstyle, FileType type )
@@ -88,6 +101,11 @@ class FileConfigReader : public InOutDirectoryHolder
   /// Reads an MC configuration while changing the FileType
   inline    void       ReadMCConfig         ( TString config,  FileType type, TString fileDir = "" ) 
                                                                 { SetFileType(type); ReadMCConfig(config,fileDir); }
+  /// Set the tree of the files you are trying to plot
+  inline    void       SetTreeName          ( TString name )                            { fTreeName = name;        }
+
+  /// Use this to set a different expression for data from MC
+  inline    void       SetDataExpression    ( TString expr )                            { fDataExpression = expr;  }
 
  protected:
   Double_t   fLuminosity = 2000.0;                        ///< The Luminosity in inverse pb
@@ -98,18 +116,40 @@ class FileConfigReader : public InOutDirectoryHolder
   std::vector<FileInfo*>  fMCFileInfo;                    ///< Vector of background FileInfo objects
   std::vector<FileInfo*>  fSignalFileInfo;                ///< Vector of signal FileInfo objects
 
+  /// Draws histograms for from the using the default expression and file configuration
+  std::vector<TH1D*>    GetHistList            ( Int_t NumXBins, Double_t *XBins, FileType type);
+
   /// Allows reader to avoid skipping when reading in exception configs
   void       SetKeepAllFiles                ( Bool_t keep )                             { fKeepAllFiles = keep;    }
   /// Allows reader to avoid skipping when reading in exception configs
   void       SetMultiplyLumi                ( Bool_t doMultiply )                    { fMultiplyLumi = doMultiply; }
 
  private:
+  TString               fTreeName = "events";       ///< Stores name of tree from file
+
   /// Return a pointer to a proper vector of FileInfo
   std::vector<FileInfo*> *GetFileInfo       ( FileType type ); 
+  /// Return a pointer to a proper vector of files
+  std::vector<TFile*> *GetFiles             ( FileType type ); 
+  /// Return a pointer to a proper vector of trees
+  std::vector<TTree*> *GetTrees             ( FileType type ); 
   FileType     fFileType = kBackground;                   ///< Type of files in the next config
   Bool_t       fKeepAllFiles = false;                     ///< Keeps FileInfo stored usually deleted by exception configs
   Bool_t       fMultiplyLumi = true;                      ///< Returns XSecWeight with luminosity multiplied
   std::vector<TObject*> fDeleteThese;                     ///< Vector of object pointers to free memory at the end
+  std::vector<TFile*>   fDataFiles;                       ///< Vector of data files
+  std::vector<TFile*>   fMCFiles;                         ///< Vector of background files
+  std::vector<TFile*>   fSignalFiles;                     ///< Vector of signal files
+  std::vector<TTree*>   fDataTrees;                       ///< Vector of data trees
+  std::vector<TTree*>   fMCTrees;                         ///< Vector of background trees
+  std::vector<TTree*>   fSignalTrees;                     ///< Vector of signal trees
+  void         OpenFiles                    ();           ///< Opens the files in FileInfos
+  void         CloseFiles                   ();           ///< Closes the files in FileInfos
+
+  TString      fDataWeights = "";                         ///< Separate Data weights if needed
+  TString      fMCWeights = "";                           ///< Separate MC weights if needed
+  
+  TString      fDataExpression = "";                      ///< Holds an alternative expression to plot data in
   
 };
 
@@ -120,6 +160,10 @@ FileConfigReader::FileConfigReader()
 //--------------------------------------------------------------------
 FileConfigReader::~FileConfigReader()
 {
+  for (Int_t iType = 0; iType < 3; ++iType) {
+    fFileType = (FileType) iType;
+    CloseFiles();
+  }
   ResetConfig();
 }
 
@@ -161,10 +205,56 @@ FileConfigReader::GetFileInfo(FileType type)
       fileInfo = &fDataFileInfo;
       break;
     default:
-      std::cout << "What case is that?" << std::endl;
+      std::cerr << "What case is that?" << std::endl;
       exit(1);
     }
   return fileInfo;
+} 
+
+//--------------------------------------------------------------------
+std::vector<TFile*>*
+FileConfigReader::GetFiles(FileType type)
+{
+  std::vector<TFile*> *files;
+  switch (type)
+    {
+    case kBackground:
+      files= &fMCFiles;
+      break;
+    case kSignal:
+      files= &fSignalFiles;
+      break;
+    case kData:
+      files= &fDataFiles;
+      break;
+    default:
+      std::cerr << "What case is that?" << std::endl;
+      exit(1);
+    }
+  return files;
+} 
+
+//--------------------------------------------------------------------
+std::vector<TTree*>*
+FileConfigReader::GetTrees(FileType type)
+{
+  std::vector<TTree*> *trees;
+  switch (type)
+    {
+    case kBackground:
+      trees= &fMCTrees;
+      break;
+    case kSignal:
+      trees= &fSignalTrees;
+      break;
+    case kData:
+      trees= &fDataTrees;
+      break;
+    default:
+      std::cerr << "What case is that?" << std::endl;
+      exit(1);
+    }
+  return trees;
 } 
 
 //--------------------------------------------------------------------
@@ -221,7 +311,9 @@ void FileConfigReader::AddDataFile(TString fileName)
 {
   FileType tempType = fFileType;
   SetFileType(kData);
+  CloseFiles();
   AddFile(fDataTreeName, fileName, -1, fDataEntry);
+  OpenFiles();
   SetFileType(tempType);
 }
 
@@ -255,6 +347,7 @@ void FileConfigReader::AddFile(TString treeName, TString fileName, Double_t XSec
 
 void FileConfigReader::ReadMCConfig(TString config, TString fileDir)
 {
+  CloseFiles();
   if (fileDir != "")
     SetInDirectory(fileDir);
   
@@ -354,6 +447,118 @@ void FileConfigReader::ReadMCConfig(TString config, TString fileDir)
     }
   }
   configFile.close();
+  OpenFiles();
+}
+
+//--------------------------------------------------------------------
+std::vector<TH1D*>
+FileConfigReader::GetHistList(Int_t NumXBins, Double_t *XBins, FileType type)
+{
+  std::vector<FileInfo*> *theFileInfo = &fMCFileInfo;
+  TString tempCutHolder = "";
+  TString tempExprHolder = "";
+  UInt_t numFiles = 0;
+
+  if (type == kSignal)
+    theFileInfo = &fSignalFileInfo;
+
+  SetTreeList(*GetTrees(type));
+
+  if (type == kData && fDataWeights != "") {
+
+    tempCutHolder = fDefaultCut;
+    SetDefaultWeight(TString("(") + tempCutHolder + TString(") && (") + fDataWeights + TString(")"));
+
+  }
+  else if (type != kData && fMCWeights != "") {
+
+    tempCutHolder = fDefaultCut;
+    SetDefaultWeight(TString("(") + tempCutHolder + TString(")*(") + fMCWeights + TString(")"));
+
+  }
+
+  if (type == kData && fDataExpression != "") {
+
+    tempExprHolder = fDefaultExpr;
+    SetDefaultExpr(fDataExpression);
+
+  }
+
+  SetUncertaintyExpr("");
+
+  if (type == kBackground && fSystematicBranches.size() > 0) {
+
+    // Create the systematics and apply them to each histogram
+    TString sys_expr = fSystematicBranches[0] + "*" + fSystematicBranches[0];
+    for (UInt_t iBranch = 1; iBranch != fSystematicBranches.size(); ++iBranch)
+      sys_expr += "+" + fSystematicBranches[iBranch] + "*" + fSystematicBranches[iBranch];
+
+    SetUncertaintyExpr(sys_expr);
+  }
+
+  std::vector<TH1D*> theHists = MakeHists(NumXBins, XBins);
+  if (type == kData && fDataExpression != "")
+    SetDefaultExpr(tempExprHolder);
+
+  if (tempCutHolder != "")
+    SetDefaultWeight(tempCutHolder);
+
+  if (type != kData) {
+
+    for (UInt_t iFile = 0; iFile < numFiles; iFile++)
+      theHists[iFile]->Scale((*theFileInfo)[iFile]->fXSecWeight);
+
+  }
+
+  return theHists;
+}
+
+//--------------------------------------------------------------------
+void
+FileConfigReader::OpenFiles() {
+
+  std::vector<FileInfo*> *fileInfo = GetFileInfo(fFileType);
+  std::vector<TFile*> *files = GetFiles(fFileType);
+  std::vector<TTree*> *trees = GetTrees(fFileType);
+
+  for (std::vector<FileInfo*>::iterator iFile = fileInfo->begin(); iFile != fileInfo->end(); ++iFile) {
+
+    TFile *tempFile = TFile::Open((*iFile)->fFileName);
+    TTree *tempTree;
+    if (fTreeName.Contains("/"))
+      tempTree = (TTree*) tempFile->Get(fTreeName);
+    else
+      tempTree = (TTree*) tempFile->FindObjectAny(fTreeName);
+
+    if (!tempTree) {
+      std::cerr << "Tree not found in file!" << std::endl;
+      std::cerr << "File: " << tempFile << std::endl;
+      std::cerr << (*iFile)->fFileName << std::endl;
+      std::cerr << "Tree: " << tempTree << std::endl;
+      std::cerr << fTreeName << std::endl;
+      exit(1010);
+    }
+
+    files->push_back(tempFile);
+    trees->push_back(tempTree);
+
+  }
+
+}
+
+//--------------------------------------------------------------------
+void
+FileConfigReader::CloseFiles() {
+
+  std::vector<TFile*> *files = GetFiles(fFileType);
+  std::vector<TTree*> *trees = GetTrees(fFileType);
+
+  for (std::vector<TFile*>::iterator iFile = files->begin(); iFile != files->end(); ++iFile)
+    (*iFile)->Close();
+
+  files->clear();
+  trees->clear();
+
 }
 
 #endif

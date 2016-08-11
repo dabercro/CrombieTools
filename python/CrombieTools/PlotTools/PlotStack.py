@@ -17,7 +17,6 @@ def SetupFromEnv(aPlotter = plotter):
     DirFromEnv('CrombieOutPlotDir')
     SetFunctionFromEnv([
             (aPlotter.SetOutDirectory, 'CrombieOutPlotDir'),
-            (aPlotter.SetLimitTreeDir, 'CrombieOutLimitTreeDir'),
             ])
 
 

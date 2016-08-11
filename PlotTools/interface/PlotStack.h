@@ -9,8 +9,6 @@
 #ifndef CROMBIETOOLS_PLOTTOOLS_PLOTSTACK_H
 #define CROMBIETOOLS_PLOTTOOLS_PLOTSTACK_H
 
-#include "TreeContainer.h"
-#include "PlotHists.h"
 #include "FileConfigReader.h"
 
 /**
@@ -22,7 +20,7 @@
    Many appearance flags must be set through this class's methods though.
 */
 
-class PlotStack : public PlotHists , public FileConfigReader
+class PlotStack : public FileConfigReader
 {
  public:
   PlotStack();
@@ -31,9 +29,6 @@ class PlotStack : public PlotHists , public FileConfigReader
   /// Copy this PlotStack for parallelization
   PlotStack* Copy        ();
 
-  /// Use the LimitTree to plot stacks directly instead of reading the files directly, bad for N-1
-  void UseLimitTree      ( TString limitFile, TString region, TString mcConfig, TString signalConfig = "" );
-
   /// Choose the binning of your plots and make then.
   void MakeCanvas        ( TString FileBase, Int_t NumXBins, Double_t *XBins,
                            TString XLabel, TString YLabel, Bool_t logY = false );
@@ -41,15 +36,6 @@ class PlotStack : public PlotHists , public FileConfigReader
   /// Binning with fixed width
   void MakeCanvas        ( TString FileBase, Int_t NumXBins, Double_t MinX, Double_t MaxX,
                            TString XLabel, TString YLabel, Bool_t logY = false );
-  
-  /// Set the tree of the files you are trying to plot and add friends in same file.
-  void SetTreeName       ( TString name )             { fTreeName = name;                         }
-  void AddFriend         ( TString name )             { fFriends.push_back(name);                 }
-  
-  /// The multipliers for Data can be set separately.
-  void SetDataWeights    ( TString weight )           { fDataWeights = weight;                    }
-  /// The multipliers for MC can be set separately.
-  void SetMCWeights      ( TString weight )           { fMCWeights = weight;                      }
   
   /**
      Sets the legend entry that will be on the top of the stack.
@@ -65,12 +51,6 @@ class PlotStack : public PlotHists , public FileConfigReader
   void SetOthersColor    ( Color_t color )            { fOthersColor = color;                     }
   /// Set the line width of the stack plots
   void SetStackLineWidth ( Int_t width )              { fStackLineWidth = width;                  }
-
-  /// Sets whether to scale the MC by the luminosity (in pb<sup>-1</sup>) or not
-  void SetUsingLumi      ( Bool_t isUsed )            { fUsingLumi = isUsed;                      }
-
-  /// Sets the location of the limit trees, in case you want to plot from there
-  void SetLimitTreeDir   ( TString dir )   { fLimitTreeDir = dir.EndsWith("/") ? dir : dir + "/"; }              
 
   /// This dumps out some raw values for you to check yields.
   void SetDebug          ( Bool_t debug )             { fDebug = debug;                           }
@@ -97,36 +77,12 @@ class PlotStack : public PlotHists , public FileConfigReader
   /// Use this to change the automatic sorting of backgrounds based on yields
   void SetSortBackground ( Bool_t doSort )            { fSortBackground = doSort;                 }
 
-  /// Use this to set a different expression for data from MC
-  void SetDataExpression ( TString expr )             { fDataExpression = expr;                   }
-
-  /// Add branches that contain independent systematic uncertainties to show in the plots
-  void AddSystematicBranch ( TString branch )         { fSystematicBranches.push_back(branch);    }
-
- protected:
-  /// Determines type of histogram being drawn.
-  enum HistType { kData = 0, kMC, kSignal };
-  /// Draws histograms for PlotStack.
-  std::vector<TH1D*>    GetHistList            ( Int_t NumXBins, Double_t *XBins, HistType type);
-
  private:
-  TString               fTreeName = "events";       ///< Stores name of tree from file
-  std::vector<TString>  fFriends;                   ///< Stores list of friends
-
-  TreeContainer        *fDataContainer;             ///< A TreeContainer for data
-  TreeContainer        *fMCContainer;               ///< A TreeContainer for MC
-  TreeContainer        *fSignalContainer;           ///< A TreeContainer for Signal MC
-  TString               fDataWeights;               ///< Separate Data weights if needed
-  TString               fMCWeights;                 ///< Separate MC weights if needed
   TString               fForceTop;                  ///< A legend entry that is on the top of backgrounds
   Double_t              fMinLegendFrac = 0.0;       ///< If a background contributes less than this, it's grouped in others
   Double_t              fIgnoreInLinear = 0.0;      ///< If background less than this, do not draw in linear-scale plot
   Int_t                 fStackLineWidth = 1;        ///< Line width of the histograms
   Color_t               fOthersColor = 0;           ///< Color of the "Others" legend entry
-  Bool_t                fUsingLumi = true;          ///< Bool to determine if scaling should be done
-  TFile                *fLimitFile;                 ///< File containing limit trees
-  TString               fLimitRegion;               ///< Region to read from limit tree
-  TString               fLimitTreeDir;              ///< Location of limit tree file
 
   std::vector<TString>  fTemplateFiles;             ///< Holds file name of the templates
   std::vector<TString>  fTemplateHists;             ///< Holds histogram name of the templates
@@ -136,9 +92,6 @@ class PlotStack : public PlotHists , public FileConfigReader
   TString               fDumpRootName = "";         ///< File where each histogram in stack is dumped
   Bool_t                fMakeRatio = true;          ///< Bool to make ratio pad
   Bool_t                fSortBackground = true;     ///< Bool to sort the backgrounds
-
-  TString               fDataExpression = "";       ///< Holds an alternative expression to plot data in
-  std::vector<TString>  fSystematicBranches;        ///< Vector of branches to apply as systematic uncertainties
 
   ClassDef(PlotStack,1)
 };

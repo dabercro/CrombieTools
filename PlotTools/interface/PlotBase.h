@@ -175,6 +175,9 @@ class PlotBase
   /// Sets the style for the cut lines.
   inline    void         SetCutLineStyle   ( Color_t color, Int_t width, Int_t style )   { fCutColor = color; fCutWidth = width; 
                                                                                                               fCutStyle = style; }
+  /// Add branches that contain independent systematic uncertainties to show in the plots
+  inline    void         AddSystematicBranch      ( TString branch )                 { fSystematicBranches.push_back(branch);    }
+
  protected:
 
   UInt_t                     fPlotCounter = 0;           ///< This is used so that making scratch plots does not overlap
@@ -192,6 +195,7 @@ class PlotBase
   std::vector<TTree*>        fInTrees;                   ///< Holds all the trees for each line if needed
   std::vector<TString>       fInCuts;                    ///< Holds the cuts for the trees if needed
   std::vector<TString>       fInExpr;                    ///< Holds multiple resolution expressions if needed
+  std::vector<TString>       fSystematicBranches;        ///< Vector of branches to apply as systematic uncertainties
   
   Bool_t                     fIncludeErrorBars = true;   ///< Option to include error bars
 
