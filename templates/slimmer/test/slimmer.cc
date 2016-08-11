@@ -14,7 +14,7 @@ enum dataType
 void slimmer(TString inFileName, TString outFileName)
 {
   UInt_t seed = 1234;
-  UInt_t numEvents = 20000;
+  UInt_t numEvents = 100000;
 
   if (inFileName == "Data.root")
     seed += 100;

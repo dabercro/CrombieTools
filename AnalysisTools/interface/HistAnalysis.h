@@ -4,7 +4,6 @@
   @author Daniel Abercrombie <dabercro@mit.edu>
 */
 
-
 #ifndef CROMBIETOOLS_ANALYSISTOOLS_HISTANALYSIS_H
 #define CROMBIETOOLS_ANALYSISTOOLS_HISTANALYSIS_H
 
@@ -44,7 +43,9 @@ class HistAnalysis : public FileConfigReader, private PlotHists
   void      SetFormat          ( TString format )                               { fFormat = format;                       }
 
   /// Different methods of doing cut and count
-  enum      ScaleFactorMethod { kCutAndCount = 0 };
+  enum      ScaleFactorMethod { 
+    kCutAndCount = 0,                     ///< Does scale factor through a simple cut and count with background subtraction
+  };
   /// Does scale factors between background-subtracted data and signal MC
   Double_t  DoScaleFactors     ( TString PlotVar, Int_t NumBins, Double_t *XBins,
                                  ScaleFactorMethod  method = kCutAndCount, Bool_t NormalizeBackground = true,
@@ -68,7 +69,11 @@ class HistAnalysis : public FileConfigReader, private PlotHists
                                  Int_t NumBins, Double_t MinX, Double_t MaxX, TString TreeName = "events" );
 
   /// Different methods of printing the scale factor tables
-  enum      PrintingMethod { kNone = 0, kPresentation, kNote };
+  enum      PrintingMethod { 
+    kNone = 0,                            ///< Does not print output from hist analysis
+    kPresentation,                        ///< Prints output narrow enough for a presentation
+    kNote,                                ///< Prints output detailed enough for an analysis note
+  };
   /// Sets whether to print any tables for notes or presentations
   void      SetPrintingMethod  ( PrintingMethod method )                         { fPrintingMethod = method;               }
 
@@ -76,7 +81,6 @@ class HistAnalysis : public FileConfigReader, private PlotHists
   void      ChangeBackground   ( Double_t factor )                               { fBackgroundChange = factor;             }
 
  private:
-
   TString   fSignalName = "";             ///< Legend entry of the signal that we are using from the MCConfig
   FileType  fSignalType = kBackground;    ///< Which MC list to get the signal files from
   TString   fBaseCut = "1";               ///< Sets the cut to use for MC events in the analysis

@@ -105,8 +105,8 @@ cd $here/plotter
 
 ## @todo Make tests
 
-crombie compile
 cd $here
+crombie compile
 
 if [ "$fast" != "fast" ]
 then

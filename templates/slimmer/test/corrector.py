@@ -5,7 +5,7 @@ import CrombieTools.LoadConfig
 from CrombieTools.Parallelization import RunOnDirectory
 import os
 
-applicator = MakeApplicator('allWeights',True,'test','test',5000)
+applicator = MakeApplicator('allWeights', True, 'test', 'test', 100000)
 corrector = MakeCorrector('fixWeight', 'example', '0', 'testHist.root', 'hist')
 applicator.AddCorrector(corrector)
 applicator.AddFactorToMerge('weight')

@@ -102,9 +102,15 @@ class PlotBase
   inline    void         SetIncludeErrorBars      ( Bool_t include )                              { fIncludeErrorBars = include; }
 
   /// Used for vertical position of legend.
-  enum LegendY { kUpper = 0, kLower };
+  enum LegendY {
+    kUpper = 0,      ///< Places the plot legend on the upper part of the canvas
+    kLower,          ///< Places the plot legend on the lower part of the canvas
+  };
   /// Used for horizontal position of legend.
-  enum LegendX { kLeft  = 0, kRight };
+  enum LegendX { 
+    kLeft  = 0,      ///< Places the plot legend on the left part of the canvas
+    kRight,          ///< Places the plot legend on the right part of the canvas
+  };
   /// Set the legend location using LegendY and LegendX enums.
   inline    void         SetLegendLocation        ( LegendY yLoc, LegendX xLoc, Double_t xWidth = 0.3, Double_t yWidth = 0.2 );
   /// Set the legend location manually.
@@ -155,7 +161,11 @@ class PlotBase
   /// Set the luminosity lable with a float in fb.
   inline    void         SetLumiLabel             ( Float_t lumi )        { fLumiLabel = TString::Format(fLumiLabelFormat,lumi); }
   /// Enums type of lables for plots
-  enum      CMSLabelType { kNone = 0, kPreliminary, kSimulation };
+  enum      CMSLabelType {
+    kNone = 0,       ///< Does not place a CMS label on the plot
+    kPreliminary,    ///< Denotes a preliminary result
+    kSimulation,     ///< Denotes a simulation result
+  };
   /// Set the type of CMS label for the plot
   inline    void         SetCMSLabelType          ( CMSLabelType type )                           { fCMSLabelType = type;        }
   /// Adds a dotted line in order to show cuts.

@@ -5,7 +5,7 @@ import CrombieTools.LoadConfig
 from CrombieTools.Parallelization import RunOnDirectory
 import os
 
-applicator = MakeApplicator('', True, 'test', 'test', 10000)
+applicator = MakeApplicator('', True, 'test', 'test', 100000)
 corrector = MakeCorrector('reweight', 'example', '0', 'example_reweight.root', 'weight')
 applicator.AddCorrector(corrector)
 

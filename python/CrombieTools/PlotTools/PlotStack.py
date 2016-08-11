@@ -1,19 +1,21 @@
 import os
 from .. import Load, DirFromEnv, Nminus1Cut
-from ..CommonTools.FileConfigReader import *
 
 newStackPlotter = Load('PlotStack')
 plotter         = newStackPlotter()
 
 
 def SetupFromEnv(aPlotter = plotter):
-    """A function that sets up a plotter after sourcing a config file."""
+    """A function that sets up a plotter after sourcing a config file.
+    
+    @param aPlotter is the plotter to setup. Defaults to plotter in this module.
+    """
+    from ..CommonTools.FileConfigReader import SetupConfigFromEnv, SetFunctionFromEnv
 
     SetupConfigFromEnv(aPlotter)
 
     DirFromEnv('CrombieOutPlotDir')
     SetFunctionFromEnv([
-            (aPlotter.SetLuminosity, 'CrombieLuminosity'),
             (aPlotter.SetOutDirectory, 'CrombieOutPlotDir'),
             (aPlotter.SetLimitTreeDir, 'CrombieOutLimitTreeDir'),
             ])
@@ -25,10 +27,9 @@ def SetCuts(category,region,aPlotter = plotter):
     @param category is the category of the analysis being used.
     @param region is the region of the plot being set.
     @param aPlotter is the plotter that is having its cuts set.
-    Default is the plotter defined in this module.
+                    Default is the plotter defined in this module.
     """
-    from .. import LoadConfig
-    cuts = LoadConfig.cuts
+    from ..LoadConfig import cuts
     aPlotter.SetDefaultWeight(cuts.cut(category,region))
     aPlotter.SetMCWeights(cuts.dataMCCuts(region,False))
     aPlotter.SetDataWeights(cuts.dataMCCuts(region,True))
@@ -109,10 +110,8 @@ def MakePlots(categories, regions, exprArgs, overwrite = True, aPlotter=plotter)
                     If the first argument is actually a dictionary, it will be passed basically as
                     key word arguments to ParallelStackContainer.MakePlot() instead.
                     Key words supported in dictionary and types:
-
                         - data_expr takes a string
                         - cut_lines takes a list of floats
-
     @param overwrite overwrites old plots with the same name if set to true.
                      Otherwise, those plots are skipped.
     @param aPlotter is the plotter to use to plot. The default is the plotter defined in this module.

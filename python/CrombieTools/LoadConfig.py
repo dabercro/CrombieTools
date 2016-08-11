@@ -10,22 +10,6 @@ import os
 import subprocess
 
 
-def SetFunctionFromEnv(targets):
-    """Calls functions using environment variables
-
-    @param targets is a list of tuples, each containing a function and
-                   the environment variable to use as an argument
-    """
-    for func, envname in targets:
-        if os.environ.get(envname) == None:
-            print 'Cannot find ' + envname + ' in config'
-        else:
-            try:
-                func(os.environ[envname])
-            except:
-                func(float(os.environ[envname]))
-
-
 def LoadEnv(configs):
     """Sources bash files and loads the resulting environment into os.environ
     
@@ -71,7 +55,5 @@ CrombieConfigs = ['CrombieAnalysisConfig.sh','CrombiePlotterConfig.sh','CrombieS
 
 LoadEnv(CrombieConfigs)
 
-""" Sub module set by the [$CrombieCutsFile](@ref envconfig) environment variable.
-@todo Figure out a way to centralize the cuts functions so that a user can't mess them up.
-"""
+""" Sub module set by the [$CrombieCutsFile](@ref envconfig) environment variable."""
 cuts = LoadModuleFromEnv('CrombieCutsFile')

@@ -166,7 +166,6 @@ HistAnalysis::ResetScaleFactorCuts()
   fCutNames.resize(0);
 }
 
-
 //--------------------------------------------------------------------
 void
 HistAnalysis::MakeReweightHist(TString OutFile, TString OutHist, TString PlotVar, Int_t NumBins, Double_t *XBins, TString TreeName)
