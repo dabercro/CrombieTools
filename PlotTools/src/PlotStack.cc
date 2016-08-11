@@ -193,6 +193,8 @@ PlotStack::MakeCanvas(TString FileBase, Int_t NumXBins, Double_t *XBins,
 
   for (UInt_t iTemp = 0; iTemp != fTemplateEntries.size(); ++iTemp)
     TemplateFiles[iTemp]->Close();
+
+  CloseFiles();
 }
 
 //--------------------------------------------------------------------

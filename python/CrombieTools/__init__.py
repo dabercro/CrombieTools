@@ -41,11 +41,12 @@ ROOT.gROOT.LoadMacro(CrombieDir + '/PlotTools/interface/KinematicFunctions.h')
 """Key -- Class to load : Value -- List of classes that must be loaded first."""
 dependencies = { 'FlatSkimmer' :         ['GoodLumiFilter'],
                  'PlotFitParameters' :   ['Plot2D'],
-                 'PlotROC' :             ['PlotHists'],
-                 'PlotStack' :           ['TreeContainer','PlotHists'],
                  'CorrectorApplicator' : ['Corrector'],
                  'TmvaClassifier' :      ['TreeContainer','PlotHists'],
+                 'PlotROC' :             ['PlotHists'],
+                 'PlotStack' :           ['PlotHists'],
                  'HistAnalysis' :        ['PlotHists'],
+                 'XSecAdder' :           ['PlotHists'],
                  }
 
 def Load(className):
