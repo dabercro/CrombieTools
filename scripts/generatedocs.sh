@@ -20,7 +20,6 @@ then
     cd $CROMBIEPATH
 
     pdfName=CrombieToolsManual.pdf
-    testName=test.pdf
 
     if [ "$USER" = "dabercro" ] && [ "$copy" = "copy" ]     # If I am me, can copy to the appropriate server
     then
@@ -48,19 +47,20 @@ then
         fi
 
         echo "Copying documentation to $targetHost."        # Stream tar over ssh and untar at server
-        $useTar -czf - docs/html/* docs/latex/$pdfName test/docs/$testName |
-            ssh $targetHost "mkdir -p $targetDir 2> /dev/null ; cd $targetDir ; rm -rf search ; tar -xzf - ; mv docs/html/* . ; mv docs/latex/$pdfName . ; mv test/docs/$testName ."
+        $useTar -czf - docs/html/* docs/latex/$pdfName test/docs/*.pdf |
+            ssh $targetHost "mkdir -p $targetDir 2> /dev/null ; cd $targetDir ; rm -rf search ; tar -xzf - ; mv docs/html/* . ; mv docs/latex/$pdfName . ; mv test/docs/*.pdf ."
 
     else
 
-        doxygen docs/CrombieDocs.cfg                        # If not copying, create the documentation
+        doxygen docs/CrombieDocs.cfg &> /dev/null           # If not copying, create the documentation
 
         if [ "$copy" != "test" ]                            # If testing, just make the html
         then                                                #   otherwise, make the LaTeX manual too
 
+            echo "Making .pdf reference"
             cd docs/latex
-            make && mv refman.pdf $pdfName
-            cd -
+            make &> /dev/null && mv refman.pdf $pdfName
+            cd - &> /dev/null
 
         fi
         

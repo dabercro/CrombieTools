@@ -1,5 +1,14 @@
 #!/bin/bash
 
+##
+#  @file test.sh
+#
+#  The tests to run on a new installation or
+#  while developing CrombieTools.
+#
+#  @author Daniel Abercrombie
+#
+
 fast=$1
 
 returnto=`pwd`
