@@ -2,7 +2,7 @@
 
 fast=$1
 
-here=`pwd`
+returnto=`pwd`
 
 if [ "$CROMBIEPATH" = "" ]
 then
@@ -11,7 +11,11 @@ then
     exit 1
 fi
 
+here=$CROMBIEPATH/test
+
 echo "Testing package installed at $CROMBIEPATH"
+
+cd $here
 
 if [ "$fast" != "fast" ]                   # Start from fresh directory
 then                                       # unless we only want to quickly
@@ -71,12 +75,9 @@ echo "Skimming with good runs!"
 
 cd $here
 
-mkdir txtoutput
+mkdir txtoutput 2> /dev/null
 echo "Running crombie diff"
 crombie diff FullOut/ SkimOut/ | sort | tail -n 5 > txtoutput/diffoutput.txt
-
-echo "Comparing output..."
-diff txtoutput/diffoutput.txt diffoutput.txt
 
 cd $here/slimmer
 
@@ -92,6 +93,7 @@ cd $here/plotter
 ./corrector.py
 
 ./Stack.py
+## @todo Make tests
 # Make limit tree
 # Make stacks with MC configs
 # Make stacks using limit trees
@@ -103,15 +105,30 @@ cd $here/plotter
 # Make more stack plots with BDT cuts
 # Make cutflow
 
-## @todo Make tests
+cd $here/docs
+
+pdflatex test.tex &> /dev/null
+pdflatex test.tex &> /dev/null
+
+mkdir figs 2> /dev/null
+
+cp $here/plotter/plots/* figs/.
+
+crombie backupslides
+
+pdflatex \\nonstopmode\\input presentation.tex &> /dev/null
+pdflatex \\nonstopmode\\input presentation.tex &> /dev/null
 
 cd $here
+
 crombie compile
+
+cd $returnto
 
 if [ "$fast" != "fast" ]
 then
     echo "-------------------------------------------------------------------"
     echo "Making sure that rerunning doesn't overwrite files or recompile ..."
     echo "-------------------------------------------------------------------"
-    ./test.sh fast
+    crombie test fast
 fi

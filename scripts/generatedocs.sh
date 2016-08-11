@@ -20,6 +20,7 @@ then
     cd $CROMBIEPATH
 
     pdfName=CrombieToolsManual.pdf
+    testName=test.pdf
 
     if [ "$USER" = "dabercro" ] && [ "$copy" = "copy" ]     # If I am me, can copy to the appropriate server
     then
@@ -47,8 +48,8 @@ then
         fi
 
         echo "Copying documentation to $targetHost."        # Stream tar over ssh and untar at server
-        $useTar -czf - docs/html/* docs/latex/$pdfName |
-            ssh $targetHost "mkdir -p $targetDir 2> /dev/null ; cd $targetDir ; rm -rf search ; tar -xzf - ; mv docs/html/* . ; mv docs/latex/$pdfName ."
+        $useTar -czf - docs/html/* docs/latex/$pdfName test/docs/$testName |
+            ssh $targetHost "mkdir -p $targetDir 2> /dev/null ; cd $targetDir ; rm -rf search ; tar -xzf - ; mv docs/html/* . ; mv docs/latex/$pdfName . ; mv test/docs/$testName ."
 
     else
 

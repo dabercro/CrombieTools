@@ -51,6 +51,11 @@ _crombie_subs () {                                  # Function to fill COMPREPLY
 
         COMPREPLY=( $(compgen -W "test" $cur ) )
 
+    elif [ "$prev" = "test" -a $COMP_CWORD -eq 2 ]  # "crombie test" has a fast version
+    then
+
+        COMPREPLY=( $(compgen -W "fast" $cur ) )
+
     elif [ "$prev" = "generatedocs" ]               # "crombie generatedocs" can be a test or copy
     then
 

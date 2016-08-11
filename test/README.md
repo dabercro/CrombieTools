@@ -2,10 +2,15 @@
 
 @brief Instructions on how to run tests and how to evaluate results.
 
-From the `test` directory run the tests simply by doing the following.
+You can run the tests simply by doing the following.
 
-    ./test.sh
+    crombie test
 
-Example configuration files will be placed into the relative `slimmer` and `analysis` directories.
+Example configuration files will be placed into `$CROMBIEPATH/test` in 
+the relative `slimmer` and `analysis` directories.
+
+Output documentation will be in the docs directory.
+Compare `$CROMBIEPATH/test/docs/test.pdf` to
+https://dabercro.cern.ch/dabercro/CrombieToolsDocs/test.pdf.
 
 @todo Write about expected test results

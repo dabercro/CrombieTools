@@ -402,7 +402,8 @@ std::vector<TH1D*>
 FileConfigReader::GetHistList(Int_t NumXBins, Double_t *XBins, FileType type)
 {
 
-  OpenFiles(ReturnFileNames(type));
+  std::vector<TString> theFileNames = ReturnFileNames(type);
+  OpenFiles(theFileNames);
 
   std::vector<FileInfo*> *theFileInfo = &fMCFileInfo;
   TString tempCutHolder = "";
@@ -454,8 +455,14 @@ FileConfigReader::GetHistList(Int_t NumXBins, Double_t *XBins, FileType type)
 
   if (type != kData) {
 
-    for (UInt_t iFile = 0; iFile < theFileInfo->size(); iFile++)
+    UInt_t iFileName = 0;
+    for (UInt_t iFile = 0; iFile < theFileInfo->size(); iFile++) {
+      if ((*theFileInfo)[iFile]->fFileName != theFileNames[iFileName])
+        continue;
+
       theHists[iFile]->Scale((*theFileInfo)[iFile]->fXSecWeight);
+      ++iFileName;
+    }
 
   }
 
