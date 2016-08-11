@@ -225,8 +225,8 @@ class PlotBase
   inline    void             ConvertToArray       ( Int_t NumXBins, Double_t MinX, Double_t MaxX, Double_t *XBins );
 
   /// This is the powerhouse of all the plotting tools. Everything happens here.
-  template<class T>  void    BaseCanvas           ( TString FileBase, std::vector<T*> theLines,
-						    TString XLabel, TString YLabel, Bool_t logY, Bool_t logX = false );
+  template<class T>  void    BaseCanvas           ( TString FileBase, std::vector<T*> theLines, TString XLabel, 
+                                                    TString YLabel, Bool_t logY = false, Bool_t logX = false );
 
   Bool_t                     bPDF = true;                ///< If true, BaseCanvas will create a .pdf file
   Bool_t                     bPNG = true;                ///< If true, BaseCanvas will create a .png file
@@ -491,8 +491,9 @@ void PlotBase::LineDrawing(std::vector<T*> theLines, Int_t index, Bool_t same)
 
 template<class T>
 void PlotBase::BaseCanvas(TString FileBase, std::vector<T*> theLines,
-                     TString XLabel, TString YLabel, Bool_t logY, Bool_t logX)
+                          TString XLabel, TString YLabel, Bool_t logY, Bool_t logX)
 {
+
   gStyle->SetOptStat(0);
 
   // Font size and size of ratio plots are set here
@@ -518,24 +519,51 @@ void PlotBase::BaseCanvas(TString FileBase, std::vector<T*> theLines,
   float maxValue = 0;
   UInt_t plotFirst = 0;
 
+  // Check that legend entries were added correctly
+  // No legend is needed if there is only a single line
+  if (theLines.size() != 1 && theLines.size() != fLegendEntries.size()) {
+
+    std::cerr << "[ERROR] Number of lines and number of legend entries do not match!" << std::endl;
+    exit(1007);
+
+  }
+
   // Loop through the lines
   for (UInt_t iLine = 0; iLine != NumPlots; ++iLine) {
+
     // Set title of lines and format
     theLines[iLine]->SetTitle(";"+XLabel+";"+YLabel);
     theLines[iLine]->GetYaxis()->SetTitleOffset(fTitleOffset);
+
     if (int(iLine) != fDataIndex) {
-      theLines[iLine]->SetLineWidth(fLineWidths[iLine]);
-      theLines[iLine]->SetLineStyle(fLineStyles[iLine]);
-      theLines[iLine]->SetLineColor(fLineColors[iLine]);
+
+      if (theLines.size() == 1 && fLineColors.size() == 0) {
+
+        theLines[iLine]->SetLineWidth(fDefaultLineWidth);
+        theLines[iLine]->SetLineStyle(fDefaultLineStyle);
+
+      }
+      else {
+
+        theLines[iLine]->SetLineWidth(fLineWidths[iLine]);
+        theLines[iLine]->SetLineStyle(fLineStyles[iLine]);
+        theLines[iLine]->SetLineColor(fLineColors[iLine]);
+
+      }
+
     }
     else
       theLines[iLine]->SetMarkerStyle(8);
 
-    // Add a formated legend entry
-    if (fLegendFill && int(iLine) < fDataIndex)
-      theLegend->AddEntry(theLines[iLine], fLegendEntries[iLine], "f");
-    else
-      theLegend->AddEntry(theLines[iLine], fLegendEntries[iLine], "lp");
+    if (theLines.size() != 1) {
+
+      // Add a formated legend entry
+      if (fLegendFill && int(iLine) < fDataIndex)
+        theLegend->AddEntry(theLines[iLine], fLegendEntries[iLine], "f");
+      else
+        theLegend->AddEntry(theLines[iLine], fLegendEntries[iLine], "lp");
+
+    }
       
     // If the first draw is not set by user, check if maximum to draw first
     if (fDrawFirst == -1) {
@@ -550,24 +578,32 @@ void PlotBase::BaseCanvas(TString FileBase, std::vector<T*> theLines,
 
   // If there will be a ratio plot, the make an upper pad
   if (fMakeRatio) {
+
     TPad *pad1 = new TPad("pad1", "pad1", 0, 1.0 - ratioFrac, 1, 1.0);
     pad1->SetBottomMargin(0.025);
     pad1->Draw();
     pad1->cd();
+
     // Change the size of the font accordingly
     for (UInt_t iLine = 0; iLine != NumPlots; ++iLine) {
+
       theLines[iLine]->GetYaxis()->SetTitleSize(fFontSize/ratioFrac);
       theLines[iLine]->GetYaxis()->SetLabelSize(fFontSize/ratioFrac);
       theLines[iLine]->GetYaxis()->SetTitleOffset(fTitleOffset);
       theLines[iLine]->GetXaxis()->SetTitleSize(0);
       theLines[iLine]->GetXaxis()->SetLabelSize(0);
+
       if (fAxisMin != fAxisMax) {
+
         theLines[iLine]->SetMinimum(fAxisMin);
         theLines[iLine]->SetMaximum(fAxisMax);        
+
       }
     }
+
     if (logX)
       pad1->SetLogx();
+
     // Assume that log Y is only in the case of the top plot of ratio
     if (logY)
       pad1->SetLogy();
@@ -579,31 +615,38 @@ void PlotBase::BaseCanvas(TString FileBase, std::vector<T*> theLines,
     LineDrawing(theLines, plotFirst, false);
   else
     LineDrawing(theLines, fDrawFirst, false);
+
   // Then loop through all the other lines to draw
   for (UInt_t iLine = 0; iLine != NumPlots; ++iLine)
     LineDrawing(theLines, iLine, true);
+
   // Draw the data again at the end to ensure it's on top
   if (fDataIndex != -1)
     LineDrawing(theLines, fDataIndex, true);
 
-  theLegend->Draw();
+  if (theLines.size() != 1)
+    theLegend->Draw();
 
   gPad->RedrawAxis();
   DrawCutLines();
 
   // If not a ratio plot, set the canvas to log
   if (!fMakeRatio) {
+
     if (logX)
       theCanvas->SetLogx();
     if (logY)
       theCanvas->SetLogy();
+
   }
   // Otherwise, go on the make the second pad and ratio plots
   else {
+
     theCanvas->cd();
     TPad *pad2 = new TPad("pad2", "pad2", 0, 0, 1, 1 - ratioFrac);
     pad2->SetTopMargin(0.05);
     pad2->SetBottomMargin(0.4);
+
     if (fRatioGrid > 0)
       pad2->SetGridy(fRatioGrid);
 
@@ -619,6 +662,7 @@ void PlotBase::BaseCanvas(TString FileBase, std::vector<T*> theLines,
 
     // Now we do formatting for all of the lines
     for (UInt_t iLine = 0; iLine != NumPlots; ++iLine) {
+
       newLines[iLine]->GetXaxis()->SetTitleSize(fFontSize/(1 - ratioFrac));
       newLines[iLine]->GetYaxis()->SetTitleSize(fFontSize/(1 - ratioFrac));
       newLines[iLine]->GetXaxis()->SetLabelSize(fFontSize/(1 - ratioFrac));
@@ -627,27 +671,38 @@ void PlotBase::BaseCanvas(TString FileBase, std::vector<T*> theLines,
       newLines[iLine]->GetYaxis()->SetNdivisions(fRatioDivisions, fOptimDivisions);
       newLines[iLine]->GetYaxis()->SetTitle(fRatioTitle);
       newLines[iLine]->GetYaxis()->CenterTitle();
+
       if (fRatioMin != fRatioMax) {
+
         newLines[iLine]->SetMinimum(fRatioMin);
         newLines[iLine]->SetMaximum(fRatioMax);
+
       }
+
       newLines[iLine]->SetFillColor(0);
+
     }
 
     // If we only want some lines (like top of stack and data) just draw those
     // I know I looped over all the lines, but the performance hit is negligible and it makes for less buggy code
     if (fRatioLines.size() != 0) {
+
       // Make the ratio line much less distinguished
       newLines[fRatioIndex]->SetLineColor(1);
       LineDrawing(newLines, fRatioIndex, false);
+
       for (UInt_t iLine = 0; iLine != fRatioLines.size(); ++iLine)
         LineDrawing(newLines, fRatioLines[iLine], true);
+
     }
     // Otherwise draw everything
     else {
+
       LineDrawing(newLines, plotFirst, false);
+
       for (UInt_t iLine = 0; iLine < NumPlots; iLine++)
         LineDrawing(newLines, iLine, true);
+
     }
 
     // There is no log Y on the ratio plot
@@ -656,20 +711,24 @@ void PlotBase::BaseCanvas(TString FileBase, std::vector<T*> theLines,
 
     gPad->RedrawAxis();
     DrawCutLines();
+
   }
 
   theCanvas->cd();
 
   if (fLumiLabel != "") {
+
     TLatex* latex2 = new TLatex();
     latex2->SetNDC();
     latex2->SetTextSize(0.035);
     latex2->SetTextAlign(31);
     latex2->DrawLatex(0.90, 0.96, fLumiLabel + " fb^{-1} (13 TeV)");
     fDeleteThese.push_back(latex2);
+
   }
 
   if (fCMSLabelType != kNone) {
+
     TLatex* latex3 = new TLatex();
     latex3->SetNDC();
     latex3->SetTextSize(0.035);
@@ -686,6 +745,7 @@ void PlotBase::BaseCanvas(TString FileBase, std::vector<T*> theLines,
       latex3->DrawLatex(0.20, 0.96, "Simulation");
 
     fDeleteThese.push_back(latex3);
+
   }
 
   // Now save the picture we just finished making
@@ -699,9 +759,12 @@ void PlotBase::BaseCanvas(TString FileBase, std::vector<T*> theLines,
   // Cleanup
   delete theLegend;
   delete theCanvas;
+
   for (UInt_t iDelete = 0; iDelete != fDeleteThese.size(); ++iDelete)
     delete fDeleteThese[iDelete];
+
   fDeleteThese.clear();
+
 }
 
 #endif

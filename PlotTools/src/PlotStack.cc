@@ -150,10 +150,10 @@ PlotStack::MakeCanvas(TString FileBase, Int_t NumXBins, Double_t *XBins,
         if (HistHolders[iLarger + 1]->fHist->Integral() > 0) {                                               // Check if the next histogram contribute
           if (fOthersColor != 0)
             HistHolders[iLarger]->fHist->SetFillColor(fOthersColor);
-          AddLegendEntry("Others",1,fStackLineWidth,1);                                                      // If so, make others legend
+          AddLegendEntry("Others", 1, fStackLineWidth, 1);                                                   // If so, make others legend
         }
         else                                                                                                 // If not,
-          AddLegendEntry(HistHolders[iLarger]->fEntry,HistHolders[iLarger]->fColor,1,1);                     // Make normal legend entry
+          AddLegendEntry(HistHolders[iLarger]->fEntry, HistHolders[iLarger]->fColor, 1, 1);                  // Make normal legend entry
 
         break;                                                                                               // Stop adding histograms
       }

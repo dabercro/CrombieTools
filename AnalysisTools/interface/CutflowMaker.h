@@ -16,16 +16,18 @@
 #include "TTree.h"
 #include "TString.h"
 
+#include "PlotBase.h"
+
 /**
    @class CutflowMaker
    Makes cutflow plots or tables from given trees.
    @todo make this derived from PlotBase to compare multiple cutflows.
 */
 
-class CutflowMaker
+class CutflowMaker : public PlotBase
 {
  public:
-  CutflowMaker();
+  CutflowMaker()           {}
   virtual ~CutflowMaker()  {}
   
   /**
@@ -35,25 +37,30 @@ class CutflowMaker
   */
   inline void   AddCut             ( TString name, TString cut )       { fCutNames.push_back(name); fCuts.push_back(cut); }
   
-  /// Set the size of the canvas for the cutflow plots
-  inline void   SetCanvasSize      ( Int_t width, Int_t height )       { fWidth = width; fHeight = height;                }
-  inline void   SetTree            ( TTree* tree )                     { fTree = tree; fYields.resize(0);                 }
+  /// Types of cutflow tables to print
+  enum TableType {
+    kNormal = 0,                                    ///< Just displays the cut name and result in two columns
+    kNumbers,                                       ///< Shows only numbers for copying into people's Excel sheets
+    kLatex,                                         ///< Prints a table that can be copied into LaTeX
+  };
+  /// Prints the cutflow for a single line given
+  void          PrintCutflow       ( TableType table = kNormal );
 
-  void          PrintCutflow       ( Bool_t OnlyNums = false );
-
-  enum   PlotType  { kAbsolute = 0, kFractional };
+  /// Type of plot to show from the cutflow
+  enum   PlotType  {
+    kAbsolute = 0,                                  ///< Counts the number of events for the cutflow
+    kFractional,                                    ///< Shows the fraction of events since the last cut
+  };
+  /// Makes cutflow plots. Multiple lines can be used here.
   void          MakePlot           ( TString name, PlotType type = kAbsolute );
+  /// Resets the cutflow cuts
   inline void   Reset              ()                          { fCutNames.resize(0); fCuts.resize(0); fYields.resize(0); }
 
  private:
-  Int_t                        fWidth;
-  Int_t                        fHeight;
-
-  TTree*                       fTree;
-  std::vector<TString>         fCutNames;
-  std::vector<TString>         fCuts;
-  std::vector<UInt_t>          fYields;
-  void      GetCutflow         ();
+  std::vector<TString>         fCutNames;           ///< Names of the cuts to show up in legends or tables
+  std::vector<TString>         fCuts;               ///< Cut strings
+  std::vector<UInt_t>          fYields;             ///< Holds yields
+  void      GetCutflow         ( UInt_t index );    ///< Get the cutflow for a given line index
 
   ClassDef(CutflowMaker,1)
 };

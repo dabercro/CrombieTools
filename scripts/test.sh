@@ -112,7 +112,7 @@ cd $here/plotter
 # Plot Hists to show discriminators include normalization
 # Include systematics
 # Make more stack plots with BDT cuts
-# Make cutflow
+./cutflow.py
 
 cd $here/docs
 
