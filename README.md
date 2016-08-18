@@ -1,5 +1,7 @@
 # Crombie Tools
 
+[![Documentation](https://codedocs.xyz/dabercro/CrombieTools.svg)](https://codedocs.xyz/dabercro/CrombieTools/)
+
 Welcome to the CrombieTools package.
 
 This contains everything I use to analyze flat trees in ROOT.
