@@ -1,14 +1,11 @@
-language: cpp
-compiler: clang
+language: python
+sudo: required
+dist: trusty
 install:
-  - wget https://root.cern.ch/download/root_v6.06.06.source.tar.gz
-  - tar -xzf root_v6.06.06.source.tar.gz
+  - wget https://root.cern.ch/download/root_v6.06.06.Linux-ubuntu14-x86_64-gcc4.8.tar.gz
+  - tar -xzf root_v6.06.06.Linux-ubuntu14-x86_64-gcc4.8.tar.gz
   - mv root-6.06.06 root
-  - cd root
-  - ./configure
-  - make
-  - . bin/thisroot.sh
-  - cd ..
+  - . root/bin/thisroot.sh
   - HOME=`pwd`
   - touch ~/.bashrc
   - ./install.sh
