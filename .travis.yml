@@ -4,7 +4,6 @@ dist: trusty
 install:
   - wget https://root.cern.ch/download/root_v6.06.06.Linux-ubuntu14-x86_64-gcc4.8.tar.gz
   - tar -xzf root_v6.06.06.Linux-ubuntu14-x86_64-gcc4.8.tar.gz
-  - mv root-6.06.06 root
   - . root/bin/thisroot.sh
   - HOME=`pwd`
   - touch ~/.bashrc
