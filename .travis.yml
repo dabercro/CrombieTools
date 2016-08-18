@@ -1,5 +1,4 @@
-language: python
-python: 2.7
+language: cpp
 install:
   - wget https://root.cern.ch/download/root_v6.06.06.source.tar.gz
   - tar -xzf root_v6.06.06.source.tar.gz
