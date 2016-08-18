@@ -1,1 +1,3 @@
 DOXYFILE = docs/CrombieDocs.cfg
+
+USE_MDFILE_AS_MAINPAGE = ./README.md
