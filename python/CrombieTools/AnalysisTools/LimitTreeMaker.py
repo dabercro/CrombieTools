@@ -17,8 +17,8 @@ def SetupFromEnv(ltm):
         targets = [[ltm.SetLuminosity, 'CrombieLuminosity'],
                    [ltm.SetInDirectory, 'CrombieInFilesDir'],
                    [ltm.SetOutDirectory, 'CrombieOutLimitTreeDir'],
-                   [readMC,'CrombieMCConfig'],
-                   [readSignal,'CrombieSignalConfig']
+                   [readMC, 'CrombieMCConfig'],
+                   [readSignal, 'CrombieSignalConfig']
                    ]
         for target in targets:
             if os.environ.get(target[1]) == None:
@@ -36,12 +36,12 @@ def SetupFromEnv(ltm):
     else:
         print 'Could not find CrombieAnalysisConfig.sh'
 
-def SetCuts(ltm,category):
+def SetCuts(ltm, category):
     from .. import LoadConfig
     cuts = LoadConfig.cuts
     ltm.AddWeightBranch(cuts.defaultMCWeight)
     for region in cuts.regions:
-        ltm.AddRegion(region,cuts.cut(category,region))
+        ltm.AddRegion(region,cuts.cut(category, region))
         if region in cuts.additionKeys:
-            ltm.AddExceptionDataCut(region,cuts.additions[region][0])
-            ltm.AddExceptionWeightBranch(region,cuts.additions[region][1])
+            ltm.AddExceptionDataCut(region, cuts.additions[region][0])
+            ltm.AddExceptionWeightBranch(region, cuts.additions[region][1])

@@ -14,7 +14,7 @@ ROOT.PyConfig.IgnoreCommandLineOptions = True
 import os
 import re
 
-__all__ = ['AnalysisTools','CommonTools','PlotTools','SkimmingTools','Parallelization']
+__all__ = ['AnalysisTools', 'CommonTools', 'PlotTools', 'SkimmingTools', 'Parallelization']
 
 ROOT.gROOT.SetBatch(True)
 
@@ -80,7 +80,7 @@ def Load(className):
     if className in ['PlotUtils']:
         return 0
 
-    return getattr(ROOT,className)
+    return getattr(ROOT, className)
 
 def DirFromEnv(envVar):
     """ Creates a directory stored in an environment variable.
@@ -92,7 +92,7 @@ def DirFromEnv(envVar):
         if not os.path.exists(os.environ[envVar]):
             os.makedirs(os.environ[envVar])
 
-def Nminus1Cut(inCut,varToRemove,returnCuts=False):
+def Nminus1Cut(inCut, varToRemove, returnCuts=False):
     """ A function for getting N - 1 plots.
 
     Given a cutstring and a variable name, all comparison expressions with that variable are removed.
@@ -103,13 +103,13 @@ def Nminus1Cut(inCut,varToRemove,returnCuts=False):
     @todo I want this to ignore cuts next to an '||'? Or I have the weird '&&' veto thing... That's trickier to fix
     """
     holdCut = str(inCut)
-    matches = re.findall(r'[0-9\.]*\s*[=<>]*\s*(?<!\w)' + varToRemove + '(?!\w)\s*[=<>]*\s*[0-9\.]*',holdCut)
+    matches = re.findall(r'[0-9\.]*\s*[=<>]*\s*(?<!\w)' + varToRemove + r'(?!\w)\s*[=<>]*\s*[0-9\.]*', holdCut)
     cutList = []
     for match in matches:
         cutMatch = re.search(r'(?<!\w)[\d\.]+(?!\w)', match)
         if cutMatch:
             cutList.append(float(cutMatch.group()))
-        holdCut = holdCut.replace(match,'(1)',1)
+        holdCut = holdCut.replace(match, '(1)', 1)
 
     if returnCuts:
         return cutList

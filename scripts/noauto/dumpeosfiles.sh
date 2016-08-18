@@ -1,10 +1,13 @@
 #!/bin/bash
 
-## @file dumpeosfiles.sh
-#  This is the file that creates the input files for running slimmers over EOS
-#  or other directories.
-#  @todo Clean me and give user more power for picking directories when multiple present
-#  @author Daniel Abercrombie <dabercro@mit.edu>
+##
+# @file dumpeosfiles.sh
+#
+# This is the file that creates the input files for running slimmers over EOS
+# or other directories.
+#
+# @author Daniel Abercrombie <dabercro@mit.edu>
+#
 
 isEOS=$1
 

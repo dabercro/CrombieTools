@@ -20,7 +20,7 @@ def SetupFromEnv(aPlotter = plotter):
             ])
 
 
-def SetCuts(category,region,aPlotter = plotter):
+def SetCuts(category, region, aPlotter = plotter):
     """ Sets cuts based on category and region.
 
     @param category is the category of the analysis being used.
@@ -29,9 +29,9 @@ def SetCuts(category,region,aPlotter = plotter):
                     Default is the plotter defined in this module.
     """
     from ..LoadConfig import cuts
-    aPlotter.SetDefaultWeight(cuts.cut(category,region))
-    aPlotter.SetMCWeights(cuts.dataMCCuts(region,False))
-    aPlotter.SetDataWeights(cuts.dataMCCuts(region,True))
+    aPlotter.SetDefaultWeight(cuts.cut(category, region))
+    aPlotter.SetMCWeights(cuts.dataMCCuts(region, False))
+    aPlotter.SetDataWeights(cuts.dataMCCuts(region, True))
 
 
 def ReadExceptionConfig(region,aPlotter = plotter):

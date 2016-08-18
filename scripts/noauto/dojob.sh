@@ -1,5 +1,15 @@
 #!/bin/bash
 
+##
+# @file: dojob.sh
+#
+# This is the script that is run for each LXBATCH job run by CrombieTools.
+# The only argument is the filename that will be created.
+# Any other configuration is done in [CrombieSlimmingConfig.sh](@ref slimming).
+#
+# @author: Daniel Abercrombie <dabercro@mit.edu>
+#
+
 outFile=$1                  # The only argument is the output file (no extension)
 
 macroDir=$LS_SUBCWD         # Get the configuration from the submission directory

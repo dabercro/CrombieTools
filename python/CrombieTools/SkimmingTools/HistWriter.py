@@ -8,7 +8,7 @@ from .. import Load
 newHistWriter = Load('HistWriter')
 histWriter    = newHistWriter()
 
-def MakeHist(inputFile,outputFile='',outputHist='',writer=histWriter):
+def MakeHist(inputFile, outputFile='', outputHist='', writer=histWriter):
     """A convenience function for HistWriter assuming the text file is named something you like.
     
     @param inputFile is the text file where the histogram is written out.
@@ -27,4 +27,4 @@ def MakeHist(inputFile,outputFile='',outputHist='',writer=histWriter):
     if outputHist == '':
         outputHist = op.splitext(op.basename(inputFile))[0]
 
-    writer.MakeHist(outputFile,outputHist,inputFile)
+    writer.MakeHist(outputFile, outputHist, inputFile)

@@ -1,4 +1,4 @@
-# Command Line Tools Reference {#commandref}
+# Command Line Tools {#commandref}
 
 @brief Reference describing the tools available through the `crombie` command.
 

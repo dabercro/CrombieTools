@@ -19,13 +19,13 @@ def MakeFilter(jsonFileName):
     """
     aFilter = newGoodLumiFilter()
     if jsonFileName != '':
-        jsonFile = open(jsonFileName,'r')
+        jsonFile = open(jsonFileName, 'r')
         data = json.load(jsonFile)
         jsonFile.close()
 
         for run, lumisecs in data.items():
             for lumisec in lumisecs:
-                for lumi in range(lumisec[0],lumisec[1]+1):
-                    aFilter.AddLumi(int(run),lumi)
+                for lumi in range(lumisec[0], lumisec[1]+1):
+                    aFilter.AddLumi(int(run), lumi)
 
     return aFilter
