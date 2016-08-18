@@ -1,0 +1,17 @@
+language: python
+python: 2.7
+install:
+  - wget https://root.cern.ch/download/root_v6.06.06.source.tar.gz
+  - tar -xzf root_v6.06.06.source.tar.gz
+  - mv root-6.06.06 root
+  - cd root
+  - ./configure
+  - make
+  - . bin/thisroot.sh
+  - cd ..
+  - HOME=`pwd`
+  - touch ~/.bashrc
+  - ./install.sh
+  - . ~/.bashrc
+script:
+  scripts/test.sh

@@ -1,5 +1,6 @@
 # Crombie Tools
 
+[![Build Status](https://travis-ci.org/dabercro/CrombieTools.svg?branch=master)](https://travis-ci.org/dabercro/CrombieTools)
 [![Documentation](https://codedocs.xyz/dabercro/CrombieTools.svg)](https://codedocs.xyz/dabercro/CrombieTools/)
 
 Welcome to the CrombieTools package.
