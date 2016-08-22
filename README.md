@@ -29,9 +29,9 @@ After installation, it's recommended that you [run tests](./test/README.md).
 
 ## Other Topics
 
-[Running Tests](./test/README.md) <br>
-[Analysis Workspace](./templates/README.md) <br>
-[Command Line Tools Reference](./bin/README.md) <br>
+[Running Tests](test/README.md) <br>
+[Analysis Workspace](templates/README.md) <br>
+[Command Line Tools Reference](bin/README.md) <br>
 
 Use the tabs or sidebar of the reference website to explore different
 classes available through CrombieTools.
