@@ -25,13 +25,13 @@ The install script will add the necessary lines environment variables to your `~
 After it finishes, either source your  `~/.bashrc` or `~/.bash_profile` file again,
 log out and back in, or just open a new terminal window.
 
-After installation, it's recommended that you [run tests](test/README.md).
+After installation, it's recommended that you [run tests](./test/README.md).
 
 ## Other Topics
 
-[Running Tests](test/README.md) <br>
-[Analysis Workspace](templates/README.md) <br>
-[Command Line Tools Reference](bin/README.md) <br>
+[Running Tests](./test/README.md) <br>
+[Analysis Workspace](./templates/README.md) <br>
+[Command Line Tools Reference](./bin/README.md) <br>
 
 Use the tabs or sidebar of the reference website to explore different
 classes available through CrombieTools.
