@@ -10,4 +10,4 @@ install:
   - ./install.sh
   - . ~/.bashrc
 script:
-  scripts/test.sh
+  crombie test

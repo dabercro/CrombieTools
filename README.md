@@ -25,7 +25,7 @@ The install script will add the necessary lines environment variables to your `~
 After it finishes, either source your  `~/.bashrc` or `~/.bash_profile` file again,
 log out and back in, or just open a new terminal window.
 
-After installation, it's recommended that you [run tests](./test/README.md).
+After installation, it's recommended that you [run tests](test/README.md).
 
 ## Other Topics
 
@@ -35,3 +35,11 @@ After installation, it's recommended that you [run tests](./test/README.md).
 
 Use the tabs or sidebar of the reference website to explore different
 classes available through CrombieTools.
+
+## To do:
+
+@todo Create a class that propogates systematic uncertainties based on correlations in a tree.
+      For example, create a 2D histogram where you average the quadrature sums weighted based
+      on contributions in one direction to get the total uncertainty in another direction.
+      Make sure that when you end up adding multiple dimensions together that the order does not matter.
+      i.e. do some math!
