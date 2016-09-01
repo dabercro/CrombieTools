@@ -147,7 +147,6 @@ check $?
 
 pdflatex \\nonstopmode\\input presentation.tex &> /dev/null
 pdflatex \\nonstopmode\\input presentation.tex &> /dev/null
-check $?
 
 cd $here
 
@@ -164,3 +163,5 @@ then
     crombie test fast
     check $?
 fi
+
+exit 0
