@@ -44,7 +44,7 @@ class PlotHists : public PlotBase
                                                     TString XLabel, TString YLabel, Bool_t logY = false);
 
   /// Add uncertainty factors through branch expressions instead of a histogram
-  void                   SetUncertaintyExpr       ( TString expr )                       { fUncExpr = expr;       }
+  void                   SetUncertaintySquared    ( TString expr )                       { fUncExpr = expr;       }
   /// We can set normalization to match a particular other hist (or just 1)
   void                   SetNormalizedHists       ( Bool_t b )                           { fNormalizedHists = b;  }
   /// Set index of which histogram to normalize to

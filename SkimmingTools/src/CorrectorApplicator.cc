@@ -30,7 +30,7 @@ CorrectorApplicator::~CorrectorApplicator()
 
 /**
    Applies all of the Corrector objects to the input fileName.
-   Does not have to be an absolute path if fInDirectory is set.
+   The file name does not have to be an absolute path if fInDirectory is set.
    Each unique name of the Corrector objects creates a new branch
    if fSaveAll is true. If multiple correctors have the same name,
    then the result of that branch is the product of the correctors.

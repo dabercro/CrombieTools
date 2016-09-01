@@ -81,7 +81,7 @@ PlotHists::MakeHists(Int_t NumXBins, Double_t *XBins)
       // If there's an uncertainty expression, add systematics to the plot
       tempName += "_unc";
       TProfile *uncProfile = new TProfile(tempName, tempName, NumXBins, XBins);
-      inTree->Draw(fUncExpr+">>"+tempName, inCut);
+      inTree->Draw(fUncExpr + ">>" + tempName, inCut);
       for (Int_t iBin = 1; iBin != NumXBins + 1; ++iBin) {
         Double_t content = tempHist->GetBinContent(iBin);
         tempHist->SetBinError(iBin,

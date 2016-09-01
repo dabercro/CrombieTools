@@ -17,6 +17,10 @@
    @ingroup commongroup
    @struct UncertaintyInfo
    Structure holding information to apply uncertainties in certain plots.
+   The Histogram pointed to is assumed to have values greater than 1.
+   When applied via the ApplyUncertainy() function,
+   1 is subtracted from the bin content to get the uncertainty.
+   This is different than the Corrector approach to uncertainties.
 */
 
 struct UncertaintyInfo

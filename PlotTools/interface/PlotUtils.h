@@ -38,7 +38,7 @@ ApplyUncertainty(TH1* theHist, UncertaintyInfo* theUnc)
     theHist->SetBinError(iBin,
                          TMath::Sqrt(pow(theHist->GetBinError(iBin),2) + 
                                      pow(theHist->GetBinContent(iBin) * 
-                                         (uncHist->GetBinContent(UncBin) - 1),2)
+                                         (uncHist->GetBinContent(UncBin) - 1), 2)
                                      ));
     if (UncBin != theUnc->fEndBin)
       UncBin += 1;
