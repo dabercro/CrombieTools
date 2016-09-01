@@ -434,7 +434,7 @@ FileConfigReader::GetHistList(Int_t NumXBins, Double_t *XBins, FileType type)
 
   }
 
-  SetUncertaintyExpr("");
+  SetUncertaintySquared("");
 
   if (type == kBackground && fSystematicBranches.size() > 0) {
 
@@ -443,7 +443,7 @@ FileConfigReader::GetHistList(Int_t NumXBins, Double_t *XBins, FileType type)
     for (UInt_t iBranch = 1; iBranch != fSystematicBranches.size(); ++iBranch)
       sys_expr += "+" + fSystematicBranches[iBranch] + "*" + fSystematicBranches[iBranch];
 
-    SetUncertaintyExpr(sys_expr);
+    SetUncertaintySquared(sys_expr);
   }
 
   std::vector<TH1D*> theHists = MakeHists(NumXBins, XBins);

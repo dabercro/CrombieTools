@@ -11,6 +11,17 @@
 
 fast=$1
 
+check () {
+
+    code=$1
+    echo "Exit code: $code"
+    if [ $code -ne 0 ]
+    then
+        exit $code
+    fi
+
+}
+
 returnto=`pwd`
 
 if [ "$CROMBIEPATH" = "" ]
@@ -39,6 +50,7 @@ then                                       # unless we only want to quickly
 fi
 
 crombie workspace test
+check $?
 
 cd $here/slimmer
 
@@ -71,37 +83,43 @@ for sample in "Data" "Signal" "MC1" "MC2" "MC3"
 do
     echo "Generating pretend $sample."
     ./runSlimmer.py $sample.root ${outBase}_$sample.root
+    check $?
     ls ${outBase}_$sample.root
     $CrombieCheckerScript ${outBase}_$sample.root
-    if [ $? -ne 0 ]
-    then
-        echo "ERROR: Tree not found!"
-    fi
+    check $?
 done
 
 echo "Skimming with good runs!"
 ./FlatSkimmer.sh
+check $?
 
 cd $here
 
 mkdir txtoutput 2> /dev/null
 echo "Running crombie diff"
 crombie diff FullOut/ SkimOut/ | sort | tail -n 5 > txtoutput/diffoutput.txt
+check $?
 
 cd $here/slimmer
 
 echo "Making correction histogram!"
 ./makeHist.py
+check $?
 echo "Adding corrections to .root Files!"
 ./corrector.py
+check $?
 
 cd $here/plotter
 
 ./AddXSec.py
+check $?
 ./reweight.py
+check $?
 ./corrector.py
+check $?
 
 ./Stack.py
+check $?
 ## @todo Make tests
 # Make limit tree
 # Make stacks with MC configs
@@ -113,6 +131,7 @@ cd $here/plotter
 # Include systematics
 # Make more stack plots with BDT cuts
 ./cutflow.py
+check $?
 
 cd $here/docs
 
@@ -124,13 +143,16 @@ mkdir figs 2> /dev/null
 cp $here/plotter/plots/* figs/.
 
 crombie backupslides
+check $?
 
 pdflatex \\nonstopmode\\input presentation.tex &> /dev/null
 pdflatex \\nonstopmode\\input presentation.tex &> /dev/null
+check $?
 
 cd $here
 
 crombie compile
+check $?
 
 cd $returnto
 
@@ -140,4 +162,5 @@ then
     echo "Making sure that rerunning doesn't overwrite files or recompile ..."
     echo "-------------------------------------------------------------------"
     crombie test fast
+    check $?
 fi
