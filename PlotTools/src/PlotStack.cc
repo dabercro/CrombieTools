@@ -97,7 +97,6 @@ PlotStack::MakeCanvas(TString FileBase, Int_t NumXBins, Double_t *XBins,
 
       if (fTemplateEntries[iTemp] == HistHolders[iHist]->fEntry) {
 
-        /// @todo Make sure to include a template in the tests
         TH1D *templateHist = (TH1D*) TemplateFiles[iTemp]->Get(fTemplateHists[iTemp]);
         TH1D *toFormat = (TH1D*) templateHist->Rebin(NumXBins, "", XBins);
         toFormat->SetFillStyle(HistHolders[iHist]->fHist->GetFillStyle());

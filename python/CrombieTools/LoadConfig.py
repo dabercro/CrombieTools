@@ -21,7 +21,8 @@ def LoadEnv(configs):
     elif type(configs) == list:
         for config in configs:
             if os.path.exists(config):
-                configContents = subprocess.Popen(['bash','-c','source', config, '; env'], stdout = subprocess.PIPE)
+                configContents = subprocess.Popen(['bash','-c','source ' + config + '; env'],
+                                                  stdout = subprocess.PIPE)
                 for line in configContents.stdout:
                     if type(line) == bytes:
                         (key,sep,value) = line.decode('utf-8').partition('=')

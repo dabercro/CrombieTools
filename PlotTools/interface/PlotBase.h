@@ -3,7 +3,6 @@
 
   Definition of PlotBase class. Since PlotBase is never initialized directly as a class,
   the entire class definition is contained in this header file.
-  @todo Add label maker in PlotBase
 
   @author Daniel Abercrombie <dabercro@mit.edu>
 */
@@ -486,7 +485,6 @@ void PlotBase::LineDrawing(std::vector<T*> theLines, Int_t index, Bool_t same)
 /**
    Main macro of the plotters.
    @todo Decouple all of the stuff in PlotBase that makes adjusting stack plots a pain
-   @todo Please make better comments for this very important function.
 */
 
 template<class T>

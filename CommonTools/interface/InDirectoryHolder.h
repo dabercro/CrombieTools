@@ -7,6 +7,9 @@
 #ifndef CROMBIETOOLS_COMMONTOOLS_INDIRECTORYHOLDER_H
 #define CROMBIETOOLS_COMMONTOOLS_INDIRECTORYHOLDER_H
 
+#include <sys/stat.h>
+#include <iostream>
+
 #include "TString.h"
 
 //--------------------------------------------------------------------
@@ -16,7 +19,7 @@
    Helper function that prepends a directory name to a file.
 */
 
-inline TString AddDirectory(TString dir, TString FileName)
+TString AddDirectory(TString dir, TString FileName)
 {
   if (dir == "" || FileName.BeginsWith("/"))
     return FileName;
@@ -52,12 +55,28 @@ class InDirectoryHolder
      @returns FileName with the input directory prepended,
               unless absolute or fInDirectory is empty, 
               where it is left alone. 
-     @todo Check if file exists in the input director
   */
-  inline TString    AddInDir    ( TString FileName ) const  { return AddDirectory(fInDirectory, FileName);        }
+  TString    AddInDir                  ( TString FileName ) const;
 
  private:
   TString    fInDirectory = "";        ///< Stores the input directory
 };
+
+//--------------------------------------------------------------------
+TString
+InDirectoryHolder::AddInDir(TString FileName) const {
+
+  struct stat buffer;
+  TString output = AddDirectory(fInDirectory, FileName);
+
+  int code = stat(output.Data(), &buffer);
+  if (code != 0) {
+    std::cerr << "Cannot find file " << output << "!" << std::endl;
+    std::cerr << "Status code: " << code << std::endl;
+    exit(20);
+  }
+
+  return output;
+}
 
 #endif

@@ -20,7 +20,6 @@
    Class for histogram-based analysis.
    This class handles MCConfigs and data and performs useful tasks
    with the resulting histograms.
-   @todo Much of this class is thrown together fast so make it cleaner and integrate with PlotStack.
 */
 
 class HistAnalysis : public FileConfigReader
