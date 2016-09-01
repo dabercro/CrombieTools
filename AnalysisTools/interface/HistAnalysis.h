@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "TString.h"
+#include "TH1D.h"
 
 #include "FileConfigReader.h"
 
@@ -45,12 +46,12 @@ class HistAnalysis : public FileConfigReader
   enum      ScaleFactorMethod { 
     kCutAndCount = 0,                     ///< Does scale factor through a simple cut and count with background subtraction
   };
-  /// Does scale factors between background-subtracted data and signal MC
-  Double_t  DoScaleFactors     ( TString PlotVar, Int_t NumBins, Double_t *XBins,
-                                 ScaleFactorMethod  method = kCutAndCount, TString TreeName = "events" );
+  /// Does scale factors between background-subtracted data and signal MC for each bin
+  TH1D* DoScaleFactors     ( TString PlotVar, Int_t NumBins, Double_t *XBins,
+                             ScaleFactorMethod  method = kCutAndCount, TString TreeName = "events" );
   /// Does scale factors between background-subtracted data and signal MC with easier binning
-  Double_t  DoScaleFactors     ( TString PlotVar, Int_t NumBins, Double_t MinX, Double_t MaxX,
-                                 ScaleFactorMethod  method = kCutAndCount, TString TreeName = "events" );
+  TH1D* DoScaleFactors     ( TString PlotVar, Int_t NumBins, Double_t MinX, Double_t MaxX,
+                             ScaleFactorMethod  method = kCutAndCount, TString TreeName = "events" );
 
   /// Sets various other cut levels for scalefactors.
   void      AddScaleFactorCut  (  TString name, TString cut, TString datacut = "" );

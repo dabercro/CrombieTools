@@ -64,8 +64,8 @@ then
 
         fi
         
-        if [ `cat doxygen.log | wc -l` -eq 0 ]              # If the doxygen.log is empty remove it
-        then                                                #   otherwise, leave it for reading warnings
+        if [ `cat doxygen.log | wc -l` -eq 4 ]              # If the doxygen.log only has image warnings, remove it.
+        then                                                #   Otherwise, leave it for reading warnings
 
             rm doxygen.log
 
