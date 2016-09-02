@@ -63,6 +63,7 @@ class InDirectoryHolder
 };
 
 //--------------------------------------------------------------------
+
 TString
 InDirectoryHolder::AddInDir(TString FileName) const {
 

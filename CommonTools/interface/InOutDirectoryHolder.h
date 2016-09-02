@@ -29,6 +29,8 @@ class InOutDirectoryHolder : public InDirectoryHolder
   inline void       SetOutDirectory     ( TString dir )      { fOutDirectory = dir.EndsWith("/") ? dir : dir + "/"; }
   /// @returns the output directory
   inline TString    GetOutDirectory     ()  const            { return fOutDirectory;                                }
+  /// Sets whether or not to overwrite files
+  inline void       SetOverwriteFiles   ( Bool_t overwrite ) { fOverwriteFiles = overwrite;                         }
 
  protected:
   /**
@@ -38,12 +40,34 @@ class InOutDirectoryHolder : public InDirectoryHolder
      @returns FileName with the output directory prepended,
               unless absolute or fOutDirectory is empty, 
               where it is left alone. 
-     @todo Check if file exists in the output directory. Add a flag to overwrite anyway.
   */
-  inline TString    AddOutDir    ( TString FileName ) const  { return AddDirectory(fOutDirectory, FileName);        }
+  TString           AddOutDir           ( TString FileName ) const;
 
  private:
   TString    fOutDirectory = "";        ///< Stores the output directory
+  Bool_t     fOverwriteFiles = true;    ///< Sets whether or not to overwrite output files
 };
+
+//--------------------------------------------------------------------
+
+TString
+InOutDirectoryHolder::AddOutDir(TString FileName) const {
+
+  TString output = AddDirectory(fOutDirectory, FileName);
+
+  if (!fOverwriteFiles) {
+
+    struct stat buffer;
+    int code = stat(output.Data(), &buffer);
+    if (code == 0) {
+      std::cerr << "File already exists " << output << "!" << std::endl;
+      exit(21);
+    }
+
+  }
+
+  return output;
+}
+
 
 #endif

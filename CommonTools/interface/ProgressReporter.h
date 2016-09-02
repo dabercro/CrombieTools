@@ -15,7 +15,6 @@
    @ingroup commongroup
    @class ProgressReporter
    This class is used to report progress of various codes that run over every event in a file 
-   @todo Make this class load trees for files.
 */
 
 class ProgressReporter
