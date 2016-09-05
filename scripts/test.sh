@@ -57,7 +57,8 @@ cd $here/slimmer
 host=`hostname`
 if [ "${host:0:6}" = "lxplus" ]
 then
-    crombie submit test
+    crombie submitlxbatch test
+    check $?
     echo "Just kidding, I didn't really submit anything... At least, I shouldn't have ;^)"
 fi
 
@@ -73,7 +74,7 @@ fi
 
 if [ ! -d $CrombieFullDir ]
 then
-    echo "scripts/CrombieDumpFileList should have made your out directory, but didn't!"
+    echo "'crombie dumpeosfiles' should have made your out directory, but didn't!"
 fi
 
 cd $here/slimmer
