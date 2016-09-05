@@ -5,7 +5,7 @@ export CrombieQueue=8nh
 export CrombieNLocalProcs=2
 
 export CrombieFileBase=test
-export CrombieEosDir=/store/user/dabercro/Nero/v1.2
+export CrombieEosDir=/store/user/dabercro/Nero/80X
 export CrombieRegDir=/afs/cern.ch/work/d/dabercro/eos/cms$CrombieEosDir
 export CrombieTempDir=$CROMBIEPATH/test/TempOut
 export CrombieFullDir=$CROMBIEPATH/test/FullOut
