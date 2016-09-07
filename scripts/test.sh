@@ -13,7 +13,7 @@ fast=$1
 
 check () {
 
-    code=$1
+    code=$?
     echo "Exit code: $code"
     if [ $code -ne 0 ]
     then
@@ -50,7 +50,7 @@ then                                       # unless we only want to quickly
 fi
 
 crombie workspace test
-check $?
+check
 
 cd $here/slimmer
 
@@ -58,7 +58,7 @@ host=`hostname`
 if [ "${host:0:6}" = "lxplus" ]
 then
     crombie submitlxbatch test
-    check $?
+    check
     echo "Just kidding, I didn't really submit anything... At least, I shouldn't have ;^)"
 fi
 
@@ -84,43 +84,43 @@ for sample in "Data" "Signal" "MC1" "MC2" "MC3"
 do
     echo "Generating pretend $sample."
     ./runSlimmer.py $sample.root ${outBase}_$sample.root
-    check $?
+    check
     ls ${outBase}_$sample.root
     $CrombieCheckerScript ${outBase}_$sample.root
-    check $?
+    check
 done
 
 echo "Skimming with good runs!"
 ./FlatSkimmer.sh
-check $?
+check
 
 cd $here
 
 mkdir txtoutput 2> /dev/null
 echo "Running crombie diff"
 crombie diff FullOut/ SkimOut/ | sort | tail -n 5 > txtoutput/diffoutput.txt
-check $?
+check
 
 cd $here/slimmer
 
 echo "Making correction histogram!"
 ./makeHist.py
-check $?
+check
 echo "Adding corrections to .root Files!"
 ./corrector.py
-check $?
+check
 
 cd $here/plotter
 
 ./AddXSec.py
-check $?
+check
 ./reweight.py
-check $?
+check
 ./corrector.py
-check $?
+check
 
 ./Stack.py
-check $?
+check
 ## @todo Make tests
 # Make limit tree
 # Make stacks with MC configs
@@ -132,7 +132,7 @@ check $?
 # Include systematics
 # Make more stack plots with BDT cuts
 ./cutflow.py
-check $?
+check
 
 cd $here/docs
 
@@ -144,7 +144,7 @@ mkdir figs 2> /dev/null
 cp $here/plotter/plots/* figs/.
 
 crombie backupslides
-check $?
+check
 
 pdflatex \\nonstopmode\\input presentation.tex &> /dev/null
 pdflatex \\nonstopmode\\input presentation.tex &> /dev/null
@@ -152,7 +152,7 @@ pdflatex \\nonstopmode\\input presentation.tex &> /dev/null
 cd $here
 
 crombie compile
-check $?
+check
 
 cd $returnto
 
@@ -162,7 +162,7 @@ then
     echo "Making sure that rerunning doesn't overwrite files or recompile ..."
     echo "-------------------------------------------------------------------"
     crombie test fast
-    check $?
+    check
 fi
 
 exit 0
