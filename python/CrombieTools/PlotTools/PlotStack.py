@@ -30,8 +30,8 @@ def SetCuts(category, region, aPlotter = plotter):
     """
     from ..LoadConfig import cuts
     aPlotter.SetDefaultWeight(cuts.cut(category, region))
-    aPlotter.SetMCWeights(cuts.dataMCCuts(region, False))
-    aPlotter.SetDataWeights(cuts.dataMCCuts(region, True))
+    aPlotter.SetMCWeight(cuts.dataMCCuts(region, False))
+    aPlotter.SetDataWeight(cuts.dataMCCuts(region, True))
 
 
 def ReadExceptionConfig(region,aPlotter = plotter):

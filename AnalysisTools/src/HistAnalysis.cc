@@ -12,7 +12,7 @@ ClassImp(HistAnalysis)
 //--------------------------------------------------------------------
 TH1D*
 HistAnalysis::DoScaleFactors(TString PlotVar, Int_t NumBins, Double_t *XBins,
-                             ScaleFactorMethod  method, TString TreeName)
+                             ScaleFactorMethod  method)
 {
   TH1D* output = new TH1D("ScaleFactors", "ScaleFactors", NumBins, XBins);
   output->Sumw2();
@@ -22,23 +22,25 @@ HistAnalysis::DoScaleFactors(TString PlotVar, Int_t NumBins, Double_t *XBins,
   SetDefaultExpr(PlotVar);
 
   // First create the data histograms
-  SetDefaultTree(ReturnTChain(TreeName,kData));
-  AddWeight(fBaseCut);
-  for (UInt_t iCut = 0; iCut != fScaleFactorCuts.size(); ++iCut)
-    AddWeight(fBaseCut + " && " + fDataSFCuts[iCut]);
-  std::vector<TH1D*> dataHists = MakeHists(NumBins, XBins);
+  std::vector<TH1D*> dataHists;
+  SetDefaultWeight(fBaseCut);
+  dataHists.push_back(GetHist(NumBins, XBins, kData));
+  for (UInt_t iCut = 0; iCut != fScaleFactorCuts.size(); ++iCut) {
+    SetDefaultWeight(fBaseCut + " && " + fDataSFCuts[iCut]);
+    dataHists.push_back(GetHist(NumBins, XBins, kData));
+  }
 
-  // Then create the signal histograms
-  SetDefaultTree(ReturnTChain(TreeName, fSignalType, fSignalName, kLegendEntry));
-  ResetWeight();
-  AddWeight(TString("(") + fBaseCut + ")*(" + fMCWeight + ")");
-  for (UInt_t iCut = 0; iCut != fScaleFactorCuts.size(); ++iCut)
-    AddWeight(TString("(") + fBaseCut + " && " + fScaleFactorCuts[iCut] + ")*(" + fMCWeight + ")");
-  std::vector<TH1D*> signalHists = MakeHists(NumBins, XBins);
-
-  // Then create the background histograms
-  SetDefaultTree(ReturnTChain(TreeName, kBackground, fSignalName, kLegendEntry, false));
-  std::vector<TH1D*> backgroundHists = MakeHists(NumBins, XBins);
+  // Then create the signal and background histograms
+  std::vector<TH1D*> signalHists;
+  std::vector<TH1D*> backgroundHists;
+  SetDefaultWeight(fBaseCut);
+  signalHists.push_back(GetHist(NumBins, XBins, fSignalType, fSignalName, kLegendEntry));
+  backgroundHists.push_back(GetHist(NumBins, XBins, fSignalType, fSignalName, kLegendEntry, false));
+  for (UInt_t iCut = 0; iCut != fScaleFactorCuts.size(); ++iCut) {
+    SetDefaultWeight(TString("(") + fBaseCut + " && " + fScaleFactorCuts[iCut] + ")");
+    signalHists.push_back(GetHist(NumBins, XBins, fSignalType, fSignalName, kLegendEntry));
+    backgroundHists.push_back(GetHist(NumBins, XBins, fSignalType, fSignalName, kLegendEntry, false));
+  }
 
   for (Int_t iBin = 1; iBin != NumBins + 1; ++iBin) {
 
@@ -141,11 +143,11 @@ HistAnalysis::DoScaleFactors(TString PlotVar, Int_t NumBins, Double_t *XBins,
 //--------------------------------------------------------------------
 TH1D*
 HistAnalysis::DoScaleFactors(TString PlotVar, Int_t NumBins, Double_t MinX, Double_t MaxX, 
-                             ScaleFactorMethod  method, TString TreeName)
+                             ScaleFactorMethod  method)
 {
   Double_t XBins[NumBins+1];
-  ConvertToArray(NumBins,MinX,MaxX,XBins);
-  return DoScaleFactors(PlotVar,NumBins,XBins,method,TreeName);
+  ConvertToArray(NumBins, MinX, MaxX, XBins);
+  return DoScaleFactors(PlotVar, NumBins, XBins, method);
 }
 
 
@@ -179,35 +181,33 @@ HistAnalysis::ResetScaleFactorCuts()
 
 //--------------------------------------------------------------------
 void
-HistAnalysis::MakeReweightHist(TString OutFile, TString OutHist, TString PlotVar, Int_t NumBins, Double_t *XBins, TString TreeName)
+HistAnalysis::MakeReweightHist(TString OutFile, TString OutHist, TString PlotVar, Int_t NumBins, Double_t *XBins)
 {
+
+  SetDefaultExpr(PlotVar);
+  SetDefaultWeight(fBaseCut);
+
   // First create the data histogram
-  TH1F *dataHist = new TH1F("dataHist", "dataHist", NumBins, XBins);
-  dataHist->Sumw2();
-  ReturnTChain(TreeName, kData)->Draw(PlotVar + ">>dataHist", fBaseCut);
+  TH1D *dataHist = GetHist(NumBins, XBins, kData);
 
   // Then create the mc histogram
-  TH1F *mcHist = new TH1F("mcHist", "mcHist", NumBins, XBins);
-  mcHist->Sumw2();
-  TTree *mcTree = NULL;
-  if (fSignalName != "") {
-    TH1F *backgroundHist = new TH1F("backHist", "backHist", NumBins, XBins);
-    backgroundHist->Sumw2();
-    ReturnTChain(TreeName, fSignalType, fSignalName, kLegendEntry, false)->
-      Draw(PlotVar + ">>backHist", TString("(") + fBaseCut + ")*(" + fMCWeight + ")");
+  TH1D *mcHist = GetHist(NumBins, XBins, fSignalType, fSignalName, kLegendEntry, true);
 
+  // Do background subtraction, if necessary
+  if (fSignalName != "") {
+
+    TH1D *backgroundHist = GetHist(NumBins, XBins, fSignalType, fSignalName, kLegendEntry, false);
     dataHist->Add(backgroundHist, -1.0);
     delete backgroundHist;
-    mcTree = ReturnTChain(TreeName, fSignalType, fSignalName, kLegendEntry);
+
   }
-  else
-    mcTree = ReturnTChain(TreeName, kBackground);
-  mcTree->Draw(PlotVar + ">>mcHist", TString("(") + fBaseCut + ")*(" + fMCWeight + ")");
 
   // Normalize for most applications, unless we are getting transfer factors or something
   if (fNormalized) {
+
     dataHist->Scale(1.0/dataHist->Integral());
     mcHist->Scale(1.0/mcHist->Integral());
+
   }
 
   dataHist->Divide(mcHist);
@@ -219,16 +219,20 @@ HistAnalysis::MakeReweightHist(TString OutFile, TString OutHist, TString PlotVar
   TFile *theFile = new TFile(OutFile, "RECREATE");
   theFile->WriteTObject(dataHist, OutHist);
   theFile->WriteTObject(uncHist, OutHist + "_unc");
+
   delete dataHist;
   delete mcHist;
   delete uncHist;
+
 }
 
 //--------------------------------------------------------------------
 void
-HistAnalysis::MakeReweightHist(TString OutFile, TString OutHist, TString PlotVar, Int_t NumBins, Double_t MinX, Double_t MaxX, TString TreeName)
+HistAnalysis::MakeReweightHist(TString OutFile, TString OutHist, TString PlotVar, Int_t NumBins, Double_t MinX, Double_t MaxX)
 {
+
   Double_t XBins[NumBins+1];
   ConvertToArray(NumBins, MinX, MaxX, XBins);
-  MakeReweightHist(OutFile, OutHist, PlotVar, NumBins, XBins, TreeName);
+  MakeReweightHist(OutFile, OutHist, PlotVar, NumBins, XBins);
+
 }

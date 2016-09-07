@@ -1,4 +1,4 @@
-#!/usr/bin/env python                                                                                                                                                                              
+#!/usr/bin/env python
 
 from CrombieTools.AnalysisTools.HistAnalysis import *
 from CrombieTools.LoadConfig import cuts
@@ -8,8 +8,9 @@ SetupFromEnv()
 
 histAnalysis.AddDataFile('test_Data.root')
 histAnalysis.SetBaseCut(cuts.cut('example', 'control'))
-histAnalysis.SetMCWeight('(allWeights * xsec * ' + os.environ.get('CrombieLuminosity') + ')')
+histAnalysis.SetMCWeight('allWeights')
 histAnalysis.SetSignalName('MC1')
 histAnalysis.SetNormalized(False)
+histAnalysis.SetTreeName('test')
 
-histAnalysis.MakeReweightHist('example_reweight.root', 'weight', 'example', 20, 0, 100, 'test')
+histAnalysis.MakeReweightHist('example_reweight.root', 'weight', 'example', 20, 0, 100)

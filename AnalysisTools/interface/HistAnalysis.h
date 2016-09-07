@@ -35,8 +35,6 @@ class HistAnalysis : public FileConfigReader
   inline void      SetBaseCut         ( TString cut )                                  { fBaseCut = cut; fDataBaseCut = cut;     }
   /// Sets the base cut for MC and Data
   inline void      SetBaseCut         ( TString cut, TString datacut )                 { fBaseCut = cut; fDataBaseCut = datacut; }
-  /// Sets the MC weight
-  inline void      SetMCWeight        ( TString weight )                               { fMCWeight = weight;                     }
 
   /// Sets the format string for the scale factor table
   inline void      SetFormat          ( TString format )                               { fFormat = format;                       }
@@ -47,10 +45,10 @@ class HistAnalysis : public FileConfigReader
   };
   /// Does scale factors between background-subtracted data and signal MC for each bin
   TH1D* DoScaleFactors     ( TString PlotVar, Int_t NumBins, Double_t *XBins,
-                             ScaleFactorMethod  method = kCutAndCount, TString TreeName = "events" );
+                             ScaleFactorMethod  method = kCutAndCount );
   /// Does scale factors between background-subtracted data and signal MC with easier binning
   TH1D* DoScaleFactors     ( TString PlotVar, Int_t NumBins, Double_t MinX, Double_t MaxX,
-                             ScaleFactorMethod  method = kCutAndCount, TString TreeName = "events" );
+                             ScaleFactorMethod  method = kCutAndCount );
 
   /// Sets various other cut levels for scalefactors.
   void      AddScaleFactorCut  (  TString name, TString cut, TString datacut = "" );
@@ -59,11 +57,11 @@ class HistAnalysis : public FileConfigReader
 
   /// Reweights based on some expression in MC to match data shape and makes a histogram for CorrectionApplicator to use
   void             MakeReweightHist   ( TString OutFile, TString OutHist, TString PlotVar,
-                                        Int_t NumBins, Double_t *XBins, TString TreeName = "events" );
+                                        Int_t NumBins, Double_t *XBins );
 
   /// Reweights based on some expression in MC with easier to use binning
   void             MakeReweightHist   ( TString OutFile, TString OutHist, TString PlotVar,
-                                        Int_t NumBins, Double_t MinX, Double_t MaxX, TString TreeName = "events" );
+                                        Int_t NumBins, Double_t MinX, Double_t MaxX );
 
   /// Different methods of printing the scale factor tables
   enum  PrintingMethod { 
@@ -85,7 +83,6 @@ class HistAnalysis : public FileConfigReader
   FileType         fSignalType = kBackground;    ///< Which MC list to get the signal files from
   TString          fBaseCut = "1";               ///< Sets the cut to use for MC events in the analysis
   TString          fDataBaseCut = "1";           ///< Sets the cut to use for data in the analysis
-  TString          fMCWeight = "1";              ///< Weight for the MC histograms
   std::vector<TString> fScaleFactorCuts;         ///< Vector of cuts to do scale factor measurements on
   std::vector<TString> fDataSFCuts;              ///< Vector of cuts on data to do scale factor measurements on
   std::vector<TString> fCutNames;                ///< Vector of cut names to print out table

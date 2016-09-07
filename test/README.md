@@ -12,9 +12,9 @@ the relative `slimmer` and `analysis` directories.
 Output documentation will be in the docs directory.
 
 Compare `$CROMBIEPATH/test/docs/test.pdf` to
-https://dabercro.cern.ch/dabercro/CrombieToolsDocs/test.pdf.
+https://dabercro.web.cern.ch/dabercro/CrombieToolsDocs/test.pdf.
 
 Compare `$CROMBIEPATH/test/docs/presentation.pdf` to
-https://dabercro.cern.ch/dabercro/CrombieToolsDocs/presentation.pdf.
+https://dabercro.web.cern.ch/dabercro/CrombieToolsDocs/presentation.pdf.
 
 @todo Write about expected test results

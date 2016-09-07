@@ -29,6 +29,9 @@ After installation, it's recommended that you [run tests](test/README.md).
 
 ## Other Topics
 
+From GitHub, you can follow these links.
+Navigate with the sidebar if viewing Doxgen-generated pages.
+
 [Running Tests](test/README.md) <br>
 [Analysis Workspace](templates/README.md) <br>
 [Command Line Tools Reference](bin/README.md) <br>

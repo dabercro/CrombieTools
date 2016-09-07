@@ -57,15 +57,11 @@ class PlotHists : public PlotBase
                                                     TString XLabel, TString YLabel, Bool_t logY = false)
                                                               { BaseCanvas(FileBase,theHists,XLabel,YLabel,logY); }
   
-  /// There are some tests I had dump out, set by this bool
-  void                   SetPrintTests            ( Bool_t b )                            { fPrintTests = b;      }
-
  private:
   
   Bool_t    fNormalizedHists = false;             ///< Can normalize histograms in order to compare shapes
-  Int_t     fNormalizeTo;                         ///< If not specified, normalized to 1
-  Double_t  fEventsPer;                           ///< Histogram normalized to events per units of X axis
-  Bool_t    fPrintTests = false;                  ///< Can dump some compatibility tests of histograms
+  Int_t     fNormalizeTo = -1;                    ///< If not specified, normalized to 1
+  Double_t  fEventsPer = 0;                       ///< Histogram normalized to events per units of X axis
   std::vector<UInt_t>           fSysUncIndices;   ///< Indices of histograms to apply systematic uncertainties
   std::vector<UncertaintyInfo*> fUncerts;         ///< Uncertainties to apply to histograms
   std::vector<UncertaintyInfo*> fDeleteUnc;       ///< Uncertainties created by the class to delete at the end

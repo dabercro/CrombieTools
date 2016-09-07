@@ -56,12 +56,12 @@ class FileConfigReader : public InOutDirectoryHolder, public PlotHists
     kLegendEntry       ///< Match the legend entry
   };
   /// Returns a vector of file names that have been read from the configs
-  std::vector<TString> ReturnFileNames      ( FileType type = kBackground, TString limitName = "",
+  std::vector<TString> ReturnFileNames      ( FileType type = kBackground, TString matchName = "",
                                               SearchBy search = kLimitName, Bool_t match = true );
 
   /// Returns a TChain of files that match the FileType and name for the LimitTreeMaker
   TChain*              ReturnTChain         ( TString treeName = "events", FileType type = kBackground,
-                                              TString limitName = "", SearchBy search = kLimitName, Bool_t match = true );
+                                              TString matchName = "", SearchBy search = kLimitName, Bool_t match = true );
 
   /// Add a data file
   void                 AddDataFile          ( TString fileName );
@@ -74,9 +74,9 @@ class FileConfigReader : public InOutDirectoryHolder, public PlotHists
                                               TString entry = "", Int_t colorstyle = 0 );
 
   /// The multipliers for Data can be set separately.
-  inline    void       SetDataWeights       ( TString weight )                          { fDataWeights = weight;   }
+  inline    void       SetDataWeight        ( TString weight )                          { fDataWeight = weight;    }
   /// The multipliers for MC can be set separately.
-  inline    void       SetMCWeights         ( TString weight )                          { fMCWeights = weight;     }
+  inline    void       SetMCWeight          ( TString weight )                          { fMCWeight = weight;      }
   
   /// Default File adder with FileType changing
   inline    void       AddFile              ( TString treeName, TString fileName, Double_t XSec, 
@@ -121,35 +121,44 @@ class FileConfigReader : public InOutDirectoryHolder, public PlotHists
   std::vector<FileInfo*>  fMCFileInfo;                    ///< Vector of background FileInfo objects
   std::vector<FileInfo*>  fSignalFileInfo;                ///< Vector of signal FileInfo objects
 
-  /// Draws histograms for from the using the default expression and file configuration
-  std::vector<TH1D*>    GetHistList            ( Int_t NumXBins, Double_t *XBins, FileType type);
+  /// Draws histograms for using the default expression and file configuration
+  std::vector<TH1D*>    GetHistList            ( Int_t NumXBins, Double_t *XBins, FileType type, TString matchName = "",
+                                                 SearchBy search = kLimitName, Bool_t match = true);
+
+  /// Draw a single histogram using the default expression and file configuration
+  TH1D*      GetHist       ( Int_t NumXBins, Double_t *XBins, FileType type, TString matchName = "",
+                             SearchBy search = kLimitName, Bool_t match = true);
+
+  void       OpenFiles     ( std::vector<TString> fileNames );  ///< Opens the files in a vector
+  void       CloseFiles    ();                                  ///< Closes the files that are open
 
   /// Allows reader to avoid skipping when reading in exception configs
   void       SetKeepAllFiles                ( Bool_t keep )                             { fKeepAllFiles = keep;    }
   /// Allows reader to avoid skipping when reading in exception configs
   void       SetMultiplyLumi                ( Bool_t doMultiply )                    { fMultiplyLumi = doMultiply; }
 
-  void         OpenFiles     ( std::vector<TString> fileNames );  ///< Opens the files in a vector
-  void         CloseFiles    ();                                  ///< Closes the files that are open
-
  private:
-  TString               fTreeName = "events";       ///< Stores name of tree from file
+  TString    fTreeName = "events";                        ///< Stores name of tree from file
 
   /// Return a pointer to a proper vector of FileInfo
   std::vector<FileInfo*> *GetFileInfo       ( FileType type ); 
 
-  FileType     fFileType = kBackground;                   ///< Type of files in the next config
-  Bool_t       fKeepAllFiles = false;                     ///< Keeps FileInfo stored usually deleted by exception configs
-  Bool_t       fMultiplyLumi = true;                      ///< Returns XSecWeight with luminosity multiplied
+  /// Fill fHists with histograms that would be generated with GetHistList().
+  void       GenerateHistograms           ( Int_t NumXBins, Double_t *XBins, FileType type );
+
+  FileType   fFileType = kBackground;                     ///< Type of files in the next config
+  Bool_t     fKeepAllFiles = false;                       ///< Keeps FileInfo stored usually deleted by exception configs
+  Bool_t     fMultiplyLumi = true;                        ///< Returns XSecWeight with luminosity multiplied
   std::vector<TObject*> fDeleteThese;                     ///< Vector of object pointers to free memory at the end
   std::vector<TFile*>   fFiles;                           ///< Vector of active files
   std::vector<TTree*>   fTrees;                           ///< Vector of active files' trees
+  std::vector<TH1D*>    fHists;                           ///< Vector of histograms to use
   std::vector<std::vector<TFile*>> fAllFiles;             ///< Vector of all open files
 
-  TString      fDataWeights = "";                         ///< Separate Data weights if needed
-  TString      fMCWeights = "";                           ///< Separate MC weights if needed
+  TString    fDataWeight = "";                            ///< Separate Data weights if needed
+  TString    fMCWeight = "";                              ///< Separate MC weights if needed
   
-  TString      fDataExpression = "";                      ///< Holds an alternative expression to plot data in
+  TString    fDataExpression = "";                        ///< Holds an alternative expression to plot data in
   
 };
 
@@ -223,18 +232,18 @@ FileConfigReader::ReturnTreeNames(FileType type)
 
 //--------------------------------------------------------------------
 std::vector<TString>
-FileConfigReader::ReturnFileNames(FileType type, TString limitName, SearchBy search, Bool_t match)
+FileConfigReader::ReturnFileNames(FileType type, TString matchName, SearchBy search, Bool_t match)
 {
   std::vector<TString> output;
   std::vector<FileInfo*> *fileInfo = GetFileInfo(type);
 
   for (std::vector<FileInfo*>::iterator iInfo = fileInfo->begin(); iInfo != fileInfo->end(); ++iInfo) {
     if (search == kLimitName) {
-      if (limitName != "" && (((*iInfo)->fTreeName != limitName && match) || ((*iInfo)->fTreeName == limitName && !match)))
+      if (matchName != "" && (((*iInfo)->fTreeName != matchName && match) || ((*iInfo)->fTreeName == matchName && !match)))
         continue;
     }
     else if (search == kLegendEntry) {
-      if (limitName != "" && (((*iInfo)->fEntry != limitName && match) || ((*iInfo)->fEntry == limitName && !match)))
+      if (matchName != "" && (((*iInfo)->fEntry != matchName && match) || ((*iInfo)->fEntry == matchName && !match)))
         continue;
     }
 
@@ -246,10 +255,10 @@ FileConfigReader::ReturnFileNames(FileType type, TString limitName, SearchBy sea
 
 //--------------------------------------------------------------------
 TChain*
-FileConfigReader::ReturnTChain(TString treeName, FileType type, TString limitName, SearchBy search, Bool_t match)
+FileConfigReader::ReturnTChain(TString treeName, FileType type, TString matchName, SearchBy search, Bool_t match)
 {
   TChain *theChain = new TChain(treeName, treeName + "_chain");
-  std::vector<TString> fileList = ReturnFileNames(type, limitName, search, match);
+  std::vector<TString> fileList = ReturnFileNames(type, matchName, search, match);
   for (std::vector<TString>::iterator iFile = fileList.begin(); iFile != fileList.end(); ++iFile)
     theChain->Add(iFile->Data());
 
@@ -399,10 +408,11 @@ void FileConfigReader::ReadMCConfig(TString config, TString fileDir)
 
 //--------------------------------------------------------------------
 std::vector<TH1D*>
-FileConfigReader::GetHistList(Int_t NumXBins, Double_t *XBins, FileType type)
+FileConfigReader::GetHistList(Int_t NumXBins, Double_t *XBins, FileType type, 
+                              TString matchName, SearchBy search, Bool_t match)
 {
 
-  std::vector<TString> theFileNames = ReturnFileNames(type);
+  std::vector<TString> theFileNames = ReturnFileNames(type, matchName, search, match);
   OpenFiles(theFileNames);
 
   std::vector<FileInfo*> *theFileInfo = &fMCFileInfo;
@@ -414,16 +424,16 @@ FileConfigReader::GetHistList(Int_t NumXBins, Double_t *XBins, FileType type)
 
   SetTreeList(fTrees);
 
-  if (type == kData && fDataWeights != "") {
+  if (type == kData && fDataWeight != "") {
 
     tempCutHolder = fDefaultCut;
-    SetDefaultWeight(TString("(") + tempCutHolder + TString(") && (") + fDataWeights + TString(")"));
+    SetDefaultWeight(TString("(") + tempCutHolder + TString(") && (") + fDataWeight + TString(")"));
 
   }
-  else if (type != kData && fMCWeights != "") {
+  else if (type != kData && fMCWeight != "") {
 
     tempCutHolder = fDefaultCut;
-    SetDefaultWeight(TString("(") + tempCutHolder + TString(")*(") + fMCWeights + TString(")"));
+    SetDefaultWeight(TString("(") + tempCutHolder + TString(")*(") + fMCWeight + TString(")"));
 
   }
 
@@ -447,6 +457,7 @@ FileConfigReader::GetHistList(Int_t NumXBins, Double_t *XBins, FileType type)
   }
 
   std::vector<TH1D*> theHists = MakeHists(NumXBins, XBins);
+
   if (type == kData && fDataExpression != "")
     SetDefaultExpr(tempExprHolder);
 
@@ -456,11 +467,14 @@ FileConfigReader::GetHistList(Int_t NumXBins, Double_t *XBins, FileType type)
   if (type != kData) {
 
     UInt_t iFileName = 0;
+
     for (UInt_t iFile = 0; iFile < theFileInfo->size(); iFile++) {
+
       if ((*theFileInfo)[iFile]->fFileName != theFileNames[iFileName])
         continue;
 
-      theHists[iFile]->Scale((*theFileInfo)[iFile]->fXSecWeight);
+      theHists[iFileName]->Scale((*theFileInfo)[iFile]->fXSecWeight);
+
       ++iFileName;
     }
 
@@ -470,8 +484,32 @@ FileConfigReader::GetHistList(Int_t NumXBins, Double_t *XBins, FileType type)
 }
 
 //--------------------------------------------------------------------
+TH1D*
+FileConfigReader::GetHist(Int_t NumXBins, Double_t *XBins, FileType type, 
+                          TString matchName, SearchBy search, Bool_t match)
+{
+
+  std::vector<TH1D*> theHists = GetHistList(NumXBins, XBins, type, matchName, search, match);
+
+  if (theHists.size() == 0) {
+    std::cerr << "The list of histograms called is empty." << std::endl;
+    exit(30);
+  }
+
+  TH1D *output = (TH1D*) theHists[0]->Clone();
+  output->Reset("M");
+
+  for (std::vector<TH1D*>::iterator iHist = theHists.begin(); iHist != theHists.end(); ++iHist)
+    output->Add(*iHist);
+
+  return output;
+
+}
+
+//--------------------------------------------------------------------
 void
-FileConfigReader::OpenFiles(std::vector<TString> fileNames) {
+FileConfigReader::OpenFiles(std::vector<TString> fileNames)
+{
 
   fFiles.resize(0);
   fTrees.resize(0);
@@ -505,7 +543,8 @@ FileConfigReader::OpenFiles(std::vector<TString> fileNames) {
 
 //--------------------------------------------------------------------
 void
-FileConfigReader::CloseFiles() {
+FileConfigReader::CloseFiles()
+{
 
   for (UInt_t iFiles = 0; iFiles != fAllFiles.size(); ++iFiles) {
     for (UInt_t iFile = 0; iFile != fAllFiles[iFiles].size(); ++iFile)
