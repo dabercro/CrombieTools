@@ -23,8 +23,14 @@ then
 
     compareFile=docs/html/index.html
 
+    echo "Comparing age to $compareFile"
+    echo "Newer files:"
+
     if [ ! -f $compareFile -o $(find `git ls-files` -newer $compareFile | wc -l) -ne 0 ]
     then
+
+        echo $(find `git ls-files` -newer $compareFile)
+        echo "Making documentation."
 
         doxygen docs/CrombieDocs.cfg &> /dev/null           # If newer files exist, create the documentation
 
@@ -44,6 +50,10 @@ then
             rm doxygen.log
 
         fi
+
+    else
+
+        echo "None found"
 
     fi
 

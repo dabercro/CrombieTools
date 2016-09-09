@@ -46,11 +46,11 @@ def RunParallel(objectToRun, functionName, parametersLists, procs=DefaultNumProc
         running = True
 
         objCopy = objectToRun.Copy()
-        functionToRun = getattr(objCopy,functionName)
+        functionToRun = getattr(objCopy, functionName)
 
         while running:
             try:
-                parameters = inQueue.get(True,1)
+                parameters = inQueue.get(True, 1)
                 if printing:
                     print('About to process ' + str(parameters))
 

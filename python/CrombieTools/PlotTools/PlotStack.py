@@ -98,7 +98,7 @@ class ParallelStackContainer:
             self.Plotter.ResetCutLines()
 
 
-def MakePlots(categories, regions, exprArgs, overwrite = True, aPlotter=plotter):
+def MakePlots(categories, regions, exprArgs, overwrite=True, parallel=True, aPlotter=plotter):
     """ Shortcut to make plots for multiple categories and regions with the same setup.
 
     @param categories is a list of categories to plot.
@@ -113,22 +113,28 @@ def MakePlots(categories, regions, exprArgs, overwrite = True, aPlotter=plotter)
                         - cut_lines takes a list of floats
     @param overwrite overwrites old plots with the same name if set to true.
                      Otherwise, those plots are skipped.
+    @param parallel determines whether or not to run the plots in a Multiprocess fashion.
     @param aPlotter is the plotter to use to plot. The default is the plotter defined in this module.
     """
 
     if not type(categories) == list:
         MakePlots([categories], regions, exprArgs, aPlotter)
 
-    elif not type(categories) == list:
+    elif not type(regions) == list:
         MakePlots(categories, [regions], exprArgs, aPlotter)
 
     else:
-        from ..Parallelization import RunParallel
-
         passToParallel = []
         for category in categories:
             for region in regions:
                 for exprArg in exprArgs:
                     passToParallel.append([category, region, exprArg])
 
-        RunParallel(ParallelStackContainer(aPlotter, overwrite), 'MakePlot', passToParallel)
+        if parallel:
+            from ..Parallelization import RunParallel
+            RunParallel(ParallelStackContainer(aPlotter, overwrite), 'MakePlot', passToParallel)
+
+        else:
+            plotter = ParallelStackContainer(aPlotter, overwrite)
+            for args in passToParallel:
+                plotter.MakePlot(*args)
