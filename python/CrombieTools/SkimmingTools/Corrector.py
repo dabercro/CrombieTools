@@ -18,15 +18,15 @@ newApplicator = Load('CorrectorApplicator')
 """CorrectorApplicator constructor"""
 
 
-def MakeApplicator(name, saveAll, reportFreq=100000, inputTree='events', outputTree='events'):
+def MakeApplicator(name, saveAll, inputTree='events', outputTree='events', reportFreq=100000):
     """Make a CorrectorApplicator with parameters filled
 
     @param name is a string that names the branch to merge all of the correction factors into.
     @param saveAll is a bool to determine whether or not to save each correction factor
                    in their own branch.
-    @param reportFreq is the number of events to pass between reporting progress.
     @param inputTree is the name of the tree to read as input.
     @param outputTree is the name of the tree to place the output branches.
+    @param reportFreq is the number of events to pass between reporting progress.
     @returns a CorrectorApplicator object.
     """
     applicator = newApplicator(name, saveAll)
