@@ -34,12 +34,12 @@ HistAnalysis::DoScaleFactors(TString PlotVar, Int_t NumBins, Double_t *XBins,
   std::vector<TH1D*> signalHists;
   std::vector<TH1D*> backgroundHists;
   SetDefaultWeight(fBaseCut);
-  signalHists.push_back(GetHist(NumBins, XBins, fSignalType, fSignalName, kLegendEntry));
-  backgroundHists.push_back(GetHist(NumBins, XBins, fSignalType, fSignalName, kLegendEntry, false));
+  signalHists.push_back(GetHist(NumBins, XBins, fSignalType, fSignalName, fSearchBy));
+  backgroundHists.push_back(GetHist(NumBins, XBins, fSignalType, fSignalName, fSearchBy, false));
   for (UInt_t iCut = 0; iCut != fScaleFactorCuts.size(); ++iCut) {
     SetDefaultWeight(TString("(") + fBaseCut + " && " + fScaleFactorCuts[iCut] + ")");
-    signalHists.push_back(GetHist(NumBins, XBins, fSignalType, fSignalName, kLegendEntry));
-    backgroundHists.push_back(GetHist(NumBins, XBins, fSignalType, fSignalName, kLegendEntry, false));
+    signalHists.push_back(GetHist(NumBins, XBins, fSignalType, fSignalName, fSearchBy));
+    backgroundHists.push_back(GetHist(NumBins, XBins, fSignalType, fSignalName, fSearchBy, false));
   }
 
   for (Int_t iBin = 1; iBin != NumBins + 1; ++iBin) {
@@ -191,12 +191,12 @@ HistAnalysis::MakeReweightHist(TString OutFile, TString OutHist, TString PlotVar
   TH1D *dataHist = GetHist(NumBins, XBins, kData);
 
   // Then create the mc histogram
-  TH1D *mcHist = GetHist(NumBins, XBins, fSignalType, fSignalName, kLegendEntry, true);
+  TH1D *mcHist = GetHist(NumBins, XBins, fSignalType, fSignalName, fSearchBy, true);
 
   // Do background subtraction, if necessary
   if (fSignalName != "") {
 
-    TH1D *backgroundHist = GetHist(NumBins, XBins, fSignalType, fSignalName, kLegendEntry, false);
+    TH1D *backgroundHist = GetHist(NumBins, XBins, fSignalType, fSignalName, fSearchBy, false);
     dataHist->Add(backgroundHist, -1.0);
     delete backgroundHist;
 

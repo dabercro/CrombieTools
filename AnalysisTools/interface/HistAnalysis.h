@@ -39,6 +39,9 @@ class HistAnalysis : public FileConfigReader
   /// Sets the format string for the scale factor table
   inline void      SetFormat          ( TString format )                               { fFormat = format;                       }
 
+  /// Sets the type of way to identify signal and backgrounds
+  inline void      SetSearchBy        ( SearchBy search )                              { fSearchBy = search;                     }
+
   /// Different methods of doing cut and count
   enum      ScaleFactorMethod { 
     kCutAndCount = 0,                     ///< Does scale factor through a simple cut and count with background subtraction
@@ -86,6 +89,8 @@ class HistAnalysis : public FileConfigReader
   std::vector<TString> fScaleFactorCuts;         ///< Vector of cuts to do scale factor measurements on
   std::vector<TString> fDataSFCuts;              ///< Vector of cuts on data to do scale factor measurements on
   std::vector<TString> fCutNames;                ///< Vector of cut names to print out table
+
+  SearchBy         fSearchBy = kLimitName;       ///< Defines the string that is compared when identifying signal
 
   TString          fFormat = "%.2f";                   ///< Format string for the output tables
   PrintingMethod   fPrintingMethod = kPresentation;    ///< Stores type of method to use for making scale factor tables

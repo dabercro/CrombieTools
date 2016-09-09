@@ -339,7 +339,9 @@ The elements are space delimited.
     </td>
     <td align="left" valign="top">
       This is the base of the tree that will be made by LimitTreeMaker for this file.
-      The name should be unique for each file.
+      The name should be unique for each file if using LimitTreeMaker.
+      For other analyses, this can instead be used only to differentiate signal and background.
+      In this case, putting `.` in the config file will copy the previous line.
     </td>
   </tr>
   <tr>

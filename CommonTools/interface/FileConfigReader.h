@@ -315,6 +315,7 @@ void FileConfigReader::ReadMCConfig(TString config, TString fileDir)
   TString XSec;
   TString LegendEntry;
   TString ColorStyleEntry; 
+  TString currTreeName;
   TString currLegend;
   TString currColorStyle;
   TString red;
@@ -329,6 +330,15 @@ void FileConfigReader::ReadMCConfig(TString config, TString fileDir)
 
   while (!configFile.eof()) {
     configFile >> LimitTreeName;
+
+    if (LimitTreeName == ".")
+      LimitTreeName = currTreeName;
+    else if (LimitTreeName != "#.") {
+      if (LimitTreeName.BeginsWith('#'))
+        currTreeName = TString(LimitTreeName.Strip(TString::kLeading, '#'));
+      else
+        currTreeName = LimitTreeName;
+    }
 
     // Do the checking here for merging groups
     if (LimitTreeName == "INGROUP") 
