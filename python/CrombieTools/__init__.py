@@ -75,7 +75,7 @@ def Load(className):
             print('in CrombieTools... Exiting.')
             exit(1)
 
-        ROOT.gROOT.LoadMacro(toLoad + '+')
+        ROOT.gROOT.LoadMacro(toLoad + '++g')
 
     if className in ['PlotUtils']:
         return 0
@@ -115,3 +115,23 @@ def Nminus1Cut(inCut, varToRemove, returnCuts=False):
         return cutList
     else:
         return holdCut
+
+def debug(debugger='gdb'):
+    """Hooks a debugger to a script.
+
+    See https://root.cern.ch/phpBB3/viewtopic.php?t=10227.
+
+    @param debugger is type of debugger
+    """
+    import os
+    pid = os.spawnvp(os.P_NOWAIT,
+                     debugger, [debugger, '-q', 'python', str(os.getpid())])
+
+    # give debugger some time to attach to the python process
+    import time
+    time.sleep(1)
+
+    # verify the process' existence (will raise OSError if failed)
+    os.waitpid(pid, os.WNOHANG)
+    os.kill(pid, 0)
+    return
