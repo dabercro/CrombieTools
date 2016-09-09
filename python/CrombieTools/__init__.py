@@ -75,7 +75,7 @@ def Load(className):
             print('in CrombieTools... Exiting.')
             exit(1)
 
-        ROOT.gROOT.LoadMacro(toLoad + '++g')
+        ROOT.gROOT.LoadMacro(toLoad + '+g')
 
     if className in ['PlotUtils']:
         return 0
