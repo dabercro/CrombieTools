@@ -21,6 +21,32 @@ then
 
     pdfName=CrombieToolsManual.pdf
 
+    compareFile=docs/html/index.html
+
+    if [ ! -f $compareFile -o $(find `git ls-files` -newer $compareFile | wc -l) -ne 0 ]
+    then
+
+        doxygen docs/CrombieDocs.cfg &> /dev/null           # If newer files exist, create the documentation
+
+        if [ "$copy" != "test" ]                            # If testing, just make the html
+        then                                                #   otherwise, make the LaTeX manual too
+
+            echo "Making .pdf reference"
+            cd docs/latex
+            make &> /dev/null && mv refman.pdf $pdfName
+            cd - &> /dev/null
+
+        fi
+        
+        if [ `cat doxygen.log | wc -l` -eq 4 ]              # If the doxygen.log only has image warnings, remove it.
+        then                                                #   Otherwise, leave it for reading warnings
+
+            rm doxygen.log
+
+        fi
+
+    fi
+
     if [ "$USER" = "dabercro" ] && [ "$copy" = "copy" ]     # If I am me, can copy to the appropriate server
     then
 
@@ -50,26 +76,6 @@ then
         $useTar -czf - docs/html/* docs/latex/$pdfName test/docs/*.pdf |
             ssh $targetHost "mkdir -p $targetDir 2> /dev/null ; cd $targetDir ; rm -rf search ; tar -xzf - ; mv docs/html/* . ; mv docs/latex/$pdfName . ; mv test/docs/*.pdf ."
 
-    else
-
-        doxygen docs/CrombieDocs.cfg &> /dev/null           # If not copying, create the documentation
-
-        if [ "$copy" != "test" ]                            # If testing, just make the html
-        then                                                #   otherwise, make the LaTeX manual too
-
-            echo "Making .pdf reference"
-            cd docs/latex
-            make &> /dev/null && mv refman.pdf $pdfName
-            cd - &> /dev/null
-
-        fi
-        
-        if [ `cat doxygen.log | wc -l` -eq 4 ]              # If the doxygen.log only has image warnings, remove it.
-        then                                                #   Otherwise, leave it for reading warnings
-
-            rm doxygen.log
-
-        fi
     fi
 
     cd $here
