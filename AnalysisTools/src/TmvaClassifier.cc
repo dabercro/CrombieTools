@@ -1,5 +1,6 @@
 #include <iostream>
 #include <fstream>
+#include <stdio.h>
 
 #include "TFile.h"
 #include "TGraph.h"
@@ -108,7 +109,7 @@ TmvaClassifier::TmvaClassify()
     BackgroundTrees.push_back(tempTree);                                         // Save TreeContainer for deleting at the end
   }
 
-  factory->SetWeightExpression(fWeight);
+  factory->SetWeightExpression(fWeight.GetTitle());
   factory->PrepareTrainingAndTestTree("1","SplitMode=Alternate:NormMode=NumEvents:V");
 
   factory->BookMethod(TMVA::Types::kBDT,fMethodName,fBDTDef);
@@ -176,10 +177,12 @@ TmvaClassifier::Apply(Int_t NumBins, Double_t *VarVals, Int_t NumMapPoints)
       BDTBins[i0] = i0 * binWidth - 1;
 
     for (Int_t iVarBin = 0; iVarBin != NumBins; ++iVarBin) {
-      TString BinCut = TString::Format("(%s>=%f&&%s<%f)",
-                                       fUniformVariable.Data(), VarVals[iVarBin],
-                                       fUniformVariable.Data(), VarVals[iVarBin+1]);
-      HistPlotter->AddWeight(TString("weight*(classID == 1 && ") + BinCut + ")");
+      char buffer [1023];
+      sprintf(buffer, "(%s>=%f&&%s<%f)",
+              fUniformVariable.Data(), VarVals[iVarBin],
+              fUniformVariable.Data(), VarVals[iVarBin+1]);
+      TCut BinCut = TCut(buffer);
+      HistPlotter->AddWeight(fWeight * "classID == 1" + BinCut);
     }
 
     std::cout << "Making hists." << std::endl;

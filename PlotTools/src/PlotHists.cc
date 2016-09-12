@@ -50,8 +50,8 @@ PlotHists::MakeHists(Int_t NumXBins, Double_t *XBins)
   }
 
   TTree *inTree = fDefaultTree;
-  TString inCut = fDefaultCut;
   TString inExpr = fDefaultExpr;
+  TCut inCut = fDefaultCut;
 
   TH1D *tempHist;
 

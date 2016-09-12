@@ -26,7 +26,7 @@ HistAnalysis::DoScaleFactors(TString PlotVar, Int_t NumBins, Double_t *XBins,
   SetDefaultWeight(fBaseCut);
   dataHists.push_back(GetHist(NumBins, XBins, kData));
   for (UInt_t iCut = 0; iCut != fScaleFactorCuts.size(); ++iCut) {
-    SetDefaultWeight(fBaseCut + " && " + fDataSFCuts[iCut]);
+    SetDefaultWeight(fBaseCut + fDataSFCuts[iCut]);
     dataHists.push_back(GetHist(NumBins, XBins, kData));
   }
 
@@ -37,7 +37,7 @@ HistAnalysis::DoScaleFactors(TString PlotVar, Int_t NumBins, Double_t *XBins,
   signalHists.push_back(GetHist(NumBins, XBins, fSignalType, fSignalName, fSearchBy));
   backgroundHists.push_back(GetHist(NumBins, XBins, fSignalType, fSignalName, fSearchBy, false));
   for (UInt_t iCut = 0; iCut != fScaleFactorCuts.size(); ++iCut) {
-    SetDefaultWeight(TString("(") + fBaseCut + " && " + fScaleFactorCuts[iCut] + ")");
+    SetDefaultWeight(fBaseCut + fScaleFactorCuts[iCut]);
     signalHists.push_back(GetHist(NumBins, XBins, fSignalType, fSignalName, fSearchBy));
     backgroundHists.push_back(GetHist(NumBins, XBins, fSignalType, fSignalName, fSearchBy, false));
   }
@@ -160,7 +160,7 @@ HistAnalysis::DoScaleFactors(TString PlotVar, Int_t NumBins, Double_t MinX, Doub
 */
 
 void
-HistAnalysis::AddScaleFactorCut(TString name, TString cut, TString datacut)
+HistAnalysis::AddScaleFactorCut(TString name, TCut cut, TCut datacut)
 {
   fCutNames.push_back(name);
   fScaleFactorCuts.push_back(cut);

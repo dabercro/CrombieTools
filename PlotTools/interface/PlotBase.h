@@ -16,6 +16,7 @@
 #include "TStyle.h"
 #include "TTree.h"
 #include "TString.h"
+#include "TCut.h"
 
 #include "TLatex.h"
 #include "TH1.h"
@@ -42,19 +43,27 @@ class PlotBase
   virtual ~PlotBase();
   
   ///  This function adds a tree pointer, cut, and expression used for generating a line in the plot
-  inline    void         AddLine                  ( TTree *tree, TString cut, TString expr );
+  inline    void         AddLine                  ( TTree *tree, TCut cut, TString expr );
 
   /// Set a tree and weight concurrently for each line. Best used when a default expression is set.
-  inline    void         AddTreeWeight            ( TTree *tree, TString cut );
+  inline    void         AddTreeWeight            ( TTree *tree, TCut cut );
   /// Set a tree and expression concurrently for each line. Best used when a default weight is set.
   inline    void         AddTreeExpr              ( TTree *tree, TString expr );
   /// Set a weight and expression concurrently for each line. Best used when a default tree is set.
-  inline    void         AddWeightExpr            ( TString cut, TString expr );
+  inline    void         AddWeightExpr            ( TCut cut, TString expr );
 
   /// Set entry and color for each line. This uses the default line width and style.
   inline    void         AddLegendEntry           ( TString LegendEntry, Color_t ColorEntry );
   /// Set entry, color, width, and style for each line.
   inline    void         AddLegendEntry           ( TString LegendEntry, Color_t ColorEntry, Int_t LineWidth, Int_t LineStyle );
+
+  ///  This function adds a tree pointer, cut, and expression used for generating a line in the plot
+  inline    void         AddLine              ( TTree *tree, const char* cut, TString expr )   { AddLine(tree, TCut(cut), expr); }
+
+  /// Set a tree and weight concurrently for each line. Best used when a default expression is set.
+  inline    void         AddTreeWeight        ( TTree *tree, const char* cut )                 { AddTreeWeight(tree, TCut(cut)); }
+  /// Set a weight and expression concurrently for each line. Best used when a default tree is set.
+  inline    void         AddWeightExpr        ( const char* cut, TString expr )                { AddWeightExpr(TCut(cut), expr); }
 
   /// Sets the name of the canvas created by PlotBase.
   inline    void         SetCanvasName            ( TString name )                                { fCanvasName = name;          }
@@ -70,19 +79,23 @@ class PlotBase
   /// Set the default tree pointer for each line in the plot
   inline    void         SetDefaultTree           ( TTree *tree )                                 { fDefaultTree = tree;         }
   /// Set the default weight for each line in the plot.
-  inline    void         SetDefaultWeight         ( TString cut )                                 { fDefaultCut = cut;           }
+  inline    void         SetDefaultWeight         ( TCut cut )                                    { fDefaultCut = cut;           }
+  /// Set the default weight for each line in the plot.
+  inline    void         SetDefaultWeight         ( const char* cut )                             { SetDefaultWeight(TCut(cut)); }
   /// Set the default expression to be plotted on the x-axis for each line in the plot
   inline    void         SetDefaultExpr           ( TString expr )                                { fDefaultExpr = expr;         }
 
   /// Get the default weight.
-  inline    TString      GetDefaultWeight         ()       const                                  { return fDefaultCut;          }
+  inline    TCut         GetDefaultWeight         ()       const                                  { return fDefaultCut;          }
 
   /// Can store multiple trees at once for plots. Each tree plots its own line.
   inline    void         SetTreeList              ( std::vector<TTree*> treelist )                { fInTrees = treelist;         }
   /// Set a tree for a single line.
   inline    void         AddTree                  ( TTree *tree )                                 { fInTrees.push_back(tree);    }
   /// Set a weight for a single line.
-  inline    void         AddWeight                ( TString cut )                                 { fInCuts.push_back(cut);      }
+  inline    void         AddWeight                ( TCut cut )                                    { fInCuts.push_back(cut);      }
+  /// Set a weight for a single line.
+  inline    void         AddWeight                ( const char* cut )                             { AddWeight(TCut(cut));        }
   /// Set an x expression for a single line.
   inline    void         AddExpr                  ( TString expr )                                { fInExpr.push_back(expr);     }
 
@@ -182,7 +195,7 @@ class PlotBase
   UInt_t                     fPlotCounter = 0;           ///< This is used so that making scratch plots does not overlap
   
   TTree*                     fDefaultTree = NULL;        ///< Default Tree if needed
-  TString                    fDefaultCut = "";           ///< Default cut if needed
+  TCut                       fDefaultCut = "";           ///< Default cut if needed
   TString                    fDefaultExpr = "";          ///< Default resolution expression if needed
   
   Double_t                   l1 = 0.6;                   ///< First X value of legend location
@@ -192,7 +205,7 @@ class PlotBase
   Int_t                      fLegendBorderSize = 0;      ///< Border size of legend
   
   std::vector<TTree*>        fInTrees;                   ///< Holds all the trees for each line if needed
-  std::vector<TString>       fInCuts;                    ///< Holds the cuts for the trees if needed
+  std::vector<TCut>          fInCuts;                    ///< Holds the cuts for the trees if needed
   std::vector<TString>       fInExpr;                    ///< Holds multiple resolution expressions if needed
   std::vector<TString>       fSystematicBranches;        ///< Vector of branches to apply as systematic uncertainties
   
@@ -294,7 +307,7 @@ PlotBase::~PlotBase()
 { }
 
 //--------------------------------------------------------------------
-void PlotBase::AddLine(TTree *tree, TString cut, TString expr)
+void PlotBase::AddLine(TTree *tree, TCut cut, TString expr)
 {
   // Check for defaults. If none, set the values for each line.
   if (fDefaultTree != NULL) {
@@ -315,7 +328,7 @@ void PlotBase::AddLine(TTree *tree, TString cut, TString expr)
 }
 
 //--------------------------------------------------------------------
-void PlotBase::AddTreeWeight(TTree *tree, TString cut)
+void PlotBase::AddTreeWeight(TTree *tree, TCut cut)
 {
   // Check for defaults. If none, set the values for each line.
   if (fDefaultTree != NULL) {
@@ -355,7 +368,7 @@ void PlotBase::AddTreeExpr(TTree *tree, TString expr)
 }
 
 //--------------------------------------------------------------------
-void PlotBase::AddWeightExpr(TString cut, TString expr)
+void PlotBase::AddWeightExpr(TCut cut, TString expr)
 {
   // Check for defaults. If none, set the values for each line.
   if (fDefaultTree == NULL) {

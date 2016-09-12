@@ -10,6 +10,7 @@
 #include "TGraph.h"
 #include "TTree.h"
 #include "TString.h"
+#include "TCut.h"
 
 #include "PlotHists.h"
 #include "PlotBase.h"
@@ -38,9 +39,9 @@ class PlotROC : public PlotBase
   /// Set the pointer to the background tree
   void                    SetBackgroundTree    ( TTree *tree )                     { fBackgroundTree = tree;       }
   /// Set the weight that defines the signal
-  void                    SetSignalCut         ( TString cut )                     { fSignalCut = cut;             }
+  void                    SetSignalCut         ( TCut cut )                        { fSignalCut = cut;             }
   /// Set the weight that defines the background
-  void                    SetBackgroundCut     ( TString cut )                     { fBackgroundCut = cut;         }
+  void                    SetBackgroundCut     ( TCut cut )                        { fBackgroundCut = cut;         }
   
   /// Reset the list of variables to be plotted
   void                    ResetVars            ()                                  { fROCVars.resize(0);           }
@@ -61,8 +62,8 @@ class PlotROC : public PlotBase
   
   TTree*                  fSignalTree = NULL;               ///< Pointer to tree from which to extract signal
   TTree*                  fBackgroundTree = NULL;           ///< Pointer to tree from which to extract background
-  TString                 fSignalCut = "";                  ///< Cut used on signal tree to extract signal
-  TString                 fBackgroundCut = "";              ///< Cut used on background tree to extract background
+  TCut                    fSignalCut = "";                  ///< Cut used on signal tree to extract signal
+  TCut                    fBackgroundCut = "";              ///< Cut used on background tree to extract background
   std::vector<TString>    fROCVars;                         ///< List of varaibles to make cuts on
   
   PlotHists               fPlotHists;                       ///< Plotter for histograms

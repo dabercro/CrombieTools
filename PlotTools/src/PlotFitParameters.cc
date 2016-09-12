@@ -50,12 +50,12 @@ PlotFitParameters::GetMeans(Int_t NumXBins, const Double_t *XBins)
     NumPlots = fInExpr.size();
 
   TTree *inTree = fDefaultTree;
-  TString inCut = fDefaultCut;
   TString inExpr = fDefaultExpr;
+  TCut inCut = fDefaultCut;
 
   for (UInt_t iPlot = 0; iPlot != NumPlots; ++iPlot) {
     TString tempName;
-    tempName.Form("Hist_%d",fPlotCounter);
+    tempName.Form("Hist_%d", fPlotCounter);
     fPlotCounter++;
 
     if (fInTrees.size() != 0)
@@ -68,11 +68,11 @@ PlotFitParameters::GetMeans(Int_t NumXBins, const Double_t *XBins)
     TH1 *tempProfile;
 
     if (fCutStyle == kBinned) {
-      tempProfile = new TProfile(tempName+"prof",tempName+"prof",NumXBins,XBins);
-      inTree->Draw(fInExprX+":"+fInExprX+">>"+tempName+"prof",inCut);
+      tempProfile = new TProfile(tempName + "prof", tempName + "prof", NumXBins, XBins);
+      inTree->Draw(fInExprX + ":" + fInExprX + ">>" + tempName + "prof", inCut);
     }
     else {
-      tempProfile = new TH1F(tempName+"prof",tempName+"prof",NumXBins,XBins);
+      tempProfile = new TH1F(tempName + "prof", tempName + "prof", NumXBins, XBins);
       Int_t addBin = (fCutStyle == kLessThan) ? 1 : 0;
       for (Int_t iBin = 0; iBin != NumXBins; ++iBin) {
         tempProfile->SetBinContent(iBin + 1, XBins[iBin + addBin]);
@@ -106,7 +106,7 @@ PlotFitParameters::DoFit(TF1* fitFunc, TF1* looseFunc, TH2D* histToFit,
   for (Int_t iXBin = 0; iXBin != NumXBins; ++iXBin) {
     TCanvas *tempCanvas = new TCanvas();
     for (UInt_t iParam = 0; iParam != fGuessParams.size(); ++iParam)
-      fitFunc->SetParameter(fGuessParams[iParam],fGuesses[iParam]);
+      fitFunc->SetParameter(fGuessParams[iParam], fGuesses[iParam]);
     
     Int_t lowerBin;
     Int_t upperBin;
@@ -128,19 +128,19 @@ PlotFitParameters::DoFit(TF1* fitFunc, TF1* looseFunc, TH2D* histToFit,
         std::cout << "What case is that?" << std::endl;
         exit(1);
       }
-    TH1D *projection = histToFit->ProjectionY(tempName+"_py",lowerBin,upperBin);
+    TH1D *projection = histToFit->ProjectionY(tempName+"_py", lowerBin, upperBin);
 
     if (fLooseFunction != "") {
-      projection->Fit(looseFunc,fFitOptions,"",MinY,MaxY);
+      projection->Fit(looseFunc, fFitOptions, "", MinY, MaxY);
       for (UInt_t iParam = 0; iParam != fParamFrom.size(); ++iParam)
         fitFunc->SetParameter(fParamTo[iParam],looseFunc->GetParameter(fParamFrom[iParam]));
     }
-    TFitResultPtr fitResult = projection->Fit(fitFunc,fFitOptions + "S","",MinY,MaxY);
+    TFitResultPtr fitResult = projection->Fit(fitFunc, fFitOptions + "S", "", MinY, MaxY);
     if (fDumpingFits) {
       TString dumpName;
       Double_t lower = XBins[lowerBin - 1];
       Double_t upper = XBins[upperBin];
-      dumpName.Form("DumpFit_%04d_%.2fTo%.2f",fNumFitDumps,lower,upper);
+      dumpName.Form("DumpFit_%04d_%.2fTo%.2f", fNumFitDumps, lower, upper);
       std::vector<TF1*> components;
       for (UInt_t iFunc = 0; iFunc < fFunctionComponents.size(); iFunc++) {
         TF1 *tempComponent = new TF1(dumpName,fFunctionComponents[iFunc],MinY,MaxY);
@@ -191,7 +191,7 @@ PlotFitParameters::MakeGraphs(TString ParameterExpr)
         parameterHolder.SetParError(iParam,fFits[iLine][iXBin]->GetParError(parNumInFit));
       }
 
-      tempGraph->SetPoint(iXBin,fMeans[iLine]->GetBinContent(iXBin + 1),parameterHolder.Eval(0));
+      tempGraph->SetPoint(iXBin, fMeans[iLine]->GetBinContent(iXBin + 1), parameterHolder.Eval(0));
 
       // Next set the error
       Double_t error2 = 0;
@@ -225,7 +225,7 @@ PlotFitParameters::MakeGraphs(TString ParameterExpr)
         }
       }
 
-      tempGraph->SetPointError(iXBin,fMeans[iLine]->GetBinError(iXBin + 1),TMath::Sqrt(error2));
+      tempGraph->SetPointError(iXBin, fMeans[iLine]->GetBinError(iXBin + 1), TMath::Sqrt(error2));
     }
     theGraphs.push_back(tempGraph);
   }
@@ -238,6 +238,6 @@ std::vector<TGraphErrors*>
 PlotFitParameters::MakeGraphs(Int_t ParameterNum)
 {
   TString ParameterExpr = "";
-  ParameterExpr.Form("[%d]",ParameterNum);
+  ParameterExpr.Form("[%d]", ParameterNum);
   return MakeGraphs(ParameterExpr);
 }

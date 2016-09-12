@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "TString.h"
+#include "TCut.h"
 #include "TFile.h"
 #include "TTree.h"
 
@@ -59,7 +60,7 @@ class TreeContainer
   /// Use this to set an output file to place a single tree.
   inline    void         SetOutputFileName   ( TString name )             { fOutputFileName = name;         }
   /// Set a cut to apply to returned trees.
-  inline    void         SetSkimmingCut      ( TString cut )              { fSkimmingCut = cut;             }
+  inline    void         SetSkimmingCut      ( TCut cut )                 { fSkimmingCut = cut;             }
   
   /// Return vector of file names read by the TreeContainer.
   inline    std::vector<TString>   ReturnFileNames     ()                 { return fFileNames;              }
@@ -80,7 +81,7 @@ class TreeContainer
   
   std::vector<TString>   fKeepBranches;                           ///< Branches kept in the event of skimming
   TString                fOutputFileName = "output.root";         ///< Potential output file name of skim
-  TString                fSkimmingCut = "";                       ///< Cut to return only branches meeting given conditions
+  TCut                   fSkimmingCut = "";                       ///< Cut to return only branches meeting given conditions
   
   std::vector<TString>   fFileNames;                              ///< Used to track names of files where tree list come from
   

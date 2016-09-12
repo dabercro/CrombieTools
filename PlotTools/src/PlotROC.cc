@@ -24,7 +24,7 @@ PlotROC::MakeROC(TString CutVar, Int_t NumBins)
 {
   // Get the minimum and maximum values of the histograms
   TH1F *htemp;
-  fSignalTree->Draw(CutVar,fSignalCut);
+  fSignalTree->Draw(CutVar, fSignalCut);
   htemp = (TH1F*) gPad->GetPrimitive("htemp");
   Double_t XMin = htemp->GetXaxis()->GetBinLowEdge(1);
   Int_t   NBins = htemp->GetNbinsX();
@@ -42,8 +42,8 @@ PlotROC::MakeROC(TString CutVar, Int_t NumBins)
   fPlotHists.SetDefaultExpr(CutVar);
   fPlotHists.ResetTree();
   fPlotHists.ResetWeight();
-  fPlotHists.AddTreeWeight(fSignalTree,fSignalCut);
-  fPlotHists.AddTreeWeight(fBackgroundTree,fBackgroundCut);
+  fPlotHists.AddTreeWeight(fSignalTree, fSignalCut);
+  fPlotHists.AddTreeWeight(fBackgroundTree, fBackgroundCut);
 
   std::vector<TH1D*> theHists = fPlotHists.MakeHists(NumBins, XMin, XMax);
   const Int_t numPoints = NumBins + 1;
@@ -56,10 +56,10 @@ PlotROC::MakeROC(TString CutVar, Int_t NumBins)
   Double_t backArea = theHists[1]->Integral();
   if (fPlotType == kROC) {
     for (Int_t iPoint = 0; iPoint < numPoints; iPoint++) {
-      XVals[iPoint]    = theHists[0]->Integral(iPoint,numPoints)/sigArea;
-      RevXVals[iPoint] = theHists[0]->Integral(0,numPoints-iPoint)/sigArea;
-      YVals[iPoint]    = theHists[1]->Integral(iPoint,numPoints)/backArea;
-      RevYVals[iPoint] = theHists[1]->Integral(0,numPoints-iPoint)/backArea;
+      XVals[iPoint]    = theHists[0]->Integral(iPoint, numPoints)/sigArea;
+      RevXVals[iPoint] = theHists[0]->Integral(0, numPoints-iPoint)/sigArea;
+      YVals[iPoint]    = theHists[1]->Integral(iPoint, numPoints)/backArea;
+      RevYVals[iPoint] = theHists[1]->Integral(0, numPoints-iPoint)/backArea;
     }
   }
   else if (fPlotType == kSignificance) {
@@ -67,18 +67,18 @@ PlotROC::MakeROC(TString CutVar, Int_t NumBins)
       XVals[iPoint] = theHists[0]->GetXaxis()->GetBinLowEdge(iPoint);
       RevXVals[iPoint] = theHists[0]->GetXaxis()->GetBinLowEdge(iPoint);
 
-      sigArea  = theHists[0]->Integral(iPoint,numPoints);
-      backArea = theHists[1]->Integral(iPoint,numPoints);
+      sigArea  = theHists[0]->Integral(iPoint, numPoints);
+      backArea = theHists[1]->Integral(iPoint, numPoints);
       YVals[iPoint] = (backArea + sigArea == 0) ? 0 : sigArea / sqrt(sigArea + backArea);
 
-      sigArea  = theHists[0]->Integral(0,numPoints - iPoint);
-      backArea = theHists[1]->Integral(0,numPoints - iPoint);
+      sigArea  = theHists[0]->Integral(0, numPoints - iPoint);
+      backArea = theHists[1]->Integral(0, numPoints - iPoint);
       YVals[iPoint] = (backArea + sigArea == 0) ? 0 : sigArea / sqrt(sigArea + backArea);
     }
   }
 
-  TGraph *rocCurve    = new TGraph(numPoints,XVals,YVals);
-  TGraph *revRocCurve = new TGraph(numPoints,RevXVals,RevYVals);
+  TGraph *rocCurve    = new TGraph(numPoints, XVals, YVals);
+  TGraph *revRocCurve = new TGraph(numPoints, RevXVals, RevYVals);
   delete theHists[0];
   delete theHists[1];
   theHists.resize(0);
@@ -113,7 +113,7 @@ PlotROC::MakeCanvas(TString FileBase, Int_t NumBins, TString XLabel,
     SetAxisMinMax(0.0,1.0);
 
   std::vector<TGraph*> rocs = MakeROCs(NumBins);
-  BaseCanvas(FileBase,rocs,XLabel,YLabel,logY,logX);
+  BaseCanvas(FileBase, rocs, XLabel, YLabel, logY, logX);
 
   for (UInt_t i0 = 0; i0 != rocs.size(); ++i0)
     delete rocs[i0];

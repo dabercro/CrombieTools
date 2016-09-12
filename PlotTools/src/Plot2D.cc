@@ -153,28 +153,28 @@ Plot2D::DoFits(Int_t NumXBins, Double_t *XBins,
   }
 
   TTree *inTree = fDefaultTree;
-  TString inCut = fDefaultCut;
   TString inExpr = fDefaultExpr;
+  TCut inCut = fDefaultCut;
 
   TH2D *tempHist;
   TProfile *tempProfile;
 
   TF1 *looseFunc = 0;
   if (fLooseFunction != "") {
-    looseFunc = MakeFunction(fLooseFunction,XBins[0],XBins[NumXBins - 1],MinY,MaxY);
+    looseFunc = MakeFunction(fLooseFunction, XBins[0], XBins[NumXBins - 1], MinY, MaxY);
     looseFunc->SetLineColor(kGreen);
   }
   for (UInt_t iGuess = 0; iGuess != fLooseGuessParams.size(); ++iGuess)
-    looseFunc->SetParameter(fLooseGuessParams[iGuess],fLooseGuesses[iGuess]);
+    looseFunc->SetParameter(fLooseGuessParams[iGuess], fLooseGuesses[iGuess]);
   for (UInt_t iParam = 0; iParam != fLooseParams.size(); ++iParam)
-    looseFunc->SetParLimits(fLooseParams[iParam],fLooseParamLows[iParam],fLooseParamHighs[iParam]);
+    looseFunc->SetParLimits(fLooseParams[iParam], fLooseParamLows[iParam], fLooseParamHighs[iParam]);
 
-  TF1 *fitFunc = MakeFunction(fFunctionString,XBins[0],XBins[NumXBins - 1],MinY,MaxY);
+  TF1 *fitFunc = MakeFunction(fFunctionString, XBins[0], XBins[NumXBins - 1], MinY, MaxY);
   fitFunc->SetLineColor(kBlue);
   for (UInt_t iGuess = 0; iGuess != fGuessParams.size(); ++iGuess)
-    fitFunc->SetParameter(fGuessParams[iGuess],fGuesses[iGuess]);
+    fitFunc->SetParameter(fGuessParams[iGuess], fGuesses[iGuess]);
   for (UInt_t iParam = 0; iParam != fParams.size(); ++iParam)
-    fitFunc->SetParLimits(fParams[iParam],fParamLows[iParam],fParamHighs[iParam]);
+    fitFunc->SetParLimits(fParams[iParam], fParamLows[iParam], fParamHighs[iParam]);
   
   TF1 **holdFits;
   TMatrixDSym **holdCovs;
@@ -192,11 +192,11 @@ Plot2D::DoFits(Int_t NumXBins, Double_t *XBins,
       fInExprX = fInExprXs[iPlot];
 
     TString tempName;
-    tempName.Form("Hist_%d",fPlotCounter);
+    tempName.Form("Hist_%d", fPlotCounter);
     fPlotCounter++;
-    tempHist = new TH2D(tempName,tempName,NumXBins,XBins,NumYBins,MinY,MaxY);
+    tempHist = new TH2D(tempName, tempName, NumXBins, XBins, NumYBins, MinY, MaxY);
     tempHist->Sumw2();
-    inTree->Draw(inExpr+":"+fInExprX+">>"+tempName,inCut);
+    inTree->Draw(inExpr+":"+fInExprX+">>"+tempName, inCut);
 
     TString dumpTitle = fLegendEntries[iPlot] + ";" + inExpr + ";Num Events";
     if (fLooseFunction != "")
@@ -219,8 +219,8 @@ Plot2D::DoFits(Int_t NumXBins, Double_t MinX, Double_t MaxX,
                Int_t NumYBins, Double_t MinY, Double_t MaxY)
 {
   Double_t XBins[NumXBins+1];
-  ConvertToArray(NumXBins,MinX,MaxX,XBins);
-  DoFits(NumXBins,XBins,NumYBins,MinY,MaxY);
+  ConvertToArray(NumXBins, MinX, MaxX, XBins);
+  DoFits(NumXBins, XBins, NumYBins, MinY, MaxY);
 }
 
 //--------------------------------------------------------------------
@@ -231,12 +231,12 @@ Plot2D::MakeFuncs(TString ParameterExpr, Double_t MinX, Double_t MaxX)
   std::vector<TF1*> theFuncs;
 
   for (UInt_t iLine = 0; iLine != fFits.size(); ++iLine) {
-    tempFunc = new TF1("parameterHolder",ParameterExpr,MinX,MaxX);
+    tempFunc = new TF1("parameterHolder", ParameterExpr, MinX, MaxX);
 
     for (Int_t iParam = 0; iParam != tempFunc->GetNpar(); ++iParam) {
       Int_t parNumInFit = fFits[iLine][0]->GetParNumber(tempFunc->GetParName(iParam));
-      tempFunc->SetParameter(iParam,fFits[iLine][0]->GetParameter(parNumInFit));
-      tempFunc->SetParError(iParam,fFits[iLine][0]->GetParError(parNumInFit));
+      tempFunc->SetParameter(iParam, fFits[iLine][0]->GetParameter(parNumInFit));
+      tempFunc->SetParError(iParam, fFits[iLine][0]->GetParError(parNumInFit));
     }
     theFuncs.push_back(tempFunc);
   }
@@ -250,8 +250,8 @@ Plot2D::MakeGraphs(TString ParameterExpr)
 {
   Double_t MinX = 0.0;
   Double_t MaxX = 0.0;
-  fFits[0][0]->GetRange(MinX,MaxX);
-  std::vector<TF1*> theFuncs = MakeFuncs(ParameterExpr,MinX,MaxX);
+  fFits[0][0]->GetRange(MinX, MaxX);
+  std::vector<TF1*> theFuncs = MakeFuncs(ParameterExpr, MinX, MaxX);
   std::vector<TGraphErrors*> theGraphs;
   TGraphErrors* tempGraph;
   Double_t width = (MaxX - MinX)/fNumPoints;
@@ -279,7 +279,7 @@ Plot2D::MakeGraphs(TString ParameterExpr)
           Double_t factor = 2.0;
           if (iParam == jParam)
             factor = 1.0;
-          Double_t toAdd = holdFuncs[iParam]->Derivative(theFuncs[iFunc]->GetParameter(iParam)) * ((*(fCovs[iFunc][0]))(iParam,jParam));
+          Double_t toAdd = holdFuncs[iParam]->Derivative(theFuncs[iFunc]->GetParameter(iParam)) * ((*(fCovs[iFunc][0]))(iParam, jParam));
           error2 += toAdd*toAdd;
         }
       }
@@ -302,8 +302,8 @@ Plot2D::MakeCanvas(TString FileBase, std::vector<TGraphErrors*> theGraphs, TStri
                    Double_t YMin, Double_t YMax, Bool_t logY)
 {
   for (UInt_t iGraph = 0; iGraph != theGraphs.size(); ++iGraph)
-    theGraphs[iGraph]->GetYaxis()->SetRangeUser(YMin,YMax);
-  BaseCanvas(FileBase,theGraphs,XLabel,YLabel,logY);
+    theGraphs[iGraph]->GetYaxis()->SetRangeUser(YMin, YMax);
+  BaseCanvas(FileBase, theGraphs, XLabel, YLabel, logY);
 }
 
 //--------------------------------------------------------------------
@@ -312,7 +312,7 @@ Plot2D::MakeCanvas(TString FileBase, TString ParameterExpr, TString XLabel, TStr
                    Double_t YMin, Double_t YMax, Bool_t logY)
 {
   std::vector<TGraphErrors*> theGraphs = MakeGraphs(ParameterExpr);
-  MakeCanvas(FileBase,theGraphs,XLabel,YLabel,YMin,YMax,logY);
+  MakeCanvas(FileBase, theGraphs, XLabel, YLabel, YMin, YMax, logY);
   for (UInt_t iGraph = 0; iGraph != theGraphs.size(); ++iGraph)
     delete theGraphs[iGraph];
 }
@@ -323,6 +323,6 @@ Plot2D::MakeCanvas(TString FileBase, Int_t ParameterNum, TString XLabel, TString
                    Double_t YMin, Double_t YMax, Bool_t logY)
 {
   TString ParameterExpr = "";
-  ParameterExpr.Form("[%d]",ParameterNum);
-  MakeCanvas(FileBase,ParameterExpr,XLabel,YLabel,YMin,YMax,logY);
+  ParameterExpr.Form("[%d]", ParameterNum);
+  MakeCanvas(FileBase, ParameterExpr, XLabel, YLabel, YMin, YMax, logY);
 }

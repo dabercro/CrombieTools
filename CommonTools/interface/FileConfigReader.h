@@ -16,6 +16,7 @@
 #include <vector>
 #include "TColor.h"
 #include "TString.h"
+#include "TCut.h"
 #include "TFile.h"
 #include "TTree.h"
 #include "TChain.h"
@@ -74,9 +75,13 @@ class FileConfigReader : public InOutDirectoryHolder, public PlotHists
                                               TString entry = "", Int_t colorstyle = 0 );
 
   /// The multipliers for Data can be set separately.
-  inline    void       SetDataWeight        ( TString weight )                          { fDataWeight = weight;    }
+  inline    void       SetDataWeight        ( TCut weight )                             { fDataWeight = weight;    }
+  /// The multipliers for Data can be set separately.
+  inline    void       SetDataWeight        ( const char* weight )                  { SetDataWeight(TCut(weight)); }
   /// The multipliers for MC can be set separately.
-  inline    void       SetMCWeight          ( TString weight )                          { fMCWeight = weight;      }
+  inline    void       SetMCWeight          ( TCut weight )                             { fMCWeight = weight;      }
+  /// The multipliers for MC can be set separately.
+  inline    void       SetMCWeight          ( const char* weight )                    { SetMCWeight(TCut(weight)); }
   
   /// Default File adder with FileType changing
   inline    void       AddFile              ( TString treeName, TString fileName, Double_t XSec, 
@@ -155,8 +160,8 @@ class FileConfigReader : public InOutDirectoryHolder, public PlotHists
   std::vector<TH1D*>    fHists;                           ///< Vector of histograms to use
   std::vector<std::vector<TFile*>> fAllFiles;             ///< Vector of all open files
 
-  TString    fDataWeight = "";                            ///< Separate Data weights if needed
-  TString    fMCWeight = "";                              ///< Separate MC weights if needed
+  TCut       fDataWeight = "";                            ///< Separate Data weights if needed
+  TCut       fMCWeight = "";                              ///< Separate MC weights if needed
   
   TString    fDataExpression = "";                        ///< Holds an alternative expression to plot data in
   
@@ -426,8 +431,8 @@ FileConfigReader::GetHistList(Int_t NumXBins, Double_t *XBins, FileType type,
   OpenFiles(theFileNames);
 
   std::vector<FileInfo*> *theFileInfo = &fMCFileInfo;
-  TString tempCutHolder = "";
-  TString tempExprHolder = "";
+  TCut tempCutHolder;
+  TString tempExprHolder;
 
   if (type == kSignal)
     theFileInfo = &fSignalFileInfo;
@@ -437,13 +442,13 @@ FileConfigReader::GetHistList(Int_t NumXBins, Double_t *XBins, FileType type,
   if (type == kData && fDataWeight != "") {
 
     tempCutHolder = fDefaultCut;
-    SetDefaultWeight(TString("(") + tempCutHolder + TString(") && (") + fDataWeight + TString(")"));
+    SetDefaultWeight(tempCutHolder + fDataWeight);
 
   }
   else if (type != kData && fMCWeight != "") {
 
     tempCutHolder = fDefaultCut;
-    SetDefaultWeight(TString("(") + tempCutHolder + TString(")*(") + fMCWeight + TString(")"));
+    SetDefaultWeight(tempCutHolder * fMCWeight);
 
   }
 

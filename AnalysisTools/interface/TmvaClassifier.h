@@ -12,6 +12,7 @@
 #include <vector>
 
 #include "TString.h"
+#include "TCut.h"
 
 /**
    @ingroup analysisgroup
@@ -25,10 +26,10 @@ class TmvaClassifier
   TmvaClassifier();
   virtual ~TmvaClassifier();
   
-  void   SetSignalCut( TString cut )                      { fSignalCut = cut;                                     }
-  void   SetBackgroundCut( TString cut )                  { fBackgroundCut = cut;                                 }
+  void   SetSignalCut( TCut cut )                         { fSignalCut = cut;                                     }
+  void   SetBackgroundCut( TCut cut )                     { fBackgroundCut = cut;                                 }
   
-  void   SetWeight( TString weight )                      { fWeight = weight;                                     }
+  void   SetWeight( TCut weight )                         { fWeight = weight;                                     }
   
   void   AddSignalTree( TString file, TString tree )      { fSignalFileNames.push_back(file);
                                                             fSignalTreeNames.push_back(tree);                     }
@@ -44,7 +45,7 @@ class TmvaClassifier
   TString  GetOutputName()                                { return fOutputName;                                   }
   TString  GetMethodName()                                { return fMethodName;                                   }
   TString  GetUniformVariable()                           { return fUniformVariable;                              }
-  TString  GetWeight()                                    { return fWeight;                                       }
+  TCut     GetWeight()                                    { return fWeight;                                       }
   
   void   SetConfigFile( TString name );
   
@@ -74,10 +75,10 @@ class TmvaClassifier
   
  private:
   
-  TString              fSignalCut;
-  TString              fBackgroundCut;
-  
-  TString              fWeight;
+  TCut                 fSignalCut;
+  TCut                 fBackgroundCut;
+
+  TCut                 fWeight;
   
   std::vector<TString> fSignalFileNames;
   std::vector<TString> fSignalTreeNames;

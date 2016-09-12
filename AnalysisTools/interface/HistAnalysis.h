@@ -32,9 +32,9 @@ class HistAnalysis : public FileConfigReader
   inline void      SetSignalName      ( TString name, FileType type = kBackground )    { fSignalName = name; fSignalType = type; }
 
   /// Sets the base cut
-  inline void      SetBaseCut         ( TString cut )                                  { fBaseCut = cut; fDataBaseCut = cut;     }
+  inline void      SetBaseCut         ( TCut cut )                                     { fBaseCut = cut; fDataBaseCut = cut;     }
   /// Sets the base cut for MC and Data
-  inline void      SetBaseCut         ( TString cut, TString datacut )                 { fBaseCut = cut; fDataBaseCut = datacut; }
+  inline void      SetBaseCut         ( TCut cut, TCut datacut )                       { fBaseCut = cut; fDataBaseCut = datacut; }
 
   /// Sets the format string for the scale factor table
   inline void      SetFormat          ( TString format )                               { fFormat = format;                       }
@@ -54,7 +54,7 @@ class HistAnalysis : public FileConfigReader
                              ScaleFactorMethod  method = kCutAndCount );
 
   /// Sets various other cut levels for scalefactors.
-  void      AddScaleFactorCut  (  TString name, TString cut, TString datacut = "" );
+  void      AddScaleFactorCut  (  TString name, TCut cut, TCut datacut = "" );
   /// Resets the values saved for the scale factor cuts
   void      ResetScaleFactorCuts  ();
 
@@ -81,13 +81,22 @@ class HistAnalysis : public FileConfigReader
   /// Sets whether or not to normalize backgrounds before comparing to data
   inline void      SetNormalized      ( Bool_t norm )                                   { fNormalized = norm;                     }
 
+  /// Sets the base cut with character array
+  inline void      SetBaseCut         ( const char* cut )                              { SetBaseCut(TCut(cut));                  }
+  /// Sets the base cut for MC and Data with character array
+  inline void      SetBaseCut         ( const char* cut, const char* datacut )         { SetBaseCut(TCut(cut), TCut(datacut));   }
+
+  /// Sets various other cut levels for scalefactors.
+  void      AddScaleFactorCut  (  TString name, const char* cut, const char* datacut = 0 )
+                                                                            { AddScaleFactorCut(name, TCut(cut), TCut(datacut)); }
+
  private:
   TString          fSignalName = "";             ///< Legend entry of the signal that we are using from the MCConfig
   FileType         fSignalType = kBackground;    ///< Which MC list to get the signal files from
-  TString          fBaseCut = "1";               ///< Sets the cut to use for MC events in the analysis
-  TString          fDataBaseCut = "1";           ///< Sets the cut to use for data in the analysis
-  std::vector<TString> fScaleFactorCuts;         ///< Vector of cuts to do scale factor measurements on
-  std::vector<TString> fDataSFCuts;              ///< Vector of cuts on data to do scale factor measurements on
+  TCut             fBaseCut = "1";               ///< Sets the cut to use for MC events in the analysis
+  TCut             fDataBaseCut = "1";           ///< Sets the cut to use for data in the analysis
+  std::vector<TCut> fScaleFactorCuts;            ///< Vector of cuts to do scale factor measurements on
+  std::vector<TCut> fDataSFCuts;                 ///< Vector of cuts on data to do scale factor measurements on
   std::vector<TString> fCutNames;                ///< Vector of cut names to print out table
 
   SearchBy         fSearchBy = kLimitName;       ///< Defines the string that is compared when identifying signal
