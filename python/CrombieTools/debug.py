@@ -8,7 +8,7 @@ Activates debugging symbols and gives a debugging hook.
 import CrombieTools
 
 
-CrombieTools.loadAddOn = '+g'
+CrombieTools.loadAddOn = '++g'
 
 
 def debug(debugger='gdb'):
