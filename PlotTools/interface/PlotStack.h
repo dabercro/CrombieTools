@@ -93,7 +93,7 @@ class PlotStack : public FileConfigReader
   Bool_t                fMakeRatio = true;          ///< Bool to make ratio pad
   Bool_t                fSortBackground = true;     ///< Bool to sort the backgrounds
 
-  ClassDef(PlotStack,1)
+  ClassDef(PlotStack, 1)
 };
 
 #endif

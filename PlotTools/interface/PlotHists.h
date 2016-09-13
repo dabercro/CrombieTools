@@ -67,7 +67,7 @@ class PlotHists : public PlotBase
   std::vector<UncertaintyInfo*> fDeleteUnc;       ///< Uncertainties created by the class to delete at the end
   TString   fUncExpr = "";                        ///< Branch expressions to add to the systematic uncertainty
   
-  ClassDef(PlotHists,1)
+  ClassDef(PlotHists, 1)
 };
 
 #endif

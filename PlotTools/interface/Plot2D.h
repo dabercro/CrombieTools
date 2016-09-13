@@ -103,7 +103,7 @@ class Plot2D : public PlotBase
 
   Int_t                      fNumPoints; 
 
-  ClassDef(Plot2D,1)
+  ClassDef(Plot2D, 1)
 };
 
 #endif

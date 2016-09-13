@@ -50,7 +50,7 @@ class PlotFitParameters : public Plot2D
 
   CutStyle                   fCutStyle = kBinned;     ///< Sets the way that the 2D histograms is treated in PlotFitParameters::DoFit()
   
-  ClassDef(PlotFitParameters,1)
+  ClassDef(PlotFitParameters, 1)
 };
 
 #endif
