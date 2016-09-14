@@ -59,7 +59,7 @@ class ParallelStackContainer:
         self.ShowCutLines = showCutLines
 
     def Copy(self):
-        return ParallelStackContainer(plotter.Copy(), self.Overwrite)
+        return ParallelStackContainer(plotter.Copy(), self.Overwrite, self.ShowCutLines)
 
     def MakePlot(self, category, region, exprArg):
         """Adjusts cut to N minus 1 and plots.
