@@ -6,6 +6,8 @@
 #  The tests to run on a new installation or
 #  while developing CrombieTools.
 #
+#  @todo test all the useful things.
+#
 #  @author Daniel Abercrombie
 #
 
@@ -112,16 +114,20 @@ check
 
 cd $here/plotter
 
+echo "Adding cross sections for fun."
 ./AddXSec.py
 check
+echo "Reweighting by something."
 ./reweight.py
 check
+echo "Applying reweight corrections."
 ./corrector.py
 check
 
+echo "Making stack plots."
 ./Stack.py
 check
-## @todo Make tests
+
 # Make limit tree
 # Make stacks with MC configs
 # Make stacks using limit trees
@@ -131,11 +137,14 @@ check
 # Plot Hists to show discriminators include normalization
 # Include systematics
 # Make more stack plots with BDT cuts
+
+echo "Making cutflow."
 ./cutflow.py
 check
 
 cd $here/docs
 
+echo "Trying to make docs."
 pdflatex test.tex &> /dev/null
 pdflatex test.tex &> /dev/null
 
@@ -143,14 +152,18 @@ mkdir figs 2> /dev/null
 
 cp $here/plotter/plots/* figs/.
 
+echo "Making backup slides."
 crombie backupslides
 check
 
 pdflatex \\nonstopmode\\input presentation.tex &> /dev/null
 pdflatex \\nonstopmode\\input presentation.tex &> /dev/null
 
+echo "Done trying."
+
 cd $here
 
+echo "Compiling everything left over."
 crombie compile
 check
 

@@ -70,7 +70,7 @@ then
                 targetDir=/afs/athena.mit.edu/user/d/a/dabercro/www/CrombieToolsDocs
                 ;;
             *)                                              # Default location, because passwordless
-                targetHost=t3desk003.mit.edu
+                targetHost=t3home000.mit.edu
                 targetDir=/home/dabercro/public_html/CrombieToolsDocs
                 ;;
         esac
