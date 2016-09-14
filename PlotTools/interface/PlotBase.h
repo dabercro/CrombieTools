@@ -484,7 +484,6 @@ void PlotBase::LineDrawing(std::vector<T*> theLines, Int_t index, Bool_t same)
 
 /**
    Main macro of the plotters.
-   @todo Decouple all of the stuff in PlotBase that makes adjusting stack plots a pain
 */
 
 template<class T>
@@ -525,6 +524,14 @@ void PlotBase::BaseCanvas(TString FileBase, std::vector<T*> theLines,
     // Set title of lines and format
     theLines[iLine]->SetTitle(";"+XLabel+";"+YLabel);
     theLines[iLine]->GetYaxis()->SetTitleOffset(fTitleOffset);
+
+    // If there's an axis requirement, set that here
+    if (fAxisMin != fAxisMax) {
+
+      theLines[iLine]->SetMinimum(fAxisMin);
+      theLines[iLine]->SetMaximum(fAxisMax);        
+
+    }
 
     if (int(iLine) != fDataIndex) {
 
@@ -584,12 +591,6 @@ void PlotBase::BaseCanvas(TString FileBase, std::vector<T*> theLines,
       theLines[iLine]->GetXaxis()->SetTitleSize(0);
       theLines[iLine]->GetXaxis()->SetLabelSize(0);
 
-      if (fAxisMin != fAxisMax) {
-
-        theLines[iLine]->SetMinimum(fAxisMin);
-        theLines[iLine]->SetMaximum(fAxisMax);        
-
-      }
     }
 
     if (logX)
