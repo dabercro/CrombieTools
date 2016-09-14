@@ -121,9 +121,8 @@ do
         elif [ "$file" = "$OutputBase.root" ]    # If the final output is not fatal, make a note
         then
 
-                FINALEMPTY=1
+            FINALEMPTY=1
 
-            fi
         fi
 
     else
