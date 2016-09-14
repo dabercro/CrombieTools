@@ -53,9 +53,10 @@ class ParallelStackContainer:
     Makes the N minus 1 cuts on the object before calling PlotStack::MakeCanvas()
     """
 
-    def __init__(self, plotter, overwrite):
+    def __init__(self, plotter, overwrite, showCutLines):
         self.Plotter = plotter
         self.Overwrite = overwrite
+        self.ShowCutLines = showCutLines
 
     def Copy(self):
         return ParallelStackContainer(plotter.Copy(), self.Overwrite)
@@ -83,7 +84,7 @@ class ParallelStackContainer:
         # Different expressions for data and MC
         self.Plotter.SetDataExpression(kwargs.get('data_expr',''))
         # List cut lines to draw in a plot
-        for cut_line in kwargs.get('cut_lines', Nminus1Cut(holdCut, expr[0], True)):
+        for cut_line in kwargs.get('cut_lines', Nminus1Cut(holdCut, expr[0], True) if self.ShowCutLines else []):
             self.Plotter.AddCutLine(cut_line)
 
         self.Plotter.SetDefaultWeight(Nminus1Cut(holdCut, expr[0]))
@@ -98,7 +99,7 @@ class ParallelStackContainer:
             self.Plotter.ResetCutLines()
 
 
-def MakePlots(categories, regions, exprArgs, overwrite=True, parallel=True, aPlotter=plotter):
+def MakePlots(categories, regions, exprArgs, overwrite=True, parallel=True, showCutLines=True, aPlotter=plotter):
     """ Shortcut to make plots for multiple categories and regions with the same setup.
 
     @param categories is a list of categories to plot.
@@ -114,6 +115,8 @@ def MakePlots(categories, regions, exprArgs, overwrite=True, parallel=True, aPlo
     @param overwrite overwrites old plots with the same name if set to true.
                      Otherwise, those plots are skipped.
     @param parallel determines whether or not to run the plots in a Multiprocess fashion.
+    @param showCutLines determines whether or not to show the cut lines that would otherwise exist in
+                        any N - 1 plots generated.
     @param aPlotter is the plotter to use to plot. The default is the plotter defined in this module.
     """
 
@@ -135,6 +138,6 @@ def MakePlots(categories, regions, exprArgs, overwrite=True, parallel=True, aPlo
             RunParallel(ParallelStackContainer(aPlotter, overwrite), 'MakePlot', passToParallel)
 
         else:
-            plotter = ParallelStackContainer(aPlotter, overwrite)
+            plotter = ParallelStackContainer(aPlotter, overwrite, showCutLines)
             for args in passToParallel:
                 plotter.MakePlot(*args)
