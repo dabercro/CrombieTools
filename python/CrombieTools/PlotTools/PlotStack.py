@@ -133,11 +133,12 @@ def MakePlots(categories, regions, exprArgs, overwrite=True, parallel=True, show
                 for exprArg in exprArgs:
                     passToParallel.append([category, region, exprArg])
 
+        bPlotter = ParallelStackContainer(aPlotter, overwrite, showCutLines)
+
         if parallel:
             from ..Parallelization import RunParallel
-            RunParallel(ParallelStackContainer(aPlotter, overwrite), 'MakePlot', passToParallel)
+            RunParallel(bPlotter, 'MakePlot', passToParallel)
 
         else:
-            plotter = ParallelStackContainer(aPlotter, overwrite, showCutLines)
             for args in passToParallel:
-                plotter.MakePlot(*args)
+                bPlotter.MakePlot(*args)

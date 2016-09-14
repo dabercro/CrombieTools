@@ -168,18 +168,18 @@ PlotStack::MakeCanvas(TString FileBase, Int_t NumXBins, Double_t *XBins,
   AllHists.push_back(DataHist);
 
   for (UInt_t iHist = 0; iHist != SignalHists.size(); ++iHist) {
-    if (fMakeRatio)
+    if (fMakeRatio)                                              // All possible signals show up on the ratio pad
       AddRatioLine(int(AllHists.size()));
     if (AllHists.size() != 0)
-      SignalHists[iHist]->Add(AllHists[0]);
+      SignalHists[iHist]->Add(AllHists[0]);                      // Add the background to the signals
     AllHists.push_back(SignalHists[iHist]);
     AddLegendEntry(fSignalFileInfo[iHist]->fEntry,1,2,fSignalFileInfo[iHist]->fColorStyle);
   }
 
-  if (fMakeRatio) {
-    SetRatioIndex(0);
+  if (fMakeRatio)
     AddRatioLine(fDataIndex);
-  }
+
+  SetRatioIndex(0);
 
   BaseCanvas(AddOutDir(FileBase),AllHists,XLabel,YLabel,logY);
 

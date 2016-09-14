@@ -498,13 +498,6 @@ void PlotBase::BaseCanvas(TString FileBase, std::vector<T*> theLines,
   // Can make this configurable, but don't think I need to
   Float_t ratioFrac = 0.7;
 
-  // If user implicitly wants to make ratio by moving one of the defaults
-  // set other possible values here
-  if (fRatioIndex != -1)
-    fMakeRatio = true;
-  else if (fMakeRatio)
-    fRatioIndex = fDataIndex;
-
   UInt_t NumPlots = theLines.size();
   // Initialize the canvas and legend
   TCanvas *theCanvas = new TCanvas(fCanvasName, fCanvasName, fCanvasWidth, fCanvasHeight);
