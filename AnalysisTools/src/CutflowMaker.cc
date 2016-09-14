@@ -26,7 +26,7 @@ CutflowMaker::GetCutflow(UInt_t index)
 
     for (UInt_t iCut = 0; iCut != fCuts.size(); ++iCut) {
 
-      tempFormula = new TTreeFormula(fCutNames[iCut],fCuts[iCut],inTree);
+      tempFormula = new TTreeFormula(fCutNames[iCut], fCuts[iCut], inTree);
       formulae.push_back(tempFormula);
       fYields.push_back(0);
 
@@ -39,6 +39,9 @@ CutflowMaker::GetCutflow(UInt_t index)
       inTree->GetEntry(iEntry);
 
       for (UInt_t iCut = 0; iCut != formulae.size(); ++iCut) {
+
+        // Should get a vector filled so we can do triggers
+        formulae[iCut]->GetNdata();
 
         if (formulae[iCut]->EvalInstance() == 0)
           break;
