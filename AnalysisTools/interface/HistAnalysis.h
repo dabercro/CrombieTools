@@ -106,6 +106,7 @@ class HistAnalysis : public FileConfigReader
 
   Double_t         fBackgroundChange = 0.0;      ///< Amount the background is scaled by to test scale factor systematic uncertainties
   Bool_t           fNormalized = true;           ///< Determines whether or not to normalize backgrounds before comparing to data
+  UInt_t           fNumCreated = 0;              ///< The number of scale factor histograms made
 
   ClassDef(HistAnalysis,1)
 };

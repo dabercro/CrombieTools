@@ -3,6 +3,7 @@
 #include "TH1D.h"
 #include "TH1F.h"
 #include "TMath.h"
+#include "TString.h"
 
 #include "PlotBase.h"
 #include "HistAnalysis.h"
@@ -14,7 +15,9 @@ TH1D*
 HistAnalysis::DoScaleFactors(TString PlotVar, Int_t NumBins, Double_t *XBins,
                              ScaleFactorMethod  method)
 {
-  TH1D* output = new TH1D("ScaleFactors", "ScaleFactors", NumBins, XBins);
+  TString outputName;
+  outputName.Form("ScaleFactors_%d", fNumCreated++);
+  TH1D* output = new TH1D(outputName, outputName, NumBins, XBins);
   output->Sumw2();
 
   ResetWeight();
