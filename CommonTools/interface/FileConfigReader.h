@@ -38,15 +38,17 @@ class FileConfigReader : public InOutDirectoryHolder, public PlotHists
   FileConfigReader();
   virtual ~FileConfigReader();
 
-  /// Resets the information from the config files being held
-  void                 ResetConfig          ();
-
   /// Differentiates between background, signal MC and data
   enum FileType {
     kBackground = 0,   ///< Specifies the standard model background files
     kSignal,           ///< The signals in the analysis
     kData,             ///< Real data from the detector
   };
+
+  /// Resets the information from the for one type
+  void                 ResetConfig          (FileType type);
+  /// Resets the information from the config files being held for all types
+  void                 ResetConfig          ();
 
   /// Returns a vector of limit tree names that have been read from the configs
   std::set<TString>    ReturnTreeNames      ( FileType type = kBackground);
@@ -180,19 +182,22 @@ FileConfigReader::~FileConfigReader()
 
 //--------------------------------------------------------------------
 void
+FileConfigReader::ResetConfig(FileType type)
+{
+  std::vector<FileInfo*>* fileInfo = GetFileInfo(type);
+
+  for (UInt_t iInfo = 0; iInfo != fileInfo->size(); ++iInfo)
+    delete (*fileInfo)[iInfo];
+  fileInfo->clear();
+}
+
+//--------------------------------------------------------------------
+void
 FileConfigReader::ResetConfig()
 {
-  for (UInt_t iInfo = 0; iInfo != fMCFileInfo.size(); ++iInfo)
-    delete fMCFileInfo[iInfo];
-  fMCFileInfo.clear();
-
-  for (UInt_t iInfo = 0; iInfo != fSignalFileInfo.size(); ++iInfo)
-    delete fSignalFileInfo[iInfo];
-  fSignalFileInfo.clear();
-
-  for (UInt_t iInfo = 0; iInfo != fDataFileInfo.size(); ++iInfo)
-    delete fDataFileInfo[iInfo];
-  fDataFileInfo.clear();
+  ResetConfig(kBackground);
+  ResetConfig(kSignal);
+  ResetConfig(kData);
 
   for (UInt_t iDelete = 0; iDelete != fDeleteThese.size(); ++iDelete)
     delete fDeleteThese[iDelete];

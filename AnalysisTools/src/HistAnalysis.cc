@@ -136,6 +136,7 @@ HistAnalysis::DoScaleFactors(TString PlotVar, Int_t NumBins, Double_t *XBins,
                                               mc_error[data_yields.size()],2)) * factor);
   }
 
+  CloseFiles();
   return output;
 
 }
@@ -223,6 +224,8 @@ HistAnalysis::MakeReweightHist(TString OutFile, TString OutHist, TString PlotVar
   delete dataHist;
   delete mcHist;
   delete uncHist;
+
+  CloseFiles();
 
 }
 

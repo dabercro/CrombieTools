@@ -6,6 +6,8 @@
 # This is the file that creates the input files for running slimmers over EOS
 # or other directories.
 #
+# @todo Clean this up when not using multiple EOS directories
+#
 # @author Daniel Abercrombie <dabercro@mit.edu>
 #
 
