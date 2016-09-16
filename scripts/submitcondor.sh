@@ -5,6 +5,7 @@
 #
 # @brief Submits jobs to condor.
 # It relies on only software on CVMFS.
+# @todo add documentation to the cli ref
 #
 # @author Daniel Abercrombie <dabercro@mit.edu>
 #
@@ -33,6 +34,8 @@ echo "${CrombieCheckerScript:?}" > /dev/null
 
 echo "${CrombieScram:?}" > /dev/null
 echo "${CrombieRelease:?}" > /dev/null
+echo "${CrombieRedirector:?}" > /dev/null
+echo "${CrombieCondorOutput:?}" > /dev/null
 
 export haddFile=$CrombieTempDir/myHadd.txt          # Export the hadd file location
 
@@ -88,6 +91,7 @@ _makeTar script_files.tgz `cat $CrombieJobScriptList`         # Collect any othe
 
 crombie dumpfilelist                                          # Make a list of input files
 
+chmod 777 $CrombieTempDir
 cd $CrombieTempDir
 
 files=""
@@ -96,7 +100,9 @@ njobs=0
 for file in $CrombieFileBase\_*_*.txt                         # Check how many of these files
 do
 
-    if [ ! -f ${file%%.txt}.root ]
+    outFile=${file%%.txt}.root
+
+    if [ $(lcg-ls srm://t3serv006.mit.edu:8443/srm/v2/server?SFN=$CrombieCondorOutput/`basename $outFile` | wc -l) -eq 0 ]
     then
 
         files=$files" $file"
@@ -110,19 +116,37 @@ tar -czf $tarDir/input_files.tar.gz $files                    # Update this ever
 
 cd $tarDir
 
-_makeTar condor_package.tar.gz *.tgz ../Crombie*Config.sh     # Make the final tar file
+if [ ! -f  `basename $X509_USER_PROXY` ]
+then
+
+    cp $X509_USER_PROXY .
+
+fi
+
+_makeTar condor_package.tar.gz *.tgz ../Crombie*Config.sh `basename $X509_USER_PROXY`     # Make the final tar file
 
 sed 's@CROMBIEDOJOB@$CROMBIEPATH/scripts/noauto/dojob.sh@g' ../CrombieCondorConfig.cgf | sed 's@NJOBS@$njobs@g' > config.cfg
 
 if [ $njobs -ne 0 ]
 then
 
-    condor_submit config.cfg
+    command="condor_submit config.cfg"
+
+    if [ "$fresh" = "test" ]
+    then
+
+        echo $command
+
+    else
+
+        $command
+
+    fi
 
 else
 
     echo "${CrombieNLocalProcs:?}" > /dev/null
-    cat $haddFile | xargs -n2 -P$CrombieNLocalProcs crombie hadd
+    echo cat $haddFile | xargs -n2 -P$CrombieNLocalProcs crombie hadd
     echo "All files merged!"
 
 fi

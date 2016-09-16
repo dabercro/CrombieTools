@@ -36,6 +36,11 @@ _crombie_subs () {                                  # Function to fill COMPREPLY
 
         COMPREPLY=( $(compgen -W "hadd test resub fresh" $cur ) )
 
+    elif [ "$prev" = "submitcondor" ]               # Return the subcommands of "crombie submitcondor"
+    then
+
+        COMPREPLY=( $(compgen -W "test fresh" $cur ) )
+
     elif [ "$prev" = "terminalslim" ]               # Return the subcommands of "crombie terminalslim"
     then
 

@@ -63,6 +63,7 @@ else                                        # Condor has alternative setup
 
     tar -xzvf condor_package.tar.gz         # Open the package
 
+    export X509_USER_PROXY=`pwd`/*.cert     # Export location of my proxy
     source CrombieSubmitConfig.sh           # Get the configuration
 
     export SCRAM_ARCH=$CrombieScram         # Get CMSSW setup from CVMFS
@@ -133,16 +134,13 @@ CommandList="ArgsForThisJob.txt"         # These variables aren't too important
 for file in `cat $outFile.txt`           # Dump name of each input file into argument list
 do
 
-    if [ "${file:0:7}" = "root://" ]     # If full name is there, use it
+    if [ $LSB_JOBID = "" ]               # If on condor, copy the input files over
     then
-
-        echoCommand="echo $file $OutputBase\_$NUM.root"
-
-    else                                 # Otherwise, add the server by hand
-
-        echoCommand="echo root://$eosServer/$file $OutputBase\_$NUM.root"
-
+        xrdcp root://$CrombieRedirector/$file .
+        $file=${file##*/}
     fi
+
+    echoCommand="echo $file $OutputBase\_$NUM.root"
 
     $echoCommand                         # Debugging
     $echoCommand >> $CommandList         # Put into text file
@@ -218,6 +216,14 @@ then
 
     echo "FATAL ERROR in bout/out.$LSB_JOBID" >> $ERRORLOG
     echo "" >> $ERRORLOG
+
+    if [ -f condor.err ]        # Let condor handle the errors for us
+    then
+        
+        cat condor.err >&2
+
+    fi
+
     exit 0
 
 fi
@@ -227,7 +233,9 @@ echo ""
 if [ $LSB_JOBID = "" ]
 then
 
-    echo "Not copying to $outFile.root"
+    echo "Copying to $CrombieTempDir/$outFile.root?"
+    lcg-cp -v -D srmv2 -b file://$PWD/$OutputBase.root \
+        srm://t3serv006.mit.edu:8443/srm/v2/server\?SFN=$CrombieTempDir/$outFile.root
 
 else
 
