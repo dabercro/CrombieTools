@@ -13,7 +13,7 @@ export CrombieSkimDir=$CROMBIEPATH/test/SkimOut
 export CrombieDirList=
 
 export CrombieSlimmerScript=runSlimmer.py
-export CrombieJobScriptList=CrombieJobScriptList.txt
+export CrombieJobScriptList=JobScriptList.txt
 export CrombieCheckerScript="crombie findtree"
 
 export CrombieGoodRuns=goodruns.txt

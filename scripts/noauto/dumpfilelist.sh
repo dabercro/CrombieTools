@@ -1,10 +1,10 @@
 #!/bin/bash
 
 ##
-# @file dumpeosfiles.sh
+# @file dumpfilelist.sh
 #
-# This is the file that creates the input files for running slimmers over EOS
-# or other directories.
+# This is the file that creates the input files for running slimmers over EOS,
+# files in Phedex, or other local directories.
 #
 # @todo Clean this up when not using multiple EOS directories
 #
@@ -13,8 +13,6 @@
 
 isEOS=$1
 
-source CrombieSlimmingConfig.sh                # Get the slimming configuration
-
 if [ ! -d $CrombieFullDir ]                    # Create directories to hold output
 then                                           # of the slimming
     mkdir -p $CrombieFullDir
@@ -22,12 +20,18 @@ fi
 
 if [ ! -d $CrombieTempDir ]                    # Create also a temporary directory
 then                                           # to hold the lxplus output directly
+
     mkdir -p $CrombieTempDir
+
 else
+
     rm $CrombieTempDir/*.txt 2> /dev/null
+
     if [ "$fresh" = "fresh" ]                  # User can specify a fresh lxbatch run
-    then                                       # which clears out temp .root files
-        rm $CrombieTempDir/*.root 2> /dev/null # from before
+    then                                       # which clears out temp .root files from before
+
+        rm $CrombieTempDir/*.root 2> /dev/null
+
     fi
 fi
 
@@ -127,17 +131,24 @@ then
 else                                        # If we're not using EOS
     usingMultiEOS=0
 
-    if [ ! -d $CrombieRegDir ]
+    if [ -f $CrombieDatasets ]
     then
-        echo "$CrombieRegDir does not seem to exist. Maybe needs mounting."
-        exit 1
-    fi
 
-    if [ "$CrombieDirList" = "" ]
-    then
-        ls $CrombieRegDir > $RunOnList      # Dump the directory contents
+        cp $CrombieDatasets $RunOnList
+
     else
-        cat $CrombieDirList > $RunOnList    # Or just use the set directories
+        if [ ! -d $CrombieRegDir ]
+        then
+            echo "$CrombieRegDir does not seem to exist. Maybe needs mounting."
+            exit 1
+        fi
+        
+        if [ "$CrombieDirList" = "" ]
+        then
+            ls $CrombieRegDir > $RunOnList      # Dump the directory contents
+        else
+            cat $CrombieDirList > $RunOnList    # Or just use the set directories
+        fi
     fi
 fi
 
@@ -155,91 +166,147 @@ then
     eosCommand=$eosCMS
 fi
 
-for dir in `cat $RunOnList`
-do
-    if [ "${dir:0:1}" = "#" ]
+            
+_CheckCount () {
+
+    if [ "$fileInCount" -eq "$CrombieFilesPerJob" ]
     then
-        continue
+        
+        fileInCount=0
+        count=$((count + 1))
+        currentConfig=$CrombieTempDir/$CrombieFileBase\_$reasonableName\_$count.txt
+        > $currentConfig
+        
     fi
 
-    if [ "${dir%%=*}" = "eoshost" ]
+}
+
+for dir in `cat $RunOnList`
+do
+    if [ "${dir:0:1}" = "#" ]                   # Skip commented directories
     then
+
+        continue
+
+    fi
+
+    if [ "${dir%%=*}" = "eoshost" ]             # Can change eoshost
+    then
+
         eoshost=${dir##*=}
+
         if [ "${eoshost%%.*}" = "eoscms" ]
         then
+
             eosCommand=$eosCMS
+
         elif [ "${eoshost%%.*}" = "eosuser" ]
         then
+
             eosCommand=$eosUSER
+
         else
+
             echo "Bad host found in config: $eoshost"
             echo "Please check that."
             exit 1
+
         fi
+
         continue
-    elif [ "${dir%%=*}" = "eosdir" ]
+
+    elif [ "${dir%%=*}" = "eosdir" ]            # Can change eosdir
     then
+
         CrombieEosDir=${dir##*=}
         continue
+
     fi
 
     fileInCount=$CrombieFilesPerJob
 
-    reasonableName="${dir%%/*}"
+    stripleading="${dir#/}"
+    reasonableName="${stripleading%%/*}"
 
-    if [ "$reasonableName" != "$lastDir" ]
+    if [ "$reasonableName" != "$lastDir" ]      # Build the file that hadds everything
     then 
+
         count=0
         lastDir=$reasonableName
         echo $CrombieFullDir/$CrombieFileBase\_$reasonableName.root $CrombieTempDir/$CrombieFileBase\_$reasonableName"_[0-9]*.root" >> $haddFile
+
     fi
 
-    if [ "$isEOS" = "eos" ]
+    if [ "$isEOS" = "eos" ]                     # Find all the root files in EOS
     then
+
         for inFile in `$eosCommand find $CrombieEosDir/$dir`
         do
+
             if [ "${inFile##*_}" = "pilot.root" -o "${inFile##*.}" != "root" ]
             then
+
                 continue
+
             elif echo $inFile | grep "/failed/"
             then
+
                 echo "Found a failed job. Resubmit that. I'm skipping for now."
                 continue
+
             fi
             
-            if [ "$fileInCount" -eq "$CrombieFilesPerJob" ]
-            then
-                fileInCount=0
-                count=$((count + 1))
-                currentConfig=$CrombieTempDir/$CrombieFileBase\_$reasonableName\_$count.txt
-                > $currentConfig
-            fi
-            if [ $usingMultiEOS -eq 1 ]
-            then
-                # Will eventually make this standard, I think
-                echo root://$eoshost/$inFile >> $currentConfig
-            else
-                echo $inFile >> $currentConfig
-            fi
+            _CheckCount
+
+            echo root://$eoshost/$inFile >> $currentConfig
+
             fileInCount=$((fileInCount + 1))
+
         done
-    else
+
+    elif [ -f $CrombieDatasets ]                # If we have a list of datasets, then dump the file names from Phedex
+    then
+
+        outputJSON=$CrombieTempDir/$reasonableName.json
+
+        if [ ! -f $outputJSON ]
+        then
+
+            wget --no-check-certificate -O $outputJSON "https://cmsweb.cern.ch/phedex/datasvc/json/prod/data?dataset=$dir"
+
+        fi
+
+        for inFile in `jq '.phedex.dbs|.[].dataset|.[].block|.[].file|.[].lfn' $outputJSON | sed 's/"//g' | sort | uniq`
+        do
+
+            _CheckCount
+
+            echo $inFile >> $currentConfig
+            fileInCount=$((fileInCount + 1))
+            indexFiles=$((indexFiles + 1))
+
+        done
+
+    else                                        # Otherwise, just find all of the .root files in a directory
+
         for inFile in `find $CrombieRegDir/$dir -name '*.root'`; do
+
             if [ "${inFile##*_}" = "pilot.root" ]; then
+
                 continue
+
             fi
-            if [ "$fileInCount" -eq "$CrombieFilesPerJob" ]
-            then
-                fileInCount=0
-                count=$((count + 1))
-                currentConfig=$CrombieTempDir/$CrombieFileBase\_$reasonableName\_$count.txt
-                > $currentConfig
-            fi
+
+            _CheckCount
+
             echo $inFile $CrombieTempDir/TerminalRunning/$CrombieFileBase\_$reasonableName\_$count\_$indexFiles.root >> $currentConfig
             fileInCount=$((fileInCount + 1))
             indexFiles=$((indexFiles + 1))
+
         done
+
     fi
+
 done
 
 cp $RunOnList $CrombieFullDir/.

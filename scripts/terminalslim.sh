@@ -31,7 +31,7 @@ then
 
     if [ "$countFiles" -eq "0" -a "$fresh" != "resub" ]
     then
-        crombie dumpeosfiles
+        crombie dumpfilelist
         if [ "$?" -ne "0" ]
         then
             echo "Something went wrong with File Dump. Exiting..."

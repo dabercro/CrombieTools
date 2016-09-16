@@ -33,7 +33,7 @@ fi
 # Record the submission in this log file
 
 echo "=========================================================" >> `pwd`/LxbatchFileChecks.log
-echo "Ran CrombieSubmitLxbatch at "`date -u` >> `pwd`/LxbatchFileChecks.log
+echo "Ran crombie submitlxbatch at "`date -u` >> `pwd`/LxbatchFileChecks.log
 echo "=========================================================" >> `pwd`/LxbatchFileChecks.log
 
 if [ ! -d bout ]                       # Make sure there's a place for the job's stdout.
@@ -61,7 +61,7 @@ export haddFile=$CrombieTempDir/myHadd.txt
 
 if [ "$fresh" != "resub" -a "$fresh" != "hadd" ]
 then
-    crombie dumpeosfiles eos
+    crombie dumpfilelist eos
     if [ $? -ne 0 ]
     then
         echo "Crashed while dumping file list."
