@@ -51,13 +51,15 @@ tarDir=$here/$condorball
 
 _makeTar () {     # This remakes the target tarball if any of the input files are newer
 
+    echo _makeTar ${@}
+
     outFile=$tarDir/$1
     shift
     files=${@}
 
     if [ ! -f $outFile -o $(find $files -newer $outFile | wc -l) -ne 0 ]
     then
-        tar -czf $outFile $files
+        tar -czhvf $outFile $files
     fi
 
 }
@@ -70,7 +72,7 @@ then                                                #   locate it with this vari
     files=""
     for dir in "bin" "cfipython" "lib" "python"     # Just pack up these directories
     do
-        files=$dirs" $dir/*"
+        files=$files" $dir/*"
     done
 
     _makeTar cmssw_patch.tgz $files

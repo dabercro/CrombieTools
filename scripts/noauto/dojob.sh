@@ -137,7 +137,7 @@ do
     if [ "$LSB_JOBID" = "" ]             # If on condor, copy the input files over
     then
         xrdcp root://$CrombieRedirector/$file .
-        $file=${file##*/}
+        file=${file##*/}
     fi
 
     echoCommand="echo $file $OutputBase\_$NUM.root"
@@ -150,7 +150,7 @@ done
 
 # Run the slimmer in parallel using xargs
 
-cat $CommandList | xargs -n2 -P$LSB_DJOB_NUMPROC $CrombieSlimmerScript
+cat $CommandList | xargs -n2 -P$CrombieNBatchProcs $CrombieSlimmerScript
 
 # Hadd the results together
 
