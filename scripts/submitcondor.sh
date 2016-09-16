@@ -102,7 +102,8 @@ do
 
     outFile=${file%%.txt}.root
 
-    if [ $(lcg-ls -D srmv2 -b srm://t3serv006.mit.edu:8443/srm/v2/server?SFN=$CrombieCondorOutput/`basename $outFile` | wc -l) -eq 0 ]
+    existingFiles=`lcg-ls -D srmv2 -b srm://t3serv006.mit.edu:8443/srm/v2/server?SFN=$CrombieCondorOutput`
+    if [[ ! $existingFiles =~ `basename $outFile` ]]
     then
 
         files=$files" $file"
