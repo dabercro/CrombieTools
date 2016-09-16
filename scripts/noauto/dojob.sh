@@ -55,11 +55,61 @@ then
 
     done
 
-    cp $outFile.txt .      # Copy the list of files for this file to local spot
+    cp $outFile.txt .                       # Copy the list of files for this file to local spot
 
-else                       # Condor has alternative setup
+else                                        # Condor has alternative setup
 
-    
+    ERRORLOG=condor.err
+
+    tar -xzvf condor_package.tar.gz         # Open the package
+
+    source CrombieSubmitConfig.sh           # Get the configuration
+
+    export SCRAM_ARCH=$CrombieScram         # Get CMSSW setup from CVMFS
+    export VO_CMS_SW_DIR=/cvmfs/cms.cern.ch
+    source $VO_CMS_SW_DIR/cmsset_default.sh
+
+    cmsrel $CrombieRelease
+    cd $CrombieRelease
+
+    if [ -f ../cmssw_patch.tgz ]            # If we have a personal patch to CMSSW, apply it
+    then
+
+        mv ../cmssw_patch.tgz .
+        tar -xzvf cmssw_patch.tgz
+
+    fi
+
+    cmsenv
+    cd ..
+
+    if [ -f crombie.tgz ]                   # Install CrombieTools if present
+    then
+
+        mkdir CrombieTools
+        mv crombie.tgz CrombieTools/.
+        cd CrombieTools
+        tar -xzvf crombie.tgz
+        export CROMBIEPATH=`pwd`
+        export PATH=`pwd`/bin:$PATH
+        export PYTHONPATH=`pwd`/python:$PYTHONPATH
+        cd ..
+
+    fi
+
+    # Get the input file out
+
+    set -- `tar -ztf input_files.tar.gz | sort`
+    tar -xzvf input_files.tar.gz ${!outFile}
+    outFile=${!outFile}
+    outFile=${outFile%%.txt}
+
+    for file in `ls *.tgz` # Finally extract all the other files
+    do
+
+        tar -xzvf $file
+
+    done
 
 fi
 
@@ -173,16 +223,32 @@ then
 fi
 
 echo ""
-echo "Copying to $outFile.root"
 
-cp $OutputBase.root $outFile.root        # Try to copy
+if [ $LSB_JOBID = "" ]
+then
 
-if [ $? -ne 0 ]                          # Check for success
+    echo "Not copying to $outFile.root"
+
+else
+
+    echo "Copying to $outFile.root"
+    cp $OutputBase.root $outFile.root        # Try to copy
+
+fi
+
+if [ $? -ne 0 ]                              # Check for success
 then
 
     echo "Copying failed! Check your quota." >> $ERRORLOG
     echo "Check output in job bout/out.$LSB_JOBID" >> $ERRORLOG
     echo "" >> $ERRORLOG
+
+fi
+
+if [ -f condor.err ]                         # Let condor handle the errors for us
+then
+
+    cat condor.err >&2
 
 fi
 

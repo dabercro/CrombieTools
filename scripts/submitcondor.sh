@@ -11,7 +11,7 @@
 
 export fresh=$1
 
-config=CrombieSubmitConfig.sh
+config=CrombieSubmitConfig.sh                      # Search for the configuration
 
 if [ ! -f $config ]
 then
@@ -20,10 +20,10 @@ then
     exit 1
 fi
 
-source $config
+source $config                                      # Source the configuration
 
-echo "${CrombieFilesPerJob:?}" > /dev/null
-echo "${CrombieNBatchProcs:?}" > /dev/null
+echo "${CrombieFilesPerJob:?}" > /dev/null          # Check for variables
+echo "${CrombieNBatchProcs:?}" > /dev/null          #   that we'll want
 echo "${CrombieEosDir:?}" > /dev/null
 echo "${CrombieTempDir:?}" > /dev/null
 echo "${CrombieFullDir:?}" > /dev/null
@@ -34,7 +34,7 @@ echo "${CrombieCheckerScript:?}" > /dev/null
 echo "${CrombieScram:?}" > /dev/null
 echo "${CrombieRelease:?}" > /dev/null
 
-export haddFile=$CrombieTempDir/myHadd.txt
+export haddFile=$CrombieTempDir/myHadd.txt          # Export the hadd file location
 
 here=`pwd`
 condorball=condorinput
@@ -59,13 +59,13 @@ _makeTar () {     # This remakes the target tarball if any of the input files ar
 
 }
 
-if [ "$CrombieCmsswBase" != "" ]
-then
+if [ "$CrombieCmsswBase" != "" ]                    # If we have a modified CMSSW,
+then                                                #   locate it with this variable
 
     cd $CrombieCmsswBase
 
     files=""
-    for dir in "bin" "cfipython" "lib" "python"
+    for dir in "bin" "cfipython" "lib" "python"     # Just pack up these directories
     do
         files=$dirs" $dir/$CrombieScram/*"
     done
@@ -74,7 +74,7 @@ then
 
 fi
 
-if [ "$UseCrombie" != "0" ]
+if [ "$UseCrombie" != "0" ]                         # Pack up CrombieTools if we want it
 then
 
     cd $CROMBIEPATH
@@ -84,16 +84,16 @@ fi
 
 cd $here
 
-_makeTar script_files.tgz `cat $CrombieJobScriptList`
+_makeTar script_files.tgz `cat $CrombieJobScriptList`         # Collect any other files or scripts needed for the run
 
-crombie dumpfilelist
+crombie dumpfilelist                                          # Make a list of input files
 
 cd $CrombieTempDir
 
 files=""
 njobs=0
 
-for file in $CrombieFileBase\_*_*.txt
+for file in $CrombieFileBase\_*_*.txt                         # Check how many of these files
 do
 
     if [ ! -f ${file%%.txt}.root ]
@@ -106,12 +106,23 @@ do
 
 done
 
-tar -czf $tarDir/input_files.tar.gz $files     # Update this every time
+tar -czf $tarDir/input_files.tar.gz $files                    # Update this every time
 
 cd $tarDir
 
-_makeTar condor_package.tar.gz *.tgz           # Make the final tar file
+_makeTar condor_package.tar.gz *.tgz ../Crombie*Config.sh     # Make the final tar file
 
 sed 's@CROMBIEDOJOB@$CROMBIEPATH/scripts/noauto/dojob.sh@g' ../CrombieCondorConfig.cgf | sed 's@NJOBS@$njobs@g' > config.cfg
 
-condor_submit config.cfg
+if [ $njobs -ne 0 ]
+then
+
+    condor_submit config.cfg
+
+else
+
+    echo "${CrombieNLocalProcs:?}" > /dev/null
+    cat $haddFile | xargs -n2 -P$CrombieNLocalProcs crombie hadd
+    echo "All files merged!"
+
+fi

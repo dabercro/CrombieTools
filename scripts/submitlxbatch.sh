@@ -75,8 +75,10 @@ if [ "$fresh" != "hadd" ]
 then
 
     rootNames=`ls $CrombieTempDir/$CrombieFileBase\_*_*.txt | sed 's/.txt//'`
+
     for outFile in $rootNames
     do
+
         if [ ! -f $outFile.root ]      # Check each file to see if they exist, if not, submit
         then
 
@@ -85,21 +87,31 @@ then
 
             if [ "$fresh" = "test" ]   # Echo the command if a test
             then                       #   otherwise, execute it
+
                 echo $command
+
             else
+
                 $command
+
             fi
 
             ranOnFile=1                # Job was submitted
         fi
+
     done
+
 else
+
     echo "Going directly to hadd step."
+
 fi
 
 if [ "$ranOnFile" -eq 0 ]              # If no jobs submitted or tested, hadd
 then
+
     echo "${CrombieNLocalProcs:?}" > /dev/null
     cat $haddFile | xargs -n2 -P$CrombieNLocalProcs crombie hadd
     echo "All files merged!"
+
 fi
