@@ -46,7 +46,7 @@ fi
 
 tarDir=$here/$condorball
 
-_makeTar () {
+_makeTar () {     # This remakes the target tarball if any of the input files are newer
 
     outFile=$tarDir/$1
     shift
@@ -78,7 +78,7 @@ if [ "$UseCrombie" != "0" ]
 then
 
     cd $CROMBIEPATH
-    _makeTar crombie.tgz bin python scripts *Tools
+    _makeTar crombie.tgz bin lib python scripts *Tools
 
 fi
 
@@ -90,8 +90,28 @@ crombie dumpfilelist
 
 cd $CrombieTempDir
 
-_makeTar input_files.tgz $CrombieFileBase\_*_*.txt
+files=""
+njobs=0
+
+for file in $CrombieFileBase\_*_*.txt
+do
+
+    if [ ! -f ${file%%.txt}.root ]
+    then
+
+        files=$files" $file"
+        njobs=$((njobs + 1))
+
+    fi
+
+done
+
+tar -czf $tarDir/input_files.tar.gz $files     # Update this every time
 
 cd $tarDir
 
-_makeTar condor_package.tar.gz *.tgz
+_makeTar condor_package.tar.gz *.tgz           # Make the final tar file
+
+sed 's@CROMBIEDOJOB@$CROMBIEPATH/scripts/noauto/dojob.sh@g' ../CrombieCondorConfig.cgf | sed 's@NJOBS@$njobs@g' > config.cfg
+
+condor_submit config.cfg

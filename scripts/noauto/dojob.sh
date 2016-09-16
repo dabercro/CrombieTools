@@ -3,54 +3,65 @@
 ##
 # @file: dojob.sh
 #
-# This is the script that is run for each LXBATCH job run by CrombieTools.
+# This is the script that is run for each LXBATCH or Condor job run by CrombieTools.
 # The only argument is the filename that will be created.
 # Any other configuration is done in [CrombieSlimmingConfig.sh](@ref slimming).
 #
 # @author: Daniel Abercrombie <dabercro@mit.edu>
 #
 
-outFile=$1                  # The only argument is the output file (no extension)
+outFile=$1                      # The only argument is the output file (no extension)
 
-macroDir=$LS_SUBCWD         # Get the configuration from the submission directory
+env
 
-source $macroDir/CrombieSlimmingConfig.sh
-
-env                         # Dump environment for debugging
-
-
-if [ "$CMSSW_BASE" != "" ]  # If CMSSW_BASE filled, scram it
+if [ $LSB_JOBID != "" ]         # Do some automatic setup if on LSB
 then
 
-    cd $CMSSW_BASE/src
-    eval `scram runtime -sh`
-    cd -
+    macroDir=$LS_SUBCWD         # Get the configuration from the submission directory
 
-fi
+    source $macroDir/CrombieSlimmingConfig.sh
 
-# Copy all files from $CrombieJobScriptList to local directories
+    ERRORLOG=$macroDir/LxbatchFileChecks.log
 
-for file in `cat $macroDir/$CrombieJobScriptList`
-do
 
-    if [ "$file" != "${file/\//}" ]    # If the file has directories
-    then                               #   make the directory for it to live in
+    if [ "$CMSSW_BASE" != "" ]  # If CMSSW_BASE filled, scram it
+    then
 
-        making=${file%%/${file##*/}}
+        cd $CMSSW_BASE/src
+        eval `scram runtime -sh`
+        cd -
 
-        if [ ! -d $making ]
-        then
-
-            mkdir -p $making
-
-        fi
     fi
 
-    cp $macroDir/$file $file            # Copy file to local location
+    # Copy all files from $CrombieJobScriptList to local directories
 
-done
+    for file in `cat $macroDir/$CrombieJobScriptList`
+    do
 
-cp $outFile.txt .          # Copy the list of files for this file to local spot
+        if [ "$file" != "${file/\//}" ]    # If the file has directories
+        then                               #   make the directory for it to live in
+
+            making=${file%%/${file##*/}}
+
+            if [ ! -d $making ]
+            then
+
+                mkdir -p $making
+
+            fi
+        fi
+
+        cp $macroDir/$file $file            # Copy file to local location
+
+    done
+
+    cp $outFile.txt .      # Copy the list of files for this file to local spot
+
+else                       # Condor has alternative setup
+
+    
+
+fi
 
 echo "Trying to make $outFile.root"
 echo ""
@@ -97,7 +108,6 @@ cat $CommandList | xargs -n2 -P$LSB_DJOB_NUMPROC $CrombieSlimmerScript
 
 hadd $OutputBase.root $OutputBase\_*.root
 
-ERRORLOG=$macroDir/LxbatchFileChecks.log
 FATALERROR=0
 ALLEMPTY=1
 FINALEMPTY=0
@@ -152,7 +162,6 @@ then                            #   that's bad and should be a fatal error.
 
     fi
 fi
-
 
 if [ $FATALERROR -eq 1 ]        # For fatal error, report to user and quit quietly
 then

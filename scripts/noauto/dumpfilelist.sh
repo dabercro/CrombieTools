@@ -183,6 +183,7 @@ _CheckCount () {
 
 for dir in `cat $RunOnList`
 do
+
     if [ "${dir:0:1}" = "#" ]                   # Skip commented directories
     then
 
