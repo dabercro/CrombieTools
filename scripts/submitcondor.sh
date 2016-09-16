@@ -102,7 +102,7 @@ do
 
     outFile=${file%%.txt}.root
 
-    if [ $(lcg-ls srm://t3serv006.mit.edu:8443/srm/v2/server?SFN=$CrombieCondorOutput/`basename $outFile` | wc -l) -eq 0 ]
+    if [ $(lcg-ls -D srmv2 -b srm://t3serv006.mit.edu:8443/srm/v2/server?SFN=$CrombieCondorOutput/`basename $outFile` | wc -l) -eq 0 ]
     then
 
         files=$files" $file"
@@ -125,7 +125,7 @@ fi
 
 _makeTar condor_package.tar.gz *.tgz ../Crombie*Config.sh `basename $X509_USER_PROXY`     # Make the final tar file
 
-sed 's@CROMBIEDOJOB@$CROMBIEPATH/scripts/noauto/dojob.sh@g' ../CrombieCondorConfig.cgf | sed 's@NJOBS@$njobs@g' > config.cfg
+sed 's@CROMBIEDOJOB@'$CROMBIEPATH'/scripts/noauto/dojob.sh@g' ../CrombieCondorConfig.cgf | sed 's@NJOBS@'$njobs'@g' > config.cfg
 
 if [ $njobs -ne 0 ]
 then
@@ -150,3 +150,5 @@ else
     echo "All files merged!"
 
 fi
+
+cd $here
