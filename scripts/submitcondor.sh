@@ -70,7 +70,7 @@ then                                                #   locate it with this vari
     files=""
     for dir in "bin" "cfipython" "lib" "python"     # Just pack up these directories
     do
-        files=$dirs" $dir/$CrombieScram/*"
+        files=$dirs" $dir/*"
     done
 
     _makeTar cmssw_patch.tgz $files
