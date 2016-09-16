@@ -70,7 +70,7 @@ else                                        # Condor has alternative setup
     export VO_CMS_SW_DIR=/cvmfs/cms.cern.ch
     source $VO_CMS_SW_DIR/cmsset_default.sh
 
-    cmsrel $CrombieRelease
+    scramv1 project CMSSW $CrombieRelease
     cd $CrombieRelease
 
     if [ -f ../cmssw_patch.tgz ]            # If we have a personal patch to CMSSW, apply it
@@ -81,7 +81,7 @@ else                                        # Condor has alternative setup
 
     fi
 
-    cmsenv
+    eval `scramv1 runtime -sh`
     cd ..
 
     if [ -f crombie.tgz ]                   # Install CrombieTools if present
