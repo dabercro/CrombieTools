@@ -14,7 +14,7 @@ outFile=$1                      # The only argument is the output file (no exten
 
 env
 
-if [ $LSB_JOBID != "" ]         # Do some automatic setup if on LSB
+if [ "$LSB_JOBID" != "" ]       # Do some automatic setup if on LSB
 then
 
     macroDir=$LS_SUBCWD         # Get the configuration from the submission directory
