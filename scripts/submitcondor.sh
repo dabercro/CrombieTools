@@ -97,12 +97,12 @@ cd $CrombieTempDir
 files=""
 njobs=0
 
+existingFiles=`lcg-ls -D srmv2 -b srm://t3serv006.mit.edu:8443/srm/v2/server?SFN=$CrombieCondorOutput`
+
 for file in $CrombieFileBase\_*_*.txt                         # Check how many of these files
 do
 
     outFile=${file%%.txt}.root
-
-    existingFiles=`lcg-ls -D srmv2 -b srm://t3serv006.mit.edu:8443/srm/v2/server?SFN=$CrombieCondorOutput`
     if [[ ! $existingFiles =~ `basename $outFile` ]]
     then
 
