@@ -105,12 +105,14 @@ else                                        # Condor has alternative setup
     outFile=${!outFile}
     outFile=${outFile%%.txt}
 
-    for file in `ls *.tgz` # Finally extract all the other files
+    for file in `ls *.tgz`                  # Finally extract all the other files
     do
 
         tar -xzvf $file
 
     done
+
+    export PATH=`pwd`:$PATH                 # Make sure executables here are in the path
 
 fi
 

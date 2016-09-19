@@ -59,7 +59,7 @@ _makeTar () {     # This remakes the target tarball if any of the input files ar
 
     if [ ! -f $outFile -o $(find $files -newer $outFile | wc -l) -ne 0 ]
     then
-        tar -czhvf $outFile $files
+        tar -czvf $outFile $files
     fi
 
 }
@@ -70,7 +70,7 @@ then                                                #   locate it with this vari
     cd $CrombieCmsswBase
 
     files=""
-    for dir in "bin" "cfipython" "lib" "python"     # Just pack up these directories
+    for dir in "bin" "cfipython" "lib" "python" "src"  # pack up these directories
     do
         files=$files" $dir/*"
     done
