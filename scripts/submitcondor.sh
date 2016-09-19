@@ -70,10 +70,39 @@ then                                                #   locate it with this vari
     cd $CrombieCmsswBase
 
     files=""
-    for dir in "bin" "cfipython" "lib" "python" "src"  # pack up these directories
+    for dir in "bin" "cfipython" "lib" "python"     # pack up these directories
     do
         files=$files" $dir/*"
     done
+
+    cd src
+
+    for dir in `ls`
+    do
+
+        if [ "$dir" != "NeroProducer" ]
+        then
+
+            files=$files" src/$dir"
+
+        else
+
+            cd $dir
+
+            for file in `git ls-files`
+            do
+
+                files=$files" src/$dir/$file"
+
+            done
+
+            cd ..
+
+        fi
+
+    done
+
+    cd ..
 
     _makeTar cmssw_patch.tgz $files
 
