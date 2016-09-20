@@ -157,9 +157,13 @@ then
 fi
 
 # Make the final tar file
-_makeTar condor_package.tar.gz *.tgz ../$CrombieSlimmerScript ../Crombie*Config.sh `basename $X509_USER_PROXY`
+cp $here/$CrombieSlimmerScript .
+cp $here/Crombie*Config.sh .
+cp $here/CrombieCondorConfig.cgf .
 
-sed 's@CROMBIEDOJOB@'$CROMBIEPATH'/scripts/noauto/dojob.sh@g' ../CrombieCondorConfig.cgf | sed 's@NJOBS@'$njobs'@g' | \
+_makeTar condor_package.tar.gz *.tgz $CrombieSlimmerScript Crombie*Config.sh `basename $X509_USER_PROXY`
+
+sed 's@CROMBIEDOJOB@'$CROMBIEPATH'/scripts/noauto/dojob.sh@g' CrombieCondorConfig.cgf | sed 's@NJOBS@'$njobs'@g' | \
     sed 's@PROJECTNAME@'$USER/$CrombieProjectName'@g' > config.cfg
 
 if [ $njobs -ne 0 ]
