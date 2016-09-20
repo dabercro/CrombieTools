@@ -5,6 +5,7 @@ export UseCrombieTools=0
 export CrombieScram=slc6_amd64_gcc530
 export CrombieRelease=CMSSW_8_0_12
 export CrombieRedirector=cmsxrootd.fnal.gov
+export CrombieProjectName=WTagging
 export CrombieCondorOutput=/mnt/hadoop/cms/store/user/dabercro/test
 
 # Only need this if you changed the default CMSSW somehow

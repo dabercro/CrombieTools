@@ -4,9 +4,9 @@ should_transfer_files = YES
 when_to_transfer_output = ON_EXIT
 transfer_input_files = input_files.tar.gz condor_package.tar.gz
 transfer_output_files = ""
-log = logs/$(Process).log
-output = logs/$(Process).out
-error = logs/$(Process).err
+log = /work/PROJECTNAME/logs/$(Process).log
+output = /work/PROJECTNAME/logs/$(Process).out
+error = /work/PROJECTNAME/logs/$(Process).err
 arguments = $(Process)
 requirements = isUndefined(IS_GLIDEIN) || OSGVO_OS_STRING == "RHEL 6" || GLIDEIN_REQUIRED_OS == "rhel6" || (Arch == "X86_64" && OpSysAndVer == "SL6" && HasCVMFS == True)
 queue NJOBS
