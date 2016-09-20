@@ -35,16 +35,17 @@ echo "${CrombieCheckerScript:?}" > /dev/null
 echo "${CrombieScram:?}" > /dev/null
 echo "${CrombieRelease:?}" > /dev/null
 echo "${CrombieRedirector:?}" > /dev/null
+echo "${CrombieProjectName:?}" > /dev/null
 echo "${CrombieCondorOutput:?}" > /dev/null
 
 export haddFile=$CrombieTempDir/myHadd.txt          # Export the hadd file location
 
 here=`pwd`
-condorball=condorinput
+condorball=/work/dabercro/$CrombieProjectName
 
 if [ ! -d $condorball ]
 then
-    mkdir $condorball
+    mkdir -p $condorball
 fi
 
 tarDir=$here/$condorball
@@ -158,7 +159,8 @@ fi
 # Make the final tar file
 _makeTar condor_package.tar.gz *.tgz ../$CrombieSlimmerScript ../Crombie*Config.sh `basename $X509_USER_PROXY`
 
-sed 's@CROMBIEDOJOB@'$CROMBIEPATH'/scripts/noauto/dojob.sh@g' ../CrombieCondorConfig.cgf | sed 's@NJOBS@'$njobs'@g' > config.cfg
+sed 's@CROMBIEDOJOB@'$CROMBIEPATH'/scripts/noauto/dojob.sh@g' ../CrombieCondorConfig.cgf | sed 's@NJOBS@'$njobs'@g' | \
+    sed 's@PROJECTNAME@'$USER/$CrombieProjectName'@g' > config.cfg
 
 if [ $njobs -ne 0 ]
 then

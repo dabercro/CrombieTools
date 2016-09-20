@@ -63,7 +63,7 @@ else                                        # Condor has alternative setup
 
     tar -xzvf condor_package.tar.gz         # Open the package
 
-    export X509_USER_PROXY=`pwd`/*.cert     # Export location of my proxy
+    export X509_USER_PROXY=`pwd`/voms_proxy.cert # Export location of my proxy
     source CrombieSubmitConfig.sh           # Get the configuration
 
     export SCRAM_ARCH=$CrombieScram         # Get CMSSW setup from CVMFS
