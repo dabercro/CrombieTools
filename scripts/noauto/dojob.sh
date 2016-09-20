@@ -136,13 +136,8 @@ CommandList="ArgsForThisJob.txt"         # These variables aren't too important
 for file in `cat $outFile.txt`           # Dump name of each input file into argument list
 do
 
-    if [ "$LSB_JOBID" = "" ]             # If on condor, copy the input files over
-    then
-        xrdcp root://$CrombieRedirector/$file .
-        file=${file##*/}
-    fi
-
-    echoCommand="echo $file $OutputBase\_$NUM.root"
+    xrdcp $file .
+    echoCommand="echo ${file##*/} $OutputBase\_$NUM.root"
 
     $echoCommand                         # Debugging
     $echoCommand >> $CommandList         # Put into text file

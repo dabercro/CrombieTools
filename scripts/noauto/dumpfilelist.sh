@@ -15,7 +15,9 @@ isEOS=$1
 
 if [ ! -d $CrombieFullDir ]                    # Create directories to hold output
 then                                           # of the slimming
+
     mkdir -p $CrombieFullDir
+
 fi
 
 if [ ! -d $CrombieTempDir ]                    # Create also a temporary directory
@@ -260,7 +262,6 @@ do
             _CheckCount
 
             echo root://$eoshost/$inFile >> $currentConfig
-
             fileInCount=$((fileInCount + 1))
 
         done
@@ -282,13 +283,14 @@ do
 
             _CheckCount
 
-            echo $inFile >> $currentConfig
+            echo root://$CrombieRedirector/$inFile >> $currentConfig
             fileInCount=$((fileInCount + 1))
-            indexFiles=$((indexFiles + 1))
 
         done
 
     else                                        # Otherwise, just find all of the .root files in a directory
+
+        indexFiles=0
 
         for inFile in `find $CrombieRegDir/$dir -name '*.root'`; do
 

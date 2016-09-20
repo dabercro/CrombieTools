@@ -32,9 +32,21 @@ fi
 
 # Record the submission in this log file
 
-echo "=========================================================" >> `pwd`/LxbatchFileChecks.log
-echo "Ran crombie submitlxbatch at "`date -u` >> `pwd`/LxbatchFileChecks.log
-echo "=========================================================" >> `pwd`/LxbatchFileChecks.log
+logFile=`pwd`/LxbatchFileChecks.log
+sub=""
+
+if [ "$fresh" != "" ]
+then
+    sub=" $fresh"
+fi
+
+submitLog="Ran crombie submitlxbatch$sub at "`date -u`
+export subLogCharNum=${#submitLog}
+delim=`perl -e 'print "=" x $ENV{'subLogCharNum'}';`
+
+echo "$delim" >> $logFile
+echo "$submitLog" >> $logFile
+echo "$delim" >> $logFile
 
 if [ ! -d bout ]                       # Make sure there's a place for the job's stdout.
 then
