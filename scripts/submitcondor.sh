@@ -60,7 +60,7 @@ _makeTar () {     # This remakes the target tarball if any of the input files ar
 
     if [ ! -f $outFile -o $(find $files -newer $outFile | wc -l) -ne 0 ]
     then
-        tar -czvf $outFile $files
+        tar -czhvf $outFile $files
     fi
 
 }
@@ -71,39 +71,18 @@ then                                                #   locate it with this vari
     cd $CrombieCmsswBase
 
     files=""
-    for dir in "bin" "cfipython" "lib" "python"     # pack up these directories
-    do
-        files=$files" $dir/*"
-    done
 
-    cd src
-
-    for dir in `ls`
+    for dir in `ls`                                 # pack everything
     do
 
-        if [ "$dir" != "NeroProducer" ]
+        if [ "$dir" != "src" ]                      # except src
         then
 
-            files=$files" src/$dir"
-
-        else
-
-            cd $dir
-
-            for file in `git ls-files`
-            do
-
-                files=$files" src/$dir/$file"
-
-            done
-
-            cd ..
+            files=$files" $dir"
 
         fi
 
     done
-
-    cd ..
 
     _makeTar cmssw_patch.tgz $files
 
