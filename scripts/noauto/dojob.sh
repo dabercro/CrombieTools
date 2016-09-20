@@ -136,6 +136,7 @@ CommandList="ArgsForThisJob.txt"         # These variables aren't too important
 for file in `cat $outFile.txt`           # Dump name of each input file into argument list
 do
 
+    echo "Getting $file"
     xrdcp $file .
     echoCommand="echo ${file##*/} $OutputBase\_$NUM.root"
 
