@@ -230,9 +230,10 @@ echo ""
 if [ "$LSB_JOBID" = "" ]
 then
 
-    echo "Copying to $CrombieTempDir/$outFile.root?"
+    destination=$CrombieTempDir/${outFile%%_[0-9]*}/$outFile.root
+    echo "Copying to $destination!"
     lcg-cp -v -D srmv2 -b file://$PWD/$OutputBase.root \
-        srm://t3serv006.mit.edu:8443/srm/v2/server\?SFN=$CrombieTempDir/$outFile.root
+        srm://t3serv006.mit.edu:8443/srm/v2/server\?SFN=$destination
 
 else
 

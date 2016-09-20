@@ -48,7 +48,7 @@ then
     mkdir -p $condorball
 fi
 
-tarDir=$here/$condorball
+tarDir=$condorball
 
 _makeTar () {     # This remakes the target tarball if any of the input files are newer
 
