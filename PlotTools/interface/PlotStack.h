@@ -71,9 +71,6 @@ class PlotStack : public FileConfigReader
                                                         fTemplateHists.push_back(histName); 
                                                         fTemplateEntries.push_back(LegendEntry);  }
 
-  /// Use to suppress ratio pad if wanted
-  void SetMakeRatio      ( Bool_t make )              { fMakeRatio = make;                        }
-
   /// Use this to change the automatic sorting of backgrounds based on yields
   void SetSortBackground ( Bool_t doSort )            { fSortBackground = doSort;                 }
 
@@ -90,7 +87,6 @@ class PlotStack : public FileConfigReader
 
   Bool_t                fDebug = false;             ///< Dumps yield tests
   TString               fDumpRootName = "";         ///< File where each histogram in stack is dumped
-  Bool_t                fMakeRatio = true;          ///< Bool to make ratio pad
   Bool_t                fSortBackground = true;     ///< Bool to sort the backgrounds
 
   ClassDef(PlotStack, 1)

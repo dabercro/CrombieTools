@@ -38,3 +38,5 @@ Navigate with the sidebar if viewing Doxgen-generated pages.
 
 Use the tabs or sidebar of the reference website to explore different
 classes available through CrombieTools.
+
+@todo Make classes have verbose option so debugging can occur more easily.
