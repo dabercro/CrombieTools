@@ -220,11 +220,11 @@ class PlotBase
   Float_t                    fAxisMin = 0.0;
   Float_t                    fAxisMax = 0.0;             ///< Maximum value of the y-axis. 
 
-  Int_t                      fDataIndex;                 ///< Index in the plotter of the data line
-  Bool_t                     fMakeRatio;                 ///< Bool to make a ratio plot on bottom of image
-  Int_t                      fRatioIndex;                ///< Pick which line to set as 1 in ratio plot
-  Float_t                    fRatioMin;                  ///< Minimum of the ratio pad
-  Float_t                    fRatioMax;                  ///< Maximum of the ratio pad
+  Int_t                      fDataIndex = -1;            ///< Index in the plotter of the data line
+  Bool_t                     fMakeRatio = false;         ///< Bool to make a ratio plot on bottom of image
+  Int_t                      fRatioIndex = -1;           ///< Pick which line to set as 1 in ratio plot
+  Float_t                    fRatioMin = 0.0;            ///< Minimum of the ratio pad
+  Float_t                    fRatioMax = 0.0;            ///< Maximum of the ratio pad
   TString                    fRatioTitle;                ///< Label of the ratio pad
   Int_t                      fRatioGrid;
   Int_t                      fRatioDivisions;
@@ -288,13 +288,6 @@ class PlotBase
 
 //--------------------------------------------------------------------
 PlotBase::PlotBase() :
-  fAxisMin(0.0),
-  fAxisMax(0.0),
-  fDataIndex(-1),
-  fMakeRatio(false),
-  fRatioIndex(-1),
-  fRatioMin(0.0),
-  fRatioMax(0.0),
   fRatioTitle("Ratio"),
   fRatioGrid(0),
   fRatioDivisions(504),
