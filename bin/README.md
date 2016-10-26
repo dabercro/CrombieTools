@@ -3,7 +3,7 @@
 @brief Reference describing the tools available through the `crombie` command.
 
 A number of scripts are available to the user through the `crombie` command line tool.
-They can be accessed by entering 
+They can be accessed by entering
 
     crombie <subcommand>
 
@@ -57,13 +57,13 @@ The list of available subcommands are given below.
                             [--skip-branches [BRANCHES [BRANCHES ...]]] [--verbose]
                             [--check-branch]
                             DIRECTORY DIRECTORY
-        
+
         Checks two directories to make sure they have the same number of files and
         number of events in the tree and hist for each file
-        
+
         positional arguments:
           DIRECTORY             The names of the two directories to compare.
-        
+
         optional arguments:
           -h, --help            show this help message and exit
           --numproc NUM, -n NUM

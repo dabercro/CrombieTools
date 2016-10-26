@@ -39,7 +39,7 @@ if [ -d failed ]
 then
 
     echo "failed directory is not empty. Jobs need resubmitting."
-    
+
 fi
 
 exit 0

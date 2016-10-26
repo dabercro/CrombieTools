@@ -36,7 +36,7 @@ class CorrectorApplicator : public InDirectoryHolder, public ProgressReporter
   /// Set the name of the input tree for each of the Corrector objects to read.
   inline void          SetInputTreeName     ( TString tree )              { fInputTreeName = tree;                  }
   /**
-     Set the name of the output tree for the correctors. 
+     Set the name of the output tree for the correctors.
      If this is the same as the input tree, the branch must not already exist.
   */
   inline void          SetOutputTreeName    ( TString tree )              { fOutputTreeName = tree;                 }

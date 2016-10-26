@@ -30,7 +30,7 @@ class GoodLumiFilter
 
   /// Add a good run and lumi number
   void            AddLumi   ( UInt_t run, UInt_t lumi )      { fGoodLumis[run].insert(lumi); }
-    
+
  private:
   std::map<UInt_t, std::set<UInt_t> >  fGoodLumis;  ///< Map of good lumis
 

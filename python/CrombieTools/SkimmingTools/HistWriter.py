@@ -10,7 +10,7 @@ histWriter    = newHistWriter()
 
 def MakeHist(inputFile, outputFile='', outputHist='', writer=histWriter):
     """A convenience function for HistWriter assuming the text file is named something you like.
-    
+
     @param inputFile is the text file where the histogram is written out.
     @param outputFile is the location where the root histogram will be saved.
            If left blank, the name is just the inputFile replaced with .txt changed to .root

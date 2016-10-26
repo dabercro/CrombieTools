@@ -14,7 +14,7 @@ ClassImp(Corrector)
 Corrector::Corrector(TString name) :
   fName(name)
 { }
-  
+
 //--------------------------------------------------------------------
 Corrector::~Corrector()
 {
@@ -23,7 +23,7 @@ Corrector::~Corrector()
 
   if (fCutFormula != NULL)
     delete fCutFormula;
-  
+
   for (UInt_t iFormula = 0; iFormula != fFormulas.size(); ++iFormula)
     delete fFormulas[iFormula];
 }
@@ -40,7 +40,7 @@ void Corrector::SetCorrectionFile(TString fileName)
 
 //--------------------------------------------------------------------
 void Corrector::SetCorrectionHist(TString histName)
-{ 
+{
   fCorrectionHist = (TH1*) fCorrectionFile->Get(histName);
   if (fCorrectionHist == NULL) {
     std::cout << "Could not load " << histName << std::endl;
@@ -70,7 +70,7 @@ void Corrector::SetCorrectionHist(TString hist1, TString hist2)
   fCorrectionHist->Divide(divisorHist);
   SetMinMax();
 }
-  
+
 //--------------------------------------------------------------------
 Double_t Corrector::GetFormulaResult(Int_t index)
 {
@@ -85,7 +85,7 @@ Double_t Corrector::GetFormulaResult(Int_t index)
 //--------------------------------------------------------------------
 
 /**
-   @returns value of correction histogram using the expressions added 
+   @returns value of correction histogram using the expressions added
             through AddInExpression(), unless the event does not pass the cut
             set by SetInCut(). In that case, a value of 1 is returned.
 */

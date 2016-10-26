@@ -1,6 +1,6 @@
-## 
+##
 #  @file crombie_completion.sh
-#  
+#
 #  Sets the auto-complete available for people using the
 #  crombie command line tools
 #
@@ -69,7 +69,7 @@ _crombie_subs () {                                  # Function to fill COMPREPLY
     elif [ "${COMP_WORDS[1]}" = "generatedocs" ]    # "crombie generatedocs copy" can go to different places
     then
 
-        if [ "$prev" = "copy" ]              
+        if [ "$prev" = "copy" ]
         then
             COMPREPLY=( $(compgen -W "athena lxplus" $cur ) )
         else

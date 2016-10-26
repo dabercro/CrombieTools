@@ -29,15 +29,15 @@
 
 void
 ApplyUncertainty(TH1* theHist, UncertaintyInfo* theUnc)
-{ 
+{
   TFile* uncHistFile = new TFile(theUnc->fFileName);
   TH1* uncHist = (TH1*) uncHistFile->Get(theUnc->fHistName);
 
   Int_t UncBin = theUnc->fStartBin;
   for (Int_t iBin = 1; iBin != theHist->GetXaxis()->GetNbins(); ++iBin) {
     theHist->SetBinError(iBin,
-                         TMath::Sqrt(pow(theHist->GetBinError(iBin),2) + 
-                                     pow(theHist->GetBinContent(iBin) * 
+                         TMath::Sqrt(pow(theHist->GetBinError(iBin),2) +
+                                     pow(theHist->GetBinContent(iBin) *
                                          (uncHist->GetBinContent(UncBin) - 1), 2)
                                      ));
     if (UncBin != theUnc->fEndBin)
@@ -51,8 +51,8 @@ ApplyUncertainty(TH1* theHist, UncertaintyInfo* theUnc)
 /// Sets the parameter errors in a TF1 to 0
 void
 SetZeroError(TF1* theFunc)
-{ 
-  for (Int_t iParam = 0; iParam != theFunc->GetNpar(); ++iParam) 
+{
+  for (Int_t iParam = 0; iParam != theFunc->GetNpar(); ++iParam)
     theFunc->SetParError(iParam, 0);
 }
 
@@ -60,8 +60,8 @@ SetZeroError(TF1* theFunc)
 /// Sets the bin errors in a TH1 to 0
 void
 SetZeroError(TH1* theHist)
-{ 
-  for (Int_t iBin = 0; iBin != theHist->GetXaxis()->GetNbins(); ++iBin) 
+{
+  for (Int_t iBin = 0; iBin != theHist->GetXaxis()->GetNbins(); ++iBin)
     theHist->SetBinError(iBin + 1, 0);
 }
 
@@ -69,8 +69,8 @@ SetZeroError(TH1* theHist)
 /// Sets the point errors in a TGraphErrors to 0
 void
 SetZeroError(TGraphErrors* theGraph)
-{ 
-  for (Int_t iPoint = 0; iPoint != theGraph->GetN(); ++iPoint) 
+{
+  for (Int_t iPoint = 0; iPoint != theGraph->GetN(); ++iPoint)
     theGraph->SetPointError(iPoint,0,0);
 }
 

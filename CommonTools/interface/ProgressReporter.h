@@ -14,7 +14,7 @@
 /**
    @ingroup commongroup
    @class ProgressReporter
-   This class is used to report progress of various codes that run over every event in a file 
+   This class is used to report progress of various codes that run over every event in a file
 */
 
 class ProgressReporter

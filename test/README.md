@@ -6,7 +6,7 @@ You can run the tests simply by doing the following.
 
     crombie test
 
-Example configuration files will be placed into `$CROMBIEPATH/test` in 
+Example configuration files will be placed into `$CROMBIEPATH/test` in
 the relative `slimmer` and `analysis` directories.
 
 Output documentation will be in the docs directory.

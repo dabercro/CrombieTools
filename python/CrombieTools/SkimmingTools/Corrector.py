@@ -2,7 +2,7 @@
 
 Submodule of CrombieTools.SkimmingTools
 Contains the constructor and default object for Corrector and CorrectorApplicator.
-A couple of convenience functions are also used to create these objects with 
+A couple of convenience functions are also used to create these objects with
 some parameters filled.
 
 @author Daniel Abercrombie <dabercro@mit.edu>
@@ -39,7 +39,7 @@ def MakeApplicator(name, saveAll, inputTree='events', outputTree='events', repor
 def MakeCorrector(Name, inExpressions, inCut, correctionFile, correctionHist):
     """Make a Corrector object
 
-    @param Name is the name of the branch for this Corrector if the CorrectorApplicator 
+    @param Name is the name of the branch for this Corrector if the CorrectorApplicator
                 is saving all branches.
     @param inExpressions is the expression to evaluate before reading from the Correction histogram.
                          If the histogram is multi-dimensional, a list can be passed to this parameter.

@@ -14,7 +14,7 @@
    @ingroup commongroup
    @class InOutDirectoryHolder
    This class is used to facilitate writing files to a directory.
-   
+
    Main purpose is to centralize function of adding output directory to the filename
    when considering said file.
 */
@@ -35,11 +35,11 @@ class InOutDirectoryHolder : public InDirectoryHolder
  protected:
   /**
      A helper function that prepends the output directory to a filename.
-     @param FileName is the name of a file inside 
+     @param FileName is the name of a file inside
                      the fOutDirectory or an absolute path.
      @returns FileName with the output directory prepended,
-              unless absolute or fOutDirectory is empty, 
-              where it is left alone. 
+              unless absolute or fOutDirectory is empty,
+              where it is left alone.
   */
   TString           AddOutDir           ( TString FileName ) const;
 

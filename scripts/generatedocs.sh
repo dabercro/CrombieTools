@@ -43,7 +43,7 @@ then
             cd - &> /dev/null
 
         fi
-        
+
         if [ `cat doxygen.log | wc -l` -eq 4 ]              # If the doxygen.log only has image warnings, remove it.
         then                                                #   Otherwise, leave it for reading warnings
 
@@ -92,7 +92,7 @@ then
 
 else                                                        # If doxygen is not installed on system,
                                                             #   give user some info on doxygen installation
-    echo "You need the 'doxygen' package to" 
+    echo "You need the 'doxygen' package to"
     echo "generate the documentation."
     echo "See this page for more information:"
     echo ""

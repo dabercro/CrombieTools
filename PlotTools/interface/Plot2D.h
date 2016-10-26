@@ -18,7 +18,7 @@ class Plot2D : public PlotBase
  public:
   Plot2D();
   virtual ~Plot2D();
-  
+
   void                         SetExprX                ( TString expr )                             { fInExprX = expr;                    }
   void                         AddExprX                ( TString expr )                             { fInExprXs.push_back(expr);          }
   void                         ResetInitialGuess       ()                                           { fGuessParams.resize(0);
@@ -39,15 +39,15 @@ class Plot2D : public PlotBase
 
   void                         DoFits                  ( Int_t NumXBins, Double_t *XBins,
 							 Int_t NumYBins, Double_t MinY, Double_t MaxY );
-  
+
   void                         DoFits                  ( Int_t NumXBins, Double_t MinX, Double_t MaxX,
 							 Int_t NumYBins, Double_t MinY, Double_t MaxY );
-  
+
   void                         MakeCanvas              ( TString FileBase, std::vector<TGraphErrors*> theGraphs,
                                                          TString XLabel, TString YLabel, Double_t YMin, Double_t YMax,
                                                          Bool_t logY = false );
 
-  void                         MakeCanvas              ( TString FileBase, TString ParameterExpr, TString XLabel, TString YLabel, 
+  void                         MakeCanvas              ( TString FileBase, TString ParameterExpr, TString XLabel, TString YLabel,
                                                          Double_t YMin, Double_t YMax, Bool_t logY = false );
 
   void                         MakeCanvas              ( TString FileBase, Int_t ParameterNum, TString XLabel, TString YLabel,
@@ -58,14 +58,14 @@ class Plot2D : public PlotBase
   void                         SetFitOptions           ( TString opts )                              { fFitOptions = opts;                }
 
  protected:
-  
+
   std::vector<TF1*>          MakeFuncs               ( TString ParameterExpr, Double_t MinX, Double_t MaxX );
-  
+
   void                       MapTo                     ( TF1* fitFunc, TF1* looseFunc );
-  virtual    void            DoFit                     ( TF1* fitFunc, TF1* looseFunc, TH2D* histToFit, 
+  virtual    void            DoFit                     ( TF1* fitFunc, TF1* looseFunc, TH2D* histToFit,
                                                          TF1**& fitHolder, TMatrixDSym**& covHolder );
 
-  virtual    TF1*            MakeFunction              ( TString function, Double_t MinX, Double_t MaxX, 
+  virtual    TF1*            MakeFunction              ( TString function, Double_t MinX, Double_t MaxX,
                                                          Double_t MinY, Double_t MaxY )
                                                                                    { return new TF2("func",function,MinX,MaxX,MinY,MaxY); }
 
@@ -85,11 +85,11 @@ class Plot2D : public PlotBase
   std::vector<Int_t>         fLooseParams;           // This is vector used for setting parameter limits for loose fits
   std::vector<Double_t>      fLooseParamLows;        // Low values of these parameters
   std::vector<Double_t>      fLooseParamHighs;       // High values of these parameters
-  
+
   TString                    fInExprX;               // X Expression should be constant
   std::vector<TString>       fInExprXs;
   TString                    fFunctionString;
-  
+
   TString                    fLooseFunction;
   std::vector<Int_t>         fParamFrom;
   std::vector<Int_t>         fParamTo;
@@ -98,10 +98,10 @@ class Plot2D : public PlotBase
   Bool_t                     fDumpingFits;           // Bool used to dump .png files if you want to check fits
   Int_t                      fNumFitDumps;           // int to keep track of different number of fits
   TString                    fFitOptions;
-  
+
  private:
 
-  Int_t                      fNumPoints; 
+  Int_t                      fNumPoints;
 
   ClassDef(Plot2D, 1)
 };

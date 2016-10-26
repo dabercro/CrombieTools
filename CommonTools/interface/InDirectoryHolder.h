@@ -33,7 +33,7 @@ TString AddDirectory(TString dir, TString FileName)
    @ingroup commongroup
    @class InDirectoryHolder
    This class is used to facilitate running over files in a directory.
-   
+
    Main purpose is to centralize function of adding input directory to the filename
    when considering said file.
 */
@@ -52,11 +52,11 @@ class InDirectoryHolder : virtual public Debug
  protected:
   /**
      A helper function that prepends the input directory to a filename.
-     @param FileName is the name of a file inside 
+     @param FileName is the name of a file inside
                      the fInDirectory or an absolute path.
      @returns FileName with the input directory prepended,
-              unless absolute or fInDirectory is empty, 
-              where it is left alone. 
+              unless absolute or fInDirectory is empty,
+              where it is left alone.
   */
   TString    AddInDir                  ( TString FileName ) const;
 

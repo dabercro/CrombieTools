@@ -88,11 +88,11 @@ def RunParallel(objectToRun, functionName, parametersLists, procs=DefaultNumProc
     print('Total jobs: ' + str(len(parametersLists)))
     print('Total time: ' + str(time() - totStartTime) + ' seconds\n')
 
-    
+
 def RunOnDirectory(objectToRun, procs=DefaultNumProcs, printing=True):
     """ Runs an objectToRun over a directory.
 
-    @param objectToRun has GetInDirectory() and RunOnFile() function members. 
+    @param objectToRun has GetInDirectory() and RunOnFile() function members.
     This function then runs the objectToRun's over all the files in that directory.
     @param procs is the maximum number of processes to start.
     @param printing tells which files are about to be processed and how long they took if True.

@@ -73,7 +73,7 @@ class FileConfigReader : public InOutDirectoryHolder, public PlotHists
   void                 ReadMCConfig         ( TString config, TString fileDir = "" );
 
   /// This is the default MC File adder
-  void                 AddFile              ( TString treeName, TString fileName, Double_t XSec, 
+  void                 AddFile              ( TString treeName, TString fileName, Double_t XSec,
                                               TString entry = "", Int_t colorstyle = 0 );
 
   /// The multipliers for Data can be set separately.
@@ -84,16 +84,16 @@ class FileConfigReader : public InOutDirectoryHolder, public PlotHists
   inline    void       SetMCWeight          ( TCut weight )                             { fMCWeight = weight;      }
   /// The multipliers for MC can be set separately.
   inline    void       SetMCWeight          ( const char* weight )                    { SetMCWeight(TCut(weight)); }
-  
+
   /// Default File adder with FileType changing
-  inline    void       AddFile              ( TString treeName, TString fileName, Double_t XSec, 
+  inline    void       AddFile              ( TString treeName, TString fileName, Double_t XSec,
                                               TString entry, Int_t colorstyle, FileType type )
                                             { SetFileType(type); AddFile(treeName,fileName,XSec,entry,colorstyle); }
   /// This is for when you don't care about limit trees and are adding by hand
   inline    void       AddFile              ( TString fileName, Double_t XSec, TString entry, Int_t colorstyle )
                                                                      { AddFile("",fileName,XSec,entry,colorstyle); }
   /// For when you don't care about limit trees and are adding by hand with type changing
-  inline    void       AddFile              ( TString fileName, Double_t XSec, TString entry, 
+  inline    void       AddFile              ( TString fileName, Double_t XSec, TString entry,
                                               Int_t colorstyle, FileType type )
                                                      { SetFileType(type); AddFile(fileName,XSec,entry,colorstyle); }
 
@@ -109,9 +109,9 @@ class FileConfigReader : public InOutDirectoryHolder, public PlotHists
 
   /// Set the FileType of the next config file read.
   inline    void       SetFileType          ( FileType type )                           { fFileType = type;        }
-    
+
   /// Reads an MC configuration while changing the FileType
-  inline    void       ReadMCConfig         ( TString config,  FileType type, TString fileDir = "" ) 
+  inline    void       ReadMCConfig         ( TString config,  FileType type, TString fileDir = "" )
                                                                 { SetFileType(type); ReadMCConfig(config,fileDir); }
   /// Set the tree of the files you are trying to plot
   inline    void       SetTreeName          ( TString name )                            { fTreeName = name;        }
@@ -148,7 +148,7 @@ class FileConfigReader : public InOutDirectoryHolder, public PlotHists
   TString    fTreeName = "events";                        ///< Stores name of tree from file
 
   /// Return a pointer to a proper vector of FileInfo
-  std::vector<FileInfo*> *GetFileInfo       ( FileType type ); 
+  std::vector<FileInfo*> *GetFileInfo       ( FileType type );
 
   /// Fill fHists with histograms that would be generated with GetHistList().
   void       GenerateHistograms           ( Int_t NumXBins, Double_t *XBins, FileType type );
@@ -164,9 +164,9 @@ class FileConfigReader : public InOutDirectoryHolder, public PlotHists
 
   TCut       fDataWeight = "";                            ///< Separate Data weights if needed
   TCut       fMCWeight = "";                              ///< Separate MC weights if needed
-  
+
   TString    fDataExpression = "";                        ///< Holds an alternative expression to plot data in
-  
+
 };
 
 //--------------------------------------------------------------------
@@ -225,7 +225,7 @@ FileConfigReader::GetFileInfo(FileType type)
       exit(1);
     }
   return fileInfo;
-} 
+}
 
 //--------------------------------------------------------------------
 std::set<TString>
@@ -236,7 +236,7 @@ FileConfigReader::ReturnTreeNames(FileType type)
 
   for (std::vector<FileInfo*>::iterator iInfo = fileInfo->begin(); iInfo != fileInfo->end(); ++iInfo)
     output.insert((*iInfo)->fTreeName);
- 
+
   return output;
 }
 
@@ -259,7 +259,7 @@ FileConfigReader::ReturnFileNames(FileType type, TString matchName, SearchBy sea
 
     output.push_back((*iInfo)->fFileName);
   }
- 
+
   return output;
 }
 
@@ -286,7 +286,7 @@ void FileConfigReader::AddDataFile(TString fileName)
 }
 
 //--------------------------------------------------------------------
-void FileConfigReader::AddFile(TString treeName, TString fileName, Double_t XSec, 
+void FileConfigReader::AddFile(TString treeName, TString fileName, Double_t XSec,
                                TString entry, Int_t colorstyle)
 {
   FileInfo* tempInfo = new FileInfo(treeName,AddInDir(fileName),XSec,
@@ -309,7 +309,7 @@ void FileConfigReader::AddFile(TString treeName, TString fileName, Double_t XSec
 
 /**
    Reads in a configuration file assuming it has the format descrbed
-   in [Formatting MC Configs](@ref formatmc). Contents of 
+   in [Formatting MC Configs](@ref formatmc). Contents of
    this MC file is stored in one of two vectors FileInfo pointers.
 */
 
@@ -317,14 +317,14 @@ void FileConfigReader::ReadMCConfig(TString config, TString fileDir)
 {
   if (fileDir != "")
     SetInDirectory(fileDir);
-  
+
   std::ifstream configFile;
   configFile.open(config.Data());
   TString LimitTreeName;
   TString FileName;
   TString XSec;
   TString LegendEntry;
-  TString ColorStyleEntry; 
+  TString ColorStyleEntry;
   TString currTreeName;
   TString currLegend;
   TString currColorStyle;
@@ -351,7 +351,7 @@ void FileConfigReader::ReadMCConfig(TString config, TString fileDir)
     }
 
     // Do the checking here for merging groups
-    if (LimitTreeName == "INGROUP") 
+    if (LimitTreeName == "INGROUP")
       SplitSamples.push_back((*FileInfo).size());
     else if (LimitTreeName == "ENDGROUP") {
 
@@ -405,7 +405,7 @@ void FileConfigReader::ReadMCConfig(TString config, TString fileDir)
           LegendEntry = currLegend;
         else
           currLegend = LegendEntry;
-        
+
         if (ColorStyleEntry == ".")
           ColorStyleEntry = currColorStyle;
         else if (ColorStyleEntry == "rgb") {
@@ -417,7 +417,7 @@ void FileConfigReader::ReadMCConfig(TString config, TString fileDir)
         }
         else
           currColorStyle = ColorStyleEntry;
-        
+
         if (ColorStyleEntry != "" && !LimitTreeName.BeginsWith('#'))
           AddFile(LimitTreeName, FileName, XSec.Atof(), LegendEntry.ReplaceAll("_"," "), ColorStyleEntry.Atoi());
       }
@@ -428,7 +428,7 @@ void FileConfigReader::ReadMCConfig(TString config, TString fileDir)
 
 //--------------------------------------------------------------------
 std::vector<TH1D*>
-FileConfigReader::GetHistList(Int_t NumXBins, Double_t *XBins, FileType type, 
+FileConfigReader::GetHistList(Int_t NumXBins, Double_t *XBins, FileType type,
                               TString matchName, SearchBy search, Bool_t match)
 {
 
@@ -505,7 +505,7 @@ FileConfigReader::GetHistList(Int_t NumXBins, Double_t *XBins, FileType type,
 
 //--------------------------------------------------------------------
 TH1D*
-FileConfigReader::GetHist(Int_t NumXBins, Double_t *XBins, FileType type, 
+FileConfigReader::GetHist(Int_t NumXBins, Double_t *XBins, FileType type,
                           TString matchName, SearchBy search, Bool_t match)
 {
 
@@ -571,7 +571,7 @@ FileConfigReader::CloseFiles()
       fAllFiles[iFiles][iFile]->Close();
     fAllFiles[iFiles].clear();
   }
-  
+
   fFiles.clear();
   fTrees.clear();
   fAllFiles.clear();

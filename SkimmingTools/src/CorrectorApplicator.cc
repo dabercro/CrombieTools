@@ -25,7 +25,7 @@ CorrectorApplicator::CorrectorApplicator(TString name, Bool_t saveAll) :
 //--------------------------------------------------------------------
 CorrectorApplicator::~CorrectorApplicator()
 { }
-  
+
 //--------------------------------------------------------------------
 
 /**
@@ -127,7 +127,7 @@ void CorrectorApplicator::ApplyCorrections(TString fileName)
       for (UInt_t iCorrector = 0; iCorrector != fCorrectors.size(); ++iCorrector)
         Addresses[fCorrectors[iCorrector]->GetName()] = 1.0;
     }
-    
+
     // Evaluate the correctors and save the factor values
     for (UInt_t iCorrector = 0; iCorrector != fCorrectors.size(); ++iCorrector) {
       tempValue = fCorrectors[iCorrector]->Evaluate();

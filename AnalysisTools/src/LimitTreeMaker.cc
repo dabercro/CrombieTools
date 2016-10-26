@@ -24,7 +24,7 @@ LimitTreeMaker::LimitTreeMaker(TString outputName) :
   fRegionNames.resize(0);
   fRegionCuts.resize(0);
 }
-  
+
 //--------------------------------------------------------------------
 LimitTreeMaker::~LimitTreeMaker()
 { }
@@ -42,7 +42,7 @@ LimitTreeMaker::ReadExceptionConfig(TString config, TString region, TString file
   TString FileName;
   TString XSec;
   TString LegendEntry;
-  TString ColorStyleEntry; 
+  TString ColorStyleEntry;
 
   while (!configFile.eof()) {
     configFile >> LimitTreeName >> FileName;
@@ -126,7 +126,7 @@ LimitTreeMaker::MakeTrees()
         std::cout << "Could not open file " << fileName << std::endl;
         exit(1);
       }
-      
+
       TTree* inTree = (TTree*) inFile->Get(fTreeName);
       if (!inTree) {
         std::cout << "Could not find tree " << fTreeName << std::endl;
@@ -134,7 +134,7 @@ LimitTreeMaker::MakeTrees()
         inFile->Close();
         exit(1);
       }
-      
+
       // Apply selection
       TFile* tempFile = new TFile(TString("/tmp/") + getenv("USER") + "/" + fOutputFileName + ".tempCopyFileDontUse.root","RECREATE");
       TString theCut = fRegionCuts[iRegion];
@@ -145,7 +145,7 @@ LimitTreeMaker::MakeTrees()
       // Initialize output tree
       TFile* outFile = new TFile(AddOutDir(fOutputFileName),"UPDATE");
       TTree* outTree = new TTree(outTreeName + "_" + regionName,outTreeName + "_" + regionName);
-      
+
       // Setup the branches to keep
       std::map<TString, Float_t> addresses;
       std::map<TString, Int_t>   intAddresses;
@@ -161,7 +161,7 @@ LimitTreeMaker::MakeTrees()
           loopTree->SetBranchAddress(fKeepBranches[iKeep],&addresses[fKeepBranches[iKeep]]);
         }
       }
-      
+
       // Get the all histogram and calculate x-section weight
       TH1* allHist = (TH1*) inFile->Get(fAllHistName);
       Float_t mcScale = fLuminosity*XSec/(allHist->GetBinContent(1));
@@ -191,7 +191,7 @@ LimitTreeMaker::MakeTrees()
         }
         else
           mcWeight = 1.0;
-        
+
         outTree->Fill();
       }
       outFile->cd();

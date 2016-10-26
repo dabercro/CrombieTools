@@ -6,7 +6,7 @@ testDir="test"
 
 for dir in `ls $CROMBIEPATH/templates`
 do
-    
+
     if [ -f $CROMBIEPATH/templates/$dir ]
     then
         continue

@@ -150,10 +150,10 @@ std::vector<TTree*> TreeContainer::ReturnTreeList(TString Name)
         tempFriend = (TTree*) fFileList[i0]->Get(fFriendNames[i1]);
       else
         tempFriend = (TTree*) fFileList[i0]->FindObjectAny(fFriendNames[i1]);
-      
+
       tempTree->AddFriend(tempFriend);
     }
-    
+
     if ((fSkimmingCut != "") || (fKeepBranches.size() != 0))
       tempTree = SkimTree(tempTree,0);
 

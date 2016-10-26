@@ -19,7 +19,7 @@ PlotHists::~PlotHists()
 
 //--------------------------------------------------------------------
 void
-PlotHists::AddUncertainty(UInt_t index, TString FileName, TString HistName, 
+PlotHists::AddUncertainty(UInt_t index, TString FileName, TString HistName,
                           Int_t startBin, Int_t endBin )
 {
   fSysUncIndices.push_back(index);
@@ -83,7 +83,7 @@ PlotHists::MakeHists(Int_t NumXBins, Double_t *XBins)
       for (Int_t iBin = 1; iBin != NumXBins + 1; ++iBin) {
         Double_t content = tempHist->GetBinContent(iBin);
         tempHist->SetBinError(iBin,
-                              TMath::Sqrt(pow(tempHist->GetBinError(iBin), 2) + 
+                              TMath::Sqrt(pow(tempHist->GetBinError(iBin), 2) +
                                           content * content *
                                           uncProfile->GetBinContent(iBin)));
       }

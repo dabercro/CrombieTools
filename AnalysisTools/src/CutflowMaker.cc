@@ -45,7 +45,7 @@ CutflowMaker::GetCutflow(UInt_t index)
 
         if (formulae[iCut]->EvalInstance() == 0)
           break;
-        
+
         ++fYields[iCut];
 
       }

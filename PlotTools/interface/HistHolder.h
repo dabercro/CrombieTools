@@ -29,7 +29,7 @@ Bool_t SortHistHolders ( HistHolder *h1, HistHolder *h2 )
   else if (h2->fForceTop)
     return false;
   else
-    return h1->fHist->Integral() > h2->fHist->Integral(); 
+    return h1->fHist->Integral() > h2->fHist->Integral();
 }
 
 #endif

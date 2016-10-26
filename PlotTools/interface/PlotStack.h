@@ -32,11 +32,11 @@ class PlotStack : public FileConfigReader
   /// Choose the binning of your plots and make then.
   void MakeCanvas        ( TString FileBase, Int_t NumXBins, Double_t *XBins,
                            TString XLabel, TString YLabel, Bool_t logY = false );
-  
+
   /// Binning with fixed width
   void MakeCanvas        ( TString FileBase, Int_t NumXBins, Double_t MinX, Double_t MaxX,
                            TString XLabel, TString YLabel, Bool_t logY = false );
-  
+
   /**
      Sets the legend entry that will be on the top of the stack.
      @param force should match a legend entry. It should have spaces instead of underscores
@@ -67,8 +67,8 @@ class PlotStack : public FileConfigReader
                         like in the [MC Configurations](@ref formatmc).
   */
   void InsertTemplate    ( TString fileName, TString histName, TString LegendEntry )
-                                                      { fTemplateFiles.push_back(fileName); 
-                                                        fTemplateHists.push_back(histName); 
+                                                      { fTemplateFiles.push_back(fileName);
+                                                        fTemplateHists.push_back(histName);
                                                         fTemplateEntries.push_back(LegendEntry);  }
 
   /// Use this to change the automatic sorting of backgrounds based on yields

@@ -22,7 +22,7 @@
    @brief Can be created using the CrombieTools.SkimmingTools.FlatSkimmer module.
 
    Skims events out of a flat tree.
-   Takes files from one directory, and writes copies to another directory, 
+   Takes files from one directory, and writes copies to another directory,
    taking out events based on a cut string, event filters, a GoodLumiFilter,
    and duplicate events.
 */
@@ -32,13 +32,13 @@ class FlatSkimmer : public InOutDirectoryHolder, public ProgressReporter
  public:
   FlatSkimmer();
   virtual ~FlatSkimmer();
-  
+
   void         Skim                 ( TString fileName );
   void         AddEventFilter       ( TString filterName );
 
   /// Copy this FlatSkimmer for parallelization
   FlatSkimmer* Copy                 ();
-  
+
   /// Set GoodLumiFilter to determine good events
   void         SetGoodLumiFilter    ( GoodLumiFilter *filter )   { fGoodLumiFilter = *filter;    }
   /// Set cut that events must pass
@@ -69,7 +69,7 @@ class FlatSkimmer : public InOutDirectoryHolder, public ProgressReporter
   TString              fEventExpr = "eventNum";  ///< Branch for event number
   Int_t                fCheckDuplicates = false; ///< Flag to check duplicates
   std::vector<TString> fCopyObjects;             ///< List of TObject names to also copy from original file
-  
+
   ClassDef(FlatSkimmer,1)
 };
 

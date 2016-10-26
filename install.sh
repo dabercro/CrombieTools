@@ -1,6 +1,6 @@
 #!/bin/bash
 
-## 
+##
 #  @file install.sh
 #
 #  A simple install script for CrombieTools
@@ -51,7 +51,7 @@ target=$targetDir/python       # Search PYTHONPATH for CrombieTools/python
 case ":$PYTHONPATH:" in
 
     *:$target:*)
-        echo " # Python already is included." 
+        echo " # Python already is included."
 	;;
 
     *)
@@ -67,7 +67,7 @@ target=$targetDir/bin           # Search PATH for CrombieTools/bin
 case ":$PATH:" in
 
     *:$target:*)
-        echo " # Executables are already included." 
+        echo " # Executables are already included."
 	;;
 
     *)

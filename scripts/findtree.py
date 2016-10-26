@@ -17,7 +17,7 @@ def GetNumEntries(fileName, className):
             NumberOfEvents = testTree.GetEntries()
             if __name__ == '__main__':
                 print(className + ' \'' + testKey.GetName() + '\' has ' + str(NumberOfEvents) + ' events!')
-            
+
             break
 
     testFile.Close()

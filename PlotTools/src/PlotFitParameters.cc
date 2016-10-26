@@ -41,7 +41,7 @@ PlotFitParameters::GetMeans(Int_t NumXBins, const Double_t *XBins)
 {
   fFitXBins = NumXBins;
   UInt_t NumPlots = 0;
-  
+
   if (fInTrees.size() > 0)
     NumPlots = fInTrees.size();
   else if (fInCuts.size() > 0)
@@ -86,7 +86,7 @@ PlotFitParameters::GetMeans(Int_t NumXBins, const Double_t *XBins)
 
 //--------------------------------------------------------------------
 void
-PlotFitParameters::DoFit(TF1* fitFunc, TF1* looseFunc, TH2D* histToFit, 
+PlotFitParameters::DoFit(TF1* fitFunc, TF1* looseFunc, TH2D* histToFit,
                          TF1**& fitHolder, TMatrixDSym**& covHolder)
 {
   Int_t NumXBins = histToFit->GetXaxis()->GetNbins();
@@ -107,7 +107,7 @@ PlotFitParameters::DoFit(TF1* fitFunc, TF1* looseFunc, TH2D* histToFit,
     TCanvas *tempCanvas = new TCanvas();
     for (UInt_t iParam = 0; iParam != fGuessParams.size(); ++iParam)
       fitFunc->SetParameter(fGuessParams[iParam], fGuesses[iParam]);
-    
+
     Int_t lowerBin;
     Int_t upperBin;
     switch (fCutStyle)

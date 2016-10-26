@@ -85,7 +85,7 @@ These are the environment variables used in the slimming and skimming of an anal
     </td>
     <td align="left">
       The number of cores used in each LXBATCH job.
-      If you really need a fast turn around for a resubmission, change this instead of the number 
+      If you really need a fast turn around for a resubmission, change this instead of the number
       of jobs per file.
       It's recommended that you use 4 cores for the 2nw4cores queue and 1 core for all others.
     </td>
@@ -249,7 +249,7 @@ Valid entries for `<type>` are the following:
   <tr><td>`L`</td><td>long</td></tr>
   <tr><td>`l`</td><td>unsigned long</td></tr>
   <tr><td>`O`</td><td>bool</td></tr>
-</table>      
+</table>
 
 Any other types will be assumed to be TObjects.
 The header file for the listed TObject will be included automatically.
@@ -286,9 +286,9 @@ Here is the help message to help you understand how to customize this.
                         [--json FILE] [--cut CUT] [--tree NAME]
                         [--copy [NAMES [NAMES ...]]] [--run EXPR] [--lumi EXPR]
                         [--freq NUM] [--filters [FILE [FILE ...]]] [--duplicate]
-    
+
     Slims the contents of one directory into another one
-    
+
     optional arguments:
       -h, --help            show this help message and exit
       --numproc NUM, -n NUM
@@ -335,7 +335,7 @@ The elements are space delimited.
 <table cellpadding=5>
   <tr>
     <td align="left" valign="top" width="15%">
-      Limit Tree Name    
+      Limit Tree Name
     </td>
     <td align="left" valign="top">
       This is the base of the tree that will be made by LimitTreeMaker for this file.
@@ -350,7 +350,7 @@ The elements are space delimited.
     </td>
     <td align="left" valign="top">
       This is the name of the file for the given sample.
-      The file name does not need to be absolute, as the input directory is set in 
+      The file name does not need to be absolute, as the input directory is set in
       FileConfigReader::SetInDirectory(), usually by reading
       the [environment configuration](@ref envconfig).
     </td>

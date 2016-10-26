@@ -57,7 +57,7 @@ if [  ! -d $logDir -a "$isEOS" = "eos" ]       # if running on EOS
 then
     echo "Making log output directory as $logDir"
     mkdir $logDir
-fi 
+fi
 
 trackEOS=0                                     # % 2 == 0 will be CMS, % 2 == 1 will be USER
 eosCommand=$eosCMS
@@ -121,7 +121,7 @@ then
                     break
                 fi
             done
-            
+
             if [ $foundInRun -eq 0 ]
             then
                 echo $dir >> $RunOnList     # Add to the RunOnList
@@ -144,7 +144,7 @@ else                                        # If we're not using EOS
             echo "$CrombieRegDir does not seem to exist. Maybe needs mounting."
             exit 1
         fi
-        
+
         if [ "$CrombieDirList" = "" ]
         then
             ls $CrombieRegDir > $RunOnList      # Dump the directory contents
@@ -168,17 +168,17 @@ then
     eosCommand=$eosCMS
 fi
 
-            
+
 _CheckCount () {
 
     if [ "$fileInCount" -eq "$CrombieFilesPerJob" ]
     then
-        
+
         fileInCount=0
         count=$((count + 1))
         currentConfig=$CrombieTempDir/$CrombieFileBase\_$reasonableName\_$count.txt
         > $currentConfig
-        
+
     fi
 
 }
@@ -232,7 +232,7 @@ do
     reasonableName="${stripleading%%/*}"
 
     if [ "$reasonableName" != "$lastDir" ]      # Build the file that hadds everything
-    then 
+    then
 
         count=0
         lastDir=$reasonableName
@@ -258,7 +258,7 @@ do
                 continue
 
             fi
-            
+
             _CheckCount
 
             echo root://$eoshost/$inFile >> $currentConfig

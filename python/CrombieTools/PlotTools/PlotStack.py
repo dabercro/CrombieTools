@@ -7,7 +7,7 @@ plotter         = newStackPlotter()
 
 def SetupFromEnv(aPlotter = plotter):
     """A function that sets up a plotter after sourcing a config file.
-    
+
     @param aPlotter is the plotter to setup. Defaults to plotter in this module.
     """
     from ..CommonTools.FileConfigReader import SetupConfigFromEnv, SetFunctionFromEnv
@@ -90,7 +90,7 @@ class ParallelStackContainer:
         self.Plotter.SetDefaultWeight(Nminus1Cut(holdCut, expr[0]))
         self.Plotter.SetDefaultExpr(expr[0])
         expr[0] = '_'.join([category, region, expr[0]])
-        if (self.Overwrite or 
+        if (self.Overwrite or
             not os.path.exists(str(self.Plotter.GetOutDirectory()) + expr[0] + '.pdf')):
             self.Plotter.MakeCanvas(*expr)
             self.Plotter.SetDefaultWeight(holdCut)

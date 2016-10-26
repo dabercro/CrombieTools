@@ -59,7 +59,7 @@ TmvaClassifier::SetConfigFile(TString name)
   TString tempFormula;
 
   std::vector<TString> Strings;
-  
+
   configFile >> fBDTName >> fUniformVariable;
 
   while(!configFile.eof()){
@@ -68,7 +68,7 @@ TmvaClassifier::SetConfigFile(TString name)
       AddVariable(tempFormula);
     }
   }
-  
+
 }
 
 //--------------------------------------------------------------------
@@ -154,7 +154,7 @@ void
 TmvaClassifier::Apply(Int_t NumBins, Double_t *VarVals, Int_t NumMapPoints)
 {
   // Now, look into setting up uniform distribution
-  
+
   std::vector<TGraph*> transformGraphs;
   TGraph *tempGraph;
 
@@ -226,7 +226,7 @@ TmvaClassifier::Apply(Int_t NumBins, Double_t *VarVals, Int_t NumMapPoints)
   Int_t numContinuous = 0;
 
   TTreeFormula* tempFormula;
-    
+
   TreeContainer *ApplicationTreesContainer = new TreeContainer();
   ApplicationTreesContainer->AddDirectory(fApplicationDirectory);
   std::vector<TTree*>  ApplicationTrees = ApplicationTreesContainer->ReturnTreeList(fApplicationTree);
@@ -263,7 +263,7 @@ TmvaClassifier::Apply(Int_t NumBins, Double_t *VarVals, Int_t NumMapPoints)
     reader->AddSpectator(fSpectatorVariables[iVar], &continuousVars[numContinuous]);
     ++numContinuous;
   }
-  
+
   reader->BookMVA(fMethodName,TString("weights/") + fJobName + TString("_") + fMethodName +".weights.xml");
 
   for (UInt_t iTree = 0; iTree != ApplicationTrees.size(); ++iTree) {
@@ -308,20 +308,20 @@ TmvaClassifier::Apply(Int_t NumBins, Double_t *VarVals, Int_t NumMapPoints)
     tempTree->Write(0, TObject::kOverwrite);
     newFile->Close();
   }
-  
+
   if (fUniformVariable != "")
     delete UniformFormula;
-  
+
   for (UInt_t iForm = 0; iForm != discreteFormulae.size(); ++iForm)
     delete discreteFormulae[iForm];
-  
+
   for (UInt_t iForm = 0; iForm != continuousFormulae.size(); ++iForm)
     delete continuousFormulae[iForm];
-  
+
   delete ApplicationTreesContainer;
-  
+
   delete reader;
-  
+
   for (Int_t iGraph = 0; iGraph != NumBins; ++iGraph)
     delete transformGraphs[iGraph];
 }

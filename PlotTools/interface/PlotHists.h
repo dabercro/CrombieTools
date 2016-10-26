@@ -28,18 +28,18 @@ class PlotHists : public PlotBase
  public:
   PlotHists();
   virtual ~PlotHists();
-  
+
   /// Add uncertainty factors to some index of histograms about to be made
-  void                   AddUncertainty           ( UInt_t index, TString FileName, TString HistName, 
+  void                   AddUncertainty           ( UInt_t index, TString FileName, TString HistName,
                                                     Int_t startBin = 1, Int_t endBin = 0 );
   /// This just return vectors of histograms for other uses
   std::vector<TH1D*>     MakeHists                ( Int_t NumXBins, Double_t *XBins );
   std::vector<TH1D*>     MakeHists                ( Int_t NumXBins, Double_t MinX, Double_t MaxX );
-  
+
   /// Alternatively, we can set values in PlotBase and then just give the binning
-  virtual   void         MakeCanvas               ( TString FileBase, Int_t NumXBins, Double_t *XBins,  
+  virtual   void         MakeCanvas               ( TString FileBase, Int_t NumXBins, Double_t *XBins,
                                                     TString XLabel, TString YLabel, Bool_t logY = false);
-  
+
   virtual   void         MakeCanvas               ( TString FileBase, Int_t NumXBins, Double_t MinX, Double_t MaxX,
                                                     TString XLabel, TString YLabel, Bool_t logY = false);
 
@@ -56,9 +56,9 @@ class PlotHists : public PlotBase
   void                   MakeCanvas               ( TString FileBase, std::vector<TH1D*> theHists,
                                                     TString XLabel, TString YLabel, Bool_t logY = false)
                                                               { BaseCanvas(FileBase,theHists,XLabel,YLabel,logY); }
-  
+
  private:
-  
+
   Bool_t    fNormalizedHists = false;             ///< Can normalize histograms in order to compare shapes
   Int_t     fNormalizeTo = -1;                    ///< If not specified, normalized to 1
   Double_t  fEventsPer = 0;                       ///< Histogram normalized to events per units of X axis
@@ -66,7 +66,7 @@ class PlotHists : public PlotBase
   std::vector<UncertaintyInfo*> fUncerts;         ///< Uncertainties to apply to histograms
   std::vector<UncertaintyInfo*> fDeleteUnc;       ///< Uncertainties created by the class to delete at the end
   TString   fUncExpr = "";                        ///< Branch expressions to add to the systematic uncertainty
-  
+
   ClassDef(PlotHists, 1)
 };
 

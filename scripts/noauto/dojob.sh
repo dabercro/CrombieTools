@@ -217,7 +217,7 @@ then
 
     if [ -f condor.err ]        # Let condor handle the errors for us
     then
-        
+
         cat condor.err >&2
 
     fi

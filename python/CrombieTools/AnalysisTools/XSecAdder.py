@@ -29,8 +29,8 @@ def RunXSecAdder(branchName='XSecWeight', exceptName = '', inTree='events', outT
     adder.ReadMCConfig(os.environ['CrombieMCConfig'])
     if exceptName != '':
         adder.ReadMCConfig(os.environ['CrombieExcept_' + exceptName])
-        
+
     if readSignal:
         adder.ReadMCConfig(os.environ['CrombieSignalConfig'])
-    
+
     adder.AddXSecs()

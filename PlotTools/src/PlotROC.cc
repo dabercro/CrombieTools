@@ -38,7 +38,7 @@ PlotROC::MakeROC(TString CutVar, Int_t NumBins)
   checkM = htemp->GetXaxis()->GetBinLowEdge(NBins) + htemp->GetXaxis()->GetBinWidth(NBins);
   if (XMax < checkM)
     XMax = checkM;
-  
+
   fPlotHists.SetDefaultExpr(CutVar);
   fPlotHists.ResetTree();
   fPlotHists.ResetWeight();

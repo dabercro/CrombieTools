@@ -39,7 +39,7 @@ then
         fi
         ./$CrombieSlimmerScript compile
     fi
-    
+
     for inFile in `ls $CrombieTempDir/$CrombieFileBase\_*.txt 2> /dev/null`
     do
         inFile="${inFile##*/}"
@@ -75,7 +75,7 @@ then
     done
 else
     echo "Going directly to hadd step."
-fi    
+fi
 
 if [ "$running" -eq 0 ]
 then

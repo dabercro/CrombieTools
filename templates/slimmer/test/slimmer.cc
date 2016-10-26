@@ -5,9 +5,9 @@
 #include "TString.h"
 #include "OutTree.h"
 
-enum dataType 
+enum dataType
   {
-    kNotData = 0, 
+    kNotData = 0,
     kSignal, kMC1, kMC2, kMC3
   };
 

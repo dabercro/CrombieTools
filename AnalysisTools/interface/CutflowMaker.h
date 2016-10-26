@@ -25,14 +25,14 @@ class CutflowMaker : public PlotBase
  public:
   CutflowMaker()           {}
   virtual ~CutflowMaker()  {}
-  
+
   /**
      Add a cut to the cutflow.
      @param name is the name that the cut will have in the table or plot
      @param cut is the cutstring applied to the tree left from the previous cut
   */
   inline void   AddCut             ( TString name, TString cut )       { fCutNames.push_back(name); fCuts.push_back(cut); }
-  
+
   /// Types of cutflow tables to print
   enum TableType {
     kNormal = 0,                                    ///< Just displays the cut name and result in two columns

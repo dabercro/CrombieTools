@@ -88,7 +88,7 @@ float uPerp(float recoil, float recoilPhi, float zPhi)
 {
   TLorentzVector recoilvec;
   recoilvec.SetPtEtaPhiM(recoil,0,recoilPhi + TMath::Pi() - zPhi,0);
-  return recoilvec.Py(); 
+  return recoilvec.Py();
 }
 
 /// Calculate uPara given reconstructed recoil and boson phi
@@ -96,7 +96,7 @@ float uPara(float recoil, float recoilPhi, float zPhi)
 {
   TLorentzVector recoilvec;
   recoilvec.SetPtEtaPhiM(recoil,0,recoilPhi + TMath::Pi() - zPhi,0);
-  return recoilvec.Px(); 
+  return recoilvec.Px();
 }
 
 /// Calculate uPerp given reconstructed MET and boson pt and phi
@@ -105,7 +105,7 @@ float uPerp(float met, float metPhi, float zPt, float zPhi)
   TLorentzVector metvec;
   metvec.SetPtEtaPhiM(vectorSumPt(met,metPhi,zPt,zPhi),0,vectorSumPhi(met,metPhi,zPt,zPhi)
                    + TMath::Pi() - zPhi,0);
-  return metvec.Py(); 
+  return metvec.Py();
 }
 
 /// Calculate uPara given reconstructed MET and boson pt and phi
@@ -114,7 +114,7 @@ float uPara(float met, float metPhi, float zPt, float zPhi)
   TLorentzVector metvec;
   metvec.SetPtEtaPhiM(vectorSumPt(met,metPhi,zPt,zPhi),0,vectorSumPhi(met,metPhi,zPt,zPhi)
                    + TMath::Pi() - zPhi,0);
-  return metvec.Px(); 
+  return metvec.Px();
 }
 
 /// Calculates transverse mass given a lepton and MET

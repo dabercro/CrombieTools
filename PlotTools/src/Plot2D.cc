@@ -109,7 +109,7 @@ Plot2D::MapTo(TF1* fitFunc, TF1* looseFunc)
 
 //--------------------------------------------------------------------
 void
-Plot2D::DoFit(TF1* fitFunc, TF1* looseFunc, TH2D* histToFit, 
+Plot2D::DoFit(TF1* fitFunc, TF1* looseFunc, TH2D* histToFit,
               TF1**& fitHolder, TMatrixDSym**& covHolder)
 {
 
@@ -212,14 +212,14 @@ Plot2D::DoFits(Int_t NumXBins, Double_t *XBins,
 
   for (UInt_t iParam = 0; iParam != fParams.size(); ++iParam)
     fitFunc->SetParLimits(fParams[iParam], fParamLows[iParam], fParamHighs[iParam]);
-  
+
   TF1 **holdFits;
   TMatrixDSym **holdCovs;
-  
+
   for (UInt_t iPlot = 0; iPlot < NumPlots; iPlot++) {
 
     std::cout << NumPlots - iPlot << " more to go." << std::endl;
-    
+
     if (fInTrees.size() != 0)
       inTree = fInTrees[iPlot];
     if (fInCuts.size()  != 0)
@@ -381,7 +381,7 @@ Plot2D::MakeGraphs(TString ParameterExpr)
 
 //--------------------------------------------------------------------
 void
-Plot2D::MakeCanvas(TString FileBase, std::vector<TGraphErrors*> theGraphs, TString XLabel, TString YLabel, 
+Plot2D::MakeCanvas(TString FileBase, std::vector<TGraphErrors*> theGraphs, TString XLabel, TString YLabel,
                    Double_t YMin, Double_t YMax, Bool_t logY)
 {
 
@@ -394,7 +394,7 @@ Plot2D::MakeCanvas(TString FileBase, std::vector<TGraphErrors*> theGraphs, TStri
 
 //--------------------------------------------------------------------
 void
-Plot2D::MakeCanvas(TString FileBase, TString ParameterExpr, TString XLabel, TString YLabel, 
+Plot2D::MakeCanvas(TString FileBase, TString ParameterExpr, TString XLabel, TString YLabel,
                    Double_t YMin, Double_t YMax, Bool_t logY)
 {
 

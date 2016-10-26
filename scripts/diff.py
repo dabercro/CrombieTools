@@ -50,7 +50,7 @@ class CrombieDiffDoer:
                     for branch in tree0.GetListOfBranches():
                         if branch.GetName() in self.skipBranches:
                             continue
-                
+
                         if self.verbose:
                             print('Checking branch ' + branch.GetName())
 
@@ -66,20 +66,20 @@ class CrombieDiffDoer:
 if __name__ == '__main__':
 
     parser = argparse.ArgumentParser(prog='crombie diff',
-        description = 'Checks two directories to make sure they have the same number of files' + 
+        description = 'Checks two directories to make sure they have the same number of files' +
                       ' and number of events in the tree and hist for each file')
 
     parser.add_argument('dirs', metavar='DIRECTORY', nargs=2, help='The names of the two directories to compare.')
     parser.add_argument('--numproc', '-n', metavar = 'NUM', type=int, dest = 'numMaxProcesses', default = 1, help = 'Number of processes that FlatSkimmer will spawn.')
     parser.add_argument('--treename', '-t', metavar='TREENAME', type=str, dest='treename', default='events',
                         help='The name of the trees to friend.')
-    parser.add_argument('--skip-branches', '-s', metavar = 'BRANCHES', nargs = '*', dest = 'skipbranches', default = [], 
+    parser.add_argument('--skip-branches', '-s', metavar = 'BRANCHES', nargs = '*', dest = 'skipbranches', default = [],
                         help = 'Set branches to skip comparison.')
     parser.add_argument('--verbose', '-v', dest='verbose', action='store_true', help = 'Give a verbose checker to watch progress.')
     parser.add_argument('--check-branch', '-b', dest='checkbranch', action='store_true', help = 'Checks if two branches have the same entries.')
-    
+
     args = parser.parse_args()
-    
+
     for fileName in os.listdir(args.dirs[1]):
         if '.root' not in fileName:
             continue
@@ -88,7 +88,7 @@ if __name__ == '__main__':
             print('WARNING: ' + fileName + ' is in ' + args.dirs[1] + ', but not in ' + args.dirs[0])
 
     print('\nGoing on to compare number of events:         ' + args.dirs[0] + ' --to-- ' + args.dirs[1] + '\n')
-    
+
     differ = CrombieDiffDoer(args.dirs[0], args.dirs[1], args.treename, args.skipbranches, args.verbose, args.checkbranch)
 
     RunOnDirectory(differ, args.numMaxProcesses, printing=False)

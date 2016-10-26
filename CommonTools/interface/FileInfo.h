@@ -23,9 +23,9 @@
    Returns the XSection weight of each event.
 
    @param fileName is the name of the file containing all
-   events in the sample. 
-   @param XSec is the cross section in pb in the sample. 
-   @param allHistName is the name of the histogram counting 
+   events in the sample.
+   @param XSec is the cross section in pb in the sample.
+   @param allHistName is the name of the histogram counting
    all events that were generated for the sample.
 
    @returns output that should be multiplied by the
@@ -60,7 +60,7 @@ Double_t GetXSecWeight(TString fileName, Double_t XSec, TString allHistName)
 struct FileInfo
 {
   /// The constructor fills all of the entries
-  FileInfo ( TString treeName, TString fileName, Double_t XSec, 
+  FileInfo ( TString treeName, TString fileName, Double_t XSec,
              TString entry, Int_t colorstyle, TString allHist,
              UncertaintyInfo *uncInfo = 0 ) {
     fTreeName = treeName;

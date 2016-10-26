@@ -12,7 +12,7 @@ import subprocess
 
 def LoadEnv(configs):
     """Sources bash files and loads the resulting environment into os.environ
-    
+
     @param configs is a list of file names that should be searched for.
     A string for a single configuration file is also accepted.
     """
@@ -41,7 +41,7 @@ def LoadEnv(configs):
 
 def LoadModuleFromEnv(EnvVarName):
     """Loads and returns a python file named in the environment as a module.
-    
+
     @param EnvVarName is an environment variable containing the name of a local .py file.
     @returns the module handler from importing the .py file.
     """

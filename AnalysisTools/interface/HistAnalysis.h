@@ -43,7 +43,7 @@ class HistAnalysis : public FileConfigReader
   inline void      SetSearchBy        ( SearchBy search )                              { fSearchBy = search;                     }
 
   /// Different methods of doing cut and count
-  enum      ScaleFactorMethod { 
+  enum      ScaleFactorMethod {
     kCutAndCount = 0,                     ///< Does scale factor through a simple cut and count with background subtraction
   };
   /// Does scale factors between background-subtracted data and signal MC for each bin
@@ -67,7 +67,7 @@ class HistAnalysis : public FileConfigReader
                                         Int_t NumBins, Double_t MinX, Double_t MaxX );
 
   /// Different methods of printing the scale factor tables
-  enum  PrintingMethod { 
+  enum  PrintingMethod {
     kNone = 0,                            ///< Does not print output from hist analysis
     kPresentation,                        ///< Prints output narrow enough for a presentation
     kNote,                                ///< Prints output detailed enough for an analysis note

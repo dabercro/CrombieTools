@@ -30,12 +30,12 @@ class TreeContainer
   /**
      TreeContainer Constructor.
      @param fileName can either be the name of a single file or a directory.
-            If it's a file, that file is opened. If it's a directory, all the 
+            If it's a file, that file is opened. If it's a directory, all the
             .root files in that directory are opened
   */
   TreeContainer(TString fileName = "");
   virtual ~TreeContainer();
-  
+
   /// Adds another file to the list of files contained in TreeContainer.
   void                   AddFile             ( TString fileName );
   /// Adds all of the files located in a particular directory.
@@ -47,28 +47,28 @@ class TreeContainer
 
   /// Write a single TTree into a TFile.
   void                    MakeFile            ( TString fileName = "", TString treeName = "");
-  
+
   /// Sets the name of the tree searched for in the input files.
   inline    void         SetTreeName         ( TString TreeName )         { fTreeName = TreeName;           }
   /// Add a friend to look for in each file.
   inline    void         AddFriendName       ( TString name )             { fFriendNames.push_back(name);   }
   /// Set the printing level for debugging.
   inline    void         SetPrinting         ( Bool_t printing )          { fPrinting = printing;           }
-  
+
   /// Use this to keep only certain branches when trees are returned.
   inline    void         AddKeepBranch       ( TString name )             { fKeepBranches.push_back(name);  }
   /// Use this to set an output file to place a single tree.
   inline    void         SetOutputFileName   ( TString name )             { fOutputFileName = name;         }
   /// Set a cut to apply to returned trees.
   inline    void         SetSkimmingCut      ( TCut cut )                 { fSkimmingCut = cut;             }
-  
+
   /// Return vector of file names read by the TreeContainer.
   inline    std::vector<TString>   ReturnFileNames     ()                 { return fFileNames;              }
   /// Return vector of TFile pointers read by the TreeContainer.
   inline    std::vector<TFile*>    ReturnFileList      ()                 { return fFileList;               }
-  
+
  private:
-  
+
   Bool_t                 fPrinting = false;                       ///< Printer for debugging
   TFile*                 tempFile = NULL;                         ///< Pointer to File
   TTree*                 tempTree = NULL;                         ///< Pointer to Tree
@@ -78,15 +78,15 @@ class TreeContainer
   std::vector<TFile*>    fFileList;                               ///< List of files
   std::vector<TTree*>    fTreeList;                               ///< List of trees
   TTree*                 fTree = NULL;                            ///< Keep pointer to be deleted at end
-  
+
   std::vector<TString>   fKeepBranches;                           ///< Branches kept in the event of skimming
   TString                fOutputFileName = "output.root";         ///< Potential output file name of skim
   TCut                   fSkimmingCut = "";                       ///< Cut to return only branches meeting given conditions
-  
+
   std::vector<TString>   fFileNames;                              ///< Used to track names of files where tree list come from
-  
+
   TTree*                 SkimTree            ( TTree *tree, TFile *inFile );
-  
+
   ClassDef(TreeContainer,1)
 };
 

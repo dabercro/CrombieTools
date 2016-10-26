@@ -1,8 +1,8 @@
 """ @package CrombieTools
 Base package module of everything used through python.
 
-This contains a useful functions for compiling objects while loading 
-them into ROOT and for creating directories from environment variables 
+This contains a useful functions for compiling objects while loading
+them into ROOT and for creating directories from environment variables
 loaded by submodules. There are also several submodules contained in
 the package.
 @author Daniel Abercrombie <dabercro@mit.edu>

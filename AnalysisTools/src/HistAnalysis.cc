@@ -61,9 +61,9 @@ HistAnalysis::DoScaleFactors(TString PlotVar, Int_t NumBins, Double_t *XBins,
     std::vector<Double_t> data_error;
     std::vector<Double_t> mc_yields;
     std::vector<Double_t> mc_error;
-    
+
     Double_t factor = 1.0;
-    
+
     switch (method) {
 
     case kCutAndCount:
@@ -96,7 +96,7 @@ HistAnalysis::DoScaleFactors(TString PlotVar, Int_t NumBins, Double_t *XBins,
         std::cout << " & " << fCutNames[iCut];
       std::cout << " \\\\" << std::endl;
       std::cout << "\\hline" << std::endl;
-      
+
       if (fPrintingMethod == kPresentation)
         std::cout << "\\makecell{Background \\\\ Subtracted \\\\ Data}";
       else
@@ -106,7 +106,7 @@ HistAnalysis::DoScaleFactors(TString PlotVar, Int_t NumBins, Double_t *XBins,
         std::cout << " $\\pm$ " << TString::Format(fFormat,data_error[iYield]);
       }
       std::cout << " \\\\" << std::endl;
-    
+
       if (fPrintingMethod == kPresentation)
         std::cout << "\\makecell{Signal-\\\\ matched MC}";
       else
@@ -117,7 +117,7 @@ HistAnalysis::DoScaleFactors(TString PlotVar, Int_t NumBins, Double_t *XBins,
       }
       std::cout << " \\\\" << std::endl;
       std::cout << "\\hline" << std::endl;
-      
+
       if (fPrintingMethod == kPresentation)
         std::cout << "\\makecell{Normalized \\\\ Ratio}";
       else
@@ -146,7 +146,7 @@ HistAnalysis::DoScaleFactors(TString PlotVar, Int_t NumBins, Double_t *XBins,
 
 //--------------------------------------------------------------------
 TH1D*
-HistAnalysis::DoScaleFactors(TString PlotVar, Int_t NumBins, Double_t MinX, Double_t MaxX, 
+HistAnalysis::DoScaleFactors(TString PlotVar, Int_t NumBins, Double_t MinX, Double_t MaxX,
                              ScaleFactorMethod  method)
 {
   Double_t XBins[NumBins+1];

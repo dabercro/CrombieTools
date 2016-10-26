@@ -15,11 +15,11 @@ ClassImp(XSecAdder)
 //--------------------------------------------------------------------
 XSecAdder::XSecAdder(TString name) :
   fBranchName(name)
-{ 
+{
   SetKeepAllFiles(true);
   SetMultiplyLumi(false);
 }
-  
+
 //--------------------------------------------------------------------
 XSecAdder::~XSecAdder()
 { }
@@ -48,7 +48,7 @@ void XSecAdder::AddXSecs()
 
       Float_t XSecWeight = 1.;
       TBranch *XSecWeightBr = outTree->Branch(fBranchName, &XSecWeight,fBranchName + "/F");
-      
+
       for (int entry = 0; entry < nentries; entry++) {
         if (entry % 500000 == 0)  /// @todo Make a ReportFrequency class
           std::cout << "Processing... " << float(entry)/float(nentries)*100 << "%" << std::endl;
@@ -63,7 +63,7 @@ void XSecAdder::AddXSecs()
       else
         outTree->Write(fOutTreeName, TObject::kOverwrite);
     }
-    
+
     file->Close();
   }
 }

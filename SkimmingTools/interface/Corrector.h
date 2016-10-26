@@ -22,7 +22,7 @@
    @brief Can be created using the CrombieTools.SkimmingTools.Corrector module.
 
    A Corrector reads from a tree and histogram and returns a correction factor.
-   The CorrectorApplicator facilitates this application by providing the trees 
+   The CorrectorApplicator facilitates this application by providing the trees
    and writes the result to a branch.
 */
 
@@ -59,12 +59,12 @@ class Corrector
   /// Set a cut for the corrector.
   void                  SetInCut          ( TString cut )       { fInCut = cut;                                            }
   /// Set the pointer to the TTree this Corrector is reading.
-  void                  SetInTree         ( TTree* tree )       { fInTree = tree; InitializeTree();                        } 
+  void                  SetInTree         ( TTree* tree )       { fInTree = tree; InitializeTree();                        }
 
  protected:
 
   TString               fName;                        ///< Name of branch to write to
-  
+
   TTree*                fInTree = NULL;               ///< Pointer to tree being read
   void                  InitializeTree    ();         ///< Function to initialize TTreeFormula on the tree
 

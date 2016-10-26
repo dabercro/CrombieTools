@@ -76,7 +76,7 @@ class PlotBase : virtual public Debug
   inline    void         SetFontSize              ( Float_t fontSize )                            { fFontSize = fontSize;        }
   /// Forces the minimum and maximum values of the Y-axis in the plot.
   inline    void         SetAxisMinMax            ( Float_t min, Float_t max )                 { fAxisMin = min; fAxisMax = max; }
-  
+
   /// Set the default tree pointer for each line in the plot
   inline    void         SetDefaultTree           ( TTree *tree )                                 { fDefaultTree = tree;         }
   /// Set the default weight for each line in the plot.
@@ -106,7 +106,7 @@ class PlotBase : virtual public Debug
   inline    void         ResetWeight              ()                                              { fInCuts.clear();             }
   /// Reset the list of expressions used to makes lines
   inline    void         ResetExpr                ()                                              { fInExpr.clear();             }
-  
+
   /// Set the default line width.
   inline    void         SetDefaultLineWidth      ( Int_t width )                                 { fDefaultLineWidth = width;   }
   /// Set the default line style.
@@ -120,7 +120,7 @@ class PlotBase : virtual public Debug
     kLower,          ///< Places the plot legend on the lower part of the canvas
   };
   /// Used for horizontal position of legend.
-  enum LegendX { 
+  enum LegendX {
     kLeft  = 0,      ///< Places the plot legend on the left part of the canvas
     kRight,          ///< Places the plot legend on the right part of the canvas
   };
@@ -136,7 +136,7 @@ class PlotBase : virtual public Debug
   inline    void         SetLegendFill            ( Bool_t fill )                                 { fLegendFill = fill;          }
 
   /// Resets the legend entries for each line.
-  inline    void         ResetLegend              ()                              { fLegendEntries.clear(); fLineColors.clear(); 
+  inline    void         ResetLegend              ()                              { fLegendEntries.clear(); fLineColors.clear();
                                                                                     fLineWidths.clear();    fLineStyles.clear(); }
 
   /// Set one of the lines to be plotted as data.
@@ -157,7 +157,7 @@ class PlotBase : virtual public Debug
   /// Set horizontal dotted lines on the ratio pad.
   inline    void         SetRatioGrid             ( Int_t grid )                                  { fRatioGrid = grid;           }
   /// Sets the divisions of the ratio y axis.
-  inline    void         SetRatioDivisions        ( Int_t divisions, Bool_t optimize = true )     { fRatioDivisions = divisions; 
+  inline    void         SetRatioDivisions        ( Int_t divisions, Bool_t optimize = true )     { fRatioDivisions = divisions;
                                                                                                     fOptimDivisions = optimize;  }
   /// Force a line to draw first on the plot, if desired.
   inline    void         SetDrawFirst             ( Int_t first )                                 { fDrawFirst = first;          }
@@ -186,29 +186,29 @@ class PlotBase : virtual public Debug
   /// Resets the number of cut lines to plot
   inline    void         ResetCutLines            ()                                              { fCutLines.resize(0);         }
   /// Sets the style for the cut lines.
-  inline    void         SetCutLineStyle   ( Color_t color, Int_t width, Int_t style )   { fCutColor = color; fCutWidth = width; 
+  inline    void         SetCutLineStyle   ( Color_t color, Int_t width, Int_t style )   { fCutColor = color; fCutWidth = width;
                                                                                                               fCutStyle = style; }
   /// Add branches that contain independent systematic uncertainties to show in the plots
   inline    void         AddSystematicBranch      ( TString branch )                 { fSystematicBranches.push_back(branch);    }
 
  protected:
   UInt_t                     fPlotCounter = 0;           ///< This is used so that making scratch plots does not overlap
-  
+
   TTree*                     fDefaultTree = NULL;        ///< Default Tree if needed
   TCut                       fDefaultCut = "";           ///< Default cut if needed
   TString                    fDefaultExpr = "";          ///< Default resolution expression if needed
-  
+
   Double_t                   l1 = 0.6;                   ///< First X value of legend location
   Double_t                   l2 = 0.7;                   ///< First Y value of legend location
   Double_t                   l3 = 0.9;                   ///< Second X value of legend location
   Double_t                   l4 = 0.9;                   ///< Second Y value of legend location
   Int_t                      fLegendBorderSize = 0;      ///< Border size of legend
-  
+
   std::vector<TTree*>        fInTrees;                   ///< Holds all the trees for each line if needed
   std::vector<TCut>          fInCuts;                    ///< Holds the cuts for the trees if needed
   std::vector<TString>       fInExpr;                    ///< Holds multiple resolution expressions if needed
   std::vector<TString>       fSystematicBranches;        ///< Vector of branches to apply as systematic uncertainties
-  
+
   Bool_t                     fIncludeErrorBars = true;   ///< Option to include error bars
 
   /**
@@ -218,7 +218,7 @@ class PlotBase : virtual public Debug
      is determined by the first line plotted.
   */
   Float_t                    fAxisMin = 0.0;
-  Float_t                    fAxisMax = 0.0;             ///< Maximum value of the y-axis. 
+  Float_t                    fAxisMax = 0.0;             ///< Maximum value of the y-axis.
 
   Int_t                      fDataIndex = -1;            ///< Index in the plotter of the data line
   Bool_t                     fMakeRatio = false;         ///< Bool to make a ratio plot on bottom of image
@@ -237,7 +237,7 @@ class PlotBase : virtual public Debug
   inline    void             ConvertToArray       ( Int_t NumXBins, Double_t MinX, Double_t MaxX, Double_t *XBins );
 
   /// This is the powerhouse of all the plotting tools. Everything happens here.
-  template<class T>  void    BaseCanvas           ( TString FileBase, std::vector<T*> theLines, TString XLabel, 
+  template<class T>  void    BaseCanvas           ( TString FileBase, std::vector<T*> theLines, TString XLabel,
                                                     TString YLabel, Bool_t logY = false, Bool_t logX = false );
 
   Bool_t                     bPDF = true;                ///< If true, BaseCanvas will create a .pdf file
@@ -252,7 +252,7 @@ class PlotBase : virtual public Debug
   Float_t                    fFontSize = 0.04;           ///< The size of the font used in the axis titles
   Int_t                      fDefaultLineWidth = 2;      ///< Line width to make all plots
   Int_t                      fDefaultLineStyle = 1;      ///< Line style to use on all plots
-  
+
   std::vector<Color_t>       fLineColors;                ///< Colors of each of the lines
   std::vector<Int_t>         fLineWidths;                ///< Widths of each of the lines
   std::vector<Int_t>         fLineStyles;                ///< Styles of each of the lines
@@ -463,7 +463,7 @@ void PlotBase::LineDrawing(std::vector<T*> theLines, Int_t index, Bool_t same)
     fCutYMin = theLines[index]->GetMinimum();
     fCutYMax = theLines[index]->GetMaximum();
   }
-  
+
   TString options = GetOpts(theLines[0]);
   if (index == fDataIndex)
     options = "PE";
@@ -541,7 +541,7 @@ void PlotBase::BaseCanvas(TString FileBase, std::vector<T*> theLines,
     if (fAxisMin != fAxisMax) {
 
       theLines[iLine]->SetMinimum(fAxisMin);
-      theLines[iLine]->SetMaximum(fAxisMax);        
+      theLines[iLine]->SetMaximum(fAxisMax);
 
     }
 
@@ -574,11 +574,11 @@ void PlotBase::BaseCanvas(TString FileBase, std::vector<T*> theLines,
         theLegend->AddEntry(theLines[iLine], fLegendEntries[iLine], "lp");
 
     }
-      
+
     // If the first draw is not set by user, check if maximum to draw first
     if (fDrawFirst == -1) {
       Double_t checkMax = theLines[iLine]->GetMaximum();
-      
+
       if (checkMax > maxValue) {
         maxValue = checkMax;
         plotFirst = iLine;
