@@ -181,10 +181,10 @@ PlotStack::MakeCanvas(TString FileBase, Int_t NumXBins, Double_t *XBins,
         SetZeroError(HistHolders[iLarger]->fHist);
       AllHists.push_back(HistHolders[iLarger]->fHist);
 
-      if ((HistHolders[iLarger]->fHist->Integral() >= fMinLegendFrac * HistHolders[0]->fHist->Integral()) || // If more than the fraction set
+      if ((HistHolders[iLarger]->fHist->Integral() > fMinLegendFrac * HistHolders[0]->fHist->Integral()) ||  // If more than the fraction set
           (iLarger == HistHolders.size() - 1))                                                               // or the last histogram
         AddLegendEntry(HistHolders[iLarger]->fEntry, 1, fStackLineWidth, 1);                                 // Add legend properly
-      else if ((HistHolders[iLarger]->fHist->Integral() >= fIgnoreInLinear * HistHolders[0]->fHist->Integral()) ||
+      else if ((HistHolders[iLarger]->fHist->Integral() > fIgnoreInLinear * HistHolders[0]->fHist->Integral()) ||
                logY) {                                                                                       // Otherwise if not ignored
         if (HistHolders[iLarger + 1]->fHist->Integral() > 0) {                                               // Check if the next histogram contribute
           if (fOthersColor != 0)
@@ -212,7 +212,8 @@ PlotStack::MakeCanvas(TString FileBase, Int_t NumXBins, Double_t *XBins,
     Message(eDebug, "Processing Signal Hist %i of %i", iHist, SignalHists.size());
     if (fMakeRatio)                                              // All possible signals show up on the ratio pad
       AddRatioLine(int(AllHists.size()));
-    SignalHists[iHist]->Add(AllHists[0]);                        // Add the background to the signals
+    if (AllHists.size() > 1)
+      SignalHists[iHist]->Add(AllHists[0]);                      // Add the background to the signals
     AllHists.push_back(SignalHists[iHist]);
     AddLegendEntry(fSignalFileInfo[iHist]->fEntry,1,2,fSignalFileInfo[iHist]->fColorStyle);
     Message(eDebug, "There are now %i total histograms to plot.", AllHists.size());
