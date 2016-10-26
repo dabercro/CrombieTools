@@ -12,6 +12,8 @@
 
 #include "TString.h"
 
+#include "Debug.h"
+
 //--------------------------------------------------------------------
 
 /**
@@ -36,7 +38,7 @@ TString AddDirectory(TString dir, TString FileName)
    when considering said file.
 */
 
-class InDirectoryHolder
+class InDirectoryHolder : virtual public Debug
 {
  public:
   InDirectoryHolder() {};

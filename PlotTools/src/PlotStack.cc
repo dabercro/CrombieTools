@@ -6,7 +6,6 @@
    @author Daniel Abercrombie <dabercro@mit.edu>
 */
 
-#include <iostream>
 #include <algorithm>
 
 #include "TFile.h"
@@ -39,14 +38,11 @@ void
 PlotStack::MakeCanvas(TString FileBase, Int_t NumXBins, Double_t *XBins,
                       TString XLabel, TString YLabel, Bool_t logY)
 {
-  std::cout << std::endl;
-  std::cout << " C R O M B I E   S T A C K " << std::endl;
-  std::cout << std::endl;
-  std::cout << "   Making File :   " << FileBase << std::endl;
-  std::cout << "   Plotting    :   " << fDefaultExpr << std::endl;
-  std::cout << "   Labeled     :   " << XLabel << std::endl;  
-  std::cout << "   With cut    :   " << fDefaultCut << std::endl;
-  std::cout << std::endl;
+  Message(eInfo, "\n C R O M B I E   S T A C K \n");
+  Message(eInfo, "   Making File :   %s", FileBase.Data());
+  Message(eInfo, "   Plotting    :   %s", fDefaultExpr.Data());
+  Message(eInfo, "   Labeled     :   %s", XLabel.Data());
+  Message(eInfo, "   With cut    :   %s\n", fDefaultCut.GetName());
 
   SetLumiLabel(float(fLuminosity/1000.0));
   ResetLegend();
@@ -123,13 +119,14 @@ PlotStack::MakeCanvas(TString FileBase, Int_t NumXBins, Double_t *XBins,
     for (UInt_t iHist = 0; iHist != HistHolders.size(); ++iHist) {
 
       tempHist = (TH1D*) HistHolders[iHist]->fHist->Clone();
-      std::cout << HistHolders[iHist]->fEntry << "  :  " << tempHist->Integral(0, NumXBins + 1, "width") << std::endl;
+      Message(eInfo, "%s  :  %f", HistHolders[iHist]->fEntry.Data(),
+              tempHist->Integral(0, NumXBins + 1, "width"));
       dumpFile->WriteTObject(tempHist,HistHolders[iHist]->fEntry);
 
     }
 
     tempHist = (TH1D*) DataHist->Clone();
-    std::cout << "Data     :  " << tempHist->Integral(0, NumXBins + 1, "width") << std::endl;
+    Message(eInfo, "Data     :  %f", tempHist->Integral(0, NumXBins + 1, "width"));
     dumpFile->WriteTObject(tempHist, "Data");
     dumpFile->Close();
 

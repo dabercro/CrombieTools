@@ -27,6 +27,7 @@
 #include "TLine.h"
 
 #include "PlotUtils.h"
+#include "Debug.h"
 
 /**
    @ingroup plotgroup
@@ -36,12 +37,12 @@
    It also holds all of the functions that are used to create and save the canvas.
 */
 
-class PlotBase
+class PlotBase : virtual public Debug
 {
  public:
   PlotBase();
   virtual ~PlotBase();
-  
+
   ///  This function adds a tree pointer, cut, and expression used for generating a line in the plot
   inline    void         AddLine                  ( TTree *tree, TCut cut, TString expr );
 
@@ -171,7 +172,7 @@ class PlotBase
   /// Set the luminosity format.
   inline    void         SetLumiLabelFormat       ( TString format )                              { fLumiLabelFormat = format;   }
   /// Set the luminosity lable with a float in fb.
-  inline    void         SetLumiLabel             ( Float_t lumi )        { fLumiLabel = TString::Format(fLumiLabelFormat,lumi); }
+  inline    void         SetLumiLabel             ( Float_t lumi )       { fLumiLabel = TString::Format(fLumiLabelFormat, lumi); }
   /// Enums type of lables for plots
   enum      CMSLabelType {
     kNone = 0,       ///< Does not place a CMS label on the plot
@@ -191,7 +192,6 @@ class PlotBase
   inline    void         AddSystematicBranch      ( TString branch )                 { fSystematicBranches.push_back(branch);    }
 
  protected:
-
   UInt_t                     fPlotCounter = 0;           ///< This is used so that making scratch plots does not overlap
   
   TTree*                     fDefaultTree = NULL;        ///< Default Tree if needed
@@ -245,7 +245,6 @@ class PlotBase
   Bool_t                     bC = true;                  ///< If true, BaseCanvas will create a .C macro
 
  private:
-
   TString                    fCanvasName = "canvas";     ///< The name of the output canvas
   Int_t                      fCanvasWidth = 600;         ///< The width of the output canvas
   Int_t                      fCanvasHeight = 600;        ///< The height of the output canvas
@@ -304,15 +303,15 @@ void PlotBase::AddLine(TTree *tree, TCut cut, TString expr)
 {
   // Check for defaults. If none, set the values for each line.
   if (fDefaultTree != NULL) {
-    std::cerr << "Default tree already set! Check configuration..." << std::endl;
+    Message(eError, "Default tree already set! Check configuration...");
     exit(1);
   }
   if (fDefaultCut != "") {
-    std::cerr << "Default cut already set! Check configuration..." << std::endl;
+    Message(eError, "Default cut already set! Check configuration...");
     exit(1);
   }
   if (fDefaultExpr != "") {
-    std::cerr << "Default resolution expression already set! Check configuration..." << std::endl;
+    Message(eError, "Default resolution expression already set! Check configuration...");
     exit(1);
   }
   fInTrees.push_back(tree);
@@ -325,15 +324,15 @@ void PlotBase::AddTreeWeight(TTree *tree, TCut cut)
 {
   // Check for defaults. If none, set the values for each line.
   if (fDefaultTree != NULL) {
-    std::cerr << "Default tree already set! Check configuration..." << std::endl;
+    Message(eError, "Default tree already set! Check configuration...");
     exit(1);
   }
   if (fDefaultCut != "") {
-    std::cerr << "Default cut already set! Check configuration..." << std::endl;
+    Message(eError, "Default cut already set! Check configuration...");
     exit(1);
   }
   if (fDefaultExpr == "") {
-    std::cerr << "Please set default resolution expression first!" << std::endl;
+    Message(eError, "Please set default resolution expression first!");
     exit(1);
   }
   fInTrees.push_back(tree);
@@ -345,15 +344,15 @@ void PlotBase::AddTreeExpr(TTree *tree, TString expr)
 {
   // Check for defaults. If none, set the values for each line.
   if (fDefaultTree != NULL) {
-    std::cerr << "Default tree already set! Check configuration..." << std::endl;
+    Message(eError, "Default tree already set! Check configuration...");
     exit(1);
   }
   if (fDefaultCut == "") {
-    std::cerr << "Please set default cut first!" << std::endl;
+    Message(eError, "Please set default cut first!");
     exit(1);
   }
   if (fDefaultExpr != "") {
-    std::cerr << "Default resolution expression already set! Check configuration..." << std::endl;
+    Message(eError, "Default resolution expression already set! Check configuration...");
     exit(1);
   }
   fInTrees.push_back(tree);
@@ -365,15 +364,15 @@ void PlotBase::AddWeightExpr(TCut cut, TString expr)
 {
   // Check for defaults. If none, set the values for each line.
   if (fDefaultTree == NULL) {
-    std::cerr << "Please set default tree first!" << std::endl;
+    Message(eError, "Please set default tree first!");
     exit(1);
   }
   if (fDefaultCut != "") {
-    std::cerr << "Default cut already set! Check configuration..." << std::endl;
+    Message(eError, "Default cut already set! Check configuration...");
     exit(1);
   }
   if (fDefaultExpr != "") {
-    std::cerr << "Default resolution expression already set! Check configuration..." << std::endl;
+    Message(eError, "Default resolution expression already set! Check configuration...");
     exit(1);
   }
   fInCuts.push_back(cut);
@@ -473,7 +472,7 @@ void PlotBase::LineDrawing(std::vector<T*> theLines, Int_t index, Bool_t same)
   options += "same";
 
   if (fRatioIndex != -1 && index != fDataIndex) {
-    T* tempLine = (T*) theLines[fRatioIndex]->Clone();
+    T* tempLine = reinterpret_cast<T*>(theLines[fRatioIndex]->Clone());
     tempLine->SetFillColor(kGray);
     tempLine->SetFillStyle(3001);
     if (!same && index == fRatioIndex)
@@ -497,6 +496,11 @@ void PlotBase::BaseCanvas(TString FileBase, std::vector<T*> theLines,
                           TString XLabel, TString YLabel, Bool_t logY, Bool_t logX)
 {
 
+  Message(eInfo, "File Name       :   %s", FileBase.Data());
+  Message(eInfo, "Number of Lines :   %i", theLines.size());
+  Message(eInfo, "X Axis Label    :   %s", XLabel.Data());
+  Message(eInfo, "Y Axis Label    :   %s", YLabel.Data());
+
   gStyle->SetOptStat(0);
 
   // Font size and size of ratio plots are set here
@@ -507,7 +511,7 @@ void PlotBase::BaseCanvas(TString FileBase, std::vector<T*> theLines,
   // Initialize the canvas and legend
   TCanvas *theCanvas = new TCanvas(fCanvasName, fCanvasName, fCanvasWidth, fCanvasHeight);
   theCanvas->SetTitle(";"+XLabel+";"+YLabel);
-  TLegend *theLegend = new TLegend(l1,l2,l3,l4);
+  TLegend *theLegend = new TLegend(l1, l2, l3, l4);
   theLegend->SetBorderSize(fLegendBorderSize);
   theLegend->SetFillStyle(0);
 
@@ -519,10 +523,12 @@ void PlotBase::BaseCanvas(TString FileBase, std::vector<T*> theLines,
   // No legend is needed if there is only a single line
   if (theLines.size() != 1 && theLines.size() != fLegendEntries.size()) {
 
-    std::cerr << "[ERROR] Number of lines and number of legend entries do not match!" << std::endl;
+    Message(eError, "Number of lines and number of legend entries do not match!");
     exit(1007);
 
   }
+
+  Message(eDebug, "About to draw lines.");
 
   // Loop through the lines
   for (UInt_t iLine = 0; iLine != NumPlots; ++iLine) {
@@ -539,7 +545,7 @@ void PlotBase::BaseCanvas(TString FileBase, std::vector<T*> theLines,
 
     }
 
-    if (int(iLine) != fDataIndex) {
+    if (static_cast<int>(iLine) != fDataIndex) {
 
       if (theLines.size() == 1 && fLineColors.size() == 0) {
 
@@ -562,7 +568,7 @@ void PlotBase::BaseCanvas(TString FileBase, std::vector<T*> theLines,
     if (theLines.size() != 1) {
 
       // Add a formated legend entry
-      if (fLegendFill && int(iLine) < fDataIndex)
+      if (fLegendFill && static_cast<int>(iLine) < fDataIndex)
         theLegend->AddEntry(theLines[iLine], fLegendEntries[iLine], "f");
       else
         theLegend->AddEntry(theLines[iLine], fLegendEntries[iLine], "lp");
@@ -652,7 +658,7 @@ void PlotBase::BaseCanvas(TString FileBase, std::vector<T*> theLines,
     pad2->cd();
 
     // We take the line equal to '1' and copy it
-    T *ratioLine = (T*) theLines[fRatioIndex]->Clone("ValueHolder");
+    T *ratioLine = reinterpret_cast<T*>(theLines[fRatioIndex]->Clone("ValueHolder"));
     SetZeroError(ratioLine);
 
     // Then we make a set of lines that are divided by the ratio line
