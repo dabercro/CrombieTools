@@ -75,7 +75,7 @@ class PlotStack : public FileConfigReader
   void SetSortBackground ( Bool_t doSort )            { fSortBackground = doSort;                 }
 
  private:
-  TString               fForceTop;                  ///< A legend entry that is on the top of backgrounds
+  TString               fForceTop = "";             ///< A legend entry that is on the top of backgrounds
   Double_t              fMinLegendFrac = 0.0;       ///< If a background contributes less than this, it's grouped in others
   Double_t              fIgnoreInLinear = 0.0;      ///< If background less than this, do not draw in linear-scale plot
   Int_t                 fStackLineWidth = 1;        ///< Line width of the histograms

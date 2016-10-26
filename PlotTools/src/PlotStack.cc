@@ -1,9 +1,9 @@
 /**
-  @file   PlotStack.cc
+   @file   PlotStack.cc
 
-  Source file of PlotStack, including the functions used for creating the histograms.
+   Source file of PlotStack, including the functions used for creating the histograms.
 
-  @author Daniel Abercrombie <dabercro@mit.edu>
+   @author Daniel Abercrombie <dabercro@mit.edu>
 */
 
 #include <iostream>
@@ -19,9 +19,16 @@
 ClassImp(PlotStack)
 
 //--------------------------------------------------------------------
-PlotStack::PlotStack() :
-  fForceTop("")
-{ }
+
+/**
+   The default constructor for PlotStack.
+   It changes the value of PlotBase::fMakeRatio to be true by default.
+ */
+
+PlotStack::PlotStack()
+{
+  fMakeRatio = true;
+}
 
 //--------------------------------------------------------------------
 PlotStack::~PlotStack()
