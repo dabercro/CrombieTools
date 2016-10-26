@@ -13,6 +13,8 @@
 #include <stdio.h>
 #include <stdarg.h>
 
+FILE* debug_output;
+
 /**
    @ingroup commongroup
    @struct Debug
@@ -43,6 +45,9 @@ class Debug
   /// Sends a message if the verbosity level is appropriate
   void       Message       ( DebugLevel level, const char* format, ...);
 
+  /// Sends the name of the function during debuggin
+  void       DisplayFunc   ( const char* func );
+
  private:
   /// A map setting the tag to give a given debug level
   std::map<DebugLevel, const char*> mLabels = {
@@ -54,19 +59,32 @@ class Debug
 
 //--------------------------------------------------------------------
 void
+Debug::DisplayFunc (const char* func)
+{
+
+  Message(eDebug, "-------------------------------------------------------");
+  Message(eDebug, "                    %s", func);
+  Message(eDebug, "-------------------------------------------------------");
+
+}
+
+//--------------------------------------------------------------------
+void
 Debug::Message (DebugLevel level, const char* format, ...)
 {
 
   if (fDebugLevel >= level) {
 
-    fprintf(stderr, "%s ", mLabels[level]);
+    debug_output = (level > eError) ? stdout : stderr;
 
     va_list args;
     va_start (args, format);
-    vfprintf(stderr, format, args);
-    va_end(args);
 
-    fprintf(stderr, "\n");
+    fprintf(debug_output, "%s ", mLabels[level]);
+    vfprintf(debug_output, format, args);
+    fprintf(debug_output, "\n");
+
+    va_end(args);
 
   }
 

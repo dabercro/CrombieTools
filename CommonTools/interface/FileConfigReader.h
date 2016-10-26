@@ -221,7 +221,7 @@ FileConfigReader::GetFileInfo(FileType type)
       fileInfo = &fDataFileInfo;
       break;
     default:
-      std::cerr << "What case is that?" << std::endl;
+      Message(eError, "What case is that?");
       exit(1);
     }
   return fileInfo;
@@ -300,7 +300,7 @@ void FileConfigReader::AddFile(TString treeName, TString fileName, Double_t XSec
   else if (fFileType == kData)
     fDataFileInfo.push_back(tempInfo);
   else {
-    std::cout << "Don't have a correct MC Type. Not saving fileInfo." << std::endl;
+    Message(eError, "Don't have a correct MC Type. Not saving fileInfo.");
     delete tempInfo;
   }
 }
@@ -431,7 +431,7 @@ std::vector<TH1D*>
 FileConfigReader::GetHistList(Int_t NumXBins, Double_t *XBins, FileType type,
                               TString matchName, SearchBy search, Bool_t match)
 {
-
+  DisplayFunc(__func__);
   std::vector<TString> theFileNames = ReturnFileNames(type, matchName, search, match);
   OpenFiles(theFileNames);
 
@@ -508,11 +508,13 @@ TH1D*
 FileConfigReader::GetHist(Int_t NumXBins, Double_t *XBins, FileType type,
                           TString matchName, SearchBy search, Bool_t match)
 {
-
+  DisplayFunc(__func__);
   std::vector<TH1D*> theHists = GetHistList(NumXBins, XBins, type, matchName, search, match);
 
+  Message(eDebug, "Number of histograms to merge: %i", theHists.size());
+
   if (theHists.size() == 0) {
-    std::cerr << "The list of histograms called is empty." << std::endl;
+    Message(eError, "The list of histograms called is empty.");
     exit(30);
   }
 
@@ -530,7 +532,7 @@ FileConfigReader::GetHist(Int_t NumXBins, Double_t *XBins, FileType type,
 void
 FileConfigReader::OpenFiles(std::vector<TString> fileNames)
 {
-
+  DisplayFunc(__func__);
   fFiles.resize(0);
   fTrees.resize(0);
 
@@ -544,11 +546,9 @@ FileConfigReader::OpenFiles(std::vector<TString> fileNames)
       tempTree = (TTree*) tempFile->FindObjectAny(fTreeName);
 
     if (!tempTree) {
-      std::cerr << "Tree not found in file!" << std::endl;
-      std::cerr << "File: " << tempFile << std::endl;
-      std::cerr << iFile->Data() << std::endl;
-      std::cerr << "Tree: " << tempTree << std::endl;
-      std::cerr << fTreeName << std::endl;
+      Message(eError, "Tree not found in file!");
+      Message(eError, "File: %s at %p", iFile->Data(), tempFile);
+      Message(eError, "Tree: %s at %p", fTreeName.Data(), tempTree);
       exit(1010);
     }
 
@@ -565,7 +565,7 @@ FileConfigReader::OpenFiles(std::vector<TString> fileNames)
 void
 FileConfigReader::CloseFiles()
 {
-
+  DisplayFunc(__func__);
   for (UInt_t iFiles = 0; iFiles != fAllFiles.size(); ++iFiles) {
     for (UInt_t iFile = 0; iFile != fAllFiles[iFiles].size(); ++iFile)
       fAllFiles[iFiles][iFile]->Close();

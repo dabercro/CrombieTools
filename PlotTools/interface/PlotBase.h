@@ -12,12 +12,12 @@
 
 #include <vector>
 #include <iostream>
+
 #include "TObject.h"
 #include "TStyle.h"
 #include "TTree.h"
 #include "TString.h"
 #include "TCut.h"
-
 #include "TLatex.h"
 #include "TH1.h"
 #include "TGraphErrors.h"
@@ -441,6 +441,8 @@ void
 PlotBase::DrawCutLines() {
   // Draw the cuts lines
   for (UInt_t iCut = 0; iCut != fCutLines.size(); ++iCut) {
+    Message(eInfo, "Drawing a cut line at %f.", fCutLines[iCut]);
+
     TLine *aCutLine = new TLine(fCutLines[iCut], fCutYMin, fCutLines[iCut], fCutYMax);
     aCutLine->SetLineColor(fCutColor);
     aCutLine->SetLineWidth(fCutWidth);
@@ -459,12 +461,21 @@ PlotBase::DrawCutLines() {
 template<class T>
 void PlotBase::LineDrawing(std::vector<T*> theLines, Int_t index, Bool_t same)
 {
+  DisplayFunc(__func__);
+  Message(eDebug, "There are %i lines ... Currently drawing %i",
+          theLines.size(), index);
+  Message(eDebug, "Drawing with same set: %s", same ? "true" : "false");
+
   if (!same) {
     fCutYMin = theLines[index]->GetMinimum();
     fCutYMax = theLines[index]->GetMaximum();
   }
 
   TString options = GetOpts(theLines[0]);
+
+  Message(eDebug, "Plotting: %i, Data Index: %i, Options: %s",
+          index, fDataIndex, options.Data());
+
   if (index == fDataIndex)
     options = "PE";
   if (options != "")
@@ -473,16 +484,27 @@ void PlotBase::LineDrawing(std::vector<T*> theLines, Int_t index, Bool_t same)
 
   if (fRatioIndex != -1 && index != fDataIndex) {
     T* tempLine = reinterpret_cast<T*>(theLines[fRatioIndex]->Clone());
+
+    Message(eDebug, "Created templine for error bars at %p from line at %p",
+            tempLine, theLines[fRatioIndex]);
+
     tempLine->SetFillColor(kGray);
     tempLine->SetFillStyle(3001);
-    if (!same && index == fRatioIndex)
+
+    if (!same && index == fRatioIndex) {
       tempLine->Draw("e2");
+      Message(eDebug, "Drew error bars");
+    }
+
     theLines[index]->Draw(options);
     tempLine->Draw("e2,same");
     fDeleteThese.push_back(tempLine);
   }
-  else
+
+  else {
+    Message(eDebug, "Not drawing error separately.");
     theLines[index]->Draw(options);
+  }
 }
 
 //--------------------------------------------------------------------
@@ -495,7 +517,7 @@ template<class T>
 void PlotBase::BaseCanvas(TString FileBase, std::vector<T*> theLines,
                           TString XLabel, TString YLabel, Bool_t logY, Bool_t logX)
 {
-
+  DisplayFunc(__func__);
   Message(eInfo, "File Name       :   %s", FileBase.Data());
   Message(eInfo, "Number of Lines :   %i", theLines.size());
   Message(eInfo, "X Axis Label    :   %s", XLabel.Data());
@@ -615,21 +637,31 @@ void PlotBase::BaseCanvas(TString FileBase, std::vector<T*> theLines,
   }
 
   // If the first draw was not specified by the user, use the maximum found before
+
+  Message(eDebug, "Variable fDrawFirst: %i, plotFirst: %i", fDrawFirst, plotFirst);
+
+  Message(eDebug, "About to draw first line.");
+
   if (fDrawFirst == -1)
     LineDrawing(theLines, plotFirst, false);
   else
     LineDrawing(theLines, fDrawFirst, false);
 
   // Then loop through all the other lines to draw
+  Message(eDebug, "About to loop through lines.");
   for (UInt_t iLine = 0; iLine != NumPlots; ++iLine)
     LineDrawing(theLines, iLine, true);
 
   // Draw the data again at the end to ensure it's on top
-  if (fDataIndex != -1)
+  if (fDataIndex != -1) {
+    Message(eDebug, "Redrawing data.");
     LineDrawing(theLines, fDataIndex, true);
+  }
 
-  if (theLines.size() != 1)
+  if (theLines.size() != 1) {
+    Message(eDebug, "Drawing legend.");
     theLegend->Draw();
+  }
 
   gPad->RedrawAxis();
   DrawCutLines();
@@ -642,9 +674,9 @@ void PlotBase::BaseCanvas(TString FileBase, std::vector<T*> theLines,
     if (logY)
       theCanvas->SetLogy();
 
-  }
-  // Otherwise, go on the make the second pad and ratio plots
-  else {
+  } else {     // Otherwise, go on the make the second pad and ratio plots
+
+    Message(eDebug, "Making ratio pad.");
 
     theCanvas->cd();
     TPad *pad2 = new TPad("pad2", "pad2", 0, 0, 1, 1 - ratioFrac);
@@ -659,10 +691,15 @@ void PlotBase::BaseCanvas(TString FileBase, std::vector<T*> theLines,
 
     // We take the line equal to '1' and copy it
     T *ratioLine = reinterpret_cast<T*>(theLines[fRatioIndex]->Clone("ValueHolder"));
+    Message(eDebug, "Created ratio line at %p from ration index %i at %p",
+            ratioLine, fRatioIndex, theLines[fRatioIndex]);
     SetZeroError(ratioLine);
 
     // Then we make a set of lines that are divided by the ratio line
     std::vector<T*> newLines = GetRatioToLine(theLines, ratioLine);
+
+    Message(eDebug, "Ratio lines created with size %i compared to %i",
+            newLines.size(), theLines.size());
 
     // Now we do formatting for all of the lines
     for (UInt_t iLine = 0; iLine != NumPlots; ++iLine) {
@@ -693,10 +730,13 @@ void PlotBase::BaseCanvas(TString FileBase, std::vector<T*> theLines,
 
       // Make the ratio line much less distinguished
       newLines[fRatioIndex]->SetLineColor(1);
+      Message(eDebug, "Creating ratio line first.");
       LineDrawing(newLines, fRatioIndex, false);
 
-      for (UInt_t iLine = 0; iLine != fRatioLines.size(); ++iLine)
+      for (UInt_t iLine = 0; iLine != fRatioLines.size(); ++iLine) {
+        Message(eDebug, "Drawing line %i of %i for ratio lines.", fRatioLines[iLine], newLines.size());
         LineDrawing(newLines, fRatioLines[iLine], true);
+      }
 
     }
     // Otherwise draw everything
