@@ -167,6 +167,9 @@ PlotStack::MakeCanvas(TString FileBase, Int_t NumXBins, Double_t *XBins,
   for (UInt_t iLarger = 0; iLarger != HistHolders.size(); ++iLarger) {
 
     Message(eDebug, "Stacking up histogram: %i", iLarger);
+    Message(eInfo, "Entry %s has total integral %f",
+            HistHolders[iLarger]->fEntry.Data(),
+            HistHolders[iLarger]->fHist->Integral("width"));
 
     for (UInt_t iSmaller = iLarger + 1; iSmaller != HistHolders.size(); ++iSmaller) {
       Message(eDebug, "Adding %i to %i", iSmaller, iLarger);
@@ -203,6 +206,8 @@ PlotStack::MakeCanvas(TString FileBase, Int_t NumXBins, Double_t *XBins,
     Message(eDebug, "There are now %i total histograms to plot.", AllHists.size());
 
   }
+
+  Message(eInfo, "Total background contribution: %f", HistHolders[0]->fHist->Integral("width"));
 
   AddLegendEntry("Data", 1);
   SetDataIndex(int(AllHists.size()));
