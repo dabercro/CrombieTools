@@ -23,8 +23,8 @@
 class FitTools : public HistAnalysis
 {
  public:
-  FitTools()           { SetMultiplyLumi(true); }
-  virtual ~FitTools()  {}
+  FitTools();
+  virtual ~FitTools();
 
   /// Get the weights that will reshape the backgrounds different categories to the shape of data in a histogram
   void             FitCategories      ( TString CategoryVar, Int_t NumCategories,

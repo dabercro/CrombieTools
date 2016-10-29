@@ -1,8 +1,22 @@
+#include "RooDataSet.h"
+#include "RooKeysPdf.h"
+
 #include "FitTools.h"
 
 using namespace RooFit;
 
 ClassImp(FitTools)
+
+
+//--------------------------------------------------------------------
+FitTools::FitTools()
+{
+  SetMultiplyLumi(true);
+}
+
+//--------------------------------------------------------------------
+FitTools::~FitTools()
+{ }
 
 //--------------------------------------------------------------------
 void
