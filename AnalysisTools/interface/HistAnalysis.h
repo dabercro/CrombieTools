@@ -90,23 +90,25 @@ class HistAnalysis : public FileConfigReader
   void      AddScaleFactorCut  (  TString name, const char* cut, const char* datacut = 0 )
                                                                             { AddScaleFactorCut(name, TCut(cut), TCut(datacut)); }
 
- private:
+ protected:
   TString          fSignalName = "";             ///< Legend entry of the signal that we are using from the MCConfig
   FileType         fSignalType = kBackground;    ///< Which MC list to get the signal files from
   TCut             fBaseCut = "1";               ///< Sets the cut to use for MC events in the analysis
   TCut             fDataBaseCut = "1";           ///< Sets the cut to use for data in the analysis
+
+  SearchBy         fSearchBy = kLimitName;       ///< Defines the string that is compared when identifying signal
+
+  Double_t         fBackgroundChange = 0.0;      ///< Amount the background is scaled by to test scale factor systematic uncertainties
+  Bool_t           fNormalized = true;           ///< Determines whether or not to normalize backgrounds before comparing to data
+
+ private:
   std::vector<TCut> fScaleFactorCuts;            ///< Vector of cuts to do scale factor measurements on
   std::vector<TCut> fDataSFCuts;                 ///< Vector of cuts on data to do scale factor measurements on
   std::vector<TString> fCutNames;                ///< Vector of cut names to print out table
 
-  SearchBy         fSearchBy = kLimitName;       ///< Defines the string that is compared when identifying signal
-
   TString          fFormat = "%.2f";                   ///< Format string for the output tables
   PrintingMethod   fPrintingMethod = kPresentation;    ///< Stores type of method to use for making scale factor tables
-
-  Double_t         fBackgroundChange = 0.0;      ///< Amount the background is scaled by to test scale factor systematic uncertainties
-  Bool_t           fNormalized = true;           ///< Determines whether or not to normalize backgrounds before comparing to data
-  UInt_t           fNumCreated = 0;              ///< The number of scale factor histograms made
+  UInt_t           fNumCreated = 0;                    ///< The number of scale factor histograms made so far
 
   ClassDef(HistAnalysis,1)
 };

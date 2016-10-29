@@ -47,6 +47,7 @@ dependencies = { 'FlatSkimmer' :         ['GoodLumiFilter'],
                  'PlotStack' :           ['PlotHists'],
                  'HistAnalysis' :        ['PlotHists'],
                  'XSecAdder' :           ['PlotHists'],
+                 'FitTools' :            ['HistAnalysis'],
                  }
 
 loadAddOn = '+'
