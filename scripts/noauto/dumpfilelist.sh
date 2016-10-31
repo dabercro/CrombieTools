@@ -62,7 +62,7 @@ fi
 trackEOS=0                                     # % 2 == 0 will be CMS, % 2 == 1 will be USER
 eosCommand=$eosCMS
 
-RunOnList=$CrombieTempDir/RunOnList.txt
+RunOnList=$CrombieTempDir/RunOnList_`date +%y%m%d%H%M`.txt
 if [ "$isEOS" = "eos" ]
 then
     > $RunOnList
