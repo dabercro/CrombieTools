@@ -139,26 +139,24 @@ class FileConfigReader : public InOutDirectoryHolder, public PlotHists
   void       OpenFiles     ( std::vector<TString> fileNames );  ///< Opens the files in a vector
   void       CloseFiles    ();                                  ///< Closes the files that are open
 
+  /// Return a pointer to a proper vector of FileInfo
+  std::vector<FileInfo*> *GetFileInfo       ( FileType type );
+
   /// Allows reader to avoid skipping when reading in exception configs
   void       SetKeepAllFiles                ( Bool_t keep )                             { fKeepAllFiles = keep;    }
   /// Allows reader to avoid skipping when reading in exception configs
   void       SetMultiplyLumi                ( Bool_t doMultiply )                    { fMultiplyLumi = doMultiply; }
 
+  std::vector<TTree*>   fTrees;                           ///< Vector of active files' trees
+
  private:
   TString    fTreeName = "events";                        ///< Stores name of tree from file
-
-  /// Return a pointer to a proper vector of FileInfo
-  std::vector<FileInfo*> *GetFileInfo       ( FileType type );
-
-  /// Fill fHists with histograms that would be generated with GetHistList().
-  void       GenerateHistograms           ( Int_t NumXBins, Double_t *XBins, FileType type );
 
   FileType   fFileType = kBackground;                     ///< Type of files in the next config
   Bool_t     fKeepAllFiles = false;                       ///< Keeps FileInfo stored usually deleted by exception configs
   Bool_t     fMultiplyLumi = true;                        ///< Returns XSecWeight with luminosity multiplied
   std::vector<TObject*> fDeleteThese;                     ///< Vector of object pointers to free memory at the end
   std::vector<TFile*>   fFiles;                           ///< Vector of active files
-  std::vector<TTree*>   fTrees;                           ///< Vector of active files' trees
   std::vector<TH1D*>    fHists;                           ///< Vector of histograms to use
   std::vector<std::vector<TFile*>> fAllFiles;             ///< Vector of all open files
 
@@ -558,7 +556,6 @@ FileConfigReader::OpenFiles(std::vector<TString> fileNames)
   }
 
   fAllFiles.push_back(fFiles);
-
 }
 
 //--------------------------------------------------------------------

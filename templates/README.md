@@ -81,17 +81,6 @@ These are the environment variables used in the slimming and skimming of an anal
   </tr>
   <tr>
     <td align="left" valign="top">
-      <code>CrombieNBatchProcs</code>
-    </td>
-    <td align="left">
-      The number of cores used in each LXBATCH job.
-      If you really need a fast turn around for a resubmission, change this instead of the number
-      of jobs per file.
-      It's recommended that you use 4 cores for the 2nw4cores queue and 1 core for all others.
-    </td>
-  </tr>
-  <tr>
-    <td align="left" valign="top">
       <code>CrombieQueue</code>
     </td>
     <td align="left">

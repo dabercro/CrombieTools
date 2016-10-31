@@ -16,9 +16,11 @@ export fresh=$1
 
 if [ ! -f CrombieSlimmingConfig.sh ]
 then
+
     echo "CrombieSlimmingConfig.sh isn't here."
     echo "You should probably go somewhere else."
     exit 1
+
 fi
 
 # Requires CMSSW to get ROOT, unfortunately
@@ -26,8 +28,10 @@ fi
 
 if [ "$CMSSW_BASE" = "" ]
 then
+
     echo "Require you to be cmsenv somewhere"
     exit 1
+
 fi
 
 # Record the submission in this log file
@@ -37,7 +41,9 @@ sub=""
 
 if [ "$fresh" != "" ]
 then
+
     sub=" $fresh"
+
 fi
 
 submitLog="Ran crombie submitlxbatch$sub at "`date -u`
@@ -50,7 +56,9 @@ echo "$delim" >> $logFile
 
 if [ ! -d bout ]                       # Make sure there's a place for the job's stdout.
 then
+
     mkdir bout
+
 fi
 
 source CrombieSlimmingConfig.sh        # Get needed environment variables
@@ -58,7 +66,6 @@ source CrombieSlimmingConfig.sh        # Get needed environment variables
 # Check that needed environment variables are present
 
 echo "${CrombieFilesPerJob:?}" > /dev/null
-echo "${CrombieNBatchProcs:?}" > /dev/null
 echo "${CrombieQueue:?}" > /dev/null
 echo "${CrombieEosDir:?}" > /dev/null
 echo "${CrombieTempDir:?}" > /dev/null
@@ -69,16 +76,32 @@ echo "${CrombieCheckerScript:?}" > /dev/null
 
 export haddFile=$CrombieTempDir/myHadd.txt
 
+if [ "$CrombieQueue" = "2nw4cores" ]
+then
+
+    $CrombieNBatchProcs=4
+
+else
+
+    $CrombieNBatchProcs=1
+
+fi
+
 # Dump the list of files on EOS to run on
 
 if [ "$fresh" != "resub" -a "$fresh" != "hadd" ]
 then
+
     crombie dumpfilelist eos
+
     if [ $? -ne 0 ]
     then
+
         echo "Crashed while dumping file list."
         exit 1
+
     fi
+
 fi
 
 ranOnFile=0                            # Keep track on if files are submitted or not
