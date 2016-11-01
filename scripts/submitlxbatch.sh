@@ -79,11 +79,11 @@ export haddFile=$CrombieTempDir/myHadd.txt
 if [ "$CrombieQueue" = "2nw4cores" ]
 then
 
-    $CrombieNBatchProcs=4
+    CrombieNBatchProcs=4
 
 else
 
-    $CrombieNBatchProcs=1
+    CrombieNBatchProcs=1
 
 fi
 
