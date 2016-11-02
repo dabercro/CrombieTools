@@ -24,12 +24,12 @@ FitTools::~FitTools()
 //--------------------------------------------------------------------
 RooAddPdf*
 FitTools::GetJointPdf(const char* name, std::vector<TString> files, FileType type,
-            TString CategoryVar, Int_t NumCategories)
+                      RooRealVar &var, RooCategory &cat );
 {
   std::vector<FileInfo*> *info = GetFileInfo(type);
+
   // Open the files and get the TTrees
   OpenFiles(files);
-  // Create category variable
 
   // Create the various pdfs from the TTrees
   RooArgList pdfList = RooArgList();
@@ -50,7 +50,8 @@ FitTools::GetJointPdf(const char* name, std::vector<TString> files, FileType typ
 
 //--------------------------------------------------------------------
 void
-FitTools::FitCategories(TString CategoryVar, Int_t NumCategories, TString ShapeLabel)
+FitTools::FitCategories(TString CategoryVar, Int_t NumCategories,
+                        Double_t Shape_Min, Double_t Shape_Max, TString ShapeLabel)
 {
 
   DisplayFunc(__func__);
@@ -60,6 +61,16 @@ FitTools::FitCategories(TString CategoryVar, Int_t NumCategories, TString ShapeL
   Message(eDebug, " MC  cut is %s", fBaseCut.GetTitle());
   if (fSignalName != "")
     Message(eDebug, "Only reweighting %s", fSignalName.Data());
+
+  // Create category variable
+  fCategory = RooCategory("categories", "categories");
+
+  // Set category names
+  for (UInt_t iCat = 0; iCat != fCategories.size(); ++iCat)
+    categories.defineType(fCategories[iCat], iCat);
+
+  // Create the variable being plotted
+  fVariable = RooRealVar(fDefaultExpr, fDefaultExpr, Shape_Min, Shape_Max);
 
   // Get the pdf that we'll be floating
   RooAddPdf *FloatPdf = GetJointPdf("Floating", ReturnFileNames(fSignalType, fSignalName, fSearchBy, true), fSignalType,

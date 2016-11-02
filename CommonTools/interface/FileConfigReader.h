@@ -149,6 +149,9 @@ class FileConfigReader : public InOutDirectoryHolder, public PlotHists
 
   std::vector<TTree*>   fTrees;                           ///< Vector of active files' trees
 
+  TCut       fDataWeight = "";                            ///< Separate Data weights if needed
+  TCut       fMCWeight = "";                              ///< Separate MC weights if needed
+
  private:
   TString    fTreeName = "events";                        ///< Stores name of tree from file
 
@@ -159,9 +162,6 @@ class FileConfigReader : public InOutDirectoryHolder, public PlotHists
   std::vector<TFile*>   fFiles;                           ///< Vector of active files
   std::vector<TH1D*>    fHists;                           ///< Vector of histograms to use
   std::vector<std::vector<TFile*>> fAllFiles;             ///< Vector of all open files
-
-  TCut       fDataWeight = "";                            ///< Separate Data weights if needed
-  TCut       fMCWeight = "";                              ///< Separate MC weights if needed
 
   TString    fDataExpression = "";                        ///< Holds an alternative expression to plot data in
 

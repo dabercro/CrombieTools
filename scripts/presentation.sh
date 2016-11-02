@@ -15,7 +15,7 @@ fi
 
 if [ "$date" = "" ]
 then
-    date=$CROMBIEDATE
+    date=`CROMBIEDATE`
 fi
 
 if [ -d $projName/docs/$date ]
