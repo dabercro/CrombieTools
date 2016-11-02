@@ -11,7 +11,7 @@
 
 #include "TString.h"
 
-#include "RooAddPdf.h"
+#include "RooWorkspace.h"
 
 #include "HistAnalysis.h"
 /**
@@ -37,11 +37,12 @@ class FitTools : public HistAnalysis
   void          AddCategory           ( TString cat )                    { fCategoryNames.push_back(cat); }
 
  private:
-  std::vector<TString> fCategoryNames;  ///< The names of the various categories
+  std::vector<TString> fCategoryNames;                    ///< The names of the various categories
 
-  /// Get the properly weighted kernel pdf from a bunch of different background ntuples
-  RooAddPdf       *GetJointPdf        ( const char* name, std::vector<TString> files,
-                                        RooRealVar &variable, RooCategory &categorty, FileType type = kBackground );
+  /// Get the properly weighted kernel pdf from a bunch of different background ntuples and put it in the workspace
+  void          GetJointPdf           ( const char* name, std::vector<TString> files, FileType type = kBackground );
+
+  RooWorkspace fWorkspace = RooWorkspace("Workspace");    ///< The workspace that the fitting it done inside
 
   ClassDef(FitTools,1)
 };

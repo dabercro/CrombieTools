@@ -1,6 +1,10 @@
 #include <vector>
 
-#include "RooArgList.h"
+#include "TH1D.h"
+#include "TList.h"
+
+#include "RooAddPdf.h"
+#include "RooArgSet.h"
 #include "RooRealVar.h"
 #include "RooCategory.h"
 #include "RooDataSet.h"
@@ -24,29 +28,70 @@ FitTools::~FitTools()
 { }
 
 //--------------------------------------------------------------------
-RooAddPdf*
-FitTools::GetJointPdf(const char* name, std::vector<TString> files,
-                      RooRealVar &variable, RooCategory &categorty, FileType type)
+void
+FitTools::GetJointPdf(const char* name, std::vector<TString> files, FileType type)
 {
   std::vector<FileInfo*> *info = GetFileInfo(type);
 
   // Open the files and get the TTrees
   OpenFiles(files);
 
-  // Create the various pdfs from the TTrees
-  RooArgList pdfList = RooArgList();
-  RooArgList coefficientList = RooArgList();
+  // Initialize an empty dataset
+  const char *dataname = TString::Format("Dataset_%s", name);
+  RooDataSet dataset(dataname, dataname, 
+                     RooArgSet(*fWorkspace.var(fDefaultExpr),
+                               *fWorkspace.cat("categories")));
 
-  for (std::vector<TTree*>::iterator iTree = fTrees.begin(); iTree != fTrees.end(); ++iTree) {
-    
+  // Add the data from each tree to the dataset
+  for (UInt_t iTree = 0; iTree != fInTrees.size(); ++iTree) {
+    const char *datasetname = TString::Format("Dataset_%s_%i", name, iTree).Data();
+    RooDataSet *tempData = new RooDataSet(datasetname, datasetname, fInTrees[iTree],
+                                          RooArgSet(*fWorkspace.var(fDefaultExpr),
+                                                    *fWorkspace.cat("categories")),
+                                          fBaseCut, fMCWeight);
+    dataset.append(*tempData);
+  }
+
+  // Split and add these pdfs together with the proper relative weights, if needed
+  const char *pdfName = TString::Format("pdf_%s", name);
+
+  if (name[0] == 'F') {
+
+    TList *dataList = dataset.split(*fWorkspace.cat("categories"));
+
+    Message(eDebug, "Dataset list size: %i", dataList->GetSize());
+
+    RooArgSet pdfSet;
+    RooArgSet coeffSet;
+
+    for (UInt_t iBin = 0; iBin != fCategoryNames.size(); ++iBin) {
+
+      const char *pdfNameTemp = TString::Format("pdf_%s_%i", name, iBin);
+      RooKeysPdf *tempPdf = new RooKeysPdf(pdfNameTemp, pdfNameTemp, *fWorkspace.var(fDefaultExpr),
+                                           *(static_cast<RooDataSet*>(dataList->At(iBin))));
+      pdfSet.add(*tempPdf);
+
+      if (iBin != fCategoryNames.size() - 1) {
+        const char *coeffName = TString::Format("coeff_%s_%i", name, iBin);
+        RooRealVar *tempVar = new RooRealVar(coeffName, coeffName, 0.0, 1.0);
+        coeffSet.add(*tempVar);
+      }
+    }
+
+    RooAddPdf finalPdf(pdfName, pdfName, pdfSet, coeffSet);
+    fWorkspace.import(finalPdf);
+
+  }
+  else {
+
+    RooKeysPdf finalPdf(pdfName, pdfName, *fWorkspace.var(fDefaultExpr), dataset);
+    fWorkspace.import(finalPdf);
+
   }
 
   CloseFiles();
-  // Split and add these pdfs together with the proper relative weights
 
-  // return the joint pdf
-  RooAddPdf *outputPdf = new RooAddPdf(name, name, pdfList, coefficientList);
-  return outputPdf;
+  // create the pdf
 
 }
 
@@ -64,6 +109,13 @@ FitTools::FitCategories(TString CategoryVar, Int_t NumCategories,
   if (fSignalName != "")
     Message(eDebug, "Only reweighting %s", fSignalName.Data());
 
+  Int_t NumBins = 1;
+  Double_t *XBins;
+  ConvertToArray(NumBins, Shape_Min, Shape_Max, XBins);
+
+  // Create the variable being plotted
+  RooRealVar variable = RooRealVar(fDefaultExpr, ShapeLabel, Shape_Min, Shape_Max);
+
   // Create category variable
   RooCategory category = RooCategory("categories", "categories");
 
@@ -71,15 +123,17 @@ FitTools::FitCategories(TString CategoryVar, Int_t NumCategories,
   for (UInt_t iCat = 0; iCat != fCategoryNames.size(); ++iCat)
     category.defineType(fCategoryNames[iCat], iCat);
 
-  // Create the variable being plotted
-  RooRealVar variable = RooRealVar(fDefaultExpr, ShapeLabel, Shape_Min, Shape_Max);
+  fWorkspace.import(variable);
+  fWorkspace.import(category);
+
+  TH1D *FloatSize = GetHist(NumBins, XBins, fSignalType, fSignalName, fSearchBy, true);
 
   // Get the pdf that we'll be floating
-  RooAddPdf *FloatPdf = GetJointPdf("Floating", ReturnFileNames(fSignalType, fSignalName, fSearchBy, true),
-                                    variable, category, fSignalType);
+  GetJointPdf("Floating", ReturnFileNames(fSignalType, fSignalName, fSearchBy, true), fSignalType);
+
+  TH1D *StaticSize = GetHist(NumBins, XBins, kBackground, fSignalName, fSearchBy, false);
 
   // Get the other background files that will be static
-  RooAddPdf *StaticPdf = GetJointPdf("Static", ReturnFileNames(kBackground, fSignalName, fSearchBy, false),
-                                     variable, category);
+  GetJointPdf("Static", ReturnFileNames(kBackground, fSignalName, fSearchBy, false));
 
 }

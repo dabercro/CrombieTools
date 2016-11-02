@@ -128,9 +128,18 @@ class FileConfigReader : public InOutDirectoryHolder, public PlotHists
   std::vector<FileInfo*>  fMCFileInfo;                    ///< Vector of background FileInfo objects
   std::vector<FileInfo*>  fSignalFileInfo;                ///< Vector of signal FileInfo objects
 
+  /// Draws histograms for using the default expression and a file list
+  std::vector<TH1D*>    GetHistList            ( Int_t NumXBins, Double_t *XBins, std::vector<TString> FileList, FileType type );
+
   /// Draws histograms for using the default expression and file configuration
   std::vector<TH1D*>    GetHistList            ( Int_t NumXBins, Double_t *XBins, FileType type, TString matchName = "",
                                                  SearchBy search = kLimitName, Bool_t match = true);
+
+  /// Draw a single histogram using the default expression and a file list
+  TH1D*      GetHist       ( std::vector<TH1D*> HistList );
+
+  /// Draw a single histogram using the default expression and a file list
+  TH1D*      GetHist       ( Int_t NumXBins, Double_t *XBins, std::vector<TString> FileList, FileType type );
 
   /// Draw a single histogram using the default expression and file configuration
   TH1D*      GetHist       ( Int_t NumXBins, Double_t *XBins, FileType type, TString matchName = "",
@@ -146,8 +155,6 @@ class FileConfigReader : public InOutDirectoryHolder, public PlotHists
   void       SetKeepAllFiles                ( Bool_t keep )                             { fKeepAllFiles = keep;    }
   /// Allows reader to avoid skipping when reading in exception configs
   void       SetMultiplyLumi                ( Bool_t doMultiply )                    { fMultiplyLumi = doMultiply; }
-
-  std::vector<TTree*>   fTrees;                           ///< Vector of active files' trees
 
   TCut       fDataWeight = "";                            ///< Separate Data weights if needed
   TCut       fMCWeight = "";                              ///< Separate MC weights if needed
@@ -426,11 +433,11 @@ void FileConfigReader::ReadMCConfig(TString config, TString fileDir)
 
 //--------------------------------------------------------------------
 std::vector<TH1D*>
-FileConfigReader::GetHistList(Int_t NumXBins, Double_t *XBins, FileType type,
-                              TString matchName, SearchBy search, Bool_t match)
+FileConfigReader::GetHistList(Int_t NumXBins, Double_t *XBins, std::vector<TString> FileList, FileType type)
 {
   DisplayFunc(__func__);
-  std::vector<TString> theFileNames = ReturnFileNames(type, matchName, search, match);
+
+  std::vector<TString> theFileNames = FileList;
   OpenFiles(theFileNames);
 
   std::vector<FileInfo*> *theFileInfo = &fMCFileInfo;
@@ -439,8 +446,6 @@ FileConfigReader::GetHistList(Int_t NumXBins, Double_t *XBins, FileType type,
 
   if (type == kSignal)
     theFileInfo = &fSignalFileInfo;
-
-  SetTreeList(fTrees);
 
   if (type == kData && fDataWeight != "") {
 
@@ -502,12 +507,24 @@ FileConfigReader::GetHistList(Int_t NumXBins, Double_t *XBins, FileType type,
 }
 
 //--------------------------------------------------------------------
-TH1D*
-FileConfigReader::GetHist(Int_t NumXBins, Double_t *XBins, FileType type,
-                          TString matchName, SearchBy search, Bool_t match)
+std::vector<TH1D*>
+FileConfigReader::GetHistList(Int_t NumXBins, Double_t *XBins, FileType type,
+                              TString matchName, SearchBy search, Bool_t match)
 {
+
   DisplayFunc(__func__);
-  std::vector<TH1D*> theHists = GetHistList(NumXBins, XBins, type, matchName, search, match);
+  std::vector<TString> theFileNames = ReturnFileNames(type, matchName, search, match);
+  return GetHistList(NumXBins, XBins, theFileNames, type);
+
+}
+
+//--------------------------------------------------------------------
+TH1D*
+FileConfigReader::GetHist(std::vector<TH1D*> HistList)
+{
+
+  DisplayFunc(__func__);
+  std::vector<TH1D*> theHists = HistList;
 
   Message(eDebug, "Number of histograms to merge: %i", theHists.size());
 
@@ -527,12 +544,29 @@ FileConfigReader::GetHist(Int_t NumXBins, Double_t *XBins, FileType type,
 }
 
 //--------------------------------------------------------------------
+TH1D*
+FileConfigReader::GetHist(Int_t NumXBins, Double_t *XBins, std::vector<TString> FileList, FileType type)
+{
+  DisplayFunc(__func__);
+  return GetHist(GetHistList(NumXBins, XBins, FileList, type));
+}
+
+//--------------------------------------------------------------------
+TH1D*
+FileConfigReader::GetHist(Int_t NumXBins, Double_t *XBins, FileType type,
+                          TString matchName, SearchBy search, Bool_t match)
+{
+  DisplayFunc(__func__);
+  return GetHist(GetHistList(NumXBins, XBins, type, matchName, search, match));
+}
+
+//--------------------------------------------------------------------
 void
 FileConfigReader::OpenFiles(std::vector<TString> fileNames)
 {
   DisplayFunc(__func__);
   fFiles.resize(0);
-  fTrees.resize(0);
+  fInTrees.resize(0);
 
   for (std::vector<TString>::iterator iFile = fileNames.begin(); iFile != fileNames.end(); ++iFile) {
 
@@ -551,7 +585,7 @@ FileConfigReader::OpenFiles(std::vector<TString> fileNames)
     }
 
     fFiles.push_back(tempFile);
-    fTrees.push_back(tempTree);
+    fInTrees.push_back(tempTree);
 
   }
 
@@ -570,7 +604,7 @@ FileConfigReader::CloseFiles()
   }
 
   fFiles.clear();
-  fTrees.clear();
+  fInTrees.clear();
   fAllFiles.clear();
 
 }
