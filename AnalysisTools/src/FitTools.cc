@@ -109,9 +109,8 @@ FitTools::FitCategories(TString CategoryVar, Int_t NumCategories,
   if (fSignalName != "")
     Message(eDebug, "Only reweighting %s", fSignalName.Data());
 
-  Int_t NumBins = 1;
-  Double_t *XBins;
-  ConvertToArray(NumBins, Shape_Min, Shape_Max, XBins);
+  Double_t XBins[2];
+  ConvertToArray(1, Shape_Min, Shape_Max, XBins);
 
   // Create the variable being plotted
   RooRealVar variable = RooRealVar(fDefaultExpr, ShapeLabel, Shape_Min, Shape_Max);
@@ -126,14 +125,14 @@ FitTools::FitCategories(TString CategoryVar, Int_t NumCategories,
   fWorkspace.import(variable);
   fWorkspace.import(category);
 
-  TH1D *FloatSize = GetHist(NumBins, XBins, fSignalType, fSignalName, fSearchBy, true);
+  TH1D *FloatSize = GetHist(1, XBins, fSignalType, fSignalName, fSearchBy, true);
 
-  // Get the pdf that we'll be floating
+  // Get the pdf that we'll be floating, named "pdf_Floating"
   GetJointPdf("Floating", ReturnFileNames(fSignalType, fSignalName, fSearchBy, true), fSignalType);
 
-  TH1D *StaticSize = GetHist(NumBins, XBins, kBackground, fSignalName, fSearchBy, false);
+  TH1D *StaticSize = GetHist(1, XBins, kBackground, fSignalName, fSearchBy, false);
 
-  // Get the other background files that will be static
+  // Get the other background files that will be static, named "pdf_Static"
   GetJointPdf("Static", ReturnFileNames(kBackground, fSignalName, fSearchBy, false));
 
 }
