@@ -1,6 +1,8 @@
 #include <vector>
 
 #include "RooArgList.h"
+#include "RooRealVar.h"
+#include "RooCategory.h"
 #include "RooDataSet.h"
 #include "RooKeysPdf.h"
 
@@ -23,8 +25,8 @@ FitTools::~FitTools()
 
 //--------------------------------------------------------------------
 RooAddPdf*
-FitTools::GetJointPdf(const char* name, std::vector<TString> files, FileType type,
-                      RooRealVar &var, RooCategory &cat );
+FitTools::GetJointPdf(const char* name, std::vector<TString> files,
+                      RooRealVar &variable, RooCategory &categorty, FileType type)
 {
   std::vector<FileInfo*> *info = GetFileInfo(type);
 
@@ -51,7 +53,7 @@ FitTools::GetJointPdf(const char* name, std::vector<TString> files, FileType typ
 //--------------------------------------------------------------------
 void
 FitTools::FitCategories(TString CategoryVar, Int_t NumCategories,
-                        Double_t Shape_Min, Double_t Shape_Max, TString ShapeLabel)
+                        Double_t Shape_Min, Double_t Shape_Max, const char* ShapeLabel)
 {
 
   DisplayFunc(__func__);
@@ -63,20 +65,21 @@ FitTools::FitCategories(TString CategoryVar, Int_t NumCategories,
     Message(eDebug, "Only reweighting %s", fSignalName.Data());
 
   // Create category variable
-  fCategory = RooCategory("categories", "categories");
+  RooCategory category = RooCategory("categories", "categories");
 
   // Set category names
-  for (UInt_t iCat = 0; iCat != fCategories.size(); ++iCat)
-    categories.defineType(fCategories[iCat], iCat);
+  for (UInt_t iCat = 0; iCat != fCategoryNames.size(); ++iCat)
+    category.defineType(fCategoryNames[iCat], iCat);
 
   // Create the variable being plotted
-  fVariable = RooRealVar(fDefaultExpr, fDefaultExpr, Shape_Min, Shape_Max);
+  RooRealVar variable = RooRealVar(fDefaultExpr, ShapeLabel, Shape_Min, Shape_Max);
 
   // Get the pdf that we'll be floating
-  RooAddPdf *FloatPdf = GetJointPdf("Floating", ReturnFileNames(fSignalType, fSignalName, fSearchBy, true), fSignalType,
-                                     CategoryVar, NumCategories);
+  RooAddPdf *FloatPdf = GetJointPdf("Floating", ReturnFileNames(fSignalType, fSignalName, fSearchBy, true),
+                                    variable, category, fSignalType);
 
   // Get the other background files that will be static
-  RooAddPdf *StaticPdf = GetJointPdf("Static", ReturnFileNames(kBackground, fSignalName, fSearchBy, false));
+  RooAddPdf *StaticPdf = GetJointPdf("Static", ReturnFileNames(kBackground, fSignalName, fSearchBy, false),
+                                     variable, category);
 
 }

@@ -76,14 +76,19 @@ echo "${CrombieCheckerScript:?}" > /dev/null
 
 export haddFile=$CrombieTempDir/myHadd.txt
 
-if [ "$CrombieQueue" = "2nw4cores" ]
+if [ "$CrombieNBatchProcs" = "" ]
 then
 
-    CrombieNBatchProcs=4
+    if [ "$CrombieQueue" = "2nw4cores" ]
+    then
 
-else
+        CrombieNBatchProcs=4
 
-    CrombieNBatchProcs=1
+    else
+
+        CrombieNBatchProcs=1
+
+    fi
 
 fi
 
