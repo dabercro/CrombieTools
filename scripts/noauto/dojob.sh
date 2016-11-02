@@ -148,7 +148,7 @@ done
 
 # Run the slimmer in parallel using xargs
 
-cat $CommandList | xargs -n2 -P$CrombieNBatchProcs $CrombieSlimmerScript
+cat $CommandList | xargs -n2 -P$LSB_MAX_NUM_PROCESSORS $CrombieSlimmerScript
 
 # Hadd the results together
 

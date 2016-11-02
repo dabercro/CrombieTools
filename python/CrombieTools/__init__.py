@@ -5,6 +5,7 @@ This contains a useful functions for compiling objects while loading
 them into ROOT and for creating directories from environment variables
 loaded by submodules. There are also several submodules contained in
 the package.
+@todo Set up a central FileConfigReader python class that other config readers inherit from
 @author Daniel Abercrombie <dabercro@mit.edu>
 """
 
@@ -48,6 +49,7 @@ dependencies = { 'FlatSkimmer' :         ['GoodLumiFilter'],
                  'HistAnalysis' :        ['PlotHists'],
                  'XSecAdder' :           ['PlotHists'],
                  'FitTools' :            ['HistAnalysis'],
+                 'QuickPlot' :           ['PlotHists'],
                  }
 
 loadAddOn = '+'
