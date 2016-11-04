@@ -28,7 +28,9 @@ class QuickPlot : public FileConfigReader
 
   /**
      Add a MC contributer to the plots that will be shown.
+     @todo Make the color automatic
      @param entry is the legend entry in the MC Config.
+     @param color is the color to draw the line
      @param type is the FileType where the FileInfo will be found.
   */
   void         AddBackground            ( TString entry, Color_t color, FileType type = kBackground );
