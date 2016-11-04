@@ -58,7 +58,7 @@ class InDirectoryHolder : virtual public Debug
               unless absolute or fInDirectory is empty,
               where it is left alone.
   */
-  TString    AddInDir                  ( TString FileName ) const;
+  TString    AddInDir                  ( TString FileName );
 
  private:
   TString    fInDirectory = "";        ///< Stores the input directory
@@ -67,7 +67,8 @@ class InDirectoryHolder : virtual public Debug
 //--------------------------------------------------------------------
 
 TString
-InDirectoryHolder::AddInDir(TString FileName) const {
+InDirectoryHolder::AddInDir(TString FileName) {
+  DisplayFunc(__func__);
 
   struct stat buffer;
   TString output = AddDirectory(fInDirectory, FileName);

@@ -294,6 +294,7 @@ void FileConfigReader::AddDataFile(TString fileName)
 void FileConfigReader::AddFile(TString treeName, TString fileName, Double_t XSec,
                                TString entry, Int_t colorstyle)
 {
+  DisplayFunc(__func__);
   FileInfo* tempInfo = new FileInfo(treeName,AddInDir(fileName),XSec,
                                     entry,colorstyle,fAllHistName);
   if (fMultiplyLumi)
@@ -320,6 +321,11 @@ void FileConfigReader::AddFile(TString treeName, TString fileName, Double_t XSec
 
 void FileConfigReader::ReadMCConfig(TString config, TString fileDir)
 {
+  DisplayFunc(__func__);
+
+  Message(eInfo, "Reading MC Config file %s", config.Data());
+  Message(eInfo, "Input directory is %s", fileDir.Data());
+
   if (fileDir != "")
     SetInDirectory(fileDir);
 
@@ -344,21 +350,35 @@ void FileConfigReader::ReadMCConfig(TString config, TString fileDir)
   std::vector<UInt_t> SplitSamples;
 
   while (!configFile.eof()) {
+    Message(eDebug, "About to read line.");
+    Message(eDebug, "currTreeName:    %s", currTreeName.Data());
+    Message(eDebug, "currLegend:      %s", currLegend.Data());
+    Message(eDebug, "currColorStyle:  %s", currColorStyle.Data());
+    Message(eDebug, "Now reading...");
+
     configFile >> LimitTreeName;
+
+    Message(eDebug, "LimitTreeName:   %s", LimitTreeName.Data());
 
     if (LimitTreeName == ".")
       LimitTreeName = currTreeName;
-    else if (LimitTreeName != "#.") {
+    else if (!(LimitTreeName == "#." || LimitTreeName == "INGROUP" || LimitTreeName == "ENDGROUP")) {
       if (LimitTreeName.BeginsWith('#'))
         currTreeName = TString(LimitTreeName.Strip(TString::kLeading, '#'));
       else
         currTreeName = LimitTreeName;
     }
 
+    Message(eDebug, "Processed tree name, now: %s", LimitTreeName.Data());
+
     // Do the checking here for merging groups
-    if (LimitTreeName == "INGROUP")
+    if (LimitTreeName == "INGROUP") {
       SplitSamples.push_back((*FileInfo).size());
+      Message(eDebug, "Starting merged group. Split at: %i, Size: %i",
+              (*FileInfo).size(), SplitSamples.size());
+    }
     else if (LimitTreeName == "ENDGROUP") {
+      Message(eDebug, "Group ended.");
 
       // Get the uncertainties for each sample
       std::vector<Double_t> Uncerts;
@@ -394,9 +414,11 @@ void FileConfigReader::ReadMCConfig(TString config, TString fileDir)
     else {
       configFile >> FileName;
       if (LimitTreeName == "skip") {
+        Message(eInfo, "Skipping files!");
         if (!fKeepAllFiles) {
           for (UInt_t iFile = 0; iFile != (*FileInfo).size(); ++iFile) {
             if ((*FileInfo)[iFile]->fFileName == AddInDir(FileName)) {
+              Message(eInfo, "Removing file %s", (*FileInfo)[iFile]->fFileName.Data());
               delete (*FileInfo)[iFile];
               (*FileInfo).erase((*FileInfo).begin() + iFile);
               break;
@@ -422,6 +444,10 @@ void FileConfigReader::ReadMCConfig(TString config, TString fileDir)
         }
         else
           currColorStyle = ColorStyleEntry;
+
+        Message(eDebug, "XSec:            %s", XSec.Data());
+        Message(eDebug, "LegendEntry:     %s", LegendEntry.Data());
+        Message(eDebug, "ColorStyleEntry: %s", ColorStyleEntry.Data());
 
         if (ColorStyleEntry != "" && !LimitTreeName.BeginsWith('#'))
           AddFile(LimitTreeName, FileName, XSec.Atof(), LegendEntry.ReplaceAll("_"," "), ColorStyleEntry.Atoi());
