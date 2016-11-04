@@ -391,6 +391,37 @@ A configuration file with lines like this can also contain lines like those in t
 This makes it easy to swap out files.
 After reading one config, just read the adjusting configuration after before making limit trees or plotting.
 
+## Merging MC Samples
+
+MC samples that are created using different generators or hadronizers, etc. can be easily merged together without changing the configured cross section.
+The two different samples are weighted in such as way as to minimize the total statistical uncertainty.
+
+@todo add the math here.
+
+To merge multiple samples, simply start the process by making a lone line.
+
+    INGROUP
+
+Separate each set of samples with this delimiter.
+After the last set of samples to be merged, place the line.
+
+    ENDGROUP
+
+For example, if you want to merge three types of samples in your plots, your MC Config would look like this.
+
+    INGROUP
+    example     type0_file0.root    0.5   LegendEntry    600
+    .           type0_file1.root    0.5   .              .
+    INGROUP
+    .           type1_file0.root    0.2   .              .
+    .           type1_file1.root    0.6   .              .
+    .           type1_file2.root    0.2   .              .
+    INGROUP
+    .           type2_file0.root    1.0   .              .
+    ENDGROUP
+
+This will merge three different samples with a process with cross section of 1.0 in such a way as their total plotted cross section is 1.0 and their statistical uncertainty is minimized.
+
 # Documentation
 
 @todo Document the documentation subdirectory
