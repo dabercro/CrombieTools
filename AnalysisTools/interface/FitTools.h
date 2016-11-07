@@ -43,17 +43,6 @@ class FitTools : public HistAnalysis
   std::vector<TString> fCategoryNames;                    ///< The names of the various categories
   const char*   fCategoryBranch;                          ///< The name of the branch that separates categories
 
-  /**
-     Get the properly weighted kernel pdf from a bunch of different background ntuples and put it in the workspace.
-     @param name is the base name for the pdf
-     @param files is the vector of file names to import into the pdf
-     @param type tells the function where to look for the FileInfo
-     @returns the name of the pdf, which is imported into fWorkspace.
-  */
-  TString      GetJointPdf           ( const char* name, std::vector<TString> files, FileType type = kBackground );
-
-  RooWorkspace fWorkspace = RooWorkspace("Workspace");    ///< The workspace that the fitting it done inside
-
   ClassDef(FitTools,1)
 };
 
