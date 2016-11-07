@@ -449,7 +449,7 @@ void FileConfigReader::ReadMCConfig(TString config, TString fileDir)
         Message(eDebug, "LegendEntry:     %s", LegendEntry.Data());
         Message(eDebug, "ColorStyleEntry: %s", ColorStyleEntry.Data());
 
-        if (ColorStyleEntry != "" && !LimitTreeName.BeginsWith('#'))
+        if (ColorStyleEntry != "" && (fKeepAllFiles || !LimitTreeName.BeginsWith('#')))
           AddFile(LimitTreeName, FileName, XSec.Atof(), LegendEntry.ReplaceAll("_"," "), ColorStyleEntry.Atoi());
       }
     }

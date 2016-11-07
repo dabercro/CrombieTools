@@ -5,6 +5,7 @@
 */
 
 #include <iostream>
+#include <map>
 #include "TFile.h"
 #include "TTree.h"
 #include "TBranch.h"
@@ -44,6 +45,13 @@ void XSecAdder::AddXSecs()
     Int_t nentries = tree->GetEntries();
     Float_t weight = (*iInfo)->fXSecWeight;
 
+    std::map<TString, Float_t> mergeBranches;
+
+    for (UInt_t iMerge = 0; iMerge != fMergeBranches.size(); ++iMerge) {
+      mergeBranches[fMergeBranches[iMerge]] = 1.0;
+      tree->SetBranchAddress(fMergeBranches[iMerge], &(mergeBranches[fMergeBranches[iMerge]]));
+    }
+
     if (fOutTreeName != fInTreeName || (!tree->GetBranch(fBranchName))) {
 
       Float_t XSecWeight = 1.;
@@ -52,7 +60,14 @@ void XSecAdder::AddXSecs()
       for (int entry = 0; entry < nentries; entry++) {
         if (entry % 500000 == 0)  /// @todo Make a ReportFrequency class
           std::cout << "Processing... " << float(entry)/float(nentries)*100 << "%" << std::endl;
-        XSecWeight =  weight;
+        XSecWeight = weight;
+
+        if (fMergeBranches.size() != 0)
+          tree->GetEntry(entry);
+
+        for (UInt_t iMerge = 0; iMerge != fMergeBranches.size(); ++iMerge)
+          XSecWeight *= mergeBranches[fMergeBranches[iMerge]];
+
         if (fOutTreeName == fInTreeName)
           XSecWeightBr->Fill();
         else

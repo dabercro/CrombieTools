@@ -1,5 +1,6 @@
 #include <vector>
 
+#include "TROOT.h"
 #include "TH1D.h"
 #include "TList.h"
 
@@ -43,17 +44,23 @@ FitTools::GetJointPdf(const char* name, std::vector<TString> files, FileType typ
                                *fWorkspace.cat("categories")));
 
   // Add the data from each tree to the dataset
+  gROOT->cd();
   for (UInt_t iTree = 0; iTree != fInTrees.size(); ++iTree) {
     const char *datasetname = TString::Format("Dataset_%s_%i", name, iTree).Data();
+    TTree *copiedTree = fInTrees[iTree]->CopyTree(fBaseCut.GetTitle());
+
     RooDataSet *tempData = new RooDataSet(datasetname, datasetname, fInTrees[iTree],
                                           RooArgSet(*fWorkspace.var(fDefaultExpr),
+                                                    *fWorkspace.var(fMCWeight),
                                                     *fWorkspace.cat("categories")),
-                                          fBaseCut, fMCWeight);
+                                          0, fMCWeight);
     dataset.append(*tempData);
   }
 
   // Split and add these pdfs together with the proper relative weights, if needed
   const char *pdfName = TString::Format("pdf_%s", name);
+
+  // create the pdf
 
   if (name[0] == 'F') {
 
@@ -91,8 +98,6 @@ FitTools::GetJointPdf(const char* name, std::vector<TString> files, FileType typ
 
   CloseFiles();
 
-  // create the pdf
-
 }
 
 //--------------------------------------------------------------------
@@ -115,6 +120,9 @@ FitTools::FitCategories(TString CategoryVar, Int_t NumCategories,
   // Create the variable being plotted
   RooRealVar variable = RooRealVar(fDefaultExpr, ShapeLabel, Shape_Min, Shape_Max);
 
+  // Create weight variable
+  RooRealVar MCWeight = RooRealVar(fMCWeight, "MC Weight", 0.0);
+
   // Create category variable
   RooCategory category = RooCategory("categories", "categories");
 
@@ -123,6 +131,7 @@ FitTools::FitCategories(TString CategoryVar, Int_t NumCategories,
     category.defineType(fCategoryNames[iCat], iCat);
 
   fWorkspace.import(variable);
+  fWorkspace.import(MCWeight);
   fWorkspace.import(category);
 
   TH1D *FloatSize = GetHist(1, XBins, fSignalType, fSignalName, fSearchBy, true);
