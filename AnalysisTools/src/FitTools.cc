@@ -29,42 +29,53 @@ FitTools::~FitTools()
 { }
 
 //--------------------------------------------------------------------
-void
+TString
 FitTools::GetJointPdf(const char* name, std::vector<TString> files, FileType type)
 {
+  DisplayFunc(__func__);
+
+  Message(eDebug, "Input name: %s", name);
+
   std::vector<FileInfo*> *info = GetFileInfo(type);
 
   // Open the files and get the TTrees
   OpenFiles(files);
 
   // Initialize an empty dataset
-  const char *dataname = TString::Format("Dataset_%s", name);
-  RooDataSet dataset(dataname, dataname, 
-                     RooArgSet(*fWorkspace.var(fDefaultExpr),
-                               *fWorkspace.cat("categories")));
+  TString dataname = TString::Format("Dataset_%s", name);
+
+  Message(eDebug, "Created dataset with name %s", dataname.Data());
+  
+  RooArgSet argset = RooArgSet(*fWorkspace.var(fDefaultExpr.Data()),
+                               *fWorkspace.var(fMCWeight.GetTitle()),
+                               *fWorkspace.cat(fCategoryBranch));
+
+  RooDataSet dataset(dataname, dataname, argset);
 
   // Add the data from each tree to the dataset
   gROOT->cd();
   for (UInt_t iTree = 0; iTree != fInTrees.size(); ++iTree) {
-    const char *datasetname = TString::Format("Dataset_%s_%i", name, iTree).Data();
-    TTree *copiedTree = fInTrees[iTree]->CopyTree(fBaseCut.GetTitle());
+    Message(eDebug, "Getting data from tree %i / %i", iTree, fInTrees.size());
 
-    RooDataSet *tempData = new RooDataSet(datasetname, datasetname, fInTrees[iTree],
-                                          RooArgSet(*fWorkspace.var(fDefaultExpr),
-                                                    *fWorkspace.var(fMCWeight),
-                                                    *fWorkspace.cat("categories")),
-                                          0, fMCWeight);
+    TString datasetname = TString::Format("Dataset_%s_%i", name, iTree);
+    TTree *copiedTree = fInTrees[iTree]->CopyTree(fBaseCut.GetTitle());
+    RooDataSet *tempData = new RooDataSet(datasetname, datasetname, copiedTree,
+                                          argset, 0, fMCWeight);
+
     dataset.append(*tempData);
+    Message(eDebug, "Dataset now has %i entries", dataset.numEntries());
   }
 
   // Split and add these pdfs together with the proper relative weights, if needed
-  const char *pdfName = TString::Format("pdf_%s", name);
+  TString pdfName = TString::Format("pdf_%s", name);
+
+  Message(eDebug, "Creating pdf: %s", pdfName.Data());
 
   // create the pdf
 
   if (name[0] == 'F') {
 
-    TList *dataList = dataset.split(*fWorkspace.cat("categories"));
+    TList *dataList = dataset.split(*fWorkspace.cat(fCategoryBranch));
 
     Message(eDebug, "Dataset list size: %i", dataList->GetSize());
 
@@ -73,13 +84,18 @@ FitTools::GetJointPdf(const char* name, std::vector<TString> files, FileType typ
 
     for (UInt_t iBin = 0; iBin != fCategoryNames.size(); ++iBin) {
 
-      const char *pdfNameTemp = TString::Format("pdf_%s_%i", name, iBin);
+      Message(eDebug, "Getting pdf for category: %s", fCategoryNames[iBin].Data());
+
+      TString pdfNameTemp = TString::Format("pdf_%s_%i", name, iBin);
+      Message(eDebug, "The pdf name will be %s", pdfNameTemp.Data());
       RooKeysPdf *tempPdf = new RooKeysPdf(pdfNameTemp, pdfNameTemp, *fWorkspace.var(fDefaultExpr),
                                            *(static_cast<RooDataSet*>(dataList->At(iBin))));
+      Message(eDebug, "Keys pdf created at %p", tempPdf);
       pdfSet.add(*tempPdf);
 
       if (iBin != fCategoryNames.size() - 1) {
-        const char *coeffName = TString::Format("coeff_%s_%i", name, iBin);
+        TString coeffName = TString::Format("coeff_%s_%i", name, iBin);
+        Message(eDebug, "Added coefficient named %s", coeffName.Data());
         RooRealVar *tempVar = new RooRealVar(coeffName, coeffName, 0.0, 1.0);
         coeffSet.add(*tempVar);
       }
@@ -98,17 +114,18 @@ FitTools::GetJointPdf(const char* name, std::vector<TString> files, FileType typ
 
   CloseFiles();
 
+  return pdfName;
+
 }
 
 //--------------------------------------------------------------------
 void
-FitTools::FitCategories(TString CategoryVar, Int_t NumCategories,
-                        Double_t Shape_Min, Double_t Shape_Max, const char* ShapeLabel)
+FitTools::FitCategories(Double_t Shape_Min, Double_t Shape_Max, const char* ShapeLabel)
 {
 
   DisplayFunc(__func__);
   Message(eDebug, "About to fit %i categories %s to shape of %s",
-          NumCategories, CategoryVar.Data(), fDefaultExpr.Data());
+          fCategoryNames.size(), fCategoryBranch, fDefaultExpr.Data());
   Message(eDebug, "Data cut is %s", fDataBaseCut.GetTitle());
   Message(eDebug, " MC  cut is %s", fBaseCut.GetTitle());
   if (fSignalName != "")
@@ -118,13 +135,13 @@ FitTools::FitCategories(TString CategoryVar, Int_t NumCategories,
   ConvertToArray(1, Shape_Min, Shape_Max, XBins);
 
   // Create the variable being plotted
-  RooRealVar variable = RooRealVar(fDefaultExpr, ShapeLabel, Shape_Min, Shape_Max);
+  RooRealVar variable = RooRealVar(fDefaultExpr.Data(), ShapeLabel, Shape_Min, Shape_Max);
 
   // Create weight variable
-  RooRealVar MCWeight = RooRealVar(fMCWeight, "MC Weight", 0.0);
+  RooRealVar MCWeight = RooRealVar(fMCWeight.GetTitle(), "MC Weight", 0.0);
 
   // Create category variable
-  RooCategory category = RooCategory("categories", "categories");
+  RooCategory category = RooCategory(fCategoryBranch, "categories");
 
   // Set category names
   for (UInt_t iCat = 0; iCat != fCategoryNames.size(); ++iCat)
@@ -134,14 +151,56 @@ FitTools::FitCategories(TString CategoryVar, Int_t NumCategories,
   fWorkspace.import(MCWeight);
   fWorkspace.import(category);
 
-  TH1D *FloatSize = GetHist(1, XBins, fSignalType, fSignalName, fSearchBy, true);
+  TH1D *FloatSizer = GetHist(1, XBins, fSignalType, fSignalName, fSearchBy, true);
+  Double_t FloatSize = FloatSizer->Integral("width");
 
   // Get the pdf that we'll be floating, named "pdf_Floating"
-  GetJointPdf("Floating", ReturnFileNames(fSignalType, fSignalName, fSearchBy, true), fSignalType);
+  TString float_name = GetJointPdf("Floating", ReturnFileNames(fSignalType, fSignalName, fSearchBy, true), fSignalType);
 
-  TH1D *StaticSize = GetHist(1, XBins, kBackground, fSignalName, fSearchBy, false);
+  TH1D *StaticSizer = GetHist(1, XBins, kBackground, fSignalName, fSearchBy, false);
+  Double_t StaticSize = StaticSizer->Integral("width") * (1.0 + fBackgroundChange);
 
   // Get the other background files that will be static, named "pdf_Static"
-  GetJointPdf("Static", ReturnFileNames(kBackground, fSignalName, fSearchBy, false));
+  TString static_name = GetJointPdf("Static", ReturnFileNames(kBackground, fSignalName, fSearchBy, false));
+
+  Double_t relativeSize = FloatSize/(FloatSize + StaticSize);
+
+  Message(eDebug, "Finished importing pdfs. Floating: %f, Static: %f, Relative fraction: %f", FloatSize, StaticSize, relativeSize);
+
+  Message(eDebug, "About to make histograms from %s and %s at %p and %p",
+          float_name.Data(), static_name.Data(), fWorkspace.pdf(float_name), fWorkspace.pdf(static_name));
+
+  RooRealVar relativePdfs = RooRealVar("Relative", "Relative", relativeSize);
+  RooAddPdf finalPdf = RooAddPdf("Final Pdf", "Final Pdf",
+                                 *fWorkspace.pdf(float_name),
+                                 *fWorkspace.pdf(static_name),
+                                 relativePdfs);
+
+  Message(eDebug, "Final pdf created at %p", &finalPdf);
+
+  // Get the dataset to fit
+  TChain *dataChain = ReturnTChain(fTreeName, kData);
+  TTree *dataTree = dataChain->CopyTree(fDataBaseCut.GetTitle());
+
+  Message(eDebug, "TTree at %p created from TChain at %p", dataTree, dataChain);
+
+  RooDataSet dataDataset = RooDataSet("data", "data", dataTree, RooArgSet(variable));
+
+  Message(eDebug, "Data imported with size %i", dataDataset.numEntries());
+
+  for (UInt_t iBin = 0; iBin != fCategoryNames.size(); ++iBin) {
+    TString coeffName = TString::Format("coeff_%s_%i", "Floating", iBin);
+    Message(eInfo, "Coefficient %s has value %f", coeffName.Data(), fWorkspace.var(coeffName)->getValV());
+  }
+
+  finalPdf.fitTo(dataDataset);
+
+  for (UInt_t iBin = 0; iBin != fCategoryNames.size(); ++iBin) {
+    TString coeffName = TString::Format("coeff_%s_%i", "Floating", iBin);
+    Message(eInfo, "Coefficient %s has value %f", coeffName.Data(), fWorkspace.var(coeffName)->getValV());
+  }
+
+  delete FloatSizer;
+  delete StaticSizer;
 
 }

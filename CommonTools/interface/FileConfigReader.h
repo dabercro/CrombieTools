@@ -159,9 +159,9 @@ class FileConfigReader : public InOutDirectoryHolder, public PlotHists
   TCut       fDataWeight = "";                            ///< Separate Data weights if needed
   TCut       fMCWeight = "";                              ///< Separate MC weights if needed
 
- private:
   TString    fTreeName = "events";                        ///< Stores name of tree from file
 
+ private:
   FileType   fFileType = kBackground;                     ///< Type of files in the next config
   Bool_t     fKeepAllFiles = false;                       ///< Keeps FileInfo stored usually deleted by exception configs
   Bool_t     fMultiplyLumi = true;                        ///< Returns XSecWeight with luminosity multiplied
@@ -594,6 +594,8 @@ FileConfigReader::OpenFiles(std::vector<TString> fileNames)
   fFiles.resize(0);
   fInTrees.resize(0);
 
+  Message(eDebug, "Looking for tree named: %s", fTreeName.Data());
+
   for (std::vector<TString>::iterator iFile = fileNames.begin(); iFile != fileNames.end(); ++iFile) {
 
     TFile *tempFile = TFile::Open(iFile->Data());
@@ -602,6 +604,8 @@ FileConfigReader::OpenFiles(std::vector<TString> fileNames)
       tempTree = (TTree*) tempFile->Get(fTreeName);
     else
       tempTree = (TTree*) tempFile->FindObjectAny(fTreeName);
+
+    Message(eDebug, "File: %s, located at %p, has tree at %p", iFile->Data(), tempFile, tempTree);
 
     if (!tempTree) {
       Message(eError, "Tree not found in file!");
@@ -613,9 +617,12 @@ FileConfigReader::OpenFiles(std::vector<TString> fileNames)
     fFiles.push_back(tempFile);
     fInTrees.push_back(tempTree);
 
+    Message(eDebug, "Number of files used: %i, Number of trees: %i", fFiles.size(), fInTrees.size());
+
   }
 
   fAllFiles.push_back(fFiles);
+  Message(eDebug, "Total number of times files opened so far: %i", fAllFiles.size());
 }
 
 //--------------------------------------------------------------------
@@ -624,8 +631,10 @@ FileConfigReader::CloseFiles()
 {
   DisplayFunc(__func__);
   for (UInt_t iFiles = 0; iFiles != fAllFiles.size(); ++iFiles) {
-    for (UInt_t iFile = 0; iFile != fAllFiles[iFiles].size(); ++iFile)
+    for (UInt_t iFile = 0; iFile != fAllFiles[iFiles].size(); ++iFile) {
+      Message(eDebug, "About to close: %s", fAllFiles[iFiles][iFile]->GetName());
       fAllFiles[iFiles][iFile]->Close();
+    }
     fAllFiles[iFiles].clear();
   }
 
