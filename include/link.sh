@@ -1,7 +1,7 @@
 #!/bin/bash
 
 ##
-# @file link.sh
+# @file include/link.sh
 #
 # Softlinks compiled shared objects in CrombieTools/include directory
 # with all the appropriate header files.

@@ -1,7 +1,7 @@
 #!/bin/bash
 
 ##
-# @file link.sh
+# @file lib/link.sh
 #
 # Softlinks compiled shared objects in CrombieTools/lib directory
 # with proper library names.
