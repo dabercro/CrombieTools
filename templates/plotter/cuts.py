@@ -26,8 +26,8 @@ defaultMCWeight = 'mcWeight'
 # Additional weights applied to certain control regions
 
 region_weights = { # key : [Data,MC]
-    'signal'  : ['0',defaultMCWeight],
-    'default' : ['1',defaultMCWeight]
+    'signal'  : ['0', defaultMCWeight],
+    'default' : ['1', defaultMCWeight]
     }
 
 # Do not change the names of these functions or required parameters

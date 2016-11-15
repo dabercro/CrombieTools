@@ -62,7 +62,7 @@ case ":$PYTHONPATH:" in
 
 esac
 
-target=$targetDir/bin           # Search PATH for CrombieTools/bin
+target=$targetDir/bin          # Search PATH for CrombieTools/bin
 
 case ":$PATH:" in
 
@@ -78,7 +78,7 @@ case ":$PATH:" in
 
 esac
 
-target=$targetDir               # If $CROMBIEPATH not set, add it to profile
+target=$targetDir              # If $CROMBIEPATH not set, add it to profile
 
 if [ "$CROMBIEPATH" = "" ]
 then
@@ -89,12 +89,16 @@ then
 
 fi
 
-if [ "$CROMBIEDATE" = "" ]      # If $CROMBIEDATE not set (used for automatic versioning),
-then                            #   add it to profile
+if [ "`type CROMBIEDATE 2> /dev/null`" = "" ]    # If $CROMBIEDATE not set (used for automatic versioning),
+then                                             #   add it to profile
 
     echo "" >> $profile
     echo "# Date format used for versioning" >> $profile
-    echo "export CROMBIEDATE=\`date +%y%m%d\`" >> $profile
+    echo "CROMBIEDATE () {" >> $profile
+    echo "    echo \`date +%y%m%d\`" >> $profile
+    echo "}" >> $profile
+    echo "" >> $profile
+    echo "export -f CROMBIEDATE" >> $profile
 
 fi
 
@@ -129,8 +133,10 @@ echo " # "
 echo " # > source $profile"
 echo " # "
 echo " #  Or just log out and log back in or open a new bash shell."
+
 if [ "$here" = "$targetDir" ]
 then
+
     echo " # "
     echo " #  After that, I recommend running the test!"
     echo " # "
@@ -143,6 +149,8 @@ then
     echo " # "
     echo " #  which will be in your path. That will prevent possible error"
     echo " #  messages later from evironment manipulation."
+
 fi
+
 echo " # -------------------------------------------------------------"
 echo " # "
