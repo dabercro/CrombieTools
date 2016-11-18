@@ -89,7 +89,7 @@ then
 
 fi
 
-if [ "`type CROMBIEDATE 2> /dev/null`" = "" ]    # If $CROMBIEDATE not set (used for automatic versioning),
+if [ "`type CROMBIEDATE 2> /dev/null`" = "" ]    # If CROMBIEDATE not set (used for automatic versioning),
 then                                             #   add it to profile
 
     echo "" >> $profile
@@ -97,6 +97,8 @@ then                                             #   add it to profile
     echo "CROMBIEDATE () {" >> $profile
     echo "    echo \`date +%y%m%d\`" >> $profile
     echo "}" >> $profile
+    echo "" >> $profile
+    echo "export -f CROMBIEDATE" >> $profile
 
 fi
 
