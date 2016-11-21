@@ -53,27 +53,30 @@ The list of available subcommands are given below.
       The output of `crombie diff -h` is shown for more information.
 
       <pre>
-        usage: crombie diff [-h] [--numproc NUM] [--treename TREENAME]
-                            [--skip-branches [BRANCHES [BRANCHES ...]]] [--verbose]
-                            [--check-branch]
-                            DIRECTORY DIRECTORY
+usage: crombie diff [-h] [--numproc NUM] [--treename TREENAME]
+                    [--skip-branches [BRANCHES [BRANCHES ...]]] [--verbose]
+                    [--check-branch] [--loose-match]
+                    DIRECTORY DIRECTORY
 
-        Checks two directories to make sure they have the same number of files and
-        number of events in the tree and hist for each file
+Checks two directories to make sure they have the same number of files and
+number of events in the tree and hist for each file
 
-        positional arguments:
-          DIRECTORY             The names of the two directories to compare.
+positional arguments:
+  DIRECTORY             The names of the two directories to compare.
 
-        optional arguments:
-          -h, --help            show this help message and exit
-          --numproc NUM, -n NUM
-                                Number of processes that FlatSkimmer will spawn.
-          --treename TREENAME, -t TREENAME
-                                The name of the trees to friend.
-          --skip-branches [BRANCHES [BRANCHES ...]], -s [BRANCHES [BRANCHES ...]]
-                                Set branches to skip comparison.
-          --verbose, -v         Give a verbose checker to watch progress.
-          --check-branch, -b    Checks if two branches have the same entries.
+optional arguments:
+  -h, --help            show this help message and exit
+  --numproc NUM, -n NUM
+                        Number of processes that FlatSkimmer will spawn.
+  --treename TREENAME, -t TREENAME
+                        The name of the trees to friend.
+  --skip-branches [BRANCHES [BRANCHES ...]], -s [BRANCHES [BRANCHES ...]]
+                        Set branches to skip comparison.
+  --verbose, -v         Give a verbose checker to watch progress.
+  --check-branch, -b    Checks if two branches have the same entries.
+  --loose-match, -l     If true, matches when the file names do not match
+                        perfectly. Instead, if one file matches the beginning
+                        of another perfectly, a comparison is made.
       </pre>
     </td>
   </tr>
