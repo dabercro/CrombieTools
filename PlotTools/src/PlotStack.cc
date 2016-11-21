@@ -79,6 +79,8 @@ PlotStack::MakeCanvas(TString FileBase, Int_t NumXBins, Double_t *XBins,
   for (UInt_t iHist = 0; iHist < DataHists.size(); iHist++)
     DataHist->Add(DataHists[iHist]);
 
+  Message(eInfo, "Number of data events: %i, integral: %f", (Int_t) DataHist->GetEntries(), DataHist->Integral("width"));
+
   TString previousEntry = "";
   TH1D *tempMCHist = 0;
   HistHolder *tempHistHolder = 0;

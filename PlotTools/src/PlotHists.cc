@@ -72,6 +72,9 @@ PlotHists::MakeHists(Int_t NumXBins, Double_t *XBins)
     tempHist = new TH1D(tempName, tempName, NumXBins, XBins);
     tempHist->Sumw2();
 
+    Message(eDebug, "About to draw %s on %s, with cut %s",
+            inExpr.Data(), tempName.Data(), inCut.GetTitle());
+
     inTree->Draw(inExpr+">>"+tempName, inCut);
 
     if (fUncExpr != "") {
@@ -90,10 +93,15 @@ PlotHists::MakeHists(Int_t NumXBins, Double_t *XBins)
       delete uncProfile;
     }
 
+    Message(eDebug, "Number of events: %i, integral: %f",
+            (Int_t) tempHist->GetEntries(), tempHist->Integral("width"));
+
     theHists.push_back(tempHist);
   }
 
   if (fEventsPer > 0) {
+    Message(eDebug, "Events per: %f", fEventsPer);
+
     TString tempName;
     tempName.Form("Hist_%d", fPlotCounter);
     fPlotCounter++;
@@ -102,8 +110,14 @@ PlotHists::MakeHists(Int_t NumXBins, Double_t *XBins)
       tempHist->SetBinContent(iBin, tempHist->GetBinWidth(iBin)/fEventsPer);
 
     SetZeroError(tempHist);
-    for (UInt_t iHist = 0; iHist != theHists.size(); ++iHist)
+    for (UInt_t iHist = 0; iHist != theHists.size(); ++iHist) {
+      Message(eDebug, "Now for %s, number of events: %i, integral: %f",
+              theHists[iHist]->GetName(),
+              (Int_t) tempHist->GetEntries(),
+              tempHist->Integral("width"));
+
       Division(theHists[iHist], tempHist);
+    }
 
     delete tempHist;
   }

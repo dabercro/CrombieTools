@@ -83,11 +83,15 @@ class ParallelStackContainer:
 
         # Different expressions for data and MC
         self.Plotter.SetDataExpression(kwargs.get('data_expr',''))
-        # List cut lines to draw in a plot
-        for cut_line in kwargs.get('cut_lines', Nminus1Cut(holdCut, expr[0], True) if self.ShowCutLines else []):
-            self.Plotter.AddCutLine(cut_line)
 
-        self.Plotter.SetDefaultWeight(Nminus1Cut(holdCut, expr[0]))
+        # If not skipping Nminus1 cuts
+        if kwargs.get('doNminus1', True):
+            # List cut lines to draw in a plot
+            for cut_line in kwargs.get('cut_lines', Nminus1Cut(holdCut, expr[0], True) if self.ShowCutLines else []):
+                self.Plotter.AddCutLine(cut_line)
+
+            self.Plotter.SetDefaultWeight(Nminus1Cut(holdCut, expr[0]))
+
         self.Plotter.SetDefaultExpr(expr[0])
         expr[0] = '_'.join([category, region, expr[0]])
         if (self.Overwrite or
