@@ -19,6 +19,7 @@
    @brief Can be created using the CrombieTools.SkimmingTools.Corrector module.
 
    Applies multiple Corrector objects to a tree in a file.
+   @todo create a type of corrector that does trigger bits from a TFormula
 */
 
 class CorrectorApplicator : public InDirectoryHolder, public ProgressReporter
