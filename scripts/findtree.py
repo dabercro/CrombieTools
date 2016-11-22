@@ -33,7 +33,8 @@ def GetNumEntries(fileName, className, branches=[]):
     testFile.Close()
     return NumberOfEvents
 
-if __name__ == '__main__':
+
+def main(argv):
     parser = argparse.ArgumentParser(prog='crombie findtree',
                                      description='Finds if there is an empty tree or not. Can also search for a branch.')
 
@@ -44,7 +45,7 @@ if __name__ == '__main__':
     parser.add_argument('-c', '--class', metavar='CLASS', dest='classname', default='TTree',
                         help='Class name to search for entries.')
 
-    args = parser.parse_args()
+    args = parser.parse_args(argv)
 
     exitcode = 0
 
@@ -68,3 +69,6 @@ if __name__ == '__main__':
     print 'Exiting with exit code:', exitcode
 
     exit(exitcode)
+
+if __name__ == '__main__':
+    main(sys.argv[1:])
