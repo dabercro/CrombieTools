@@ -16,7 +16,7 @@ def GetNumEntries(fileName, className):
             testTree = testFile.Get(testKey.GetName())
             NumberOfEvents = testTree.GetEntries()
             if __name__ == '__main__':
-                print(className + ' \'' + testKey.GetName() + '\' has ' + str(NumberOfEvents) + ' events!')
+                print className + ' \'' + testKey.GetName() + '\' has ' + str(NumberOfEvents) + ' events!'
 
             break
 
@@ -25,7 +25,7 @@ def GetNumEntries(fileName, className):
 
 if __name__ == '__main__':
     if len(sys.argv) == 1:
-        print('Wrong number of args!')
+        print 'Wrong number of args!'
         exit(1)
 
     exitcode = 0
@@ -36,14 +36,15 @@ if __name__ == '__main__':
         if os.path.isfile(sys.argv[1]):
             NumberOfEvents = GetNumEntries(sys.argv[1], 'TTree')
         else:
-            print('Error, file does not exist.')
+            print 'Error, file does not exist.'
             exitcode += 1
 
         if NumberOfEvents < 0:
             # This means that no keys were found in the file
+            print 'No keys were found in the file'
             exitcode += 100
         elif NumberOfEvents == 0:
-            print('Did not successfully find tree with events.')
+            print 'Did not successfully find tree with events.'
             exitcode += 1
 
     print 'Exiting with exit code:', exitcode
