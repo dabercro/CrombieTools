@@ -1,9 +1,12 @@
 #!/usr/bin/env python
 
-import ROOT
-import sys, os
+import os
+import sys
+import argparse
 
-def GetNumEntries(fileName, className):
+import ROOT
+
+def GetNumEntries(fileName, className, branches=[]):
     NumberOfEvents = 0
 
     testFile = ROOT.TFile(fileName)
@@ -15,6 +18,13 @@ def GetNumEntries(fileName, className):
         if className in testKey.GetClassName():
             testTree = testFile.Get(testKey.GetName())
             NumberOfEvents = testTree.GetEntries()
+
+            if className == 'TTree':
+                for branch in branches:
+                    if not testTree.GetBranch(branch):
+                        print 'Cannot find branch', branch
+                        exit(5)
+
             if __name__ == '__main__':
                 print className + ' \'' + testKey.GetName() + '\' has ' + str(NumberOfEvents) + ' events!'
 
@@ -24,17 +34,23 @@ def GetNumEntries(fileName, className):
     return NumberOfEvents
 
 if __name__ == '__main__':
-    if len(sys.argv) == 1:
-        print 'Wrong number of args!'
-        exit(1)
+    parser = argparse.ArgumentParser(prog='crombie findtree',
+                                     description='Finds if there is an empty tree or not. Can also search for a branch.')
+
+    parser.add_argument('files', metavar='FILE', nargs='+',
+                        help='List of files to check.')
+    parser.add_argument('-b', '--branches', metavar='BRANCH', dest='branches', nargs='*', default=[],
+                        help='Branches to search for in each file.')
+
+    args = parser.parse_args()
 
     exitcode = 0
 
-    for checkfile in sys.argv[1:]:
+    for checkfile in args.files:
         print 'Searching', checkfile
 
-        if os.path.isfile(sys.argv[1]):
-            NumberOfEvents = GetNumEntries(sys.argv[1], 'TTree')
+        if os.path.isfile(checkfile):
+            NumberOfEvents = GetNumEntries(checkfile, 'TTree', args.branches)
         else:
             print 'Error, file does not exist.'
             exitcode += 1
