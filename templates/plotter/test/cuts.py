@@ -48,8 +48,6 @@ def dataMCCuts(region, isData):
     if region in region_weights.keys():
         key = region
 
-    index = 1
-    if isData:
-        index = 0
+    index = 0 if isData else 1
 
     return '(' + region_weights[key][index] + ')'
