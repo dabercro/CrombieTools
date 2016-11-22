@@ -41,6 +41,8 @@ if __name__ == '__main__':
                         help='List of files to check.')
     parser.add_argument('-b', '--branches', metavar='BRANCH', dest='branches', nargs='*', default=[],
                         help='Branches to search for in each file.')
+    parser.add_argument('-c', '--class', metavar='CLASS', dest='classname', default='TTree',
+                        help='Class name to search for entries.')
 
     args = parser.parse_args()
 
@@ -50,7 +52,7 @@ if __name__ == '__main__':
         print 'Searching', checkfile
 
         if os.path.isfile(checkfile):
-            NumberOfEvents = GetNumEntries(checkfile, 'TTree', args.branches)
+            NumberOfEvents = GetNumEntries(checkfile, args.classname, args.branches)
         else:
             print 'Error, file does not exist.'
             exitcode += 1
