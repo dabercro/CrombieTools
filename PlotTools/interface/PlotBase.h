@@ -173,14 +173,8 @@ class PlotBase : virtual public Debug
   inline    void         SetLumiLabelFormat       ( TString format )                              { fLumiLabelFormat = format;   }
   /// Set the luminosity lable with a float in fb.
   inline    void         SetLumiLabel             ( Float_t lumi )       { fLumiLabel = TString::Format(fLumiLabelFormat, lumi); }
-  /// Enums type of lables for plots
-  enum      CMSLabelType {
-    kNone = 0,       ///< Does not place a CMS label on the plot
-    kPreliminary,    ///< Denotes a preliminary result
-    kSimulation,     ///< Denotes a simulation result
-  };
   /// Set the type of CMS label for the plot
-  inline    void         SetCMSLabelType          ( CMSLabelType type )                           { fCMSLabelType = type;        }
+  inline    void         SetCMSLabel              ( TString type )                                { fCMSLabel = type;            }
   /// Adds a dotted line in order to show cuts.
   inline    void         AddCutLine               ( Double_t loc )                                { fCutLines.push_back(loc);    }
   /// Resets the number of cut lines to plot
@@ -262,7 +256,7 @@ class PlotBase : virtual public Debug
 
   TString                    fLumiLabelFormat = "%.1f";  ///< Format used for changing lumi numbers into string
   TString                    fLumiLabel = "";            ///< Label used to show luminosity
-  CMSLabelType               fCMSLabelType = kNone;      ///< Enum to determine what type of label to give
+  TString                    fCMSLabel = "";             ///< Label to give next to CMS on plots
 
   /// Use this to get certain draw options correct (for data, for example)
   template<class T>  void    LineDrawing          ( std::vector<T*> theLines, Int_t index, Bool_t same );
@@ -771,7 +765,7 @@ void PlotBase::BaseCanvas(TString FileBase, std::vector<T*> theLines,
 
   }
 
-  if (fCMSLabelType != kNone) {
+  if (fCMSLabel != "") {
 
     TLatex* latex3 = new TLatex();
     latex3->SetNDC();
@@ -783,10 +777,7 @@ void PlotBase::BaseCanvas(TString FileBase, std::vector<T*> theLines,
     latex3->SetTextFont(52);
     latex3->SetTextAlign(11);
 
-    if (fCMSLabelType == kPreliminary)
-      latex3->DrawLatex(0.20, 0.96, "Preliminary");
-    else if (fCMSLabelType == kSimulation)
-      latex3->DrawLatex(0.20, 0.96, "Simulation");
+    latex3->DrawLatex(0.20, 0.96, fCMSLabel);
 
     fDeleteThese.push_back(latex3);
 
