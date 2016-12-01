@@ -1,12 +1,18 @@
+"""
+@todo Clean up the LimitTreeMaker python file to not depend on these extra variables in cuts.py
+"""
+
 import os
 from .. import Load, DirFromEnv
 
 newLimitTreeMaker = Load('LimitTreeMaker')
 
 def SetupFromEnv(ltm):
+    """
+    @todo place the FileConfigReader functions into its own setup function for other classes to call
+    """
     from .. import LoadConfig
 
-    ## @todo place the FileConfigReader functions into its own setup function for other classes to call
     if os.path.exists('CrombieAnalysisConfig.sh'):
         DirFromEnv('CrombieOutLimitTreeDir')
         def readMC(config):
