@@ -45,7 +45,6 @@ def SetupFromEnv(ltm):
 def SetCuts(ltm, category):
     from .. import LoadConfig
     cuts = LoadConfig.cuts
-    ltm.AddWeightBranch(cuts.defaultMCWeight)
     for region in cuts.regions:
         ltm.AddRegion(region,cuts.cut(category, region))
         if region in cuts.additionKeys:

@@ -36,8 +36,8 @@ class LimitTreeMaker : public FileConfigReader
   virtual ~LimitTreeMaker();
 
   /// Reads a config and swaps out files for one control region
-  void              ReadExceptionConfig      ( TString config, TString region, TString fileDir = "" );
-  /// Makes the file containing all of the limit trees. @todo Tries to read fInDirectory without a file, fixme.
+  void              ReadExceptionConfig      ( const char* config, TString region, TString fileDir = "" );
+  /// Makes the file containing all of the limit trees.
   void              MakeTrees                ();
 
   /// Set name of limit tree file
@@ -57,11 +57,19 @@ class LimitTreeMaker : public FileConfigReader
   /// Sets the name of the output weight branch
   inline    void    SetOutputWeightBranch    ( TString branch )                           { fOutputWeightBranch = branch;               }
 
+  /**
+     Add a file to skip within a region.
+
+     @param region is the region to do the skipping in
+     @param outTreeName can be either the tree name as listed in the config, or the name of the file
+  */
   inline    void    ExceptionSkip            ( TString region, TString outTreeName )      { fExceptionSkip[region].insert(outTreeName); }
+  /// Add a file to only one region
   inline    void    ExceptionAdd             ( TString region, TString fileName, TString outTreeName, Float_t XSec = -1 )
                                                                                  { fExceptionFileNames[region].push_back(fileName);
                                                                                    fExceptionTreeNames[region].push_back(outTreeName);
                                                                                    fExceptionXSecs[region].push_back(XSec);             }
+
   inline    void    AddExceptionDataCut      ( TString region, TString cut )              { fExceptionDataCuts[region] = cut;           }
   inline    void    AddExceptionWeightBranch ( TString region, TString weight )  { fExceptionWeightBranches[region].push_back(weight);  }
   /// @todo make all frequency reports in a centralized class

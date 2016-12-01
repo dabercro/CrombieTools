@@ -1,5 +1,4 @@
 #include <iostream>
-#include <cstdlib>
 #include <fstream>
 
 #include "TFile.h"
@@ -31,13 +30,15 @@ LimitTreeMaker::~LimitTreeMaker()
 
 //--------------------------------------------------------------------
 void
-LimitTreeMaker::ReadExceptionConfig(TString config, TString region, TString fileDir)
+LimitTreeMaker::ReadExceptionConfig(const char* config, TString region, TString fileDir)
 {
   if (fileDir != "")
     SetInDirectory(fileDir);
 
+  Message(eInfo, "Opening %s for region %s", config, region.Data());
+
   std::ifstream configFile;
-  configFile.open(config.Data());
+  configFile.open(config);
   TString LimitTreeName;
   TString FileName;
   TString XSec;
@@ -46,16 +47,23 @@ LimitTreeMaker::ReadExceptionConfig(TString config, TString region, TString file
 
   while (!configFile.eof()) {
     configFile >> LimitTreeName >> FileName;
+
+    if (configFile.eof())
+      continue;
+
     if (LimitTreeName == "skip") {
-      ExceptionSkip(region,AddInDir(FileName));
+      Message(eDebug, "Going to skip %s in region %s", FileName.Data(), region.Data());
+      ExceptionSkip(region, AddInDir(FileName));
     }
     else {
+      Message(eDebug, "Adding %s as %s", FileName.Data(), LimitTreeName.Data());
       configFile >> XSec >> LegendEntry >> ColorStyleEntry;
-      ExceptionAdd(region,AddInDir(FileName),LimitTreeName,XSec.Atof());
+      ExceptionAdd(region, AddInDir(FileName), LimitTreeName, XSec.Atof());
       if (ColorStyleEntry == "rgb") {
         for (Int_t iColor = 0; iColor != 3; ++iColor)
           configFile >> ColorStyleEntry;
       }
+      Message(eDebug, "Now have %i exceptions", fExceptionFileNames[region].size());
     }
   }
   configFile.close();
@@ -73,11 +81,22 @@ LimitTreeMaker::MakeTrees()
   for (UInt_t iRegion = 0; iRegion != fRegionNames.size(); ++iRegion) {
     TString regionName = fRegionNames[iRegion];
 
+    Message(eInfo, "Entering region: %s", regionName.Data());
+
     UInt_t numData = fDataFileInfo.size();
     UInt_t numDataBackground = numData + fMCFileInfo.size();
     UInt_t sumOfStandard = numDataBackground + fSignalFileInfo.size();
     UInt_t numFiles = sumOfStandard + fExceptionFileNames[regionName].size();
+
+    Message(eInfo, "Number of Data Files: %i", numData);
+    Message(eInfo, "Number of Background Files: %i", numDataBackground);
+    Message(eInfo, "Number of Signal Files: %i", fSignalFileInfo.size());
+    Message(eInfo, "Number of Standard Files (sum of previous): %i", sumOfStandard);
+    Message(eInfo, "Number of files in this region (adding exception): %i", numFiles);
+
     for (UInt_t iFile = 0; iFile != numFiles; ++iFile) {
+      Message(eDebug, "Starting file %i/%i", iFile,  numFiles);
+
       if (iFile % fReportFrequency == 0 && fReportFrequency < numFiles) {
         std::cout << fOutputFileName << " : ";
         for (UInt_t jRegion = 0; jRegion != fRegionNames.size(); ++jRegion) {
@@ -94,49 +113,62 @@ LimitTreeMaker::MakeTrees()
       Float_t XSec;
 
       if (iFile < numData) {
+        Message(eDebug, "Opening data file");
         outTreeName = fDataFileInfo[iFile]->fTreeName;
         fileName = fDataFileInfo[iFile]->fFileName;
         XSec = fDataFileInfo[iFile]->fXSec;
       }
       else if (iFile < numDataBackground) {
+        Message(eDebug, "Opening background file");
         outTreeName = fMCFileInfo[iFile - numData]->fTreeName;
         fileName = fMCFileInfo[iFile - numData]->fFileName;
         XSec = fMCFileInfo[iFile - numData]->fXSec;
       }
       else if (iFile < sumOfStandard) {
+        Message(eDebug, "Opening signal file");
         outTreeName = fSignalFileInfo[iFile - numDataBackground]->fTreeName;
         fileName = fSignalFileInfo[iFile - numDataBackground]->fFileName;
         XSec = fSignalFileInfo[iFile - numDataBackground]->fXSec;
       }
       else {
+        Message(eDebug, "Opening exception file");
         fileName = (fExceptionFileNames[regionName])[iFile - sumOfStandard];
         outTreeName = (fExceptionTreeNames[regionName])[iFile - sumOfStandard];
         XSec =  (fExceptionXSecs[regionName])[iFile - sumOfStandard];
       }
 
+      Message(eDebug, "Name: %s, Out Tree: %s, Cross Section: %f",
+              fileName.Data(), outTreeName.Data(), XSec);
+
       if (iFile < sumOfStandard) {
-        if (fExceptionSkip[regionName].find(outTreeName) != fExceptionSkip[regionName].end())
+        if (fExceptionSkip[regionName].find(outTreeName) != fExceptionSkip[regionName].end()) {
+          Message(eInfo, "Found %s in skip list for Region %s... Skipping.",
+                  outTreeName.Data(), regionName.Data());
           continue;
-        if (fExceptionSkip[regionName].find(fileName) != fExceptionSkip[regionName].end())
+        }
+        if (fExceptionSkip[regionName].find(fileName) != fExceptionSkip[regionName].end()) {
+          Message(eInfo, "Found %s in skip list for Region %s... Skipping.",
+                  fileName.Data(), regionName.Data());
           continue;
+        }
       }
 
       TFile* inFile = new TFile(fileName);
       if (!inFile) {
-        std::cout << "Could not open file " << fileName << std::endl;
+        Message(eError, "Could not open file %s", fileName.Data());
         exit(1);
       }
 
       TTree* inTree = (TTree*) inFile->Get(fTreeName);
       if (!inTree) {
-        std::cout << "Could not find tree " << fTreeName << std::endl;
-        std::cout << "in file " << inFile << std::endl;
+        Message(eError, "Could not find tree %s\nin file %s", fTreeName.Data(), fileName.Data());
         inFile->Close();
         exit(1);
       }
 
       // Apply selection
-      TFile* tempFile = new TFile(TString("/tmp/") + getenv("USER") + "/" + fOutputFileName + ".tempCopyFileDontUse.root","RECREATE");
+      TFile* tempFile = new TFile(TString("/tmp/") + getenv("USER") + "/" +
+                                  fOutputFileName + ".tempCopyFileDontUse.root","RECREATE");
       TString theCut = fRegionCuts[iRegion];
       if (XSec < 0 && fExceptionDataCuts[regionName] != "")
         theCut = TString("(") + theCut + ") && (" + fExceptionDataCuts[regionName] + ")";
@@ -168,8 +200,8 @@ LimitTreeMaker::MakeTrees()
       // Setup the output weight branch
       Float_t mcWeight = 1.0;
       TBranch* weightBranch = outTree->Branch(fOutputWeightBranch,&mcWeight,fOutputWeightBranch+"/F");
-      // Get branches for weights
-      for (UInt_t iWeight = 0; iWeight != fWeightBranch.size(); ++iWeight) {
+      // Get branches for weights 
+     for (UInt_t iWeight = 0; iWeight != fWeightBranch.size(); ++iWeight) {
         addresses[fWeightBranch[iWeight]] = 0.0;
         loopTree->SetBranchAddress(fWeightBranch[iWeight],&addresses[fWeightBranch[iWeight]]);
       }
