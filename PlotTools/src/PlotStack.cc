@@ -82,8 +82,8 @@ PlotStack::MakeCanvas(TString FileBase, Int_t NumXBins, Double_t *XBins,
   Message(eInfo, "Number of data events: %i, integral: %f", (Int_t) DataHist->GetEntries(), DataHist->Integral("width"));
 
   TString previousEntry = "";
-  TH1D *tempMCHist = 0;
-  HistHolder *tempHistHolder = 0;
+  TH1D *tempMCHist = NULL;
+  HistHolder *tempHistHolder = NULL;
   std::vector<HistHolder*> HistHolders;
 
   for (UInt_t iHist = 0; iHist != MCHists.size(); ++iHist) {
@@ -100,7 +100,9 @@ PlotStack::MakeCanvas(TString FileBase, Int_t NumXBins, Double_t *XBins,
       TString tempName;
       tempName.Format("StackedHist_%d",iHist);
       tempMCHist = (TH1D*) MCHists[iHist]->Clone(tempName);
-      tempHistHolder = new HistHolder(tempMCHist, fMCFileInfo[iHist]->fEntry, fMCFileInfo[iHist]->fColorStyle,
+      tempHistHolder = new HistHolder(tempMCHist, fMCFileInfo[iHist]->fEntry,
+                                      fMCFileInfo[iHist]->fColorStyle,
+                                      fMCFileInfo[iHist]->fTreeName,
                                       (fForceTop == fMCFileInfo[iHist]->fEntry));
       HistHolders.push_back(tempHistHolder);
 
@@ -145,10 +147,15 @@ PlotStack::MakeCanvas(TString FileBase, Int_t NumXBins, Double_t *XBins,
     for (UInt_t iHist = 0; iHist != HistHolders.size(); ++iHist) {
 
       tempHist = (TH1D*) HistHolders[iHist]->fHist->Clone();
+
       Message(eInfo, "%s  :  %f", HistHolders[iHist]->fEntry.Data(),
               tempHist->Integral(0, NumXBins + 1, "width"));
-      dumpFile->WriteTObject(tempHist,HistHolders[iHist]->fEntry);
 
+      dumpFile->WriteTObject(tempHist, TString::Format("%s-%s",
+                                                       fDefaultExpr.Data(),
+                                                       HistHolders[iHist]->fTree.Data()
+                                                       )
+                             );
     }
 
     tempHist = (TH1D*) DataHist->Clone();

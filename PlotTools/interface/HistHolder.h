@@ -7,9 +7,13 @@
 
 struct HistHolder
 {
-  HistHolder ( TH1D *hist, TString entry, Color_t color, Bool_t force = false )
+  HistHolder ( TH1D *hist, TString entry, Color_t color, TString tree, Bool_t force = false )
   {
-    fHist = hist; fEntry = entry; fColor = color; fForceTop = force;
+    fHist = hist;
+    fEntry = entry;
+    fColor = color;
+    fTree = tree;
+    fForceTop = force;
     fHist->SetFillStyle(1001);
     fHist->SetFillColor(fColor);
     fHist->SetMarkerSize(0);
@@ -19,6 +23,7 @@ struct HistHolder
   TH1D *fHist;
   TString fEntry;
   Color_t fColor;
+  TString fTree;
   Bool_t fForceTop;
 };
 

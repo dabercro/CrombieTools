@@ -34,7 +34,7 @@ def SetCuts(category, region, aPlotter = plotter):
     aPlotter.SetDataWeight(cuts.dataMCCuts(region, True))
 
 
-def ReadExceptionConfig(region,aPlotter = plotter):
+def ReadExceptionConfig(region, aPlotter = plotter):
     """ Reads an [exception configuation](@ref formatmc) file from the [environment](@ref envconfig).
 
     @param region is the region that needs a different configuration that's about to be plotted.
@@ -53,13 +53,14 @@ class ParallelStackContainer:
     Makes the N minus 1 cuts on the object before calling PlotStack::MakeCanvas()
     """
 
-    def __init__(self, plotter, overwrite, showCutLines):
+    def __init__(self, plotter, overwrite, showCutLines, limitHistsDir):
         self.Plotter = plotter
         self.Overwrite = overwrite
         self.ShowCutLines = showCutLines
+        self.LimitHistsDir = limitHistsDir
 
     def Copy(self):
-        return ParallelStackContainer(plotter.Copy(), self.Overwrite, self.ShowCutLines)
+        return ParallelStackContainer(plotter.Copy(), self.Overwrite, self.ShowCutLines, self.LimitHistsDir)
 
     def MakePlot(self, category, region, exprArg):
         """Adjusts cut to N minus 1 and plots.
@@ -93,17 +94,27 @@ class ParallelStackContainer:
             self.Plotter.SetDefaultWeight(Nminus1Cut(holdCut, expr[0]))
 
         self.Plotter.SetDefaultExpr(expr[0])
+
+        if self.LimitHistsDir:
+            if not os.path.exists(self.LimitHistsDir):
+                os.mkdirs(self.LimitHistsDir)
+
+            self.Plotter.SetDumpFileName(os.path.join(self.LimitHistsDir, '%s_%s.root' % (region, expr[0])))
+
+
         expr[0] = '_'.join([category, region, expr[0]])
+
         if (self.Overwrite or
             not os.path.exists(str(self.Plotter.GetOutDirectory()) + expr[0] + '.pdf')):
             self.Plotter.MakeCanvas(*expr)
-            self.Plotter.SetDefaultWeight(holdCut)
-            # Reset and exceptional values for this plot
-            self.Plotter.SetDataExpression('')
-            self.Plotter.ResetCutLines()
+
+        self.Plotter.SetDefaultWeight(holdCut)
+        # Reset and exceptional values for this plot
+        self.Plotter.SetDataExpression('')
+        self.Plotter.ResetCutLines()
 
 
-def MakePlots(categories, regions, exprArgs, overwrite=True, parallel=True, showCutLines=True, aPlotter=plotter):
+def MakePlots(categories, regions, exprArgs, overwrite=True, parallel=True, showCutLines=True, limitHistsDir='', aPlotter=plotter):
     """ Shortcut to make plots for multiple categories and regions with the same setup.
 
     @param categories is a list of categories to plot.
@@ -121,6 +132,7 @@ def MakePlots(categories, regions, exprArgs, overwrite=True, parallel=True, show
     @param parallel determines whether or not to run the plots in a Multiprocess fashion.
     @param showCutLines determines whether or not to show the cut lines that would otherwise exist in
                         any N - 1 plots generated.
+    @param limitHistsDir is the directory to place files with the histograms for the limits fit.
     @param aPlotter is the plotter to use to plot. The default is the plotter defined in this module.
     """
 
@@ -137,7 +149,7 @@ def MakePlots(categories, regions, exprArgs, overwrite=True, parallel=True, show
                 for exprArg in exprArgs:
                     passToParallel.append([category, region, exprArg])
 
-        bPlotter = ParallelStackContainer(aPlotter, overwrite, showCutLines)
+        bPlotter = ParallelStackContainer(aPlotter, overwrite, showCutLines, limitHistsDir)
 
         if parallel:
             from ..Parallelization import RunParallel
