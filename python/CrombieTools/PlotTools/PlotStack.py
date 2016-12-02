@@ -96,9 +96,6 @@ class ParallelStackContainer:
         self.Plotter.SetDefaultExpr(expr[0])
 
         if self.LimitHistsDir:
-            if not os.path.exists(self.LimitHistsDir):
-                os.mkdirs(self.LimitHistsDir)
-
             self.Plotter.SetDumpFileName(os.path.join(self.LimitHistsDir, '%s_%s.root' % (region, expr[0])))
 
 
@@ -148,6 +145,9 @@ def MakePlots(categories, regions, exprArgs, overwrite=True, parallel=True, show
             for region in regions:
                 for exprArg in exprArgs:
                     passToParallel.append([category, region, exprArg])
+
+        if limitHistsDir and not os.path.exists(limitHistsDir):
+            os.mkdirs(limitHistsDir)
 
         bPlotter = ParallelStackContainer(aPlotter, overwrite, showCutLines, limitHistsDir)
 
