@@ -23,7 +23,7 @@ def TreeList(configs):
     for config in configs:
         if not os.path.exists(config):
             print '%s does not exist!' % config
-            exit 40
+            exit(40)
 
         with open(config, 'r') as in_file:
             for in_line in in_file.readlines():
