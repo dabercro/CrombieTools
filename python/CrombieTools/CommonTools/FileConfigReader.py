@@ -22,26 +22,33 @@ def SetFunctionFromEnv(targets):
                 func(float(os.environ[envname]))
 
 
-def SetupConfigFromEnv(object):
-    """Sets up FileConfigReaders to read the config file automatically
+def SetupConfigFromEnv(obj):
+    """Sets up FileConfigReaders to read the config file automatically.
+    It uses the environment variable $DEBUG to set the verbosity level of a class.
+    The default is 1, with a maximum of 3 for real debugging output.
 
-    @param object is the python object that inherits from FileConfigReader.
+    @param obj is the python object that inherits from FileConfigReader.
     """
 
     from .. import LoadConfig
 
+    obj.SetDebugLevel(int(os.environ.get('DEBUG', 1)))
+
     if os.path.exists('CrombieAnalysisConfig.sh') or os.path.exists('CrombiePlotterConfig.sh'):
         def readMC(config):
-            object.ReadMCConfig(config, object.kBackground)
+            obj.ReadMCConfig(config, obj.kBackground)
         def readSignal(config):
-            object.ReadMCConfig(config, object.kSignal)
+            obj.ReadMCConfig(config, obj.kSignal)
 
         SetFunctionFromEnv([
-                (object.SetInDirectory, 'CrombieInFilesDir'),
-                (object.SetLuminosity, 'CrombieLuminosity'),
+                (obj.SetInDirectory, 'CrombieInFilesDir'),
+                (obj.SetLuminosity, 'CrombieLuminosity'),
                 (readMC, 'CrombieMCConfig'),
                 (readSignal, 'CrombieSignalConfig')
                 ])
+
+        obj.SetFileType(obj.kBackground)
+
     else:
         print 'Could not find CrombieAnalysisConfig.sh or CrombiePlotterConfig.sh'
         exit(10)

@@ -8,7 +8,6 @@
 #define CROMBIETOOLS_COMMONTOOLS_INDIRECTORYHOLDER_H
 
 #include <sys/stat.h>
-#include <iostream>
 
 #include "TString.h"
 
@@ -68,15 +67,14 @@ class InDirectoryHolder : virtual public Debug
 
 TString
 InDirectoryHolder::AddInDir(TString FileName) {
-  DisplayFunc(__func__);
 
   struct stat buffer;
   TString output = AddDirectory(fInDirectory, FileName);
 
   int code = stat(output.Data(), &buffer);
   if (code != 0) {
-    std::cerr << "Cannot find file " << output << "!" << std::endl;
-    std::cerr << "Status code: " << code << std::endl;
+    Message(eError, "Cannot find file %s!", output.Data());
+    Message(eError, "Status code: %i", code);
     exit(20);
   }
 

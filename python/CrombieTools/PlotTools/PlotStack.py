@@ -147,7 +147,7 @@ def MakePlots(categories, regions, exprArgs, overwrite=True, parallel=True, show
                     passToParallel.append([category, region, exprArg])
 
         if limitHistsDir and not os.path.exists(limitHistsDir):
-            os.mkdirs(limitHistsDir)
+            os.makedirs(limitHistsDir)
 
         bPlotter = ParallelStackContainer(aPlotter, overwrite, showCutLines, limitHistsDir)
 

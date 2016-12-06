@@ -144,6 +144,8 @@ PlotStack::MakeCanvas(TString FileBase, Int_t NumXBins, Double_t *XBins,
     TH1D* tempHist;
     TFile* dumpFile = new TFile(fDumpRootName,"RECREATE");
 
+    // Background Histograms
+
     for (UInt_t iHist = 0; iHist != HistHolders.size(); ++iHist) {
 
       tempHist = (TH1D*) HistHolders[iHist]->fHist->Clone();
@@ -158,9 +160,28 @@ PlotStack::MakeCanvas(TString FileBase, Int_t NumXBins, Double_t *XBins,
                              );
     }
 
+    // Signal Histograms
+
+    for (UInt_t iHist = 0; iHist != SignalHists.size(); ++iHist) {
+
+      tempHist = (TH1D*) SignalHists[iHist]->Clone();
+
+      Message(eInfo, "%s  :  %f", fSignalFileInfo[iHist]->fTreeName.Data(),
+              tempHist->Integral(0, NumXBins + 1, "width"));
+
+      dumpFile->WriteTObject(tempHist, TString::Format("%s-%s",
+                                                       fDefaultExpr.Data(),
+                                                       fSignalFileInfo[iHist]->fTreeName.Data()
+                                                       )
+                             );
+
+    }
+
+    // Data Histogram
+
     tempHist = (TH1D*) DataHist->Clone();
     Message(eInfo, "Data     :  %f", tempHist->Integral(0, NumXBins + 1, "width"));
-    dumpFile->WriteTObject(tempHist, "Data");
+    dumpFile->WriteTObject(tempHist, TString::Format("%s-data", fDefaultExpr.Data()));
     dumpFile->Close();
 
   }
@@ -229,7 +250,7 @@ PlotStack::MakeCanvas(TString FileBase, Int_t NumXBins, Double_t *XBins,
     if (AllHists.size() > 1)
       SignalHists[iHist]->Add(AllHists[0]);                      // Add the background to the signals
     AllHists.push_back(SignalHists[iHist]);
-    AddLegendEntry(fSignalFileInfo[iHist]->fEntry,1,2,fSignalFileInfo[iHist]->fColorStyle);
+    AddLegendEntry(fSignalFileInfo[iHist]->fEntry, 1, 2, fSignalFileInfo[iHist]->fColorStyle);
     Message(eDebug, "There are now %i total histograms to plot.", AllHists.size());
   }
 

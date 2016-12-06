@@ -109,6 +109,8 @@ class FileConfigReader : public InOutDirectoryHolder, public PlotHists
 
   /// Set the FileType of the next config file read.
   inline    void       SetFileType          ( FileType type )                           { fFileType = type;        }
+  /// Get the FileType of the current file.
+  inline    FileType   GetFileType          ()                                          { return fFileType;        }
 
   /// Reads an MC configuration while changing the FileType
   inline    void       ReadMCConfig         ( TString config,  FileType type, TString fileDir = "" )
@@ -417,6 +419,8 @@ void FileConfigReader::ReadMCConfig(TString config, TString fileDir)
         Message(eInfo, "Skipping files!");
         if (!fKeepAllFiles) {
           for (UInt_t iFile = 0; iFile != (*FileInfo).size(); ++iFile) {
+            Message(eDebug, "File: %i/%i comparing %s to %s", iFile, (*FileInfo).size(),
+                    ((*FileInfo)[iFile]->fFileName).Data(), (AddInDir(FileName)).Data());
             if ((*FileInfo)[iFile]->fFileName == AddInDir(FileName)) {
               Message(eInfo, "Removing file %s", (*FileInfo)[iFile]->fFileName.Data());
               delete (*FileInfo)[iFile];
