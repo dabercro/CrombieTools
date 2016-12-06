@@ -10,9 +10,7 @@
 #define CROMBIETOOLS_COMMONTOOLS_DEBUG_H
 
 #include <map>
-#include <cstdlib>
 #include <stdio.h>
-#include <string.h>
 #include <stdarg.h>
 
 FILE* debug_output;
