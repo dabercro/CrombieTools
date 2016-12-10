@@ -43,15 +43,15 @@ ROOT.gROOT.LoadMacro(CrombieDir + '/PlotTools/interface/KinematicFunctions.h')
 dependencies = { 'FlatSkimmer' :         ['GoodLumiFilter'],
                  'PlotFitParameters' :   ['Plot2D'],
                  'CorrectorApplicator' : ['Corrector'],
-                 'TmvaClassifier' :      ['TreeContainer','PlotHists'],
+                 'TmvaClassifier' :      ['TreeContainer', 'PlotHists'],
                  'PlotROC' :             ['PlotHists'],
                  'PlotStack' :           ['PlotHists'],
                  'HistAnalysis' :        ['PlotHists'],
-                 'XSecAdder' :           ['PlotHists'],
                  'FitTools' :            ['HistAnalysis'],
                  'QuickPlot' :           ['PlotHists'],
                  ## @todo The plotting of FileConfigReader should be in a separate class.
-                 'LimitTreeMaker':       ['PlotHists']
+                 'XSecAdder' :           ['PlotHists'],
+                 'LimitTreeMaker':       ['PlotHists'],
                  }
 
 loadAddOn = '+'

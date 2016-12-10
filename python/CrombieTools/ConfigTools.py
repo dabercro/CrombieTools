@@ -9,18 +9,15 @@ These are quick parsers for the FileConfigs for minor things that might be neede
 
 import os
 
-def TreeList(configs):
+def TreeList(*args):
     """Get list of tree names from a config file
 
-    @param configs are the file locations of the Configuration file to read the tree lists from
+    @param args are the file locations of the Configuration file to read the tree lists from
     """
-
-    if not isinstance(configs, list):
-        return TreeList([configs])
 
     output = []
 
-    for config in configs:
+    for config in args:
         if not os.path.exists(config):
             print '%s does not exist!' % config
             exit(40)
