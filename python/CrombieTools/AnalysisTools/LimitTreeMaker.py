@@ -13,7 +13,7 @@ def SetupFromEnv(ltm):
 
     @param ltm The LimitTreeMaker object to set up
     """
-    from ..CommonTools.FileConfigReader import SetupConfigFromEnv, SetFunctionFromEnv
+    from ..CommonTools.FileConfigReader import SetupConfigFromEnv, SetFunctionFromEnv, LoadConfig
 
     SetupConfigFromEnv(ltm)
 
@@ -21,6 +21,10 @@ def SetupFromEnv(ltm):
     SetFunctionFromEnv([
             (ltm.SetOutDirectory, 'CrombieOutLimitTreeDir'),
             ])
+
+    for region in LoadConfig.cuts.regions:
+        if os.environ.get('CrombieExcept_' + region):
+            ltm.ReadExceptionConfig(os.environ['CrombieExcept_' + region], region)
 
 
 def SetCuts(ltm, category):

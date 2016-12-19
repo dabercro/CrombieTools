@@ -245,10 +245,16 @@ PlotStack::MakeCanvas(TString FileBase, Int_t NumXBins, Double_t *XBins,
 
   for (UInt_t iHist = 0; iHist != SignalHists.size(); ++iHist) {
     Message(eDebug, "Processing Signal Hist %i of %i", iHist, SignalHists.size());
-    if (fMakeRatio)                                              // All possible signals show up on the ratio pad
-      AddRatioLine(int(AllHists.size()));
-    if (AllHists.size() > 1)
-      SignalHists[iHist]->Add(AllHists[0]);                      // Add the background to the signals
+
+    if (fAddSignal) {                            // Do some clever things if we're adding signal to backgrounds
+
+      if (fMakeRatio)                            // All possible signals show up on the ratio pad
+        AddRatioLine(int(AllHists.size()));
+      if (AllHists.size() > 1)
+        SignalHists[iHist]->Add(AllHists[0]);    // Add the background to the signals
+
+    }
+
     AllHists.push_back(SignalHists[iHist]);
     AddLegendEntry(fSignalFileInfo[iHist]->fEntry, 1, 2, fSignalFileInfo[iHist]->fColorStyle);
     Message(eDebug, "There are now %i total histograms to plot.", AllHists.size());

@@ -5,6 +5,7 @@ Holds centralized SetupConfigFromEnv functions.
 
 import os
 
+from .. import LoadConfig
 
 def SetFunctionFromEnv(targets):
     """Calls functions using environment variables
@@ -29,8 +30,6 @@ def SetupConfigFromEnv(obj):
 
     @param obj is the python object that inherits from FileConfigReader.
     """
-
-    from .. import LoadConfig
 
     obj.SetDebugLevel(int(os.environ.get('DEBUG', 1)))
 
