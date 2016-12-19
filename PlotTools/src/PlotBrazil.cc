@@ -35,20 +35,20 @@ PlotBrazil::AddPoint ( Double_t point, Double_t observed, Double_t lowest, Doubl
   Message(eDebug, "Adding point at %f, observed: %f, limit band: %f, %f, %f, %f, %f",
           point, observed, lowest, low, mid, high, highest);
 
-  Int_t point = fObserved.GetN();
+  Int_t Npoint = fObserved.GetN();
 
   // Set the single lines
 
-  fObserved.SetPoint(point, observed);
-  fExpected.SetPoint(point, mid);
+  fObserved.SetPoint(Npoint, point, observed);
+  fExpected.SetPoint(Npoint, point, mid);
 
   // Make the bands
 
-  fOneSigma.SetPoint(point, (low + high)/2);
-  fOneSigma.SetPointError(point, 0.0, (high - low)/2);
+  fOneSigma.SetPoint(Npoint, point, (low + high)/2);
+  fOneSigma.SetPointError(Npoint, 0.0, (high - low)/2);
 
-  fTwoSigma.SetPoint(point, (lowest + highest)/2);
-  fTwoSigma.SetPointError(point, 0.0, (highest - lowest)/2);
+  fTwoSigma.SetPoint(Npoint, point, (lowest + highest)/2);
+  fTwoSigma.SetPointError(Npoint, 0.0, (highest - lowest)/2);
 
   // Sort everything, just in case
 
@@ -77,7 +77,8 @@ PlotBrazil::ReadConfig(TString filename)
   while (reading) {
     configFile >> xVal >> observed >> lowest >> low >> mid >> high >> highest;
     if (highest != "")
-      AddPoint(xVal, observed, lowest, low, mid, high, highest);
+      AddPoint(xVal.Atof(), observed.Atof(), lowest.Atof(), low.Atof(),
+               mid.Atof(), high.Atof(), highest.Atof());
     else
       reading = false;
   }
@@ -88,8 +89,8 @@ PlotBrazil::ReadConfig(TString filename)
 
 //--------------------------------------------------------------------
 void
-MakePlot(TString FileBase, TString XLabel, TString YLabel,
-         Bool_t logY, Bool_t logX)
+PlotBrazil::MakePlot(TString FileBase, TString XLabel, TString YLabel,
+                     Bool_t logY, Bool_t logX)
 {
 
   std::vector<TGraph*> theLines;
