@@ -275,8 +275,6 @@ class PlotBase : virtual public Debug
 
   /// Draws the cuts lines
   void                       DrawCutLines         ();
-  /// Makes the TCanvas and sets it up if needed for certain types of plots
-  template<class T> TCanvas *CreateCanvas         ( std::vector<T*> theLines, TString XLabel, TString YLabel );
 
 };
 
@@ -448,20 +446,6 @@ PlotBase::DrawCutLines() {
 }
 
 //--------------------------------------------------------------------
-template<class T>
-TCanvas* PlotBase::CreateCanvas(std::vector<T*> theLines, TString XLabel, TString YLabel)
-{
-
-  TCanvas *output = new TCanvas(fCanvasName, fCanvasName, fCanvasWidth, fCanvasHeight);
-
-  SetupCanvas(this, theLines, output, fAxisMin, fAxisMax, XLabel, YLabel);
-
-  output->SetTitle(";" + XLabel + ";" + YLabel);
-  return output;
-
-}
-
-//--------------------------------------------------------------------
 
 /**
    The options for anything derived from a TH1 is "hist".
@@ -561,7 +545,9 @@ void PlotBase::BaseCanvas(TString FileBase, std::vector<T*> theLines,
 
   UInt_t NumPlots = theLines.size();
   // Initialize the canvas and legend
-  TCanvas *theCanvas = CreateCanvas(theLines, XLabel, YLabel);
+  TCanvas *theCanvas = new TCanvas(fCanvasName, fCanvasName, fCanvasWidth, fCanvasHeight);
+  SetupCanvas(this, theLines, theCanvas, fAxisMin, fAxisMax, XLabel, YLabel);
+  theCanvas->SetTitle(";" + XLabel + ";" + YLabel);
   TLegend *theLegend = new TLegend(l1, l2, l3, l4);
   theLegend->SetBorderSize(fLegendBorderSize);
   theLegend->SetFillStyle(0);
