@@ -41,10 +41,10 @@ class Debug
   /// Gets the verbosity for a class
   DebugLevel GetDebugLevel ()                                     { return fDebugLevel;   }
 
- protected:
   /// Sends a message if the verbosity level is appropriate
   void       Message       ( DebugLevel level, const char* format, ...);
 
+ protected:
   /// Sends the name of the function during debuggin
   void       DisplayFunc   ( const char* func );
 

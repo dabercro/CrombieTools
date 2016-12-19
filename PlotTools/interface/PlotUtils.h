@@ -7,7 +7,9 @@
 #include "TH1.h"
 #include "TGraphErrors.h"
 #include "TMath.h"
+#include "TCanvas.h"
 
+#include "Debug.h"
 #include "UncertaintyInfo.h"
 
 /** @addtogroup plotgroup */
@@ -217,6 +219,52 @@ GetRatioToPoint(std::vector<TF1*> InFuncs, Double_t RatioPoint, Double_t PointEr
   tempRatioFunc.SetParameter(0,RatioPoint);
   tempRatioFunc.SetParError(0,PointError);
   return GetRatioToLine(InFuncs,&tempRatioFunc);
+}
+
+//--------------------------------------------------------------------
+/// Holds the action of nothing for setting up most canvases
+template<class T>
+void SetupCanvas(Debug*, std::vector<T*>, TCanvas*, Double_t, Double_t, TString, TString)
+{ }
+
+//--------------------------------------------------------------------
+/// Draws a frame for canvases that will hold TGraphErrors
+template<>
+void SetupCanvas(Debug* debugger, std::vector<TGraphErrors*> theLines, TCanvas *theCanvas,
+                 Double_t fAxisMin, Double_t fAxisMax, TString XLabel, TString YLabel)
+{
+
+  // Initialize the variables that will be used for frame
+  double YMin = std::numeric_limits<double>::max();
+  double YMax = std::numeric_limits<double>::min();
+  double XMin = std::numeric_limits<double>::max();
+  double XMax = std::numeric_limits<double>::min();
+
+  for (std::vector<TGraphErrors*>::iterator iLine = theLines.begin(); iLine != theLines.end(); ++iLine ) {
+
+    double ymin_, ymax_, xmin_, xmax_;
+
+    (*iLine)->ComputeRange(xmin_, ymin_, xmax_, ymax_);
+
+    debugger->Message(Debug::eDebug, "Computed range xmin: %f, xmax: %f, ymin: %f, ymax: %f",
+                      xmin_, xmax_, ymin_, ymax_);
+
+    XMin = std::min(XMin, xmin_);
+    XMax = std::max(XMax, xmax_);
+    YMin = std::min(YMin, ymin_);
+    YMax = std::max(YMax, ymax_);
+
+    debugger->Message(Debug::eDebug, "Stored range xmin: %f, xmax: %f, ymin: %f, ymax: %f",
+                      XMin, XMax, YMin, YMax);
+
+  }
+
+  if (fAxisMin != fAxisMax) {
+    YMin = fAxisMin;
+    YMax = fAxisMax;
+  }
+
+  theCanvas->DrawFrame(XMin, YMin, XMax, YMax, ";" + XLabel + ";" + YLabel);
 }
 /* @} */
 

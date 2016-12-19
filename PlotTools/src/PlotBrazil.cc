@@ -18,6 +18,11 @@ PlotBrazil::PlotBrazil( TString fileName )
   if (fileName != "")
     ReadConfig(fileName);
 
+  AddLegendEntry("2-#sigma band", 5);
+  AddLegendEntry("1-#sigma band", 3);
+  AddLegendEntry("Expected", 1, 3, 2);
+  AddLegendEntry("Observed", 1, 3, 1);
+
 }
 
 //--------------------------------------------------------------------
@@ -40,7 +45,9 @@ PlotBrazil::AddPoint ( Double_t point, Double_t observed, Double_t lowest, Doubl
   // Set the single lines
 
   fObserved.SetPoint(Npoint, point, observed);
+  fObserved.SetPointError(Npoint, 0.0, 0.0);
   fExpected.SetPoint(Npoint, point, mid);
+  fExpected.SetPointError(Npoint, 0.0, 0.0);
 
   // Make the bands
 
@@ -93,17 +100,12 @@ PlotBrazil::MakePlot(TString FileBase, TString XLabel, TString YLabel,
                      Bool_t logY, Bool_t logX)
 {
 
-  std::vector<TGraph*> theLines;
+  std::vector<TGraphErrors*> theLines;
 
   fTwoSigma.SetFillColor(5);
   fOneSigma.SetFillColor(3);
   fTwoSigma.SetFillStyle(1001);
   fOneSigma.SetFillStyle(1001);
-
-  fExpected.SetLineStyle(2);
-  fObserved.SetLineStyle(1);
-  fExpected.SetLineWidth(2);
-  fObserved.SetLineWidth(2);
 
   theLines.push_back(&fTwoSigma);
   theLines.push_back(&fOneSigma);

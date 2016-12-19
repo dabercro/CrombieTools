@@ -142,6 +142,10 @@ echo "Making cutflow."
 ./cutflow.py
 check
 
+echo "Making brazilian plots."
+./Brazil.py
+check
+
 cd $here/docs
 
 echo "Trying to make docs."

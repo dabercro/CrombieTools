@@ -118,6 +118,16 @@ optional arguments:
   </tr>
   <tr>
     <td align="left" valign="top">
+      <code>localslim</code>
+    </td>
+    <td align="left">
+      This tools allows for running the [slimmer](@ref slimming) interactively in a shell.
+      Like `submitlxbatch`, this sources a local [CrombieSlimmingConfig.sh](@ref envconfig) to set a number of environment variables.
+      `crombie terminalslim` also comes with the same subcommands as `crombie submitlxbatch`, except for `test`.
+    </td>
+  </tr>
+  <tr>
+    <td align="left" valign="top">
       <code>maketree</code>
     </td>
     <td align="left">
@@ -191,16 +201,6 @@ optional arguments:
           </td>
         </tr>
       </table>
-    </td>
-  </tr>
-  <tr>
-    <td align="left" valign="top">
-      <code>terminalslim</code>
-    </td>
-    <td align="left">
-      This tools allows for running the [slimmer](@ref slimming) interactively in a shell.
-      Like `submitlxbatch`, this sources a local [CrombieSlimmingConfig.sh](@ref envconfig) to set a number of environment variables.
-      `crombie terminalslim` also comes with the same subcommands as `crombie submitlxbatch`, except for `test`.
     </td>
   </tr>
   <tr>

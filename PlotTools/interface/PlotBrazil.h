@@ -40,8 +40,8 @@ class PlotBrazil : public PlotBase
  private:
   TGraphErrors          fOneSigma;        ///< The TGraph holding the $1\sigma$ band
   TGraphErrors          fTwoSigma;        ///< The TGraph holding the $2\sigma$ band
-  TGraph                fExpected;        ///< The TGraph showing the expected limit
-  TGraph                fObserved;        ///< The TGraph showing the observed limit
+  TGraphErrors          fExpected;        ///< The TGraph showing the expected limit
+  TGraphErrors          fObserved;        ///< The TGraph showing the observed limit
 
   ClassDef(PlotBrazil, 1)
 };

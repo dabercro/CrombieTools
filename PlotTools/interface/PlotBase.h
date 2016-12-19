@@ -12,6 +12,9 @@
 
 #include <vector>
 #include <iostream>
+#include <type_traits>
+#include <algorithm>
+#include <limits>
 
 #include "TObject.h"
 #include "TStyle.h"
@@ -262,12 +265,8 @@ class PlotBase : virtual public Debug
   template<class T>  void    LineDrawing          ( std::vector<T*> theLines, Int_t index, Bool_t same );
   std::vector<TObject*>      fDeleteThese;               ///< Vector of object pointers to free memory at the end
 
-  /// Options for histograms
-  TString                    GetOpts              ( TH1* )          { return "hist";      }
-  /// Options for TGraphs
-  TString                    GetOpts              ( TGraph* )       { return "";          }
-  /// Options for TGraphErrors
-  TString                    GetOpts              ( TGraphErrors* ) { return "a3";        }
+  /// Options for lines
+  template<class T> TString  GetOpts              ( T* );
 
   std::vector<Double_t>      fCutLines;                  ///< Locations for dashed lines for cuts
   Color_t                    fCutColor = kRed;           ///< Color of the cuts lines
@@ -278,6 +277,8 @@ class PlotBase : virtual public Debug
 
   /// Draws the cuts lines
   void                       DrawCutLines         ();
+  /// Makes the TCanvas and sets it up if needed for certain types of plots
+  template<class T> TCanvas *CreateCanvas         ( std::vector<T*> theLines, TString XLabel, TString YLabel );
 
 };
 
@@ -449,9 +450,41 @@ PlotBase::DrawCutLines() {
 }
 
 //--------------------------------------------------------------------
+template<class T>
+TCanvas* PlotBase::CreateCanvas(std::vector<T*> theLines, TString XLabel, TString YLabel)
+{
+
+  TCanvas *output = new TCanvas(fCanvasName, fCanvasName, fCanvasWidth, fCanvasHeight);
+
+  SetupCanvas(this, theLines, output, fAxisMin, fAxisMax, XLabel, YLabel);
+
+  output->SetTitle(";" + XLabel + ";" + YLabel);
+  return output;
+
+}
+
+//--------------------------------------------------------------------
 
 /**
-  This is used instead of Draw for lines so that the draw options are set in one place
+   The options for anything derived from a TH1 is "hist".
+   The optsion for anything derived from a TGraphErrors is "3".
+*/
+
+template<class T>
+TString PlotBase::GetOpts(T*)
+{
+  if (std::is_base_of<TH1, T>::value)
+    return "hist";
+  else if (std::is_base_of<TGraph, T>::value)
+    return "l3";
+  else
+    return "";
+}
+
+//--------------------------------------------------------------------
+
+/**
+   This is used instead of Draw for lines so that the draw options are set in one place
 */
 
 template<class T>
@@ -467,16 +500,18 @@ void PlotBase::LineDrawing(std::vector<T*> theLines, Int_t index, Bool_t same)
     fCutYMax = theLines[index]->GetMaximum();
   }
 
-  TString options = GetOpts(theLines[0]);
+  TString options = GetOpts(theLines[index]);
 
   Message(eDebug, "Plotting: %i, Data Index: %i, Options: %s",
           index, fDataIndex, options.Data());
+  Message(eDebug, "Line color: %i", theLines[index]->GetLineColor());
 
   if (index == fDataIndex)
     options = "PE";
   if (options != "")
     options += ",";
-  options += "same";
+  if (!std::is_base_of<TGraph, T>::value)
+    options += "same";
 
   if (fRatioIndex != -1 && index != fDataIndex) {
     T* tempLine = reinterpret_cast<T*>(theLines[fRatioIndex]->Clone());
@@ -499,6 +534,7 @@ void PlotBase::LineDrawing(std::vector<T*> theLines, Int_t index, Bool_t same)
 
   else {
     Message(eDebug, "Not drawing error separately.");
+    Message(eDebug, "Full options: %s", options.Data());
     theLines[index]->Draw(options);
   }
 }
@@ -527,8 +563,7 @@ void PlotBase::BaseCanvas(TString FileBase, std::vector<T*> theLines,
 
   UInt_t NumPlots = theLines.size();
   // Initialize the canvas and legend
-  TCanvas *theCanvas = new TCanvas(fCanvasName, fCanvasName, fCanvasWidth, fCanvasHeight);
-  theCanvas->SetTitle(";"+XLabel+";"+YLabel);
+  TCanvas *theCanvas = CreateCanvas(theLines, XLabel, YLabel);
   TLegend *theLegend = new TLegend(l1, l2, l3, l4);
   theLegend->SetBorderSize(fLegendBorderSize);
   theLegend->SetFillStyle(0);
