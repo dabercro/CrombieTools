@@ -13,8 +13,6 @@
 #include <vector>
 #include <iostream>
 #include <type_traits>
-#include <algorithm>
-#include <limits>
 
 #include "TObject.h"
 #include "TStyle.h"

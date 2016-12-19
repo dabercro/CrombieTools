@@ -1,6 +1,9 @@
 #ifndef CROMBIETOOLS_PLOTTOOLS_PLOTUTILS_H
 #define CROMBIETOOLS_PLOTTOOLS_PLOTUTILS_H
 
+#include <algorithm>
+#include <limits>
+
 #include "TFile.h"
 #include "TF1.h"
 #include "TH1D.h"
