@@ -52,12 +52,14 @@ void HistWriter::MakeHist(TString configName)
       reading = false;
   }
 
-  TFile* outFile = new TFile(fFileName,"UPDATE");
-  TH1F*  outHist = new TH1F(fHistName,fHistName,binVals.size(),xVals.data());
+  TFile* outFile = new TFile(fFileName, "UPDATE");
+  TH1F*  outHist = new TH1F(fHistName, fHistName, binVals.size(), xVals.data());
 
   for (UInt_t iBin = 0; iBin != binVals.size(); ++iBin)
     outHist->SetBinContent(iBin + 1, binVals[iBin]);
 
-  outFile->WriteTObject(outHist,fHistName,"Overwrite");
+  outFile->WriteTObject(outHist, fHistName, "Overwrite");
   outFile->Close();
+
+  configFile.close();
 }

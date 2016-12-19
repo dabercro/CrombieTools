@@ -7,40 +7,21 @@ from .. import Load, DirFromEnv
 
 newLimitTreeMaker = Load('LimitTreeMaker')
 
+
 def SetupFromEnv(ltm):
+    """A function that sets up the LimitTreeMaker after sourcing a config file
+
+    @param ltm The LimitTreeMaker object to set up
     """
-    @todo place the FileConfigReader functions into its own setup function for other classes to call
-    """
-    from .. import LoadConfig
+    from ..CommonTools.FileConfigReader import SetupConfigFromEnv, SetFunctionFromEnv
 
-    if os.path.exists('CrombieAnalysisConfig.sh'):
-        DirFromEnv('CrombieOutLimitTreeDir')
-        def readMC(config):
-            ltm.ReadMCConfig(config,ltm.kBackground)
-        def readSignal(config):
-            ltm.ReadMCConfig(config,ltm.kSignal)
+    SetupConfigFromEnv(ltm)
 
-        targets = [[ltm.SetLuminosity, 'CrombieLuminosity'],
-                   [ltm.SetInDirectory, 'CrombieInFilesDir'],
-                   [ltm.SetOutDirectory, 'CrombieOutLimitTreeDir'],
-                   [readMC, 'CrombieMCConfig'],
-                   [readSignal, 'CrombieSignalConfig']
-                   ]
-        for target in targets:
-            if os.environ.get(target[1]) == None:
-                print 'No ' + target[1] + ' in config'
-            else:
-                try:
-                    target[0](os.environ[target[1]])
-                except:
-                    target[0](float(os.environ[target[1]]))
+    DirFromEnv('CrombieOutLimitTreeDir')
+    SetFunctionFromEnv([
+            (ltm.SetOutDirectory, 'CrombieOutLimitTreeDir'),
+            ])
 
-        for region in LoadConfig.cuts.regions:
-            if os.environ.get('CrombieExcept_' + region) != None:
-                ltm.ReadExceptionConfig(os.environ['CrombieExcept_' + region],region)
-
-    else:
-        print 'Could not find CrombieAnalysisConfig.sh'
 
 def SetCuts(ltm, category):
     from .. import LoadConfig

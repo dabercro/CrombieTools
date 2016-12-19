@@ -302,7 +302,87 @@ After running `FlatSkimmer.sh`, you should have your small ntuples ready to work
 
 The next subdirectory of a workspace is the plotting directory.
 This comes with it's own list of environment variables.
-@todo Make the plotter environment variables
+
+<table cellpadding=20>
+  <tr>
+    <td align="left" valign="top">
+      <code>CrombieMCConfig</code>
+    </td>
+    <td align="left">
+      This names the file that will be read to set the backgrounds for plots,
+      limit trees, datacards, etc.
+      See the [MC Configuration](@ref formatmc) for
+      details on how to set this up this background configuration.
+    </td>
+  </tr>
+  <tr>
+    <td align="left" valign="top">
+      <code>CrombieSignalConfig</code>
+    </td>
+    <td align="left">
+      This variable names a file like `CrombieMCConfig`,
+      but files listed in the named location are assumed to be
+      signal files, not background files.
+    </td>
+  </tr>
+  <tr>
+    <td align="left" valign="top">
+      <code>CrombieExcept_*</code>
+    </td>
+    <td align="left">
+      This variable names a region in the `*` location,
+      and this variable points to a file that designates replacements to
+      the background configuration for the named region.
+      See the instructions for [Adjustment Configuration](@ref formatmc) below
+      to set up this file correctly.
+    </td>
+  </tr>
+  <tr>
+    <td align="left" valign="top">
+      <code>CrombieLuminosity</code>
+    </td>
+    <td align="left">
+      This variable just gives the luminosity used to make plots and limit workspaces.
+    </td>
+  </tr>
+  <tr>
+    <td align="left" valign="top">
+      <code>CrombieInFilesDir</code>
+    </td>
+    <td align="left">
+      This variable names the directory containing the ntuple files that are being used
+      for plotting and tree making.
+      It should usually match the latest value you had for `CrombieSkimDir`.
+    </td>
+  </tr>
+  <tr>
+    <td align="left" valign="top">
+      <code>CrombieOutPlotDir</code>
+    </td>
+    <td align="left">
+      This variable names the directory where an automatically configured PlotStack object
+      will place all of the plots.
+    </td>
+  </tr>
+  <tr>
+    <td align="left" valign="top">
+      <code>CrombieOutLimitTreeDir</code>
+    </td>
+    <td align="left">
+      This variable names the directory where an automatically configured LimitTreeMaker object
+      will place all of the tree files.
+    </td>
+  </tr>
+  <tr>
+    <td align="left" valign="top">
+      <code>CrombieCutsFile</code>
+    </td>
+    <td align="left">
+      This file gives the name of the python file to be loaded as the function `CrombieTools.LoadConfig.cuts`
+      when the user imports CrombieTools.LoadConfig in a working directory with this environment variable set.
+    </td>
+  </tr>
+</table>
 
 # Formatting MC Configuration Files {#formatmc}
 
@@ -395,8 +475,6 @@ After reading one config, just read the adjusting configuration after before mak
 
 MC samples that are created using different generators or hadronizers, etc. can be easily merged together without changing the configured cross section.
 The two different samples are weighted in such as way as to minimize the total statistical uncertainty.
-
-@todo add the math here.
 
 To merge multiple samples, simply start the process by making a lone line.
 

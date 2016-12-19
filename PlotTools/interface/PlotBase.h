@@ -263,9 +263,11 @@ class PlotBase : virtual public Debug
   std::vector<TObject*>      fDeleteThese;               ///< Vector of object pointers to free memory at the end
 
   /// Options for histograms
-  TString                    GetOpts              ( TH1* )         { return "hist";      }
+  TString                    GetOpts              ( TH1* )          { return "hist";      }
   /// Options for TGraphs
-  TString                    GetOpts              ( TGraph* )      { return "";          }
+  TString                    GetOpts              ( TGraph* )       { return "";          }
+  /// Options for TGraphErrors
+  TString                    GetOpts              ( TGraphErrors* ) { return "a3";        }
 
   std::vector<Double_t>      fCutLines;                  ///< Locations for dashed lines for cuts
   Color_t                    fCutColor = kRed;           ///< Color of the cuts lines
