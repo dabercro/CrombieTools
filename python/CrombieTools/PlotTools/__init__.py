@@ -12,5 +12,5 @@ def AddOutDir(basename):
     """
 
     from .. import DirFromEnv
-    DirFromEnv('CrombieOutPlotDir')
+    DirFromEnv('CrombieOutPlotDir', 'plots')
     return os.path.join(os.environ.get('CrombieOutPlotDir', 'plots'), basename)

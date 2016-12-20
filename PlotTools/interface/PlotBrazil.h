@@ -38,8 +38,8 @@ class PlotBrazil : public PlotBase
                                             Bool_t logY = false, Bool_t logX = false );
 
  private:
-  TGraphErrors          fOneSigma;        ///< The TGraph holding the $1\sigma$ band
-  TGraphErrors          fTwoSigma;        ///< The TGraph holding the $2\sigma$ band
+  TGraphErrors          fOneSigma;        ///< The TGraph holding the 1-sigma band
+  TGraphErrors          fTwoSigma;        ///< The TGraph holding the 2-sigma band
   TGraphErrors          fExpected;        ///< The TGraph showing the expected limit
   TGraphErrors          fObserved;        ///< The TGraph showing the observed limit
 

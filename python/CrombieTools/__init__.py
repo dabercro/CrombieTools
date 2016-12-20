@@ -91,15 +91,19 @@ def Load(className):
 
     return getattr(ROOT, className)
 
-def DirFromEnv(envVar):
-    """ Creates a directory stored in an environment variable.
+def DirFromEnv(envVar, default='tmp_dir'):
+    """Creates a directory stored in an environment variable.
 
     Generally does not need to be called by the user. Multiple submodules make use of this command.
     @param envVar is the name of the environment variable containing a directory name.
+    @param default is the default value of the directory location if the environment variable is not filled.
     """
-    if type(os.environ.get(envVar)) == str:
-        if not os.path.exists(os.environ[envVar]):
-            os.makedirs(os.environ[envVar])
+
+    dir = os.environ.get(envVar, default)
+
+    if type(dir) == str:
+        if not dir:
+            os.makedirs(dir)
 
 def Nminus1Cut(inCut, varToRemove, returnCuts=False):
     """ A function for getting N - 1 plots.
