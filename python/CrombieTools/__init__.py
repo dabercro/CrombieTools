@@ -99,11 +99,10 @@ def DirFromEnv(envVar, default='tmp_dir'):
     @param default is the default value of the directory location if the environment variable is not filled.
     """
 
-    dir = os.environ.get(envVar, default)
+    directory = os.environ.get(envVar, default)
 
-    if type(dir) == str:
-        if not dir:
-            os.makedirs(dir)
+    if not os.path.exists(directory):
+        os.makedirs(directory)
 
 def Nminus1Cut(inCut, varToRemove, returnCuts=False):
     """ A function for getting N - 1 plots.
