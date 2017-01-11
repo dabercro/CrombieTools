@@ -27,6 +27,7 @@ CutflowMaker::GetCutflow(UInt_t index)
     for (UInt_t iCut = 0; iCut != fCuts.size(); ++iCut) {
 
       tempFormula = new TTreeFormula(fCutNames[iCut], fCuts[iCut], inTree);
+      tempFormula->SetQuickLoad(true);
       formulae.push_back(tempFormula);
       fYields.push_back(0);
 

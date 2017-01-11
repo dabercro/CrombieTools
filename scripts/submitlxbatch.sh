@@ -36,7 +36,7 @@ fi
 
 # Record the submission in this log file
 
-logFile=`pwd`/LxbatchFileChecks.log
+logFile=$(pwd)/LxbatchFileChecks.log
 sub=""
 
 if [ "$fresh" != "" ]
@@ -46,9 +46,9 @@ then
 
 fi
 
-submitLog="Ran crombie submitlxbatch$sub at "`date -u`
+submitLog="Ran crombie submitlxbatch$sub at "$(date -u)
 export subLogCharNum=${#submitLog}
-delim=`perl -e 'print "=" x $ENV{'subLogCharNum'}';`
+delim=$(perl -e 'print "=" x $ENV{'subLogCharNum'}';)
 
 echo "$delim" >> $logFile
 echo "$submitLog" >> $logFile
@@ -114,7 +114,7 @@ ranOnFile=0                            # Keep track on if files are submitted or
 if [ "$fresh" != "hadd" ]
 then
 
-    rootNames=`ls $CrombieTempDir/$CrombieFileBase\_*_*.txt | sed 's/.txt//'`
+    rootNames=$(ls $CrombieTempDir/$CrombieFileBase\_*_*.txt | sed 's/.txt//')
 
     for outFile in $rootNames
     do
@@ -123,7 +123,7 @@ then
         then
 
             echo "Making: $outFile"
-            command="bsub -q $CrombieQueue -n $CrombieNBatchProcs -o bout/out_%J_$outFile.log crombie dojob $outFile"
+            command="bsub -q $CrombieQueue -n $CrombieNBatchProcs -o bout/out_%J_$(basename $outFile).log crombie dojob $outFile"
 
             if [ "$fresh" = "test" ]   # Echo the command if a test
             then                       #   otherwise, execute it

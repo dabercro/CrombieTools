@@ -99,6 +99,8 @@ def DirFromEnv(envVar, default='tmp_dir'):
     @param default is the default value of the directory location if the environment variable is not filled.
     """
 
+    import LoadConfig
+
     directory = os.environ.get(envVar, default)
 
     if not os.path.exists(directory):
