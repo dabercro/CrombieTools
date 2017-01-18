@@ -247,7 +247,7 @@ if [ $? -ne 0 ]                              # Check for success
 then
 
     echo "Copying failed! Check your quota." >> $ERRORLOG
-    echo "Check output in job bout/out.$LSB_JOBID" >> $ERRORLOG
+    echo "Check output in job bout/out*$LSB_JOBID.log" >> $ERRORLOG
     echo "" >> $ERRORLOG
 
 fi
