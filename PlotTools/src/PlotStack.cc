@@ -47,6 +47,8 @@ PlotStack::MakeCanvas(TString FileBase, Int_t NumXBins, Double_t *XBins,
   if (YLabel == "") {
     if (fEventsPer == 0)
       YLabel = "Events/Bin";
+    else if (fEventsPer >= 10)
+      YLabel.Form("Events/%.0f", fEventsPer);
     else if (fEventsPer < 1.0)
       YLabel.Form("Events/%.2f", fEventsPer);
     else
@@ -296,9 +298,16 @@ void
 PlotStack::MakeCanvas(TString FileBase, Int_t NumXBins, Double_t MinX, Double_t MaxX,
                       TString XLabel, TString YLabel, Bool_t logY)
 {
+  bool reset_per = (fEventsPer == 0);
+  if (reset_per)
+    SetEventsPer((MaxX - MinX)/NumXBins);
+
   Double_t XBins[NumXBins+1];
-  ConvertToArray(NumXBins,MinX,MaxX,XBins);
-  MakeCanvas(FileBase,NumXBins,XBins,XLabel,YLabel,logY);
+  ConvertToArray(NumXBins, MinX, MaxX, XBins);
+  MakeCanvas(FileBase, NumXBins, XBins, XLabel, YLabel, logY);
+
+  if (reset_per)
+    SetEventsPer(0);
 }
 
 //--------------------------------------------------------------------
