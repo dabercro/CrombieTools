@@ -31,11 +31,11 @@ class PlotStack : public FileConfigReader
 
   /// Choose the binning of your plots and make then.
   void MakeCanvas        ( TString FileBase, Int_t NumXBins, Double_t *XBins,
-                           TString XLabel, TString YLabel, Bool_t logY = false );
+                           TString XLabel, TString YLabel = "", Bool_t logY = false );
 
   /// Binning with fixed width
   void MakeCanvas        ( TString FileBase, Int_t NumXBins, Double_t MinX, Double_t MaxX,
-                           TString XLabel, TString YLabel, Bool_t logY = false );
+                           TString XLabel, TString YLabel = "", Bool_t logY = false );
 
   /**
      Sets the legend entry that will be on the top of the stack.

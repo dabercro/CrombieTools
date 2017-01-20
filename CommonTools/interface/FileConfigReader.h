@@ -490,7 +490,7 @@ void FileConfigReader::ReadMCConfig(TString config, TString fileDir)
         else if (ColorStyleEntry == "rgb") {
 
           ++newColors;
-          ColorStyleEntry = TString::Format("%i",5000 + newColors);
+          ColorStyleEntry = TString::Format("%i", 5000 + newColors);
           currColorStyle = ColorStyleEntry;
           configFile >> red >> green >> blue;
           TColor* setColor = new TColor(ColorStyleEntry.Atoi(),red.Atof()/255,green.Atof()/255,blue.Atof()/255);

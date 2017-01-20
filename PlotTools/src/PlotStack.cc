@@ -44,6 +44,15 @@ PlotStack::MakeCanvas(TString FileBase, Int_t NumXBins, Double_t *XBins,
   Message(eInfo, "Labeled     :   %s", XLabel.Data());
   Message(eInfo, "With cut    :   %s", fDefaultCut.GetTitle());
 
+  if (YLabel == "") {
+    if (fEventsPer == 0)
+      YLabel = "Events/Bin";
+    else if (fEventsPer < 1.0)
+      YLabel.Form("Events/%.2f", fEventsPer);
+    else
+      YLabel.Form("Events/%.1f", fEventsPer);
+  }
+
   SetLumiLabel(float(fLuminosity/1000.0));
   ResetLegend();
 
