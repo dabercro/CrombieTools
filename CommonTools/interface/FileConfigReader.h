@@ -448,6 +448,7 @@ void FileConfigReader::ReadMCConfig(TString config, TString fileDir)
     } else {
 
       configFile >> FileName;
+      Message(eDebug, "FileName:        %s", FileName.Data());
 
       if (LimitTreeName == "skip") {
 
@@ -580,7 +581,10 @@ FileConfigReader::GetHistList(Int_t NumXBins, Double_t *XBins, std::vector<TStri
       if ((*theFileInfo)[iFile]->fFileName != theFileNames[iFileName])
         continue;
 
-      theHists[iFileName]->Scale((*theFileInfo)[iFile]->fXSecWeight);
+      if ((*theFileInfo)[iFile]->fXSecWeight > 0)
+        theHists[iFileName]->Scale((*theFileInfo)[iFile]->fXSecWeight);
+      else
+        theHists[iFileName]->Scale(fLuminosity);
 
       ++iFileName;
     }

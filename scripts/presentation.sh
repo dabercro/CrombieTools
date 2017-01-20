@@ -17,7 +17,7 @@ fi
 
 if [ "$date" = "" ]
 then
-    date=`CROMBIEDATE`
+    date=$(CROMBIEDATE)
 fi
 
 if [ -d $docs/$date ]
@@ -32,6 +32,8 @@ mkdir $target
 cp $docs/presentation.tex $target/$USER\_${projName##*/}\_$date.tex
 mkdir $target/figs
 cp $docs/download.sh $target/figs/.
+
+cd $target
 
 echo "All done!"
 echo "Don't forget to tag the repository after the presentation is complete..."
