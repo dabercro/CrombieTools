@@ -123,7 +123,7 @@ def MakePlots(categories, regions, exprArgs, overwrite=True, parallel=True, show
                     Key words supported in dictionary and types:
                         - data_expr takes a string (default '')
                         - cut_lines takes a list of floats (default from Nminus1Cut)
-                        - var_name takes a string (default variable in exprArgs
+                        - var_name takes a string (default variable in exprArgs)
                         - doNminus1 takes a bool (default True)
     @param overwrite overwrites old plots with the same name if set to true.
                      Otherwise, those plots are skipped.
