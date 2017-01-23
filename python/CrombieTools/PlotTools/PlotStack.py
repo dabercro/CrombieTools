@@ -98,8 +98,7 @@ class ParallelStackContainer:
         if self.LimitHistsDir:
             self.Plotter.SetDumpFileName(os.path.join(self.LimitHistsDir, '%s_%s.root' % (region, expr[0])))
 
-
-        expr[0] = '_'.join([category, region, expr[0]])
+        expr[0] = '_'.join([category, region, kwargs.get('var_name', expr[0])])
 
         if (self.Overwrite or
             not os.path.exists(str(self.Plotter.GetOutDirectory()) + expr[0] + '.pdf')):
@@ -122,8 +121,10 @@ def MakePlots(categories, regions, exprArgs, overwrite=True, parallel=True, show
                     If the first argument is actually a dictionary, it will be passed basically as
                     key word arguments to ParallelStackContainer.MakePlot() instead.
                     Key words supported in dictionary and types:
-                        - data_expr takes a string
-                        - cut_lines takes a list of floats
+                        - data_expr takes a string (default '')
+                        - cut_lines takes a list of floats (default from Nminus1Cut)
+                        - var_name takes a string (default variable in exprArgs
+                        - doNminus1 takes a bool (default True)
     @param overwrite overwrites old plots with the same name if set to true.
                      Otherwise, those plots are skipped.
     @param parallel determines whether or not to run the plots in a Multiprocess fashion.
