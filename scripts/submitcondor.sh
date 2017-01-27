@@ -12,7 +12,7 @@
 
 export fresh=$1
 
-config=CrombieSubmitConfig.sh                      # Search for the configuration
+config=CrombieSubmitConfig.sh                       # Search for the configuration
 
 if [ ! -f $config ]
 then

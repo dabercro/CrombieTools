@@ -16,6 +16,6 @@ do
     filename=${file##*/}
     classname=${filename%%_cc.so}
 
-    ln -s $file lib${classname}.so
+    test -f lib${classname}.so || ln -s $file lib${classname}.so
 
 done
