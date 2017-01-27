@@ -230,6 +230,7 @@ do
 
     stripleading="${dir#/}"
     reasonableName="${stripleading%%/*}"
+    reasonableName="${reasonableName%%+*}"      # For SubMIT-style dataset names
 
     if [ "$reasonableName" != "$lastDir" ]      # Build the file that hadds everything
     then
