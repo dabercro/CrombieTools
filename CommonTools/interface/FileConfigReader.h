@@ -597,8 +597,12 @@ FileConfigReader::GetHistList(Int_t NumXBins, Double_t *XBins, std::vector<TStri
 
       if ((*theFileInfo)[iFile]->fXSecWeight > 0)
         theHists[iFileName]->Scale((*theFileInfo)[iFile]->fXSecWeight);
-      else
-        theHists[iFileName]->Scale(fLuminosity);
+      else {
+        Double_t scale = ((*theFileInfo)[iFile]->fXSecWeight)/(-1.0);
+        Message(eDebug, "Weight: %f, Scale from MCConfig: %f",
+                ((*theFileInfo)[iFile]->fXSecWeight), scale);
+        theHists[iFileName]->Scale(scale);
+      }
 
       ++iFileName;
     }
@@ -745,12 +749,19 @@ void
 FileConfigReader::ScaleBackgrounds(TString entry, Double_t scale, SearchBy search, FileType type)
 {
 
+  DisplayFunc(__func__);
+
+  Message(eDebug, "Scaling %s by %f", entry.Data(), scale);
+
   std::vector<FileInfo*>* fileInfo = GetFileInfo(type);
   for (std::vector<FileInfo*>::iterator iInfo = fileInfo->begin(); iInfo != fileInfo->end(); ++iInfo) {
 
     TString match = (search == kLimitName) ? (*iInfo)->fTreeName : (*iInfo)->fEntry;
-    if (match == entry)
-      (*iInfo)->fXSec *= (1.0 + scale);
+    if (match == entry) {
+      Message(eDebug, "File %s XSec before %f", (*iInfo)->fFileName.Data(), (*iInfo)->fXSecWeight);
+      (*iInfo)->fXSecWeight *= (1.0 + scale);
+      Message(eDebug, "File %s XSec after  %f", (*iInfo)->fFileName.Data(), (*iInfo)->fXSecWeight);
+    }
 
   }
 
