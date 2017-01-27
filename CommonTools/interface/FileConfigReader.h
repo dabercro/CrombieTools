@@ -121,6 +121,20 @@ class FileConfigReader : public InOutDirectoryHolder, public PlotHists
   /// Use this to set a different expression for data from MC
   inline    void       SetDataExpression    ( TString expr )                            { fDataExpression = expr;  }
 
+  /**
+     Use this function to replace the Legend Entries of the FileInfo with the Limit Tree Names.
+     Note that this destroys the known Legend Entries.
+     You should also call FileConfigReader::SetLegendColor for each entry that you want to
+     ensure consistency between your plots.
+  */
+  void                 NameTreesAfterLimits ( FileType type = kBackground );
+
+  /// Sets the FileInfo with the matching Legend Names to the new colors
+  void                 SetLegendColor       ( TString entry, Int_t color, FileType type = kBackground );
+
+  /// Scales the cross section of the matching MC samples by a factor of 1.0 + scale, destroying the old cross section in the process.
+  void                 ScaleBackgrounds     ( TString entry, Double_t scale, SearchBy search = kLimitName, FileType type = kBackground );
+
  protected:
   Double_t   fLuminosity = 2000.0;                        ///< The Luminosity in inverse pb
   TString    fDataTreeName = "data";                      ///< The base name of the data in a limit tree
@@ -703,6 +717,42 @@ FileConfigReader::CloseFiles()
   fFiles.clear();
   fInTrees.clear();
   fAllFiles.clear();
+
+}
+
+//--------------------------------------------------------------------
+void
+FileConfigReader::NameTreesAfterLimits (FileType type)
+{
+  std::vector<FileInfo*>* fileInfo = GetFileInfo(type);
+  for (std::vector<FileInfo*>::iterator iInfo = fileInfo->begin(); iInfo != fileInfo->end(); ++iInfo)
+    (*iInfo)->fEntry = (*iInfo)->fTreeName;
+}
+
+//--------------------------------------------------------------------
+void
+FileConfigReader::SetLegendColor(TString entry, Int_t color, FileType type)
+{
+  std::vector<FileInfo*>* fileInfo = GetFileInfo(type);
+  for (std::vector<FileInfo*>::iterator iInfo = fileInfo->begin(); iInfo != fileInfo->end(); ++iInfo) {
+    if (entry == (*iInfo)->fEntry)
+      (*iInfo)->fColorStyle = color;
+  }
+}
+
+//--------------------------------------------------------------------
+void
+FileConfigReader::ScaleBackgrounds(TString entry, Double_t scale, SearchBy search, FileType type)
+{
+
+  std::vector<FileInfo*>* fileInfo = GetFileInfo(type);
+  for (std::vector<FileInfo*>::iterator iInfo = fileInfo->begin(); iInfo != fileInfo->end(); ++iInfo) {
+
+    TString match = (search == kLimitName) ? (*iInfo)->fTreeName : (*iInfo)->fEntry;
+    if (match == entry)
+      (*iInfo)->fXSec *= (1.0 + scale);
+
+  }
 
 }
 

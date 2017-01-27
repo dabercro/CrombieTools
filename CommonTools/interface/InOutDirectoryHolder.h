@@ -11,7 +11,7 @@
 #include "InDirectoryHolder.h"
 
 /**
-   @ingroup commongroup
+n   @ingroup commongroup
    @class InOutDirectoryHolder
    This class is used to facilitate writing files to a directory.
 
@@ -44,7 +44,7 @@ class InOutDirectoryHolder : public InDirectoryHolder
   TString           AddOutDir           ( TString FileName ) const;
 
  private:
-  TString    fOutDirectory = "";        ///< Stores the output directory
+  TString    fOutDirectory = "";        ///< Stores the output directory, and always ends with a '/'
   Bool_t     fOverwriteFiles = true;    ///< Sets whether or not to overwrite output files
 };
 

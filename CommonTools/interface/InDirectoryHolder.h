@@ -60,7 +60,7 @@ class InDirectoryHolder : virtual public Debug
   TString    AddInDir                  ( TString FileName );
 
  private:
-  TString    fInDirectory = "";        ///< Stores the input directory
+  TString    fInDirectory = "";        ///< Stores the input directory, and always ends with a '/'
 };
 
 //--------------------------------------------------------------------
