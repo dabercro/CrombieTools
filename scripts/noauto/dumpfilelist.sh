@@ -175,8 +175,8 @@ _CheckCount () {
     then
 
         fileInCount=0
-        count=$((count + 1))
         currentConfig=$CrombieTempDir/$CrombieFileBase\_$reasonableName\_$count.txt
+        count=$((count + 1))
         > $currentConfig
 
     fi
