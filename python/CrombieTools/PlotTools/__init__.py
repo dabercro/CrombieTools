@@ -6,7 +6,7 @@ tdrStyle.setTDRStyle()
 __all__ = ['Plot2D', 'PlotBrazil', 'PlotFitParameters', 'PlotHists', 'PlotROC', 'PlotStack', 'PlotUtils', 'QuickPlot']
 
 def AddOutDir(basename):
-    """A function to prepend the correct output directory and make the direcotry, if needed
+    """A function to prepend the correct output directory and make the directory, if needed
 
     @param basename is the raw basename that is to be given to the output plot
     """

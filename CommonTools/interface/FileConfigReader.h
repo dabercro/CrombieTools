@@ -265,22 +265,27 @@ FileConfigReader::ReturnTreeNames(FileType type)
 std::vector<TString>
 FileConfigReader::ReturnFileNames(FileType type, TString matchName, SearchBy search, Bool_t match)
 {
+  DisplayFunc(__func__);
+
+  Message(eDebug, "Searching for files that match %s", matchName.Data());
   std::vector<TString> output;
   std::vector<FileInfo*> *fileInfo = GetFileInfo(type);
 
   for (std::vector<FileInfo*>::iterator iInfo = fileInfo->begin(); iInfo != fileInfo->end(); ++iInfo) {
 
     if (search == kLimitName) {
-
+      Message(eDebug, "Comparing to Limit Tree %s", (*iInfo)->fTreeName.Data());
       if (matchName != "" && (((*iInfo)->fTreeName != matchName && match) || ((*iInfo)->fTreeName == matchName && !match)))
         continue;
 
     } else if (search == kLegendEntry) {
-
+      Message(eDebug, "Comparing to Legend Entry %s", (*iInfo)->fEntry.Data());
       if (matchName != "" && (((*iInfo)->fEntry != matchName && match) || ((*iInfo)->fEntry == matchName && !match)))
         continue;
 
     }
+
+    Message(eDebug, "Found a match! Adding file %s", (*iInfo)->fFileName.Data());
 
     output.push_back((*iInfo)->fFileName);
 
@@ -536,6 +541,8 @@ FileConfigReader::GetHistList(Int_t NumXBins, Double_t *XBins, std::vector<TStri
 {
 
   DisplayFunc(__func__);
+
+  Message(eDebug, "Number of Files to plot: %i", FileList.size());
 
   std::vector<TString> theFileNames = FileList;
   OpenFiles(theFileNames);

@@ -32,7 +32,10 @@ PlotHists::AddUncertainty(UInt_t index, TString FileName, TString HistName,
 std::vector<TH1D*>
 PlotHists::MakeHists(Int_t NumXBins, Double_t *XBins)
 {
+  DisplayFunc(__func__);
+
   UInt_t NumPlots = 0;
+  std::vector<TH1D*> theHists;
 
   if (fNormalizeTo != -1)
     fNormalizedHists = true;
@@ -45,7 +48,7 @@ PlotHists::MakeHists(Int_t NumXBins, Double_t *XBins)
     NumPlots = fInExpr.size();
 
   if(NumPlots == 0){
-    std::cout << "Nothing has been initialized in hists plot." << std::endl;
+    Message(eError, "Nothing has been initialized in hists plot.");
     exit(1);
   }
 
@@ -54,8 +57,6 @@ PlotHists::MakeHists(Int_t NumXBins, Double_t *XBins)
   TCut inCut = fDefaultCut;
 
   TH1D *tempHist;
-
-  std::vector<TH1D*> theHists;
 
   for (UInt_t iPlot = 0; iPlot != NumPlots; ++iPlot) {
 

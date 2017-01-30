@@ -17,7 +17,8 @@
 /**
    @ingroup plotgroup
    @class QuickPlot
-   A less flexible class that quickly compares shapes from the MCConfig
+   A less flexible class that quickly compares shapes from the MCConfig.
+   This class is accessed through CrombieTools.PlotTools.QuickPlot.
 */
 
 class QuickPlot : public FileConfigReader
@@ -28,7 +29,6 @@ class QuickPlot : public FileConfigReader
 
   /**
      Add a MC contributer to the plots that will be shown.
-     @todo Make the color automatic
      @param entry is the legend entry in the MC Config.
      @param color is the color to draw the line
      @param type is the FileType where the FileInfo will be found.
@@ -42,6 +42,9 @@ class QuickPlot : public FileConfigReader
   /// Make canvas using regular binning
   void         MakeCanvas               ( TString FileBase, Int_t NumXBins, Double_t MinX, Double_t MaxX,
                                           TString XLabel, TString = "", Bool_t logY = false);
+
+  /// Reset the stored backgrounds to make a different plot
+  void         Reset                    ()             { ResetLegend(); fBackgroundType.resize(0);    }
 
  private:
   std::vector<FileType> fBackgroundType;       ///< FileType for each background to plot

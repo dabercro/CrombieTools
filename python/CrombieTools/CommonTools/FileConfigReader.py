@@ -33,21 +33,16 @@ def SetupConfigFromEnv(obj):
 
     obj.SetDebugLevel(int(os.environ.get('DEBUG', 1)))
 
-    if os.path.exists('CrombieAnalysisConfig.sh') or os.path.exists('CrombiePlotterConfig.sh'):
-        def readMC(config):
-            obj.ReadMCConfig(config, obj.kBackground)
-        def readSignal(config):
-            obj.ReadMCConfig(config, obj.kSignal)
+    def readMC(config):
+        obj.ReadMCConfig(config, obj.kBackground)
+    def readSignal(config):
+        obj.ReadMCConfig(config, obj.kSignal)
 
-        SetFunctionFromEnv([
-                (obj.SetInDirectory, 'CrombieInFilesDir'),
-                (obj.SetLuminosity, 'CrombieLuminosity'),
-                (readMC, 'CrombieMCConfig'),
-                (readSignal, 'CrombieSignalConfig')
-                ])
+    SetFunctionFromEnv([
+            (obj.SetInDirectory, 'CrombieInFilesDir'),
+            (obj.SetLuminosity, 'CrombieLuminosity'),
+            (readMC, 'CrombieMCConfig'),
+            (readSignal, 'CrombieSignalConfig')
+            ])
 
-        obj.SetFileType(obj.kBackground)
-
-    else:
-        print 'Could not find CrombieAnalysisConfig.sh or CrombiePlotterConfig.sh'
-        exit(10)
+    obj.SetFileType(obj.kBackground)
