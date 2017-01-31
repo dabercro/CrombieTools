@@ -69,7 +69,7 @@ struct FileInfo
     fEntry = entry;
     fColorStyle = colorstyle;
     if (allHist == "" || fXSec < 0)
-      fXSecWeight = -1;
+      fXSecWeight = 1.0;
     else
       fXSecWeight = GetXSecWeight(fFileName, fXSec, allHist);
     fUncertaintyInfo = uncInfo;

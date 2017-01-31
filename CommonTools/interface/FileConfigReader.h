@@ -602,16 +602,9 @@ FileConfigReader::GetHistList(Int_t NumXBins, Double_t *XBins, std::vector<TStri
       if ((*theFileInfo)[iFile]->fFileName != theFileNames[iFileName])
         continue;
 
-      if ((*theFileInfo)[iFile]->fXSecWeight > 0)
-        theHists[iFileName]->Scale((*theFileInfo)[iFile]->fXSecWeight);
-      else {
-        Double_t scale = ((*theFileInfo)[iFile]->fXSecWeight)/(-1.0);
-        Message(eDebug, "Weight: %f, Scale from MCConfig: %f",
-                ((*theFileInfo)[iFile]->fXSecWeight), scale);
-        theHists[iFileName]->Scale(scale);
-      }
-
+      theHists[iFileName]->Scale((*theFileInfo)[iFile]->fXSecWeight);
       ++iFileName;
+
     }
 
   }
