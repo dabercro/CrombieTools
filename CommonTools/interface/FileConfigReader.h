@@ -523,7 +523,10 @@ void FileConfigReader::ReadMCConfig(TString config, TString fileDir)
         Message(eDebug, "ColorStyleEntry: %s", ColorStyleEntry.Data());
 
         if (ColorStyleEntry != "" && (fKeepAllFiles || !LimitTreeName.BeginsWith('#')))
-          AddFile(LimitTreeName, FileName, XSec.Atof(), LegendEntry.ReplaceAll("_"," "), ColorStyleEntry.Atoi());
+          // Replace _ with spaces, but put the escaped ones back
+          AddFile(LimitTreeName, FileName, XSec.Atof(),
+                  LegendEntry.ReplaceAll("_", " ").ReplaceAll("\\ ", "_"),
+                  ColorStyleEntry.Atoi());
 
       }
 
