@@ -28,7 +28,10 @@ QuickPlot::MakeCanvas(TString FileBase, Int_t NumXBins, Double_t *XBins,
   for (UInt_t iBackground = 0; iBackground != fBackgroundType.size(); ++iBackground) {
     TH1D *tempHist = GetHist(NumXBins, XBins, fBackgroundType[iBackground],
                              fLegendEntries[iBackground], kLegendEntry);
-    tempHist->Scale(1.0/tempHist->Integral("width"));
+
+    if (bCompareShapes)
+      tempHist->Scale(1.0/tempHist->Integral("width"));
+
     hists.push_back(tempHist);
   }
 

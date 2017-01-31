@@ -123,7 +123,7 @@ then
         then
 
             echo "Making: $outFile"
-            command="bsub -q $CrombieQueue -n $CrombieNBatchProcs -o bout/out_$(CROMBIEDATE)_$(basename $outFile)_%J.log crombie dojob $outFile"
+            command="bsub -q $CrombieQueue -n $CrombieNBatchProcs -o bout/out_$(date +%y%m%d)_$(basename $outFile)_%J.log crombie dojob $outFile"
 
             if [ "$fresh" = "test" ]   # Echo the command if a test
             then                       #   otherwise, execute it

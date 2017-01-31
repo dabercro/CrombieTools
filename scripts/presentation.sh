@@ -17,7 +17,7 @@ fi
 
 if [ "$date" = "" ]
 then
-    date=$(CROMBIEDATE)
+    date=$(date +%y%m%d)
 fi
 
 if [ -d $docs/$date ]

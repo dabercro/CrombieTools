@@ -44,10 +44,14 @@ class QuickPlot : public FileConfigReader
                                           TString XLabel, TString = "", Bool_t logY = false);
 
   /// Reset the stored backgrounds to make a different plot
-  void         Reset                    ()             { ResetLegend(); fBackgroundType.resize(0);    }
+  void         Reset                    ()                { ResetLegend(); fBackgroundType.resize(0); }
+
+  /// If this is false, the plots are not normalized at the end, so the shape is not as easily compared
+  void         SetCompareShapes         ( bool compare )            { bCompareShapes = compare;       }
 
  private:
   std::vector<FileType> fBackgroundType;       ///< FileType for each background to plot
+  bool bCompareShapes = true;                  ///< Bool to tell whether to compare shapes by normalizing plots
 
   ClassDef(QuickPlot, 1)
 };

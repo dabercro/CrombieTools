@@ -46,10 +46,10 @@ _crombie_subs () {                                  # Function to fill COMPREPLY
 
         COMPREPLY=( $(compgen -W "hadd resub fresh" $cur ) )
 
-    elif [ "$prev" = "presentation" ]               # "crombie presentation" usually defaults to CROMBIEDATE,
+    elif [ "$prev" = "presentation" ]               # "crombie presentation" usually defaults to current date
     then                                            #   so just return that
 
-        COMPREPLY=( $(compgen -W `CROMBIEDATE` $cur ) )
+        COMPREPLY=( $(compgen -W `date +%y%m%d` $cur ) )
 
     elif [ "$prev" = "workspace" ]                  # "crombie workspace" can only be varied with a test
     then

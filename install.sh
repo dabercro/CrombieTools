@@ -89,19 +89,6 @@ then
 
 fi
 
-if [ "`type CROMBIEDATE 2> /dev/null`" = "" ]    # If CROMBIEDATE not set (used for automatic versioning),
-then                                             #   add it to profile
-
-    echo "" >> $profile
-    echo "# Date format used for versioning" >> $profile
-    echo "CROMBIEDATE () {" >> $profile
-    echo "    echo \`date +%y%m%d\`" >> $profile
-    echo "}" >> $profile
-    echo "" >> $profile
-    echo "export -f CROMBIEDATE" >> $profile
-
-fi
-
 # Check that the autocomplete line is present in the bash rc or profile
 
 completeline="test -f \$CROMBIEPATH/bin/crombie_completion.sh && . \$CROMBIEPATH/bin/crombie_completion.sh"
