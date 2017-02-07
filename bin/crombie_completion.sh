@@ -51,6 +51,11 @@ _crombie_subs () {                                  # Function to fill COMPREPLY
 
         COMPREPLY=( $(compgen -W `date +%y%m%d` $cur ) )
 
+    elif [ "$prev" = "backupslides" ]               # "crombie backupslides" has an "all" option to have all figures
+    then                                            #   so just return that
+
+        COMPREPLY=( $(compgen -W "all" $cur ) )
+
     elif [ "$prev" = "workspace" ]                  # "crombie workspace" can only be varied with a test
     then
 

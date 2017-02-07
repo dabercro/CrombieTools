@@ -9,6 +9,8 @@
 #  @author Daniel Abercrombie
 #
 
+option=$1
+
 figs=figs
 
 if [ ! -d $figs ]
@@ -24,10 +26,11 @@ for found in `find $figs -name "*.pdf" | rev | sort | rev`
 do
     f=${found##$figs/}
 
-    if grep $f *.tex > /dev/null
+    if grep $f *.tex > /dev/null && [ "$option" != "all" ]
     then
         continue
     fi
+
     title=${f%%.pdf}
     echo "\begin{frame}" >> $destination
     echo "   \frametitle{\small ${title//_/\\_}}" >> $destination
