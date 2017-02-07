@@ -20,6 +20,9 @@ The list of available subcommands are given below.
       If the `.pdf` file is not included in any `.tex` files in the local directory
       (excluding `backup_slides.tex`), the `.pdf` image will be placed on a frame in
       `backup_slides.tex` to be included in a presentation.
+
+      If you add `all` to the end of the command, even images in other `.tex` files will
+      be included in the backup slides.
     </td>
   </tr>
   <tr>
