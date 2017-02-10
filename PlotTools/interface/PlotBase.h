@@ -146,6 +146,7 @@ class PlotBase : virtual public Debug
   inline    void         SetMakeRatio             ( Bool_t ratio )                                { fMakeRatio = ratio;          }
   /// Set which line will be '1' in the ratio plot.
   inline    void         SetRatioIndex            ( Int_t ratio )                                 { fRatioIndex = ratio;         }
+
   /**
      Add a line to show in the ratio plot.
      The line is specified by its index. If this list is empty, all of the lines appear in the ratio pad.
@@ -185,6 +186,9 @@ class PlotBase : virtual public Debug
                                                                                                               fCutStyle = style; }
   /// Add branches that contain independent systematic uncertainties to show in the plots
   inline    void         AddSystematicBranch      ( TString branch )                 { fSystematicBranches.push_back(branch);    }
+
+  /// Set additional drawing options to force all lines to have
+  void                   SetDrawOpts              ( TString options )                             { fDrawOpts = options;         }
 
  protected:
   UInt_t                     fPlotCounter = 0;           ///< This is used so that making scratch plots does not overlap
@@ -272,6 +276,8 @@ class PlotBase : virtual public Debug
   Int_t                      fCutStyle = 2;              ///< Style of the cuts lines
   Double_t                   fCutYMin = 0.0;             ///< Minimum value of cut line y
   Double_t                   fCutYMax = 0.0;             ///< Maximum value of cut line y
+
+  TString                    fDrawOpts = "";             ///< The options that all lines are drawn with
 
   /// Draws the cuts lines
   void                       DrawCutLines         ();
@@ -455,12 +461,14 @@ PlotBase::DrawCutLines() {
 template<class T>
 TString PlotBase::GetOpts(T*)
 {
+  Message(eDebug, "All options come with: %s", fDrawOpts.Data());
+
   if (std::is_base_of<TH1, T>::value)
-    return "hist";
+    return fDrawOpts + "hist";
   else if (std::is_base_of<TGraph, T>::value)
-    return "l3";
+    return fDrawOpts + "l3";
   else
-    return "";
+    return fDrawOpts + "";
 }
 
 //--------------------------------------------------------------------

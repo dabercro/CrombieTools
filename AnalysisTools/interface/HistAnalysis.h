@@ -53,8 +53,15 @@ class HistAnalysis : public FileConfigReader
   TH1D* DoScaleFactors     ( TString PlotVar, Int_t NumBins, Double_t MinX, Double_t MaxX,
                              ScaleFactorMethod  method = kCutAndCount );
 
+  /// Plots the scale factors with variable binning
+  void  PlotScaleFactors   ( TString FileBase, TString PlotVar, Int_t NumBins, Double_t *XBins,
+                             TString XLabel, ScaleFactorMethod  method = kCutAndCount );
+  /// Plots the scale factors
+  void  PlotScaleFactors   ( TString FileBase, TString PlotVar, Int_t NumBins, Double_t MinX, Double_t MaxX,
+                             TString XLabel, ScaleFactorMethod  method = kCutAndCount );
+
   /// Sets various other cut levels for scalefactors.
-  void      AddScaleFactorCut  (  TString name, TCut cut, TCut datacut = "" );
+  void      AddScaleFactorCut     ( TString name, TCut cut, TCut datacut = "" );
   /// Resets the values saved for the scale factor cuts
   void      ResetScaleFactorCuts  ();
 
@@ -65,6 +72,10 @@ class HistAnalysis : public FileConfigReader
   /// Reweights based on some expression in MC with easier to use binning
   void             MakeReweightHist   ( TString OutFile, TString OutHist, TString PlotVar,
                                         Int_t NumBins, Double_t MinX, Double_t MaxX );
+
+  /// Does cut and count scale factors between background-subtracted data and signal MC with a single bin
+  TH1D* DoScaleFactorsCutAndCount     ( TString PlotVar, Double_t MinX, Double_t MaxX )
+                                                                   { return DoScaleFactors(PlotVar, 1, MinX, MaxX, kCutAndCount); }
 
   /// Different methods of printing the scale factor tables
   enum  PrintingMethod {

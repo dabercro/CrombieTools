@@ -55,7 +55,7 @@ class PlotHists : public PlotBase
   /// Simplest of Canvas makers with just histograms as arugments, allowing for user manipulation of histograms
   void                   MakeCanvas               ( TString FileBase, std::vector<TH1D*> theHists,
                                                     TString XLabel, TString YLabel, Bool_t logY = false)
-                                                              { BaseCanvas(FileBase,theHists,XLabel,YLabel,logY); }
+                                                          { BaseCanvas(FileBase, theHists, XLabel, YLabel, logY); }
 
  protected:
   Double_t  fEventsPer = 0;                       ///< Histogram normalized to events per units of X axis

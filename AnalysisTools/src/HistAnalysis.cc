@@ -15,6 +15,8 @@ TH1D*
 HistAnalysis::DoScaleFactors(TString PlotVar, Int_t NumBins, Double_t *XBins,
                              ScaleFactorMethod  method)
 {
+  DisplayFunc(__func__);
+
   TString outputName;
   outputName.Form("ScaleFactors_%d", fNumCreated++);
   TH1D* output = new TH1D(outputName, outputName, NumBins, XBins);
@@ -71,16 +73,18 @@ HistAnalysis::DoScaleFactors(TString PlotVar, Int_t NumBins, Double_t *XBins,
       // Get the yields from each histogram
       for (UInt_t iHist = 0; iHist != dataHists.size(); ++iHist) {
         Double_t error = 0.0;
-        Double_t yield = dataHists[iHist]->IntegralAndError(1,NumBins,error);
+        Double_t yield = dataHists[iHist]->IntegralAndError(iBin, iBin, error);
         data_yields.push_back(yield);
         data_error.push_back(error);
         error = 0.0;
-        yield = signalHists[iHist]->IntegralAndError(1,NumBins,error);
+        yield = signalHists[iHist]->IntegralAndError(iBin, iBin, error);
         mc_yields.push_back(yield);
         mc_error.push_back(error);
       }
 
       factor = mc_yields[0]/data_yields[0];
+
+      Message(eDebug, "Normalizing factor: %f", factor);
 
       break;
 
@@ -90,10 +94,16 @@ HistAnalysis::DoScaleFactors(TString PlotVar, Int_t NumBins, Double_t *XBins,
     }
 
     if (fPrintingMethod != kNone) {
+
+      std::cout << std::endl << "Bin: " << iBin << " Var: " << PlotVar;
+      std::cout << " " << XBins[iBin - 1] << " to " << XBins[iBin] << std::endl << std::endl;
+
       std::cout << "\\hline" << std::endl;
       std::cout << " & No Cut";
+
       for (UInt_t iCut = 0; iCut != fCutNames.size(); ++iCut)
         std::cout << " & " << fCutNames[iCut];
+
       std::cout << " \\\\" << std::endl;
       std::cout << "\\hline" << std::endl;
 
@@ -101,16 +111,19 @@ HistAnalysis::DoScaleFactors(TString PlotVar, Int_t NumBins, Double_t *XBins,
         std::cout << "\\makecell{Background \\\\ Subtracted \\\\ Data}";
       else
         std::cout << "Background Subtracted Data";
+
       for (UInt_t iYield = 0; iYield != data_yields.size(); ++iYield) {
         std::cout << " & " << TString::Format(fFormat,data_yields[iYield]);
         std::cout << " $\\pm$ " << TString::Format(fFormat,data_error[iYield]);
       }
+
       std::cout << " \\\\" << std::endl;
 
       if (fPrintingMethod == kPresentation)
         std::cout << "\\makecell{Signal-\\\\ matched MC}";
       else
         std::cout << "Signal-matched MC";
+
       for (UInt_t iYield = 0; iYield != mc_yields.size(); ++iYield) {
         std::cout << " & " << TString::Format(fFormat,mc_yields[iYield]);
         std::cout << " $\\pm$ " << TString::Format(fFormat,mc_error[iYield]);
@@ -122,21 +135,30 @@ HistAnalysis::DoScaleFactors(TString PlotVar, Int_t NumBins, Double_t *XBins,
         std::cout << "\\makecell{Normalized \\\\ Ratio}";
       else
         std::cout << "Normalized Ratio";
+
       for (UInt_t iYield = 0; iYield != data_yields.size(); ++iYield) {
-        std::cout << " & " << TString::Format(fFormat,data_yields[iYield]/mc_yields[iYield] * factor);
+        std::cout << " & " << TString::Format(fFormat, data_yields[iYield]/mc_yields[iYield] * factor);
         std::cout << " $\\pm$ " << TString::Format(fFormat,
                                                    TMath::Sqrt(pow(data_error[iYield]/mc_yields[iYield],2) +
                                                                pow(data_yields[iYield]/pow(mc_yields[iYield],2) * mc_error[iYield],2)) *
                                                    factor);
       }
+
       std::cout << " \\\\" << std::endl;
       std::cout << "\\hline" << std::endl;
+
     }
 
-    output->SetBinContent(iBin, data_yields[data_yields.size()]/mc_yields[data_yields.size()] * factor);
-    output->SetBinError(iBin, TMath::Sqrt(pow(data_error[data_yields.size()]/mc_yields[data_yields.size()],2) +
-                                          pow(data_yields[data_yields.size()]/pow(mc_yields[data_yields.size()],2) *
-                                              mc_error[data_yields.size()],2)) * factor);
+    Double_t FinalSF = data_yields.back()/mc_yields.back() * factor;
+    Double_t FinalError = TMath::Sqrt(pow(data_error.back()/mc_yields.back(), 2) +
+                                      pow(data_yields.back()/pow(mc_yields.back(), 2) *
+                                          mc_error.back(), 2)) * factor;
+
+    Message(eInfo, "Bin %i final scale factor: %f", iBin, FinalSF);
+    Message(eInfo, "Bin %i final scale error:  %f", iBin, FinalError);
+
+    output->SetBinContent(iBin, FinalSF);
+    output->SetBinError(iBin, FinalError);
   }
 
   CloseFiles();
@@ -166,21 +188,25 @@ HistAnalysis::DoScaleFactors(TString PlotVar, Int_t NumBins, Double_t MinX, Doub
 void
 HistAnalysis::AddScaleFactorCut(TString name, TCut cut, TCut datacut)
 {
+
   fCutNames.push_back(name);
   fScaleFactorCuts.push_back(cut);
   if (datacut == "")
     fDataSFCuts.push_back(cut);
   else
     fDataSFCuts.push_back(datacut);
+
 }
 
 //--------------------------------------------------------------------
 void
 HistAnalysis::ResetScaleFactorCuts()
 {
+
   fScaleFactorCuts.resize(0);
   fDataSFCuts.resize(0);
   fCutNames.resize(0);
+
 }
 
 //--------------------------------------------------------------------
@@ -240,5 +266,37 @@ HistAnalysis::MakeReweightHist(TString OutFile, TString OutHist, TString PlotVar
   Double_t XBins[NumBins+1];
   ConvertToArray(NumBins, MinX, MaxX, XBins);
   MakeReweightHist(OutFile, OutHist, PlotVar, NumBins, XBins);
+
+}
+
+//--------------------------------------------------------------------
+void
+HistAnalysis::PlotScaleFactors(TString FileBase, TString PlotVar, Int_t NumBins, Double_t *XBins,
+                               TString XLabel, ScaleFactorMethod  method)
+{
+
+  DisplayFunc(__func__);
+
+  std::vector<TH1D*> hists;
+  TH1D* theHist = DoScaleFactors(PlotVar, NumBins, XBins, method);
+  hists.push_back(theHist);
+
+  SetRatioIndex(0);
+  SetMakeRatio(false);
+  BaseCanvas(FileBase, hists, XLabel, "Scale Factor");
+
+  delete theHist;
+
+}
+
+//--------------------------------------------------------------------
+void
+HistAnalysis::PlotScaleFactors(TString FileBase, TString PlotVar, Int_t NumBins, Double_t MinX, Double_t MaxX,
+                               TString XLabel, ScaleFactorMethod  method)
+{
+
+  Double_t XBins[NumBins+1];
+  ConvertToArray(NumBins, MinX, MaxX, XBins);
+  PlotScaleFactors(FileBase, PlotVar, NumBins, XBins, XLabel, method);
 
 }

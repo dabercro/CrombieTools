@@ -46,9 +46,9 @@ class FileConfigReader : public InOutDirectoryHolder, public PlotHists
   };
 
   /// Resets the information from the for one type
-  void                 ResetConfig          (FileType type);
+  void                 ResetConfig          (FileType type = kBackground);
   /// Resets the information from the config files being held for all types
-  void                 ResetConfig          ();
+  void                 ResetAllConfig       ();
 
   /// Returns a vector of limit tree names that have been read from the configs
   std::set<TString>    ReturnTreeNames      ( FileType type = kBackground);
@@ -198,7 +198,7 @@ FileConfigReader::FileConfigReader()
 FileConfigReader::~FileConfigReader()
 {
   CloseFiles();
-  ResetConfig();
+  ResetAllConfig();
 }
 
 //--------------------------------------------------------------------
@@ -214,7 +214,7 @@ FileConfigReader::ResetConfig(FileType type)
 
 //--------------------------------------------------------------------
 void
-FileConfigReader::ResetConfig()
+FileConfigReader::ResetAllConfig()
 {
   ResetConfig(kBackground);
   ResetConfig(kSignal);
@@ -359,10 +359,11 @@ void FileConfigReader::ReadMCConfig(TString config, TString fileDir)
   DisplayFunc(__func__);
 
   Message(eInfo, "Reading MC Config file %s", config.Data());
-  Message(eInfo, "Input directory is %s", fileDir.Data());
 
   if (fileDir != "")
     SetInDirectory(fileDir);
+
+  Message(eInfo, "Input directory is %s", GetInDirectory().Data());
 
   std::ifstream configFile;
   configFile.open(config.Data());
