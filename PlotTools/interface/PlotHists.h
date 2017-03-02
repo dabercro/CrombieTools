@@ -4,7 +4,6 @@
   @author Daniel Abercrombie <dabercro@mit.edu>
 */
 
-
 #ifndef CROMBIETOOLS_PLOTTOOLS_PLOTHISTS_H
 #define CROMBIETOOLS_PLOTTOOLS_PLOTHISTS_H
 
@@ -12,7 +11,9 @@
 
 #include "TH1D.h"
 #include "TCanvas.h"
+#include "TProfile.h"
 
+#include "PlotUtils.h"
 #include "UncertaintyInfo.h"
 #include "PlotBase.h"
 
@@ -68,7 +69,171 @@ class PlotHists : public PlotBase
   std::vector<UncertaintyInfo*> fDeleteUnc;       ///< Uncertainties created by the class to delete at the end
   TString   fUncExpr = "";                        ///< Branch expressions to add to the systematic uncertainty
 
-  ClassDef(PlotHists, 1)
 };
+
+//--------------------------------------------------------------------
+PlotHists::PlotHists()
+{}
+
+//--------------------------------------------------------------------
+PlotHists::~PlotHists()
+{
+  for (UInt_t iDelete = 0; iDelete != fDeleteUnc.size(); ++iDelete)
+    delete fDeleteUnc[iDelete];
+}
+
+//--------------------------------------------------------------------
+void
+PlotHists::AddUncertainty(UInt_t index, TString FileName, TString HistName,
+                          Int_t startBin, Int_t endBin )
+{
+  fSysUncIndices.push_back(index);
+  UncertaintyInfo* Uncert = new UncertaintyInfo("", FileName, HistName, startBin, endBin);
+  fUncerts.push_back(Uncert);
+  fDeleteUnc.push_back(Uncert);
+}
+
+//--------------------------------------------------------------------
+std::vector<TH1D*>
+PlotHists::MakeHists(Int_t NumXBins, Double_t *XBins)
+{
+  DisplayFunc(__func__);
+
+  UInt_t NumPlots = 0;
+  std::vector<TH1D*> theHists;
+
+  if (fNormalizeTo != -1)
+    fNormalizedHists = true;
+
+  if (fInTrees.size() != 0)
+    NumPlots = fInTrees.size();
+  else if (fInCuts.size() != 0)
+    NumPlots = fInCuts.size();
+  else
+    NumPlots = fInExpr.size();
+
+  if(NumPlots == 0){
+    Message(eError, "Number of trees: %i, cuts: %i, expressions: %i",
+            fInTrees.size(), fInCuts.size(), fInExpr.size());
+    Message(eError, "Nothing has been initialized in hists plot.");
+    exit(1);
+  }
+
+  TTree *inTree = fDefaultTree;
+  TString inExpr = fDefaultExpr;
+  TCut inCut = fDefaultCut;
+
+  TH1D *tempHist;
+
+  for (UInt_t iPlot = 0; iPlot != NumPlots; ++iPlot) {
+
+    if (fInTrees.size() != 0)
+      inTree = fInTrees[iPlot];
+    if (fInCuts.size()  != 0)
+      inCut  = fInCuts[iPlot];
+    if (fInExpr.size() != 0)
+      inExpr = fInExpr[iPlot];
+
+    TString tempName;
+    tempName.Form("Hist_%d", fPlotCounter);
+    fPlotCounter++;
+    tempHist = new TH1D(tempName, tempName, NumXBins, XBins);
+    tempHist->Sumw2();
+
+    Message(eDebug, "About to draw %s on %s, with cut %s",
+            inExpr.Data(), tempName.Data(), inCut.GetTitle());
+
+    inTree->Draw(inExpr+">>"+tempName, inCut);
+
+    if (fUncExpr != "") {
+
+      // If there's an uncertainty expression, add systematics to the plot
+      tempName += "_unc";
+      TProfile *uncProfile = new TProfile(tempName, tempName, NumXBins, XBins);
+      inTree->Draw(fUncExpr + ">>" + tempName, inCut);
+      for (Int_t iBin = 1; iBin != NumXBins + 1; ++iBin) {
+        Double_t content = tempHist->GetBinContent(iBin);
+        tempHist->SetBinError(iBin,
+                              TMath::Sqrt(pow(tempHist->GetBinError(iBin), 2) +
+                                          content * content *
+                                          uncProfile->GetBinContent(iBin)));
+      }
+      delete uncProfile;
+    }
+
+    Message(eDebug, "Number of events: %i, integral: %f",
+            (Int_t) tempHist->GetEntries(), tempHist->Integral("width"));
+
+    theHists.push_back(tempHist);
+  }
+
+  if (fEventsPer > 0) {
+    Message(eDebug, "Events per: %f", fEventsPer);
+
+    TString tempName;
+    tempName.Form("Hist_%d", fPlotCounter);
+    fPlotCounter++;
+    tempHist = new TH1D(tempName, tempName, NumXBins, XBins);
+    for (Int_t iBin = 1; iBin != NumXBins + 1; ++iBin)
+      tempHist->SetBinContent(iBin, tempHist->GetBinWidth(iBin)/fEventsPer);
+
+    SetZeroError(tempHist);
+    for (UInt_t iHist = 0; iHist != theHists.size(); ++iHist) {
+      Message(eDebug, "Now for %s, number of events: %i, integral: %f",
+              theHists[iHist]->GetName(),
+              (Int_t) tempHist->GetEntries(),
+              tempHist->Integral("width"));
+
+      Division(theHists[iHist], tempHist);
+    }
+
+    delete tempHist;
+  }
+
+  if (fNormalizedHists) {
+    Double_t normInt = 1;
+    if (fNormalizeTo != -1)
+      normInt = theHists[fNormalizeTo]->Integral("width");
+
+    for (UInt_t iHist = 0; iHist != NumPlots; ++iHist)
+      theHists[iHist]->Scale(normInt/theHists[iHist]->Integral("width"));
+  }
+
+  for (UInt_t iUncert = 0; iUncert != fSysUncIndices.size(); ++iUncert)
+    ApplyUncertainty(theHists[fSysUncIndices[iUncert]], fUncerts[iUncert]);
+
+  return theHists;
+}
+
+//--------------------------------------------------------------------
+std::vector<TH1D*>
+PlotHists::MakeHists(Int_t NumXBins, Double_t MinX, Double_t MaxX)
+{
+  Double_t XBins[NumXBins+1];
+  ConvertToArray(NumXBins, MinX, MaxX, XBins);
+  return MakeHists(NumXBins, XBins);
+}
+
+//--------------------------------------------------------------------
+void
+PlotHists::MakeCanvas(TString FileBase, Int_t NumXBins, Double_t *XBins,
+                      TString XLabel, TString YLabel, Bool_t logY)
+{
+  std::vector<TH1D*> hists = MakeHists(NumXBins, XBins);
+  BaseCanvas(FileBase, hists, XLabel, YLabel, logY);
+
+  for (UInt_t i0 = 0; i0 != hists.size(); ++i0)
+    delete hists[i0];
+}
+
+//--------------------------------------------------------------------
+void
+PlotHists::MakeCanvas(TString FileBase, Int_t NumXBins, Double_t MinX, Double_t MaxX,
+                      TString XLabel, TString YLabel, Bool_t logY)
+{
+  Double_t XBins[NumXBins+1];
+  ConvertToArray(NumXBins, MinX, MaxX, XBins);
+  MakeCanvas(FileBase, NumXBins, XBins, XLabel, YLabel, logY);
+}
 
 #endif

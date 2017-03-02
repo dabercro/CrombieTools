@@ -11,7 +11,6 @@
 #define CROMBIETOOLS_PLOTTOOLS_PLOTBASE_H
 
 #include <vector>
-#include <iostream>
 #include <type_traits>
 
 #include "TObject.h"
