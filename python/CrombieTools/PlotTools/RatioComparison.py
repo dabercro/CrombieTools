@@ -19,7 +19,7 @@ def SetupFromEnv(aPlotter=plotter):
             ])
 
 
-def SetCuts(category1, region1, region2, category2=None, aPlotter=plotter):
+def SetCuts(category1, region1, region2, category2=None, aPlotter=plotter, Nminus1=''):
     """ Sets cuts based on category and region.
 
     @param category1 is the category of the analysis being used.
@@ -29,14 +29,17 @@ def SetCuts(category1, region1, region2, category2=None, aPlotter=plotter):
                      Otherwise, the category is assumed to be the same
     @param aPlotter is the plotter that is having its cuts set.
                     Default is the plotter defined in this module.
+    @param Nminus1 is a parameter to not cut on
     """
-
-    category2 = category2 or category1
 
     from ..LoadConfig import cuts
 
-    numerator_cut = cuts.cut(category1, region1)
-    denominator_cut = cuts.cut(category2, region2)
+    category2 = category2 or category1
+
+    aPlotter.Reset()
+
+    numerator_cut = Nminus1Cut(cuts.cut(category1, region1), Nminus1) if Nminus1 else cuts.cut(category1, region1)
+    denominator_cut = Nminus1Cut(cuts.cut(category2, region2), Nminus1) if Nminus1 else cuts.cut(category2, region2)
 
     aPlotter.AddRatioCuts(numerator_cut + ' && ' + cuts.dataMCCuts(region1, True),
                           denominator_cut + ' && ' + cuts.dataMCCuts(region2, True),
