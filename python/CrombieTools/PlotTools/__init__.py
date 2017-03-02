@@ -3,7 +3,7 @@ from . import tdrStyle
 
 tdrStyle.setTDRStyle()
 
-__all__ = ['Plot2D', 'PlotBrazil', 'PlotFitParameters', 'PlotHists', 'PlotROC', 'PlotStack', 'PlotUtils', 'QuickPlot']
+__all__ = ['Plot2D', 'PlotBrazil', 'PlotFitParameters', 'PlotHists', 'PlotROC', 'PlotStack', 'PlotUtils', 'QuickPlot', 'RatioComparison']
 
 def AddOutDir(basename):
     """A function to prepend the correct output directory and make the directory, if needed

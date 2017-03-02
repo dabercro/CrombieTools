@@ -52,6 +52,7 @@ dependencies = { 'FlatSkimmer' :         ['GoodLumiFilter'],
                  ## @todo The plotting of FileConfigReader should be in a separate class.
                  'XSecAdder' :           ['PlotHists'],
                  'LimitTreeMaker':       ['PlotHists'],
+                 'RatioComparison':      ['PlotHists'],
                  }
 
 loadAddOn = '+'
