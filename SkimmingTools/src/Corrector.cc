@@ -87,36 +87,37 @@ Double_t Corrector::GetFormulaResult(Int_t index)
 /**
    @returns value of correction histogram using the expressions added
             through AddInExpression(), unless the event does not pass the cut
-            set by SetInCut(). In that case, a value of 1 is returned.
+            set by SetInCut(). In that case, a default value is returned
+            (depending on if it's a scale factor or an uncertainty).
 */
 
 Float_t Corrector::Evaluate()
 {
-  if (fInTree == NULL)
-    return 1.0;
-  else {
-    if (fCutFormula->EvalInstance() != 0) {
-      if (fNumDims == 1) {
-        Double_t evalX = GetFormulaResult(0);
-        return fCorrectionHist->GetBinContent(fCorrectionHist->FindBin(evalX));
-      }
-      else if (fNumDims == 2) {
-        Double_t evalX = GetFormulaResult(0);
-        Double_t evalY = GetFormulaResult(1);
-        return fCorrectionHist->GetBinContent(fCorrectionHist->FindBin(evalX,evalY));
-      }
-      else if (fNumDims == 3) {
-        Double_t evalX = GetFormulaResult(0);
-        Double_t evalY = GetFormulaResult(1);
-        Double_t evalZ = GetFormulaResult(2);
-        return fCorrectionHist->GetBinContent(fCorrectionHist->FindBin(evalX,evalY,evalZ));
-      }
-      else
-        return 1.0;
+  Float_t Output = (fHistReader == eZeroCenteredUnc) ? 0.0 : 1.0;
+
+  if (fInTree != NULL && fCutFormula->EvalInstance() != 0) {
+    if (fNumDims == 1) {
+      Double_t evalX = GetFormulaResult(0);
+      Output = fCorrectionHist->GetBinContent(fCorrectionHist->FindBin(evalX));
     }
-    else
-      return 1.0;
+    else if (fNumDims == 2) {
+      Double_t evalX = GetFormulaResult(0);
+      Double_t evalY = GetFormulaResult(1);
+      Output = fCorrectionHist->GetBinContent(fCorrectionHist->FindBin(evalX,evalY));
+    }
+    else if (fNumDims == 3) {
+      Double_t evalX = GetFormulaResult(0);
+      Double_t evalY = GetFormulaResult(1);
+      Double_t evalZ = GetFormulaResult(2);
+      Output = fCorrectionHist->GetBinContent(fCorrectionHist->FindBin(evalX,evalY,evalZ));
+    }
   }
+
+  if (fHistReader == eUnityCenteredUnc)
+    Output -= 1.0;
+
+  return Output;
+
 }
 
 //--------------------------------------------------------------------

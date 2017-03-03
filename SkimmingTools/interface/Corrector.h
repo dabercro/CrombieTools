@@ -61,6 +61,20 @@ class Corrector
   /// Set the pointer to the TTree this Corrector is reading.
   void                  SetInTree         ( TTree* tree )       { fInTree = tree; InitializeTree();                        }
 
+  /**
+     Used to set the way to read the correction histogram.
+     Note that the uncertainty is added in quadrature, so the unity-centered uncertainty
+     can safely be used for both up and down histograms.
+  */
+  enum HistReader {
+    eValue = 0,         ///< Simply returns the value of the histogram
+    eZeroCenteredUnc,   ///< The fractional uncertainty is just the value of the histogram
+    eUnityCenteredUnc   ///< For when reading an uncertainty from a histogram where the perfect precision would be at unity
+  };
+
+  /// Set the type of histogram reader
+  void                  SetHistReader   ( HistReader reader )   { fHistReader = reader;                                    }
+
  protected:
 
   TString               fName;                        ///< Name of branch to write to
@@ -81,6 +95,7 @@ class Corrector
   std::vector<Double_t>       fMins;                  ///< Minimum possible values of each axis
   std::vector<Double_t>       fMaxs;                  ///< Maximum possible values of each axis
   Bool_t                      fIsCopy = false;        ///< Track if instance is a copy
+  HistReader                  fHistReader = eValue;   ///< The method to reading histograms
   /// Evaluate one of the formulae
   Double_t                    GetFormulaResult            ( Int_t index );
 
