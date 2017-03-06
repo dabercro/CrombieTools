@@ -185,6 +185,8 @@ class PlotBase : virtual public Debug
                                                                                                               fCutStyle = style; }
   /// Add branches that contain independent systematic uncertainties to show in the plots
   inline    void         AddSystematicBranch      ( TString branch )                 { fSystematicBranches.push_back(branch);    }
+  /// Reset list of branches that contain systematics
+  inline    void         ResetSystematics         ()                                            { fSystematicBranches.resize(0); }
 
   /// Set additional drawing options to force all lines to have
   void                   SetDrawOpts              ( TString options )                             { fDrawOpts = options;         }
