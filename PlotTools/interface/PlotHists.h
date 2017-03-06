@@ -143,20 +143,28 @@ PlotHists::MakeHists(Int_t NumXBins, Double_t *XBins)
     Message(eDebug, "About to draw %s on %s, with cut %s",
             inExpr.Data(), tempName.Data(), inCut.GetTitle());
 
-    inTree->Draw(inExpr+">>"+tempName, inCut);
+    inTree->Draw(inExpr + ">>" + tempName, inCut);
 
-    if (fUncExpr != "") {
+    if (fUncExpr != "" && tempHist->GetEntries() != 0) {
 
       // If there's an uncertainty expression, add systematics to the plot
       tempName += "_unc";
       TProfile *uncProfile = new TProfile(tempName, tempName, NumXBins, XBins);
-      inTree->Draw(fUncExpr + ">>" + tempName, inCut);
+      inTree->Draw(fUncExpr + ":" + inExpr + ">>" + tempName, inCut);
       for (Int_t iBin = 1; iBin != NumXBins + 1; ++iBin) {
+        Double_t uncSquared = uncProfile->GetBinContent(iBin);
+        if (uncSquared == 0.0)
+          continue;
+        Message(eDebug, "About to apply uncertainty %f", TMath::Sqrt(uncSquared));
+
         Double_t content = tempHist->GetBinContent(iBin);
+        Message(eDebug, "For hist %s, bin %i before: %f +- %f",
+                tempName.Data(), iBin, content, tempHist->GetBinError(iBin));
         tempHist->SetBinError(iBin,
                               TMath::Sqrt(pow(tempHist->GetBinError(iBin), 2) +
-                                          content * content *
-                                          uncProfile->GetBinContent(iBin)));
+                                          content * content * uncSquared));
+        Message(eDebug, "For hist %s, bin %i after:  %f +- %f",
+                tempName.Data(), iBin, content, tempHist->GetBinError(iBin));
       }
       delete uncProfile;
     }
