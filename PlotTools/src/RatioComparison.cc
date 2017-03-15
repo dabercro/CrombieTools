@@ -34,6 +34,8 @@ RatioComparison::MakeCompare(TString FileBase, Int_t NumXBins, Double_t *XBins,
 
   for (UInt_t i0 = 0; i0 != hists.size(); ++i0)
     delete hists[i0];
+
+  CloseFiles();
 }
 
 //--------------------------------------------------------------------
