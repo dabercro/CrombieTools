@@ -20,7 +20,7 @@ def=`echo $TreeName | tr "[a-z]" "[A-Z]"`
 
 inVarsFile=$TreeName.txt
 h=$TreeName.h
-s=$TreeName.cc
+s=$TreeName.h
 
 if [ ! -f $inVarsFile ]
 then
@@ -121,15 +121,7 @@ echo " private:" >> $h
 echo "  TFile* fFile;" >> $h
 echo "  TTree* t;" >> $h
 echo "  void   SetupTree();" >> $h
-echo "" >> $h
-echo "  ClassDef($TreeName,1)" >> $h
 echo "};" >> $h
-echo "#endif" >> $h
-
-echo "#include \"$TreeName.h\"" > $s
-echo "" >> $s
-echo "ClassImp($TreeName)" >> $s
-echo "" >> $s
 
 echo "//--------------------------------------------------------------------------------------------------" >> $s
 echo "$TreeName::$TreeName(TTree* tree) :" >> $s
@@ -215,3 +207,4 @@ done
 echo "" >> $s
 echo "  Reset();" >> $s
 echo "}" >> $s
+echo "#endif" >> $h
