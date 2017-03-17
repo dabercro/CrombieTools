@@ -10,7 +10,7 @@
 # @author Daniel Abercrombie <dabercro@mit.edu>
 #
 
-for file in `ls ../*Tools/src/*.so`
+for file in `ls ../*/src/*.so`
 do
 
     filename=${file##*/}

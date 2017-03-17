@@ -196,6 +196,15 @@ optional arguments:
         </tr>
         <tr>
           <td align="left" valign="top">
+            <code>tags</code>
+          </td>
+          <td align="left">
+            Prints the `-I` and `-L` tags for compiling with g++ using CrombieTools.
+            `crombie tags` can then be placed directly in your Makefile.
+          </td>
+        </tr>
+        <tr>
+          <td align="left" valign="top">
             <code>test</code>
           </td>
           <td align="left">
