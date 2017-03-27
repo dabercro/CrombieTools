@@ -28,11 +28,6 @@ then
     exit 12
 fi
 
-if [ $h -nt $inVarsFile ] && [ $s -nt $inVarsFile ]
-then
-    exit 0
-fi
-
 echo "#ifndef CROMBIE_"$def"_H" > $h
 echo "#define CROMBIE_"$def"_H" >> $h
 
@@ -116,6 +111,7 @@ echo "  void    Reset();" >> $h
 echo "  void    WriteToFile   ( TFile *f )  { f->WriteTObject(t, t->GetName());     }" >> $h
 echo "  void    Write()                     { fFile->WriteTObject(t, t->GetName());"   >> $h
 echo "                                        fFile->Close();                       }" >> $h
+echo "  void    Set           ( const char* name, float val );" >> $h
 echo "" >> $h
 echo " private:" >> $h
 echo "  TFile* fFile;" >> $h
@@ -123,6 +119,7 @@ echo "  TTree* t;" >> $h
 echo "  void   SetupTree();" >> $h
 echo "};" >> $h
 
+echo "" >> $s
 echo "//--------------------------------------------------------------------------------------------------" >> $s
 echo "$TreeName::$TreeName(TTree* tree) :" >> $s
 echo "  fFile(0)" >> $s
@@ -183,7 +180,6 @@ done
 echo "}" >> $s
 echo "" >> $s
 
-
 echo "//--------------------------------------------------------------------------------------------------" >> $s
 echo "void" >> $s
 echo "$TreeName::SetupTree()" >> $s
@@ -207,4 +203,26 @@ done
 echo "" >> $s
 echo "  Reset();" >> $s
 echo "}" >> $s
+echo "" >> $s
+
+echo "//--------------------------------------------------------------------------------------------------" >> $s
+echo "void" >> $s
+echo "$TreeName::Set(const char* name, float val)" >> $s
+echo "{" >> $s
+for branch in `cat $inVarsFile`
+do
+    if [ "${branch:0:1}" = "#" ]
+    then
+        continue
+    fi
+    varName="${branch%/*}"
+    after="${branch##*/}"
+    varLetter="${after%=*}"
+    if [ "$varLetter" = "F" ]; then
+        echo "  if (strcmp(name, \"$varName\") == 0)" >> $s
+        echo "      $varName = val;" >> $s
+    fi
+done
+echo "}" >> $s
+echo "" >> $s
 echo "#endif" >> $h
