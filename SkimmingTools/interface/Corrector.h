@@ -16,6 +16,8 @@
 #include "TTreeFormula.h"
 #include "TH1.h"
 
+#include "Debug.h"
+
 /**
    @ingroup skimminggroup
    @class Corrector
@@ -26,7 +28,7 @@
    and writes the result to a branch.
 */
 
-class Corrector
+class Corrector : virtual public Debug
 {
  public:
   /// Constructor setting the name of a branch it would like to write to.

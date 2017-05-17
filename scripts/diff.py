@@ -11,7 +11,7 @@ from findtree import GetNumEntries
 from CrombieTools.Parallelization import RunOnDirectory
 
 class CrombieDiffDoer:
-    def __init__(self, dir0, dir1, treeName, skipBranches, verbose, checkbranch, loosematch):
+    def __init__(self, dir0, dir1, treeName, skipBranches, verbose, checkbranch, loosematch, doBranches):
         self.dir0 = dir0.rstrip('/')
         self.dir1 = dir1.rstrip('/')
         self.treeName = treeName
@@ -19,6 +19,7 @@ class CrombieDiffDoer:
         self.verbose = verbose
         self.checkbranch = checkbranch
         self.loosematch = loosematch
+        self.doBranches = doBranches
 
     def GetInDirectory(self):
         return self.dir0 + '/'
@@ -65,6 +66,9 @@ class CrombieDiffDoer:
                         if branch.GetName() in self.skipBranches:
                             continue
 
+                        if self.doBranches and branch.GetName() not in self.doBranches:
+                            continue
+
                         if self.verbose:
                             print('Checking branch ' + branch.GetName())
 
@@ -89,6 +93,8 @@ if __name__ == '__main__':
                         help='The name of the trees to friend.')
     parser.add_argument('--skip-branches', '-s', metavar='BRANCHES', nargs='*', dest='skipbranches', default=[],
                         help='Set branches to skip comparison.')
+    parser.add_argument('--do-branches', '-d', metavar='BRANCHES', nargs='*', dest='dobranches', default=[],
+                        help='Explicitly set branches to do comparison.')
     parser.add_argument('--verbose', '-v', dest='verbose', action='store_true', help='Give a verbose checker to watch progress.')
     parser.add_argument('--check-branch', '-b', dest='checkbranch', action='store_true', help='Checks if two branches have the same entries.')
     parser.add_argument('--loose-match', '-l', dest='loosematch', action='store_true',
@@ -98,7 +104,7 @@ if __name__ == '__main__':
 
     print('\nGoing on to compare number of events:         ' + args.dirs[0] + ' --to-- ' + args.dirs[1] + '\n')
 
-    differ = CrombieDiffDoer(args.dirs[0], args.dirs[1], args.treename, args.skipbranches, args.verbose, args.checkbranch, args.loosematch)
+    differ = CrombieDiffDoer(args.dirs[0], args.dirs[1], args.treename, args.skipbranches, args.verbose, args.checkbranch, args.loosematch, args.dobranches)
 
     RunOnDirectory(differ, args.numMaxProcesses, printing=False)
 

@@ -4,7 +4,6 @@
   @author Daniel Abercrombie <dabercro@mit.edu>
 */
 
-#include <iostream>
 #include "TAxis.h"
 #include "Corrector.h"
 
@@ -33,7 +32,7 @@ void Corrector::SetCorrectionFile(TString fileName)
 {
   fCorrectionFile = new TFile(fileName);
   if (fCorrectionFile == NULL) {
-    std::cout << "Could not open " << fileName << std::endl;
+    Message(eError, "Could not open %s", fileName.Data());
     exit(1);
   }
 }
@@ -43,8 +42,8 @@ void Corrector::SetCorrectionHist(TString histName)
 {
   fCorrectionHist = (TH1*) fCorrectionFile->Get(histName);
   if (fCorrectionHist == NULL) {
-    std::cout << "Could not load " << histName << std::endl;
-    std::cout << "Looking inside " << fCorrectionFile->GetName() << std::endl;
+    Message(eError, "Could not load %s: Looking inside %s", 
+            histName.Data(), fCorrectionFile->GetName());
     exit(1);
   }
   SetMinMax();
@@ -55,15 +54,15 @@ void Corrector::SetCorrectionHist(TString hist1, TString hist2)
 {
   fCorrectionHist  = (TH1*) fCorrectionFile->Get(hist1);
   if (fCorrectionHist == NULL) {
-    std::cout << "Could not load " << hist1 << std::endl;
-    std::cout << "Looking inside " << fCorrectionFile->GetName() << std::endl;
+    Message(eError, "Could not load %s: Looking inside %s", 
+            hist1.Data(), fCorrectionFile->GetName());
     exit(1);
   }
 
   TH1* divisorHist = (TH1*) fCorrectionFile->Get(hist2);
   if (divisorHist == NULL) {
-    std::cout << "Could not load " << hist2 << std::endl;
-    std::cout << "Looking inside " << fCorrectionFile->GetName() << std::endl;
+    Message(eError, "Could not load %s: Looking inside %s", 
+            hist2.Data(), fCorrectionFile->GetName());
     exit(1);
   }
 
@@ -153,7 +152,7 @@ void Corrector::SetMinMax()
     else if (iDim == 2)
       theAxis = fCorrectionHist->GetZaxis();
     else {
-      std::cout << "I don't support this many axes at the moment." << std::endl;
+      Message(eError, "I don't support this many axes at the moment.");
       exit(3);
     }
     fMins.push_back(theAxis->GetBinCenter(theAxis->GetFirst()));
