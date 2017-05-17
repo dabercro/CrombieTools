@@ -73,14 +73,11 @@ class ParallelStackContainer:
         SetCuts(category, region, self.Plotter)
         holdCut = self.Plotter.GetDefaultWeight()
 
-        expr = []
+        expr = list(exprArg)
         kwargs = {}
 
-        if type(exprArg[0]) == dict:
-            kwargs = dict(exprArg[0])
-            expr = list(exprArg[1:])
-        else:
-            expr = list(exprArg)
+        if type(expr[-1]) == dict:
+            kwargs = expr.pop()
 
         # Different expressions for data and MC
         self.Plotter.SetDataExpression(kwargs.get('data_expr',''))
@@ -118,7 +115,7 @@ def MakePlots(categories, regions, exprArgs, overwrite=True, parallel=True, show
     @param exprArgs is a list of lists of parameters to be used in PlotStack::MakeCanvas().
                     Normally, the first expression is the default expression to be plotted.
                     The basename of the output file is automatically set by this.
-                    If the first argument is actually a dictionary, it will be passed basically as
+                    If the last argument is actually a dictionary, it will be passed as
                     key word arguments to ParallelStackContainer.MakePlot() instead.
                     Key words supported in dictionary and types:
                         - data_expr takes a string (default '')
