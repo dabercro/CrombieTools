@@ -36,6 +36,16 @@ The list of available subcommands are given below.
   </tr>
   <tr>
     <td align="left" valign="top">
+      <code>checkxs</code>
+    </td>
+    <td align="left">
+      This checks the cross section configuration files, which are passed as arguments.
+      It prints out disagreements with the centralized CrossSecDB
+      and generates a suggested new configuration file.
+    </td>
+  </tr>
+  <tr>
+    <td align="left" valign="top">
       <code>compile</code>
     </td>
     <td align="left">

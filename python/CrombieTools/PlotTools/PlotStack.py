@@ -132,10 +132,10 @@ def MakePlots(categories, regions, exprArgs, overwrite=True, parallel=True, show
     """
 
     if not type(categories) == list:
-        MakePlots([categories], regions, exprArgs, aPlotter)
+        MakePlots([categories], regions, exprArgs, overwrite, parallel, showCutLines, limitHistsDir, aPlotter)
 
     elif not type(regions) == list:
-        MakePlots(categories, [regions], exprArgs, aPlotter)
+        MakePlots(categories, [regions], exprArgs, overwrite, parallel, showCutLines, limitHistsDir, aPlotter)
 
     else:
         passToParallel = []
