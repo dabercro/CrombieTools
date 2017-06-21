@@ -74,6 +74,9 @@ class PlotStack : public FileConfigReader
   /// Use this to change the automatic sorting of backgrounds based on yields
   void SetSortBackground ( Bool_t doSort )            { fSortBackground = doSort;                 }
 
+  /// Use this to change the automatic sorting of signals based on yields
+  void SetSortSignal     ( Bool_t doSort )            { fSortSignal = doSort;                     }
+
   /// Use this to set whether the signal sits on top or not
   void SetAddSignal      ( Bool_t add )               { fAddSignal = add;                         }
 
@@ -91,6 +94,7 @@ class PlotStack : public FileConfigReader
   Bool_t                fDebug = false;             ///< Dumps yield tests
   TString               fDumpRootName = "";         ///< File where each histogram in stack is dumped
   Bool_t                fSortBackground = true;     ///< Bool to sort the backgrounds
+  Bool_t                fSortSignal = true;         ///< Bool to sort the signals
   Bool_t                fAddSignal = true;          ///< Bool to determine where the signal sits
 
   ClassDef(PlotStack, 1)

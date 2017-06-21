@@ -1,4 +1,4 @@
-#! /usr/bin/env python
+#! /usr/bin/python
 
 """
 Usage: %s FILE [FILE ...]
@@ -56,3 +56,6 @@ if __name__ == '__main__':
 
             with open('%s.new' % file_name, 'w') as output_file:
                 output_file.write(''.join(lines))
+
+        else:
+            print 'All good!\n'

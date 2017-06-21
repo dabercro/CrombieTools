@@ -84,6 +84,10 @@ PlotStack::MakeCanvas(TString FileBase, Int_t NumXBins, Double_t *XBins,
     SignalHists = GetHistList(NumXBins, XBins, kSignal);
   Message(eDebug, "Number of Signal Histograms: %i", SignalHists.size());
 
+  std::vector<index_hist> SignalIndexHists;
+  for (UInt_t iHist = 0; iHist < SignalHists.size(); iHist++)
+    SignalIndexHists.push_back(index_hist(iHist, SignalHists[iHist]));
+
   SetLegendFill(true);
   TH1D *DataHist = (TH1D*) DataHists[0]->Clone("DataHist");
   Message(eDebug, "Final Data Histogram created at %p", DataHist);
@@ -256,7 +260,14 @@ PlotStack::MakeCanvas(TString FileBase, Int_t NumXBins, Double_t *XBins,
   SetDataIndex(int(AllHists.size()));
   AllHists.push_back(DataHist);
 
-  for (UInt_t iHist = 0; iHist != SignalHists.size(); ++iHist) {
+  if (fSortSignal) {
+    std::sort(SignalIndexHists.begin(), SignalIndexHists.end(), SortPairs);
+    Message(eInfo, "Signals sorted");
+  }
+
+  for (UInt_t iHist_ = 0; iHist_ != SignalIndexHists.size(); ++iHist_) {
+    UInt_t iHist = SignalIndexHists[iHist_].first;
+
     Message(eDebug, "Processing Signal Hist %i of %i", iHist, SignalHists.size());
 
     if (fAddSignal) {                            // Do some clever things if we're adding signal to backgrounds
