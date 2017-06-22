@@ -60,7 +60,8 @@ PlotStack::MergeHistograms(FileType type, std::vector<TH1D*> hists) {
       tempHistHolder = new HistHolder(tempMCHist, (*fileInfo)[iHist]->fEntry,
                                       (*fileInfo)[iHist]->fColorStyle,
                                       (*fileInfo)[iHist]->fTreeName,
-                                      (fForceTop == (*fileInfo)[iHist]->fEntry));
+                                      (fForceTop == (*fileInfo)[iHist]->fEntry),
+                                      (type == kSignal));
       HistHolders.push_back(tempHistHolder);
 
     } else {
@@ -273,19 +274,19 @@ PlotStack::MakeCanvas(TString FileBase, Int_t NumXBins, Double_t *XBins,
     Message(eInfo, "Signals sorted");
   }
 
-  for (auto iHist = SignalHolders.begin(); iHist != SignalHolders.end(); ++iHist) {
+  for (UInt_t iHist = 0; iHist != SignalHolders.size(); ++iHist) {
 
     if (fAddSignal) {                            // Do some clever things if we're adding signal to backgrounds
 
       if (fMakeRatio)                            // All possible signals show up on the ratio pad
         AddRatioLine(int(AllHists.size()));
       if (AllHists.size() > 1)
-        (*iHist)->fHist->Add(AllHists[0]);    // Add the background to the signals
+        SignalHolders[iHist]->fHist->Add(AllHists[0]);    // Add the background to the signals
 
     }
 
-    AllHists.push_back((*iHist)->fHist);
-    AddLegendEntry((*iHist)->fEntry, 1, 2, (*iHist)->fColor);
+    AllHists.push_back(SignalHolders[iHist]->fHist);
+    AddLegendEntry(SignalHolders[iHist]->fEntry, 1, 2, SignalHolders[iHist]->fColor);
     Message(eDebug, "There are now %i total histograms to plot.", AllHists.size());
   }
 
