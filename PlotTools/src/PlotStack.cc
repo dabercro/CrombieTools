@@ -161,6 +161,8 @@ PlotStack::MakeCanvas(TString FileBase, Int_t NumXBins, Double_t *XBins,
     }
   }
 
+  std::vector<HistHolder*> SignalHolders = MergeHistograms(kSignal, SignalHists);
+
   if (fDumpRootName != "") {
 
     Message(eInfo, "Dumping histograms into %s", fDumpRootName.Data());
@@ -186,16 +188,16 @@ PlotStack::MakeCanvas(TString FileBase, Int_t NumXBins, Double_t *XBins,
 
     // Signal Histograms
 
-    for (UInt_t iHist = 0; iHist != SignalHists.size(); ++iHist) {
+    for (auto iHist = SignalHolders.begin(); iHist != SignalHolders.end(); ++iHist) {
 
-      tempHist = (TH1D*) SignalHists[iHist]->Clone();
+      tempHist = (TH1D*) (*iHist)->fHist->Clone();
 
-      Message(eInfo, "%s  :  %f", fSignalFileInfo[iHist]->fTreeName.Data(),
+      Message(eInfo, "%s  :  %f", (*iHist)->fTree.Data(),
               tempHist->Integral(0, NumXBins + 1, "width"));
 
       dumpFile->WriteTObject(tempHist, TString::Format("%s-%s",
                                                        fDefaultExpr.Data(),
-                                                       fSignalFileInfo[iHist]->fTreeName.Data()
+                                                       (*iHist)->fTree.Data()
                                                        )
                              );
 
@@ -266,8 +268,6 @@ PlotStack::MakeCanvas(TString FileBase, Int_t NumXBins, Double_t *XBins,
   AddLegendEntry("Data", 1);
   SetDataIndex(int(AllHists.size()));
   AllHists.push_back(DataHist);
-
-  std::vector<HistHolder*> SignalHolders = MergeHistograms(kSignal, SignalHists);
 
   if (fSortSignal) {
     std::sort(SignalHolders.begin(), SignalHolders.end(), SortHistHolders);
