@@ -12,7 +12,6 @@
 #include "TLegend.h"
 #include "TProfile.h"
 
-#include "HistHolder.h"
 #include "PlotStack.h"
 
 ClassImp(PlotStack)
@@ -32,6 +31,51 @@ PlotStack::PlotStack()
 //--------------------------------------------------------------------
 PlotStack::~PlotStack()
 { }
+
+//--------------------------------------------------------------------
+std::vector<HistHolder*>
+PlotStack::MergeHistograms(FileType type, std::vector<TH1D*> hists) {
+
+  std::vector<HistHolder*> HistHolders;
+
+  auto *fileInfo = GetFileInfo(type);
+  TString previousEntry = "";
+  TH1D *tempMCHist = NULL;
+  HistHolder *tempHistHolder = NULL;
+
+  for (UInt_t iHist = 0; iHist != hists.size(); ++iHist) {
+
+    Message(eDebug, "About to process Histogram %i out of %i", iHist, hists.size()); 
+    Message(eDebug, "Entry is \"%s\". Previous entry is \"%s\"",
+            (*fileInfo)[iHist]->fEntry.Data(), previousEntry.Data());
+
+    if ((*fileInfo)[iHist]->fEntry != previousEntry) {
+
+      Message(eDebug, "Creating a new histogram");
+
+      previousEntry = (*fileInfo)[iHist]->fEntry;
+      TString tempName;
+      tempName.Format("StackedHist_%d",iHist);
+      tempMCHist = (TH1D*) hists[iHist]->Clone(tempName);
+      tempHistHolder = new HistHolder(tempMCHist, (*fileInfo)[iHist]->fEntry,
+                                      (*fileInfo)[iHist]->fColorStyle,
+                                      (*fileInfo)[iHist]->fTreeName,
+                                      (fForceTop == (*fileInfo)[iHist]->fEntry));
+      HistHolders.push_back(tempHistHolder);
+
+    } else {
+
+      tempMCHist->Add(hists[iHist]);
+      Message(eDebug, "Added to previous histogram.");
+
+    }
+
+    Message(eDebug, "Number of unique entries so far: %i", HistHolders.size());
+
+  }
+
+  return HistHolders;
+}
 
 //--------------------------------------------------------------------
 void
@@ -84,10 +128,6 @@ PlotStack::MakeCanvas(TString FileBase, Int_t NumXBins, Double_t *XBins,
     SignalHists = GetHistList(NumXBins, XBins, kSignal);
   Message(eDebug, "Number of Signal Histograms: %i", SignalHists.size());
 
-  std::vector<index_hist> SignalIndexHists;
-  for (UInt_t iHist = 0; iHist < SignalHists.size(); iHist++)
-    SignalIndexHists.push_back(index_hist(iHist, SignalHists[iHist]));
-
   SetLegendFill(true);
   TH1D *DataHist = (TH1D*) DataHists[0]->Clone("DataHist");
   Message(eDebug, "Final Data Histogram created at %p", DataHist);
@@ -98,41 +138,7 @@ PlotStack::MakeCanvas(TString FileBase, Int_t NumXBins, Double_t *XBins,
 
   Message(eInfo, "Number of data events: %i, integral: %f", (Int_t) DataHist->GetEntries(), DataHist->Integral("width"));
 
-  TString previousEntry = "";
-  TH1D *tempMCHist = NULL;
-  HistHolder *tempHistHolder = NULL;
-  std::vector<HistHolder*> HistHolders;
-
-  for (UInt_t iHist = 0; iHist != MCHists.size(); ++iHist) {
-
-    Message(eDebug, "About to process Histogram %i out of %i", iHist, MCHists.size()); 
-    Message(eDebug, "Entry is \"%s\". Previous entry is \"%s\"",
-            fMCFileInfo[iHist]->fEntry.Data(), previousEntry.Data());
-
-    if (fMCFileInfo[iHist]->fEntry != previousEntry) {
-
-      Message(eDebug, "Creating a new histogram");
-
-      previousEntry = fMCFileInfo[iHist]->fEntry;
-      TString tempName;
-      tempName.Format("StackedHist_%d",iHist);
-      tempMCHist = (TH1D*) MCHists[iHist]->Clone(tempName);
-      tempHistHolder = new HistHolder(tempMCHist, fMCFileInfo[iHist]->fEntry,
-                                      fMCFileInfo[iHist]->fColorStyle,
-                                      fMCFileInfo[iHist]->fTreeName,
-                                      (fForceTop == fMCFileInfo[iHist]->fEntry));
-      HistHolders.push_back(tempHistHolder);
-
-    } else {
-
-      tempMCHist->Add(MCHists[iHist]);
-      Message(eDebug, "Added to previous histogram.");
-
-    }
-
-    Message(eDebug, "Number of unique entries so far: %i", HistHolders.size());
-
-  }
+  std::vector<HistHolder*> HistHolders = MergeHistograms(kBackground, MCHists);
 
   for (UInt_t iTemp = 0; iTemp != fTemplateEntries.size(); ++iTemp) {
 
@@ -260,27 +266,26 @@ PlotStack::MakeCanvas(TString FileBase, Int_t NumXBins, Double_t *XBins,
   SetDataIndex(int(AllHists.size()));
   AllHists.push_back(DataHist);
 
+  std::vector<HistHolder*> SignalHolders = MergeHistograms(kSignal, SignalHists);
+
   if (fSortSignal) {
-    std::sort(SignalIndexHists.begin(), SignalIndexHists.end(), SortPairs);
+    std::sort(SignalHolders.begin(), SignalHolders.end(), SortHistHolders);
     Message(eInfo, "Signals sorted");
   }
 
-  for (UInt_t iHist_ = 0; iHist_ != SignalIndexHists.size(); ++iHist_) {
-    UInt_t iHist = SignalIndexHists[iHist_].first;
-
-    Message(eDebug, "Processing Signal Hist %i of %i", iHist, SignalHists.size());
+  for (auto iHist = SignalHolders.begin(); iHist != SignalHolders.end(); ++iHist) {
 
     if (fAddSignal) {                            // Do some clever things if we're adding signal to backgrounds
 
       if (fMakeRatio)                            // All possible signals show up on the ratio pad
         AddRatioLine(int(AllHists.size()));
       if (AllHists.size() > 1)
-        SignalHists[iHist]->Add(AllHists[0]);    // Add the background to the signals
+        (*iHist)->fHist->Add(AllHists[0]);    // Add the background to the signals
 
     }
 
-    AllHists.push_back(SignalHists[iHist]);
-    AddLegendEntry(fSignalFileInfo[iHist]->fEntry, 1, 2, fSignalFileInfo[iHist]->fColorStyle);
+    AllHists.push_back((*iHist)->fHist);
+    AddLegendEntry((*iHist)->fEntry, 1, 2, (*iHist)->fColor);
     Message(eDebug, "There are now %i total histograms to plot.", AllHists.size());
   }
 

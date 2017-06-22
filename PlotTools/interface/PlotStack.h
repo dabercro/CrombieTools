@@ -9,6 +9,7 @@
 #ifndef CROMBIETOOLS_PLOTTOOLS_PLOTSTACK_H
 #define CROMBIETOOLS_PLOTTOOLS_PLOTSTACK_H
 
+#include "HistHolder.h"
 #include "FileConfigReader.h"
 
 /**
@@ -29,7 +30,10 @@ class PlotStack : public FileConfigReader
   /// Copy this PlotStack for parallelization
   PlotStack* Copy        ();
 
-  /// Choose the binning of your plots and make then.
+  /// Merge a vector of histograms into a vector of HistHolders
+  std::vector<HistHolder*>  MergeHistograms ( FileType type, std::vector<TH1D*> hists );
+
+  /// Choose the binning of your plots and make then
   void MakeCanvas        ( TString FileBase, Int_t NumXBins, Double_t *XBins,
                            TString XLabel, TString YLabel = "", Bool_t logY = false );
 

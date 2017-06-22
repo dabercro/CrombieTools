@@ -6,7 +6,6 @@ import ROOT
 OutTreeName = 'OutTree'
 
 os.system('crombie maketree ' + OutTreeName)
-ROOT.gROOT.LoadMacro(OutTreeName + '.cc+')
 ROOT.gROOT.LoadMacro('slimmer.cc+')
 
 # Load any other needed macros here

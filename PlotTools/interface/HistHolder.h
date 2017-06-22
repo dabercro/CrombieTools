@@ -1,13 +1,9 @@
 #ifndef CROMBIETOOLS_PLOTTOOLS_HISTHOLDER_H
 #define CROMBIETOOLS_PLOTTOOLS_HISTHOLDER_H
 
-#include <utility>
-
 #include "TH1D.h"
 #include "TH1.h"
 #include "TString.h"
-
-typedef std::pair<unsigned int, TH1D*> index_hist;
 
 struct HistHolder
 {
@@ -39,11 +35,6 @@ Bool_t SortHistHolders ( HistHolder *h1, HistHolder *h2 )
     return false;
   else
     return h1->fHist->Integral() > h2->fHist->Integral();
-}
-
-Bool_t SortPairs( index_hist left, index_hist right )
-{
-  return left.second->Integral() > right.second->Integral();
 }
 
 #endif
