@@ -10,6 +10,7 @@
 #ifndef CROMBIETOOLS_PLOTTOOLS_PLOTBASE_H
 #define CROMBIETOOLS_PLOTTOOLS_PLOTBASE_H
 
+#include <utility>
 #include <vector>
 #include <type_traits>
 
@@ -81,6 +82,7 @@ class PlotBase : virtual public Debug
   inline    void         SetDefaultTree           ( TTree *tree )                                 { fDefaultTree = tree;         }
   /// Set the default weight for each line in the plot.
   inline    void         SetDefaultWeight         ( TCut cut )                                    { fDefaultCut = cut;           }
+  inline    void         SetDefaultCut            ( const char* cut )                             { SetDefaultWeight(TCut(cut)); }
   /// Set the default weight for each line in the plot.
   inline    void         SetDefaultWeight         ( const char* cut )                             { SetDefaultWeight(TCut(cut)); }
   /// Set the default expression to be plotted on the x-axis for each line in the plot
@@ -177,7 +179,7 @@ class PlotBase : virtual public Debug
   /// Set the type of CMS label for the plot
   inline    void         SetCMSLabel              ( TString type )                                { fCMSLabel = type;            }
   /// Adds a dotted line in order to show cuts.
-  inline    void         AddCutLine               ( Double_t loc )                                { fCutLines.push_back(loc);    }
+  inline    void         AddCutLine               ( Double_t loc, bool is_vert = true ) { fCutLines.push_back(std::make_pair(loc, is_vert)); }
   /// Resets the number of cut lines to plot
   inline    void         ResetCutLines            ()                                              { fCutLines.resize(0);         }
   /// Sets the style for the cut lines.
@@ -271,12 +273,14 @@ class PlotBase : virtual public Debug
   /// Options for lines
   template<class T> TString  GetOpts              ( T* );
 
-  std::vector<Double_t>      fCutLines;                  ///< Locations for dashed lines for cuts
+  std::vector<std::pair<Double_t, bool>> fCutLines;      ///< Locations for dashed lines for cuts, and bools for verticality
   Color_t                    fCutColor = kRed;           ///< Color of the cuts lines
   Int_t                      fCutWidth = 2;              ///< Width of the cuts lines
   Int_t                      fCutStyle = 2;              ///< Style of the cuts lines
   Double_t                   fCutYMin = 0.0;             ///< Minimum value of cut line y
   Double_t                   fCutYMax = 0.0;             ///< Maximum value of cut line y
+  Double_t                   fCutXMin = 0.0;             ///< Minimum value of cut line x
+  Double_t                   fCutXMax = 0.0;             ///< Maximum value of cut line x
 
   TString                    fDrawOpts = "";             ///< The options that all lines are drawn with
 
@@ -441,9 +445,15 @@ void
 PlotBase::DrawCutLines() {
   // Draw the cuts lines
   for (UInt_t iCut = 0; iCut != fCutLines.size(); ++iCut) {
-    Message(eInfo, "Drawing a cut line at %f.", fCutLines[iCut]);
+    Message(eInfo, "Drawing a cut line at %f.", fCutLines[iCut].first);
 
-    TLine *aCutLine = new TLine(fCutLines[iCut], fCutYMin, fCutLines[iCut], fCutYMax);
+    TLine *aCutLine;
+
+    if (fCutLines[iCut].second)
+      aCutLine = new TLine(fCutLines[iCut].first, fCutYMin, fCutLines[iCut].first, fCutYMax);
+    else
+      aCutLine = new TLine(fCutXMin, fCutLines[iCut].first, fCutXMax, fCutLines[iCut].first);
+
     aCutLine->SetLineColor(fCutColor);
     aCutLine->SetLineWidth(fCutWidth);
     aCutLine->SetLineStyle(fCutStyle);
@@ -456,13 +466,16 @@ PlotBase::DrawCutLines() {
 
 /**
    The options for anything derived from a TH1 is "hist".
-   The optsion for anything derived from a TGraphErrors is "3".
+   The options for anything derived from a TGraphErrors is "3".
 */
 
 template<class T>
 TString PlotBase::GetOpts(T*)
 {
   Message(eDebug, "All options come with: %s", fDrawOpts.Data());
+
+  if (fDrawOpts)
+    return fDrawOpts;
 
   if (std::is_base_of<TH1, T>::value)
     return fDrawOpts + "hist";
@@ -489,6 +502,8 @@ void PlotBase::LineDrawing(std::vector<T*> theLines, Int_t index, Bool_t same)
   if (!same) {
     fCutYMin = theLines[index]->GetMinimum();
     fCutYMax = theLines[index]->GetMaximum();
+    fCutXMin = theLines[index]->GetXaxis()->GetXmin();
+    fCutXMax = theLines[index]->GetXaxis()->GetXmax();
   }
 
   TString options = GetOpts(theLines[index]);

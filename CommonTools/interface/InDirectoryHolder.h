@@ -7,6 +7,7 @@
 #ifndef CROMBIETOOLS_COMMONTOOLS_INDIRECTORYHOLDER_H
 #define CROMBIETOOLS_COMMONTOOLS_INDIRECTORYHOLDER_H
 
+#include <iostream>
 #include <sys/stat.h>
 
 #include "TString.h"
