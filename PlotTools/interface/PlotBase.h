@@ -474,7 +474,7 @@ TString PlotBase::GetOpts(T*)
 {
   Message(eDebug, "All options come with: %s", fDrawOpts.Data());
 
-  if (fDrawOpts)
+  if (fDrawOpts != "")
     return fDrawOpts;
 
   if (std::is_base_of<TH1, T>::value)
