@@ -4,7 +4,7 @@ date=$1
 
 projName=`git rev-parse --show-toplevel`
 
-docs=`find $projName -name docs`
+docs=`find $projName -name docs | grep --invert-match '\/.git\/'`
 
 if [ ! -f $docs/presentation.tex ]
 then
