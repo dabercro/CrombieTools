@@ -134,6 +134,12 @@ PlotHists::MakeHists(Int_t NumXBins, Double_t *XBins)
     if (fInExpr.size() != 0)
       inExpr = fInExpr[iPlot];
 
+    if (!inTree || inExpr == "" || inCut == "") {
+      Message(eError, "There is a problem with one of these in plot %i", iPlot);
+      Message(eError, "Tree: %p, Expression: %s, Cut: %s", inTree, inExpr.Data(), inCut.GetTitle());
+      exit(12);
+    }
+
     TString tempName;
     tempName.Form("Hist_%d", fPlotCounter);
     fPlotCounter++;
