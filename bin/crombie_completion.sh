@@ -8,7 +8,7 @@
 #
 
 dir=$CROMBIEPATH/scripts                     # First get the directory of all the executable scripts
-files=($dir/*.[p,s]?)                        # Get the list of files in the first level of this directory
+files=($dir/*.[p,s]? $dir/*.R)               # Get the list of files in the first level of this directory
 
 subcommands=()                               # Initialize list of crombie subcommands
 

@@ -1,7 +1,7 @@
 #!/bin/bash
 
 dir=$CROMBIEPATH/scripts                 # Location of scripts to run from crombie
-scripts=($dir/*.[p,s]? $dir/*/*.[p,s]?)  # Array of the scripts
+scripts=($dir/*.[p,s]? $dir/*/*.[p,s]? $dir/*.R)   # Array of the scripts
 
 subcommands=()                           # Gather the subcommands in case the user calls for help
 
