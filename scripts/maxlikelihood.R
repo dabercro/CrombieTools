@@ -68,7 +68,7 @@ make_matrix <- function (file, uncertainties=FALSE) {
 
   # Add some columns
 
-  output <- mutate(output, split_loc=regexpr("/", reg_proc, perl=T))
+  output <- mutate(output, split_loc=regexpr("/", reg_proc))
   output <- mutate(output,
                    region=substr(reg_proc, 1, split_loc - 1),
                    process=substr(reg_proc, split_loc + 1, length(reg_proc))
