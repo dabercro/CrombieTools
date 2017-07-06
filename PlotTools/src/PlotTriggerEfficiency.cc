@@ -20,8 +20,20 @@ PlotTriggerEfficiency::MakeCanvas(TString FileBase, Int_t NumXBins, Double_t *XB
   Message(eDebug, "Drawing with: %s", drawing.Data());
 
   fChain->Draw(drawing, fDefaultCut);
-  TGraphAsymmErrors* plot = new TGraphAsymmErrors(result_holder->ProjectionX("pass", 2, -1),
-                                                  result_holder->ProjectionX("all"));
+  TH1D *allhist = result_holder->ProjectionX("all");
+  for (int iBin = 1; iBin < NumXBins + 1; iBin++) {
+    Message(eDebug, "Bin: %i, pass: %f, fail: %f", iBin,
+            result_holder->GetBinContent(iBin, 2), result_holder->GetBinContent(iBin, 1));
+
+    // If no events at all, just pretend a buttload failed.
+    if (!allhist->GetBinContent(iBin))
+      allhist->SetBinContent(iBin, 1000000);
+  }
+
+  TGraphAsymmErrors* plot = new TGraphAsymmErrors(NumXBins);
+  Message(eDebug, "Number of graph points: %i", plot->GetN());
+  plot->Divide(result_holder->ProjectionX("pass", 2, -1), allhist);
+  Message(eDebug, "Number of graph points: %i", plot->GetN());
 
   plot->GetYaxis()->SetRangeUser(0.0, 1.2);
   mapped.push_back(plot);
@@ -33,6 +45,7 @@ PlotTriggerEfficiency::MakeCanvas(TString FileBase, Int_t NumXBins, Double_t *XB
   mapped.clear();
 
   delete plot;
+  delete allhist;
   delete result_holder;
 }
 

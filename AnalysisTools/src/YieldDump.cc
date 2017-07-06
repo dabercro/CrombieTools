@@ -29,10 +29,10 @@ YieldDump::DumpYieldFiles(std::string out_directory, Int_t NumXBins, Double_t *X
     std::stringstream out_string;
 
     // Make the first row of the datacard
-    for (int iBin = 0; iBin < NumXBins; iBin++) {
+    for (int iBin = 1; iBin < NumXBins + 1; iBin++) {
       if (out_string.str() != "")
         out_string << delim;
-      out_string << "bin_" << iBin << delim << "bin_" << iBin << "_unc";
+      out_string << "bin_" << iBin << delim << "bin_" << iBin << ".stat_unc";
     }
     out_string << "\n";
 
