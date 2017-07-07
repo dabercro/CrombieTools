@@ -3,6 +3,8 @@
 library(plyr)
 library(reshape2)
 
+args <- commandArgs(trailingOnly=TRUE)
+
 # Get a debug flag
 debug = !is.na(Sys.getenv("DEBUG", NA))
 
@@ -125,7 +127,14 @@ result <- optim(rep(1.0, ncol(theta_matrix)), log_likelihood)
 
 # Write output file
 
-sink("datacards/fit_result.txt")
+
+if (sum(args == c("time")) == 1) {
+  out_name <- paste("datacards/fit_result_", format(Sys.time(), "%y%m%d_%H%M"), ".txt", sep="")
+} else {
+  out_name <- "datacards/fit_result.txt"
+}
+
+sink(out_name)
 for (i_proc in 1:ncol(theta_matrix)) {
   cat(colnames(theta_matrix)[i_proc])
   cat("    ")
@@ -133,3 +142,5 @@ for (i_proc in 1:ncol(theta_matrix)) {
   cat("\n")
 }
 sink()
+
+print(out_name)
