@@ -12,6 +12,7 @@
 
 #include <fstream>
 #include <iostream>
+#include <map>
 #include <set>
 #include <vector>
 #include "TColor.h"
@@ -135,6 +136,9 @@ class FileConfigReader : public InOutDirectoryHolder, public PlotHists
   /// Scales the cross section of the matching MC samples by a factor of 1.0 + scale, destroying the old cross section in the process.
   void                 ScaleBackgrounds     ( TString entry, Double_t scale, SearchBy search = kLimitName, FileType type = kBackground );
 
+  /// Loads the fit result into memory for this stacks to make
+  void LoadFitResult      ( const char* fit_result );
+
  protected:
   Double_t   fLuminosity = 2000.0;                        ///< The Luminosity in inverse pb
   TString    fDataTreeName = "data";                      ///< The base name of the data in a limit tree
@@ -187,6 +191,8 @@ class FileConfigReader : public InOutDirectoryHolder, public PlotHists
   std::vector<std::vector<TFile*>> fAllFiles;             ///< Vector of all open files
 
   TString    fDataExpression = "";                        ///< Holds an alternative expression to plot data in
+
+  std::map<TString, double> fFitResult;                   ///< Holds the fit results
 
 };
 
@@ -607,10 +613,16 @@ FileConfigReader::GetHistList(Int_t NumXBins, Double_t *XBins, std::vector<TStri
         continue;
 
       theHists[iFileName]->Scale((*theFileInfo)[iFile]->fXSecWeight);
+
+      auto scale = fFitResult.find((*theFileInfo)[iFile]->fTreeName);
+      if (scale != fFitResult.end()) {
+        Message(eDebug, "Scaling %s by %f", scale->first.Data(), scale->second);
+        theHists[iFileName]->Scale(scale->second);
+      }
+
       ++iFileName;
 
     }
-
   }
 
   return theHists;
@@ -769,6 +781,33 @@ FileConfigReader::ScaleBackgrounds(TString entry, Double_t scale, SearchBy searc
 
   }
 
+}
+
+//--------------------------------------------------------------------
+void
+FileConfigReader::LoadFitResult(const char* fit_result) {
+
+  DisplayFunc(__func__);
+
+  // Clear out previous loaded results
+  fFitResult.clear();
+
+  // Open file
+  std::ifstream fitFile;
+  fitFile.open(fit_result);
+
+  // Read it in
+  TString key;
+  double value;
+
+  while (!fitFile.eof()) {
+    fitFile >> key >> value;
+
+    if (key != "") {
+      Message(eDebug, "Key: %s, Value: %f", key.Data(), value);
+      fFitResult[key] = value;
+    }
+  }
 }
 
 #endif

@@ -9,8 +9,6 @@
 #ifndef CROMBIETOOLS_PLOTTOOLS_PLOTSTACK_H
 #define CROMBIETOOLS_PLOTTOOLS_PLOTSTACK_H
 
-#include "TString.h"
-
 #include "HistHolder.h"
 #include "FileConfigReader.h"
 
@@ -86,9 +84,6 @@ class PlotStack : public FileConfigReader
   /// Use this to set whether the signal sits on top or not
   void SetAddSignal      ( Bool_t add )               { fAddSignal = add;                         }
 
-  /// Loads the fit result into memory for this stacks to make
-  void LoadFitResult      ( const char* fit_result );
-
  private:
   TString               fForceTop = "";             ///< A legend entry that is on the top of backgrounds
   Double_t              fMinLegendFrac = 0.0;       ///< If a background contributes less than this, it's grouped in others
@@ -105,8 +100,6 @@ class PlotStack : public FileConfigReader
   Bool_t                fSortBackground = true;     ///< Bool to sort the backgrounds
   Bool_t                fSortSignal = true;         ///< Bool to sort the signals
   Bool_t                fAddSignal = true;          ///< Bool to determine where the signal sits
-
-  std::map<TString, double> fFitResult;             ///< Holds the fit results
 
   ClassDef(PlotStack, 1)
 };

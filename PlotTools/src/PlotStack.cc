@@ -6,7 +6,6 @@
    @author Daniel Abercrombie <dabercro@mit.edu>
 */
 
-#include <fstream>
 #include <algorithm>
 
 #include "TFile.h"
@@ -34,33 +33,10 @@ PlotStack::~PlotStack()
 { }
 
 //--------------------------------------------------------------------
-void
-PlotStack::LoadFitResult(const char* fit_result) {
-
-  // Clear out previous loaded results
-  fFitResult.clear();
-
-  // Open file
-  std::ifstream fitFile;
-  fitFile.open(fit_result);
-
-  // Read it in
-  TString key;
-  double value;
-
-  while (!fitFile.eof()) {
-    fitFile >> key >> value;
-
-    Message(eDebug, "Key: %s, Value: %f", key.Data(), value);
-
-    if (key != "")
-      fFitResult[key] = value;
-  }
-}
-
-//--------------------------------------------------------------------
 std::vector<HistHolder*>
 PlotStack::MergeHistograms(FileType type, std::vector<TH1D*> hists) {
+
+  DisplayFunc(__func__);
 
   std::vector<HistHolder*> HistHolders;
 
@@ -98,16 +74,6 @@ PlotStack::MergeHistograms(FileType type, std::vector<TH1D*> hists) {
     }
 
     Message(eDebug, "Number of unique entries so far: %i", HistHolders.size());
-
-  }
-
-  // Multiply based on the fit results
-
-  for (auto iHist = HistHolders.begin(); iHist != HistHolders.end(); ++iHist) {
-
-    auto scale = fFitResult.find((*iHist)->fTree);
-    if (scale != fFitResult.end())
-      (*iHist)->fHist->Scale(scale->second);
 
   }
 
