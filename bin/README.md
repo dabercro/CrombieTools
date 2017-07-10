@@ -103,6 +103,16 @@ optional arguments:
   </tr>
   <tr>
     <td align="left" valign="top">
+      <code>fit</code>
+    </td>
+    <td align="left">
+      This looks inside a specified directory and does a fit
+      to adjust processes and bins based on the data card inside.
+      See the [fit page](@ref fit) for details.
+    </td>
+  </tr>
+  <tr>
+    <td align="left" valign="top">
       <code>generatedocs</code>
     </td>
     <td align="left">

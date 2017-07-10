@@ -30,6 +30,9 @@ class PlotTriggerEfficiency : public PlotBase, public InDirectoryHolder
   /// Only takes data files, so this function is named appropriately
   void  AddDataFile      ( TString name )   { fChain->Add(AddInDir(name) + "/events"); }
 
+  /// Reset the data files
+  void  ResetDataFiles   ()                 { delete fChain; fChain = new TChain();    }
+
   /**
      Sets the cut for the trigger, which must evaluate to 1 or 0.
      The other cut should be set using PlotBase::SetDefaultCut

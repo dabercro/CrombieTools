@@ -7,11 +7,13 @@ testDir="test"
 for dir in `ls $CROMBIEPATH/templates`
 do
 
+    # Ignore the files directly in the templates directory
     if [ -f $CROMBIEPATH/templates/$dir ]
     then
         continue
     fi
 
+    # Make a local directory if needed
     if [ ! -d $dir ]
     then
         mkdir $dir

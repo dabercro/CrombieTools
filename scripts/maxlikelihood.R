@@ -21,9 +21,11 @@ names(data) <- file_suffs
 
 ## READ THE FILES ##
 
+in_directory <- args[1]
+
 for (i_file in 1:length(file_suffs)) {
 
-  file_name <- paste("datacards/datacard_", file_suffs[i_file], ".csv", sep="")
+  file_name <- paste(in_directory, "/datacard_", file_suffs[i_file], ".csv", sep="")
   if (!file.exists(file_name)) {
 
     print(paste("File missing:", file_name))
