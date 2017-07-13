@@ -21,11 +21,11 @@ names(data) <- file_suffs
 
 ## READ THE FILES ##
 
-in_directory <- args[1]
+file_directory <- args[1]
 
 for (i_file in 1:length(file_suffs)) {
 
-  file_name <- paste(in_directory, "/datacard_", file_suffs[i_file], ".csv", sep="")
+  file_name <- paste(file_directory, "/datacard_", file_suffs[i_file], ".csv", sep="")
   if (!file.exists(file_name)) {
 
     print(paste("File missing:", file_name))
@@ -63,11 +63,15 @@ if (debug) {
 make_matrix <- function (file, uncertainties=FALSE) {
 
   if (uncertainties) {
-    output <- melt((t(data[[file]])[c(FALSE, TRUE),])^2,
-                   varnames=c("bin", "reg_proc"))
+    output <- melt((t(data[[file]]))^2,
+                   varnames=c("bin", "reg_proc"))[c(FALSE, TRUE),]
   } else {
-    output <- melt(t(data[[file]])[c(TRUE, FALSE),],
-                   varnames=c("bin", "reg_proc"))
+    output <- melt(t(data[[file]]),
+                   varnames=c("bin", "reg_proc"))[c(TRUE, FALSE),]
+  }
+
+  if (debug) {
+    print(output)
   }
 
   # Add some columns
@@ -129,11 +133,11 @@ result <- optim(rep(1.0, ncol(theta_matrix)), log_likelihood)
 
 # Write output file
 
-
 if (sum(args == c("time")) == 1) {
-  out_name <- paste("datacards/fit_result_", format(Sys.time(), "%y%m%d_%H%M"), ".txt", sep="")
+  out_name <- paste(file_directory, "/fit_result_", format(Sys.time(), "%y%m%d_%H%M"),
+                    ".txt", sep="")
 } else {
-  out_name <- "datacards/fit_result.txt"
+  out_name <- paste(file_directory, "/fit_result.txt", sep="")
 }
 
 sink(out_name)
