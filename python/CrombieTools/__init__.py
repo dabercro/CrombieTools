@@ -45,6 +45,7 @@ dependencies = { 'FlatSkimmer' :         ['GoodLumiFilter'],
                  'CorrectorApplicator' : ['Corrector'],
                  'TmvaClassifier' :      ['TreeContainer'],
                  'FitTools' :            ['HistAnalysis'],
+                 'TwoScaleFactorCorrector' : ['Corrector']
                  }
 
 loadAddOn = '+'

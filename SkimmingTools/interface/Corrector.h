@@ -9,6 +9,7 @@
 #ifndef CROMBIETOOLS_SKIMMINGTOOLS_CORRECTOR_H
 #define CROMBIETOOLS_SKIMMINGTOOLS_CORRECTOR_H
 
+#include <utility>
 #include <vector>
 #include "TString.h"
 #include "TFile.h"
@@ -45,6 +46,8 @@ class Corrector : virtual public Debug
   /// Set two histograms to divide in order to obtain the correction histogram.
   void                  SetCorrectionHist ( TString hist1, TString hist2 );
 
+  /// Evaluate the TTree pointer fInTree at its current entry and return a status bit corresponding to cut.
+  std::pair<bool, Float_t>    EvaluateWithFlag    ();
   /// Evaluate the TTree pointer fInTree at its current entry.
   virtual    Float_t    Evaluate          ();
 
@@ -80,15 +83,14 @@ class Corrector : virtual public Debug
  protected:
 
   TString               fName;                        ///< Name of branch to write to
-  virtual   void        InitializeTree    ();         ///< Function to initialize TTreeFormula on the tree
+  void                  InitializeTree    ();         ///< Function to initialize TTreeFormula on the tree
 
+  TTree*                fInTree = NULL;               ///< Pointer to tree being read
   TString               fInCut = "1";                 ///< Corrector cut
   TTreeFormula*         fCutFormula = NULL;           ///< Formula for cut
   Bool_t                fIsCopy = false;              ///< Track if instance is a copy
 
  private:
-  TTree*                fInTree = NULL;               ///< Pointer to tree being read
-
   TFile*                fCorrectionFile = NULL;       ///< Name of file containing correction histogram
   TH1*                  fCorrectionHist = NULL;       ///< Name of correction histogram
   void                  SetMinMax         ();         ///< Set the mininum and maximum values for each histogram axis

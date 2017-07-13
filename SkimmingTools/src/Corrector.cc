@@ -88,13 +88,16 @@ Double_t Corrector::GetFormulaResult(Int_t index)
             through AddInExpression(), unless the event does not pass the cut
             set by SetInCut(). In that case, a default value is returned
             (depending on if it's a scale factor or an uncertainty).
+            First part of the pair is a bool determining whether or not that cut was passed
 */
 
-Float_t Corrector::Evaluate()
+std::pair<bool, Float_t> Corrector::EvaluateWithFlag()
 {
+  bool flag = false;
   Float_t Output = (fHistReader == eZeroCenteredUnc) ? 0.0 : 1.0;
 
   if (fInTree != NULL && fCutFormula->EvalInstance() != 0) {
+    flag = true;
     if (fNumDims == 1) {
       Double_t evalX = GetFormulaResult(0);
       Output = fCorrectionHist->GetBinContent(fCorrectionHist->FindBin(evalX));
@@ -115,7 +118,23 @@ Float_t Corrector::Evaluate()
   if (fHistReader == eUnityCenteredUnc)
     Output -= 1.0;
 
-  return Output;
+  return std::make_pair(flag, Output);
+
+}
+
+//--------------------------------------------------------------------
+
+/**
+   @returns value of correction histogram using the expressions added
+            through AddInExpression(), unless the event does not pass the cut
+            set by SetInCut(). In that case, a default value is returned
+            (depending on if it's a scale factor or an uncertainty).
+*/
+
+Float_t Corrector::Evaluate()
+{
+
+  return EvaluateWithFlag().second;
 
 }
 
@@ -133,10 +152,12 @@ void Corrector::InitializeTree()
     fFormulas.resize(0);
   }
 
-  TTreeFormula* tempFormula;
-  for (UInt_t iExpression = 0; iExpression != fInExpressions.size(); ++iExpression) {
-    tempFormula = new TTreeFormula(fInExpressions[iExpression],fInExpressions[iExpression],fInTree);
-    fFormulas.push_back(tempFormula);
+  if (fInExpressions.size() != 0) {
+    TTreeFormula* tempFormula;
+    for (UInt_t iExpression = 0; iExpression != fInExpressions.size(); ++iExpression) {
+      tempFormula = new TTreeFormula(fInExpressions[iExpression],fInExpressions[iExpression],fInTree);
+      fFormulas.push_back(tempFormula);
+    }
   }
 }
 
