@@ -38,11 +38,13 @@ def MakeTwoScaleFactorCorrector(Name, inCut,
     @returns a filled Corrector object.
     """
 
-    corrector = newCorrector(Name,
-                             MakeCorrector('', leg1_loose_expr, '1', looseFile, looseHist),
-                             MakeCorrector('', leg1_tight_expr, leg1_tightcut, tightFile, tightHist),
-                             MakeCorrector('', leg2_loose_expr, '1', looseFile, looseHist),
-                             MakeCorrector('', leg2_tight_expr, leg2_tightcut, tightFile, tightHist))
+    corrector = newTwoScaleFactorCorrector(
+        Name,
+        MakeCorrector('', leg1_loose_expr, '1', looseFile, looseHist),
+        MakeCorrector('', leg1_tight_expr, leg1_tightcut, tightFile, tightHist),
+        MakeCorrector('', leg2_loose_expr, '1', looseFile, looseHist),
+        MakeCorrector('', leg2_tight_expr, leg2_tightcut, tightFile, tightHist)
+    )
 
     corrector.SetInCut(inCut)
 

@@ -11,6 +11,9 @@ def GetNumEntries(fileName, className, branches=[]):
 
     testFile = ROOT.TFile(fileName)
 
+    if testFile.IsZombie():
+        return -2
+
     if len(testFile.GetListOfKeys()) == 0:
         return -1
 
@@ -47,6 +50,8 @@ def main(argv):
 
     args = parser.parse_args(argv)
 
+    total = 0
+
     exitcode = 0
 
     for checkfile in args.files:
@@ -58,14 +63,21 @@ def main(argv):
             print 'Error, file does not exist.'
             exitcode += 1
 
-        if NumberOfEvents < 0:
+        if NumberOfEvents == -1:
             # This means that no keys were found in the file
             print 'No keys were found in the file'
             exitcode += 100
+        elif NumberOfEvents == -2:
+            # The file is a zombie
+            print 'The file is a zombie'
+            exitcode += 10
         elif NumberOfEvents == 0:
             print 'Did not successfully find tree with events.'
             exitcode += 1
+        else:
+            total += NumberOfEvents
 
+    print 'Total number of events:', total
     print 'Exiting with exit code:', exitcode
 
     exit(exitcode)
