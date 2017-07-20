@@ -61,23 +61,24 @@ def main(argv):
 
         if os.path.isfile(checkfile):
             NumberOfEvents = GetNumEntries(checkfile, args.classname, args.branches)
+
+            if NumberOfEvents == -1:
+                # This means that no keys were found in the file
+                print 'No keys were found in the file'
+                exitcode += 100
+            elif NumberOfEvents == -2:
+                # The file is a zombie
+                print 'The file is a zombie'
+                exitcode += 10
+            elif NumberOfEvents == 0:
+                print 'Did not successfully find tree with events.'
+                exitcode += 1
+            else:
+                total += NumberOfEvents
+
         else:
             print 'Error, file does not exist.'
             exitcode += 1
-
-        if NumberOfEvents == -1:
-            # This means that no keys were found in the file
-            print 'No keys were found in the file'
-            exitcode += 100
-        elif NumberOfEvents == -2:
-            # The file is a zombie
-            print 'The file is a zombie'
-            exitcode += 10
-        elif NumberOfEvents == 0:
-            print 'Did not successfully find tree with events.'
-            exitcode += 1
-        else:
-            total += NumberOfEvents
 
     print 'Total number of events:', total
     if args.num_events and int(args.num_events) != int(total):

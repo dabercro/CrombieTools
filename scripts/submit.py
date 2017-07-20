@@ -278,6 +278,6 @@ if __name__ == '__main__':
         time.sleep(250)
         check_bad_files()
         check_jobs(jobs)
-        print jobs
+        print 'Jobs remaining: %i' % len(jobs)
 
     check_bad_files()
