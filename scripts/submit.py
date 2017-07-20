@@ -211,14 +211,17 @@ def check_jobs(jobs):
                 curs.execute("UPDATE queue SET status = 'failed' WHERE id = %s", job[0])
 
 
-    # Remove the held jobs
+    # Find jobs to resubmit
     resub = []
     for job in jobs:
         if job[0] in held_jobs:
             resub.append(job)
             curs.execute("UPDATE queue SET status = 'failed' WHERE id = %s", job[0])
 
+    # Remove the held jobs
     if submit(prepare_for_submit(resub)) == 0:
+        subprocess.call(['condor_rm', os.environ['USER'], '-constraint', "'JobStatus == 5'"],
+                        shell=True)
         report_submission(resub)
 
     conn.commit()
@@ -250,7 +253,7 @@ def check_bad_files():
 
     for book, datasets in samples.iteritems():
         for dataset in datasets:
-            print subprocess.check_call(
+            subprocess.check_call(
                 'echo "y" | /home/cmsprod/DynamicData/SmartCache/Client/requestSample.sh %s %s' % (book, dataset),
                 shell=True)
 

@@ -87,7 +87,16 @@ do
 
             if [ ! -d $(dirname `dirname $FULL_IN`) ]
             then
+
                 xrdcp root://xrootd.cmsaf.mit.edu//$INPUT_DIR/$IN_FILE .
+
+            else
+
+                NEW_INPUT_DIR=/scratch3/dabercro$INPUT_DIR
+                test -d $NEW_INPUT_DIR || mkdir -p $NEW_INPUT_DIR
+                xrdcp root://xrootd.cmsaf.mit.edu//$INPUT_DIR/$IN_FILE $NEW_INPUT_DIR
+                ln -s $NEW_INPUT_DIR/$IN_FILE $IN_FILE
+
             fi
 
         fi
