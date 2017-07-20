@@ -47,6 +47,8 @@ def main(argv):
                         help='Branches to search for in each file.')
     parser.add_argument('-c', '--class', metavar='CLASS', dest='classname', default='TTree',
                         help='Class name to search for entries.')
+    parser.add_argument('-v', '--verify', metavar='NUM', dest='num_events', default=0,
+                       help='Optionally verify that the tree has the proper number of events')
 
     args = parser.parse_args(argv)
 
@@ -78,6 +80,9 @@ def main(argv):
             total += NumberOfEvents
 
     print 'Total number of events:', total
+    if args.num_events and int(args.num_events) != int(total):
+        exitcode += 1000
+
     print 'Exiting with exit code:', exitcode
 
     exit(exitcode)

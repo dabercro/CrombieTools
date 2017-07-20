@@ -2,13 +2,16 @@
 
 
 import os
+import time
 import sys
 import logging
 import shutil
+import subprocess
 import MySQLdb
 
 import CrombieTools.LoadConfig
 
+from collections import defaultdict
 
 logging.basicConfig(level=logging.INFO)
 
@@ -46,29 +49,36 @@ def add_samples_to_database(sample_file_name):
             continue
 
         with open(file_list, 'r') as file_file:
-            files = [line.split()[1] for line in file_file if line.strip()]
+            files = [line.split()[1:3] for line in file_file if line.strip()]
 
         # Define a function that will separate the files and insert them into the submission queue
         input_files = ''
+        total_events = 0
 
         def add_job():
             if input_files:
                 output_dir = sample.split('+')[0]
                 output_files[output_dir] = output_files.get(output_dir, 0) + 1
+
+                full_out_dir = os.path.join(os.environ['CrombieOutDir'], output_dir)
+                if not os.path.exists(full_out_dir):
+                    os.makedirs(full_out_dir)
+
                 curs.execute(
                     """
                     INSERT IGNORE INTO queue
-                    (exe, input_dir, output_dir, input_files, output_file, cmssw, entered, scram_arch, base)
-                    VALUES (%s, %s, %s, %s, %s, %s, NOW(), %s, %s)
+                    (exe, input_dir, output_dir, input_files, output_file, cmssw, entered, scram_arch, base, total_events)
+                    VALUES (%s, %s, %s, %s, %s, %s, NOW(), %s, %s, %s)
                     """,
                     (os.environ['CrombieExe'],
                      os.path.join('/store/user/paus', os.environ['CrombieInSample'], sample),
-                     os.path.join(os.environ['CrombieOutDir'], output_dir),
+                     full_out_dir,
                      input_files,
                      '%s.root' % str(output_files[output_dir]).zfill(4),
                      os.environ['CMSSW_VERSION'],
                      os.environ['SCRAM_ARCH'],
-                     os.environ['CMSSW_BASE']
+                     os.environ['CMSSW_BASE'],
+                     total_events
                      )
                     )
 
@@ -76,15 +86,17 @@ def add_samples_to_database(sample_file_name):
         for index, file_name in enumerate(files):
             if index % int(os.environ['CrombieFilesPerJob']) == 0:
                 add_job()
-                input_files = file_name
+                input_files = file_name[0]
+                total_events = file_name[1]
             else:
-                input_files += ',%s' % file_name
+                input_files += ',%s' % file_name[0]
+                total_events += file_name[1]
 
         add_job()
 
     # Get all the new jobs and output directories from the database and return them
     curs.execute("SELECT id, output_dir, output_file FROM queue WHERE status = 'new'")
-    jobs = [(row[0], row[1], row[2]) for row in curs.fetchall()]
+    jobs = [(int(row[0]), row[1], row[2]) for row in curs.fetchall()]
 
     conn.commit()
     conn.close()
@@ -137,23 +149,129 @@ def prepare_for_submit(jobs):
 
 
 def submit(config_file):
-    pass
+
+    # Return the exit code from the condor_submit.
+    # Check that the configuration file exists first.
+    if os.path.exists(config_file):
+        return os.system('condor_submit %s' % config_file)
+    return 1
 
 
 def report_submission(jobs):
     conn, curs = connect()
 
-    for job in jobs:
-        curs.exectute("UPDATE queue SET status = 'submitted' WHERE id = %i", job)
+    for job, _, _ in jobs:
+        curs.execute("UPDATE queue SET status = 'submitted' WHERE id = %s", job)
 
+    conn.commit()
+    conn.close()
+
+
+def check_jobs(jobs):
+
+    # Check to see if any of the submitted jobs are still needing to be run
+    # Pop out jobs that are finished
+
+    conn, curs = connect()
+    
+    condor_q = "condor_q " + os.environ['USER'] + " {0} -format '%s\n' Args"
+    def get_job_list(constraint):
+
+        proc = subprocess.Popen([condor_q.format(constraint)],
+                                stdout=subprocess.PIPE,
+                                shell=True)
+
+        stdout, _ = proc.communicate()
+
+        return [int(id.strip()) for id in stdout.split('\n') \
+                    if id.strip()]
+
+    held_jobs = get_job_list("-constraint 'JobStatus == 5'")
+    running_jobs = get_job_list("-constraint 'JobStatus != 4'")
+
+    # Take care of all the completed jobs
+    for job in jobs:
+        if job[0] in running_jobs:
+            continue
+
+        output_file = os.path.join(job[1], job[2])
+        if os.path.exists(output_file):
+
+            curs.execute("SELECT num_events FROM queue WHERE id = ?", job[0])
+            num_events = curs.fetchone()
+
+            if subprocess.check_call(['crombie findtree --class TH1F --verify',
+                                      num_events[0], output_file],
+                                     shell=True) == 0:
+
+                curs.execute("UPDATE queue SET status = 'finished' WHERE id = %s", job[0])
+                jobs.pop(jobs.index(job))
+
+            else:
+                curs.execute("UPDATE queue SET status = 'failed' WHERE id = %s", job[0])
+
+
+    # Remove the held jobs
+    resub = []
+    for job in jobs:
+        if job[0] in held_jobs:
+            resub.append(job)
+            curs.execute("UPDATE queue SET status = 'failed' WHERE id = %s", job[0])
+
+    if submit(prepare_for_submit(resub)) == 0:
+        report_submission(resub)
+
+    conn.commit()
+    conn.close()
+
+
+def check_bad_files():
+    conn, curs = connect()
+
+    samples = defaultdict(set)
+
+    curs.execute('SELECT file_name, status FROM check_these')
+
+    # Verify the report
+    for file_name, status in curs.fetchall():
+        verified = False
+
+        if status == 'missing' and not os.path.exists(file_name):
+            verified = True
+
+        if (status == 'corrupt') and (subprocess.check_call(['crombie findtree', file_name],
+                                                            shell=True) != 0):
+            verified = True
+            os.remove(file_name)
+
+        split_name = file_name.split('/')
+        # Get the book name and add the dataset
+        samples['/'.join(split_name[-4:-2])].add(split_name[-2])
+
+    for book, datasets in samples.iteritems():
+        for dataset in datasets:
+            print subprocess.check_call(
+                'echo "y" | /home/cmsprod/DynamicData/SmartCache/Client/requestSample.sh %s %s' % (book, dataset),
+                shell=True)
+
+    curs.execute('DELETE FROM check_these')
     conn.commit()
     conn.close()
 
 
 if __name__ == '__main__':
 
+    check_bad_files()
     jobs = add_samples_to_database(sys.argv[1])
-    submit(prepare_for_submit(jobs))
-    #report_submission(jobs)
-    #while still_running(jobs):
-    #    time.sleep(600)
+
+    # If the submission works, report the submitted jobs
+    if submit(prepare_for_submit(jobs)) == 0:
+        report_submission(jobs)
+
+    while jobs:
+        time.sleep(250)
+        check_bad_files()
+        check_jobs(jobs)
+        print jobs
+
+    check_bad_files()
