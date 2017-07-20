@@ -90,11 +90,12 @@ do
 
                 xrdcp root://xrootd.cmsaf.mit.edu//$INPUT_DIR/$IN_FILE .
 
-            else
+            elif [ -d /scratch3/dabercro ]
+            then
 
                 NEW_INPUT_DIR=/scratch3/dabercro$INPUT_DIR
                 test -d $NEW_INPUT_DIR || mkdir -p $NEW_INPUT_DIR
-                xrdcp root://xrootd.cmsaf.mit.edu//$INPUT_DIR/$IN_FILE $NEW_INPUT_DIR
+                test -f $NEW_INPUT_DIR/$IN_FILE || xrdcp root://xrootd.cmsaf.mit.edu//$INPUT_DIR/$IN_FILE $NEW_INPUT_DIR
                 ln -s $NEW_INPUT_DIR/$IN_FILE $IN_FILE
 
             fi

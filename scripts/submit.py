@@ -87,10 +87,10 @@ def add_samples_to_database(sample_file_name):
             if index % int(os.environ['CrombieFilesPerJob']) == 0:
                 add_job()
                 input_files = file_name[0]
-                total_events = file_name[1]
+                total_events = int(file_name[1])
             else:
                 input_files += ',%s' % file_name[0]
-                total_events += file_name[1]
+                total_events += int(file_name[1])
 
         add_job()
 
@@ -105,6 +105,9 @@ def add_samples_to_database(sample_file_name):
 
 
 def prepare_for_submit(jobs):
+
+    if not jobs:
+        return ''
 
     # Check that the tarball exists
     tarball = os.path.join(os.environ['CMSSW_BASE'], 'condor.tgz')
@@ -197,7 +200,7 @@ def check_jobs(jobs):
         output_file = os.path.join(job[1], job[2])
         if os.path.exists(output_file):
 
-            curs.execute("SELECT num_events FROM queue WHERE id = ?", job[0])
+            curs.execute("SELECT num_events FROM queue WHERE id = %s", job[0])
             num_events = curs.fetchone()
 
             if subprocess.check_call(['crombie findtree --class TH1F --verify',
