@@ -34,12 +34,14 @@ if (isset($_GET['id'])) {
 
 if (isset($_GET['report'])) {
 
-  $stmt = $conn->prepare('INSERT IGNORE INTO check_these (file_name, reported) VALUES (?, NOW())');
-  $stmt->bind_param('s', str_replace(' ', '+', $_GET['report']));
+  $status = isset($_GET['status']) ? $_GET['status'] : 'missing';
+
+  $stmt = $conn->prepare('INSERT IGNORE INTO check_these (file_name, reported, status) VALUES (?, NOW(), ?)');
+  $stmt->bind_param('ss', str_replace(' ', '+', $_GET['report']), $status);
   $stmt->execute();
   $stmt->close();
 
-  echo 'Reported file to check: ' . $_GET['report'];
+  echo 'Reported ' . $status . ' file to check: ' . $_GET['report'];
   
 }
 
