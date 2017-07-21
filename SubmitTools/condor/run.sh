@@ -21,8 +21,6 @@ SCRAM_ARCH=$(./jq -r '.arch' params.json)
 CMSSW_VERSION=$(./jq -r '.cmssw' params.json)
 BASE=$(./jq -r '.base' params.json)
 
-env
-
 # Setup CMSSW
 
 source /cvmfs/cms.cern.ch/cmsset_default.sh
@@ -51,11 +49,11 @@ echo ""
 echo "After CMSSW setup"
 echo ""
 
-env | grep "CMSSW"
-
 # Download or softlink Panda files
 
+echo `pwd`
 ls -lh
+SCRATCH=/mnt/hadoop/scratch/dabercro
 
 for IN_FILE in $INPUT_FILES
 do
@@ -90,12 +88,19 @@ do
 
                 xrdcp root://xrootd.cmsaf.mit.edu//$INPUT_DIR/$IN_FILE .
 
-            elif [ -d /scratch3/dabercro ]
+            elif [ -d $SCRATCH ]
             then
 
-                NEW_INPUT_DIR=/scratch3/dabercro$INPUT_DIR
+                NEW_INPUT_DIR=$SCRATCH$INPUT_DIR
+
+                echo ""
+                echo "test -d $NEW_INPUT_DIR || mkdir -p $NEW_INPUT_DIR"
+                echo "test -f $NEW_INPUT_DIR/$IN_FILE || xrdcp root://xrootd.cmsaf.mit.edu//$INPUT_DIR/$IN_FILE $NEW_INPUT_DIR"
+                echo "ln -s $NEW_INPUT_DIR/$IN_FILE $IN_FILE"
+                echo ""
+
                 test -d $NEW_INPUT_DIR || mkdir -p $NEW_INPUT_DIR
-                test -f $NEW_INPUT_DIR/$IN_FILE || xrdcp root://xrootd.cmsaf.mit.edu//$INPUT_DIR/$IN_FILE $NEW_INPUT_DIR
+                test -f $NEW_INPUT_DIR/$IN_FILE || xrdcp root://xrootd.cmsaf.mit.edu//$INPUT_DIR/$IN_FILE $NEW_INPUT_DIR/$IN_FILE
                 ln -s $NEW_INPUT_DIR/$IN_FILE $IN_FILE
 
             fi
