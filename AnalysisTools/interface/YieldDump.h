@@ -10,6 +10,7 @@
 #define CROMBIETOOLS_ANALYSISTOOLS_YIELDDUMP_H
 
 #include <string>
+#include <sqlite3.h>
 
 #include "TCut.h"
 
@@ -27,7 +28,10 @@ class YieldDump : public FileConfigReader
   virtual ~YieldDump()  {}
 
   /// Add a region and selection cut to the list of regions to plot
-  void  AddRegion       (const char* region, const char* cut)  { fRegionCuts.push_back(TCut(region, cut)); }
+  void  AddRegion       (const char* region, const char* cut, const char* data_weight = "", const char* mc_weight = "")
+                            { fRegionCuts.push_back(TCut(region, cut));
+                              fDataWeights.push_back(TCut(data_weight));
+                              fMCWeights.push_back(TCut(mc_weight));     }
 
   /// Dump the yields into csv files in an output directory
   void  DumpYieldFiles  (std::string out_directory, Int_t NumXBins, Double_t *XBins);
@@ -36,7 +40,11 @@ class YieldDump : public FileConfigReader
   void  DumpYieldFiles  (std::string out_directory, Int_t NumXBins, Double_t MinX, Double_t MaxX);
 
  private:
-  std::vector<TCut> fRegionCuts;   ///< A separate vector of cuts for different regions
+  std::vector<TCut>     fRegionCuts;   ///< A separate vector of cuts for different regions
+  std::vector<TCut>     fDataWeights;  ///< The data weights for each region
+  std::vector<TCut>     fMCWeights;    ///< The MC weights for each region
+
+  void  SimpleExecute   (sqlite3* conn, const char* query);  ///< Wrapper that makes and executes statement
 
   ClassDef(YieldDump,1)
 };

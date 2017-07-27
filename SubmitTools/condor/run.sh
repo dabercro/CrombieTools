@@ -12,6 +12,8 @@ tar -xf condor.tgz bin/*/jq --strip=2
 
 # Get the parameters from the json file
 
+./jq . params.json
+
 EXE=$(./jq -r '.exe' params.json)
 INPUT_DIR=$(./jq -r '.input_dir' params.json)
 INPUT_FILES=$(./jq -r '.input_files | join(" ")' params.json)
