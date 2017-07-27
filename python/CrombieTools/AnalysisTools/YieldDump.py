@@ -1,3 +1,6 @@
+# This first import is to load the sqlite3 library
+import sqlite3
+
 from .. import Load
 
 newYieldDump = Load('YieldDump')
