@@ -7,12 +7,12 @@ args <- commandArgs(trailingOnly=TRUE)
 library(plyr)
 library(reshape2)
 
-load <- function(file_name) {
-  source(paste(Sys.getenv("CROMBIEPATH"), "/R/", file_name, ".R", sep=""))
+load <- function(file_name, local=FALSE) {
+  source(paste(Sys.getenv("CROMBIEPATH"), "/R/", file_name, ".R", sep=""), local=local)
 }
 
 # Load R scripts
-load("read_datacards")
+load("read_datacards", TRUE)
 load("shape_datacards")
 load("likelihood_functions")
 

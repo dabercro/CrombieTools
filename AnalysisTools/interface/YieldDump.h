@@ -9,7 +9,6 @@
 #ifndef CROMBIETOOLS_ANALYSISTOOLS_YIELDDUMP_H
 #define CROMBIETOOLS_ANALYSISTOOLS_YIELDDUMP_H
 
-#include <string>
 #include <sqlite3.h>
 
 #include "TCut.h"
@@ -33,11 +32,14 @@ class YieldDump : public FileConfigReader
                               fDataWeights.push_back(TCut(data_weight));
                               fMCWeights.push_back(TCut(mc_weight));     }
 
-  /// Dump the yields into csv files in an output directory
-  void  DumpYieldFiles  (std::string out_directory, Int_t NumXBins, Double_t *XBins);
+  /// Clear out the regions stored
+  void  ResetRegions    ()  { fRegionCuts.clear(); fDataWeights.clear(); fMCWeights.clear(); }
 
   /// Dump the yields into csv files in an output directory
-  void  DumpYieldFiles  (std::string out_directory, Int_t NumXBins, Double_t MinX, Double_t MaxX);
+  void  DumpYieldFiles  (const char* out_file, Int_t NumXBins, Double_t *XBins);
+
+  /// Dump the yields into csv files in an output directory
+  void  DumpYieldFiles  (const char* out_file, Int_t NumXBins, Double_t MinX, Double_t MaxX);
 
  private:
   std::vector<TCut>     fRegionCuts;   ///< A separate vector of cuts for different regions

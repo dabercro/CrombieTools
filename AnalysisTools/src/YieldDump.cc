@@ -1,8 +1,5 @@
 #include <set>
-#include <string>
 #include <utility>
-#include <fstream>
-#include <sstream>
 
 #include "TString.h"
 
@@ -32,7 +29,7 @@ YieldDump::SimpleExecute(sqlite3* conn, const char* query)
 
 //--------------------------------------------------------------------
 void
-YieldDump::DumpYieldFiles(std::string out_directory, Int_t NumXBins, Double_t *XBins)
+YieldDump::DumpYieldFiles(const char* out_file, Int_t NumXBins, Double_t *XBins)
 {
   std::vector<std::pair<FileType, std::string>> types_files = {
     std::make_pair(kBackground, "background"),
@@ -40,22 +37,20 @@ YieldDump::DumpYieldFiles(std::string out_directory, Int_t NumXBins, Double_t *X
     std::make_pair(kData, "data")
   };
 
-  assert(out_directory != "");
-
   std::string delim = ",";
 
   sqlite3 *conn;
-  if(sqlite3_open((out_directory + "/test.db").data(), &conn) != SQLITE_OK) {
-    Message(eError, "Can't open database in %s", out_directory.data());
+  if(sqlite3_open(out_file, &conn) != SQLITE_OK) {
+    Message(eError, "Can't open database in %s", out_file);
     sqlite3_close(conn);
     exit(50);
   }
 
   // Create table with all the uncertainties
 
-  SimpleExecute(conn, "CREATE TABLE types (type INT PRIMARY KEY, name VARCHAR(32))");
+  SimpleExecute(conn, "CREATE TABLE IF NOT EXISTS types (type INT PRIMARY KEY, name VARCHAR(32))");
   SimpleExecute(conn, R"SQL(
-CREATE TABLE yields (
+CREATE TABLE IF NOT EXISTS yields (
 region VARCHAR(64),
 process VARCHAR(64),
 bin INT,
@@ -72,7 +67,7 @@ PRIMARY KEY (region, process, bin)
 
     // Create the custom enum table
     sqlite3_stmt *types_stmt;
-    sqlite3_prepare_v2(conn, "INSERT INTO types VALUES(?, ?)", -1, &types_stmt, NULL);
+    sqlite3_prepare_v2(conn, "INSERT OR IGNORE INTO types VALUES(?, ?)", -1, &types_stmt, NULL);
 
     sqlite3_bind_int(types_stmt, 1, iTypeFile->first);
     sqlite3_bind_text(types_stmt, 2, iTypeFile->second.data(), -1, NULL);
@@ -85,15 +80,6 @@ PRIMARY KEY (region, process, bin)
 
     // Get the histogram
     auto processes = ReturnTreeNames(iTypeFile->first);
-    std::stringstream out_string;
-
-    // Make the first row of the datacard
-    for (int iBin = 1; iBin < NumXBins + 1; iBin++) {
-      if (out_string.str() != "")
-        out_string << delim;
-      out_string << "bin_" << iBin << delim << "bin_" << iBin << ".stat_unc";
-    }
-    out_string << "\n";
 
     for (unsigned int iCut = 0; iCut != fRegionCuts.size(); ++iCut) {
 
@@ -107,9 +93,7 @@ PRIMARY KEY (region, process, bin)
         auto proc_hist = GetHist(NumXBins, XBins, iTypeFile->first, *iProcess, kLimitName);
 
         // Get the contents of each histogram to dump into file
-        out_string << fRegionCuts[iCut].GetName() << "/" << *iProcess;
         for (int iBin = 1; iBin < NumXBins + 1; iBin++) {
-          out_string << delim << proc_hist->GetBinContent(iBin) << delim << proc_hist->GetBinError(iBin);
 
           // Dump into sqlite3 database
           sqlite3_stmt *yield_stmt;
@@ -130,14 +114,8 @@ PRIMARY KEY (region, process, bin)
         }
 
         delete proc_hist;
-        out_string << "\n";
       }
     }
-    std::string output_name = out_directory + "/datacard_" + iTypeFile->second + ".csv";
-    Message(eInfo, "Writing output file to %s", output_name.data());
-    std::ofstream output_file(output_name);
-    output_file << out_string.str();
-    output_file.close();
   }
 
   sqlite3_close(conn);
@@ -145,9 +123,9 @@ PRIMARY KEY (region, process, bin)
 
 //--------------------------------------------------------------------
 void
-YieldDump::DumpYieldFiles(std::string out_directory, Int_t NumXBins, Double_t MinX, Double_t MaxX)
+YieldDump::DumpYieldFiles(const char* out_file, Int_t NumXBins, Double_t MinX, Double_t MaxX)
 {
   Double_t XBins[NumXBins+1];
   ConvertToArray(NumXBins, MinX, MaxX, XBins);
-  DumpYieldFiles(out_directory, NumXBins, XBins);
+  DumpYieldFiles(out_file, NumXBins, XBins);
 }

@@ -25,7 +25,7 @@ binned_poisson_likelihood <- function(data, mu, theta, lambda_function, log = TR
 
   # Get the lambdas from theta and mu
 
-
+  lambdas = lambda_function(mu, theta)
 
   return(sum(dpois(data, lambdas, log)))
 
