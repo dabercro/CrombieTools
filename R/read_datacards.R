@@ -52,67 +52,93 @@ get_links <- function(file_name) {
 
 }
 
-# We make our own sorting function since R and SQL sort differently
-# (R is not case sensisitive)
-
-consistent_sort <- function(input) {
-
-  return(input[order(input$region, input$process, input$bin), ])
-
-}
-
 if (exists('input_file')) {
 
-  yields <- consistent_sort(get_yields(input_file))
+  yields <- get_yields(input_file)
   master <- get_master(input_file)
   links <- get_links(input_file)
 
-  match_bins <- function(to_match) {
-    return(
-      yields[yields$process %in% to_match$process &
-             yields$region %in% to_match$region, ]
-    )
+  regions <- unique(yields$regions)
+  bins <- unique(yields$bin)
+
+  # Get the uncontrolled yields
+
+  uc_yields <- anti_join(yields[yields$type == "background", ],
+                         rbind(links[1:2], master),
+                         by = c("region", "process"))
+
+  # Merge the bins together
+
+  uc_yields <- aggregate(uc_yields$contents,
+                         by = list(region = uc_yields$region,
+                                   bin = uc_yields$bin),
+                         FUN = sum)
+
+  # Sort those yields back to preferred bin order
+
+  uc_yields <- uc_yields[order(uc_yields$region, uc_yields$bin), ]
+
+  # A function that returns the proper yield bin for given parallel lists of regions and bins
+
+  which_bin <- function(region, bin) {
+    output <- c()
+    for (i in 1:length(region)) {
+      output[i] <- which(uc_yields$region == region[i] & uc_yields$bin == bin[i])
+    }
+    return(output)
   }
-
-  n_free <- nrow(match_bins(master))
-  n_transfer <- nrow(match_bins(links))
-
-  starting_theta <- append(rep(1, n_free), rep(0, n_transfer))
 
   # Add a column saying which column to merge to for each linked region and process
   # Then add columns with the contents and uncertainties for each linked area
   # Finally, add columns with transfer factors and uncertainties
 
-  merged_links <- consistent_sort(
-                    mutate(
-                      merge(merge(yields, links),
-                            yields[yields$region == master$region, ],
-                            by.x = c('connect_to', 'bin'), by.y = c('process', 'bin'),
-                            suffixes = c('', '.link')),
-                      ratio = contents/contents.link,
-                      ratio_unc = sqrt((stat_unc/contents.link)^2 + (stat_unc.link * contents/(contents.link)^2)^2)))
+  merged_links <- mutate(
+                    inner_join(inner_join(yields, links, by = c("region", "process")),
+                               yields[yields$region == master$region, ],
+                               by = c("connect_to" = "process", "bin"),
+                               suffix = c("", ".link")),
+                    ratio = contents/contents.link,
+                    ratio_unc = sqrt((stat_unc/contents.link)^2 + (stat_unc.link * contents/(contents.link)^2)^2),
+                    which_bin = which_bin(region, bin))
+
+  #
+  # We split up nuisance parameters into three kinds
+  #
+  #   1. Ones that float freely (master)
+  #   2. Ones connected to that master region
+  #   3. Ones not connected directly to the master region
+  #
+
+  yields_master <- mutate(yields[yields$process %in% master$process &
+                                 yields$region %in% master$region, ],
+                          which_bin = which_bin(region, bin))
+
+  proc_list <- merged_links$connect_to == master$process
+
+  yields_direct <- merged_links[proc_list, ]
+  yields_indir <- merged_links[!proc_list, ]
+
+  starting_theta <- append(rep(1, nrow(yields_master)), rep(0, nrow(merged_links)))
+
+  # Get the transfer factors
 
   transfer_factors <- merged_links$ratio
   transfer_uncs <- merged_links$ratio_unc
-
-  # Get the uncontrolled yields
-
-  uc_yields <- anti_join(yields[yields$type == "background", ], links)
-  uc_yields <- aggregate(uc_yields$contents,
-                         by=list(region=uc_yields$region,
-                                 bin=uc_yields$bin),
-                         FUN=sum)
-  uc_yields <- uc_yields[order(uc_yields$region, uc_yields$bin), ]$x
+  uncontrolled_yields <- uc_yields$x
 
   # Generate a function from the datacard
   # that will estimate lambdas with a given mu and theta
+
+  # First, built matrices for our three types of thetas
+
+  ##########
 
   get_lambda_function <- function(signal_process) {
 
     signal <- yields[yields$process == signal_process, ]$contents
 
     lambdas <- function(mu, theta) {
-      return(mu * signal + uc_yields)
+      return(mu * signal + uncontrolled_yields)
     }
 
     return(lambdas)
