@@ -88,13 +88,21 @@ if (exists('input_file')) {
     return(output)
   }
 
+  connect_control <- function(process, bin, match) {
+    output <- c()
+    for (i in 1:length(process)) {
+      output[i] <- which(match$region == master$region & match$process == process & match$bin == bin[i])
+    }
+    return(output)
+  }
+
   # Add a column saying which column to merge to for each linked region and process
   # Then add columns with the contents and uncertainties for each linked area
   # Finally, add columns with transfer factors and uncertainties
 
   merged_links <- mutate(
                     inner_join(inner_join(yields, links, by = c("region", "process")),
-                               yields[yields$region == master$region, ],
+                               yields[yields$region %in% master$region, ],
                                by = c("connect_to" = "process", "bin"),
                                suffix = c("", ".link")),
                     ratio = contents/contents.link,
@@ -115,34 +123,69 @@ if (exists('input_file')) {
 
   proc_list <- merged_links$connect_to == master$process
 
-  yields_direct <- merged_links[proc_list, ]
-  yields_indir <- merged_links[!proc_list, ]
+  yields_direct <- mutate(merged_links[proc_list, ],
+                          connect_bin = connect_control(connect_to, bin, yields_master))
+  yields_indir <- mutate(merged_links[!proc_list, ],
+                         connect_bin = connect_control(connect_to, bin, yields_direct))
 
   starting_theta <- append(rep(1, nrow(yields_master)), rep(0, nrow(merged_links)))
 
-  # Get the transfer factors
+  # Get the indices for splitting the theta parameters
 
-  transfer_factors <- merged_links$ratio
-  transfer_uncs <- merged_links$ratio_unc
+  n_master <- nrow(yields_master)
+  direct_start <- n_master + 1
+  direct_end <- nrow(yields_direct) + n_master
+  indirect_start <- direct_end + 1
+  indirect_end <- nrow(merged_links) + n_master
+
+  # Get the uncontrolled yields
+
   uncontrolled_yields <- uc_yields$x
 
   # Generate a function from the datacard
   # that will estimate lambdas with a given mu and theta
-
-  # First, built matrices for our three types of thetas
-
-  ##########
 
   get_lambda_function <- function(signal_process) {
 
     signal <- yields[yields$process == signal_process, ]$contents
 
     lambdas <- function(mu, theta) {
-      return(mu * signal + uncontrolled_yields)
+
+      output <- mu * signal + uncontrolled_yields
+
+      theta_free <- theta[1:n_master]
+      theta_direct <- theta[direct_start:direct_end]
+      theta_indirect <- theta[indirect_start:indirect_end]
+
+      final_free <- yields_master$contents * theta_free
+
+      # Add the master yields
+
+      for (i_bin in 1:n_master) {
+        o_bin <- yields_master$which_bin[i_bin]
+        output[o_bin] <- output[o_bin] + final_free[i_bin]
+      }
+
+      # Transfer factor
+
+      R_direct <- theta_direct * yields_direct$ratio_unc + yields_direct$ratio
+
+      for (i_bin in 1:length(R_direct)) {
+        R_direct[i_bin] <- R_direct[i_bin] * final_free[yields_direct$connect_bin[i_bin]]
+        o_bin <- yields_direct$which_bin[i_bin]
+        output[o_bin] <- output[o_bin] + R_direct[i_bin]
+      }
+
+      R_indirect <- theta_indirect * yields_indir$ratio_unc + yields_indir$ratio
+
+      for (i_bin in 1:length(R_indirect)) {
+        o_bin <- yields_indir$which_bin[i_bin]
+        output[o_bin] <- output[o_bin] + R_direct[yields_indir$connect_bin[i_bin]] * R_indirect[i_bin]
+      }
+
+      return(output)
     }
 
     return(lambdas)
-
   }
-
 }
