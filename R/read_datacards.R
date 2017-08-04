@@ -55,11 +55,10 @@ get_links <- function(file_name) {
 if (exists('input_file')) {
 
   yields <- get_yields(input_file)
+  yields <- yields[order(yields$process, yields$region, yields$bin), ]
+
   master <- get_master(input_file)
   links <- get_links(input_file)
-
-  regions <- unique(yields$regions)
-  bins <- unique(yields$bin)
 
   # Get the uncontrolled yields
 
@@ -188,4 +187,9 @@ if (exists('input_file')) {
 
     return(lambdas)
   }
+
+  nlog_likelihood_thetas <- function(theta) {
+    return(0.5 * sum(theta[direct_start:indirect_end]^2))
+  }
+
 }
