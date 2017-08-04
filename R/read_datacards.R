@@ -91,7 +91,7 @@ if (exists('input_file')) {
   connect_control <- function(process, bin, match) {
     output <- c()
     for (i in 1:length(process)) {
-      output[i] <- which(match$region == master$region & match$process == process & match$bin == bin[i])
+      output[i] <- which(match$region == master$region & match$process == process[i] & match$bin == bin[i])
     }
     return(output)
   }
