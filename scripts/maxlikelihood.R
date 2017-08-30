@@ -61,7 +61,7 @@ for (i_signal in 1:length(signals)) {
   print(data.frame(region=uc_yields$region,
                    bin=uc_yields$bin,
                    start=lambda_function(0, starting_theta),
-                   end=lambda_function(1, result$par),
+                   end=lambda_function(0, result$par),
                    data=data))
 }
 
