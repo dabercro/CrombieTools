@@ -191,4 +191,8 @@ if (exists('input_file')) {
     return(0.5 * sum(theta[direct_start:indirect_end]^2))
   }
 
+} else {
+
+  print('No input_file set!')
+
 }
