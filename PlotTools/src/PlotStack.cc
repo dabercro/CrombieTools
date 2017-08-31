@@ -6,6 +6,7 @@
    @author Daniel Abercrombie <dabercro@mit.edu>
 */
 
+#include <fstream>
 #include <algorithm>
 
 #include "TFile.h"
@@ -290,6 +291,34 @@ PlotStack::MakeCanvas(TString FileBase, Int_t NumXBins, Double_t *XBins,
     AllHists.push_back(SignalHolders[iHist]->fHist);
     AddLegendEntry(SignalHolders[iHist]->fEntry, 1, 2, SignalHolders[iHist]->fColor);
     Message(eDebug, "There are now %i total histograms to plot.", AllHists.size());
+  }
+
+  TString tempName;
+  tempName.Form("Hist_%d", fPlotCounter);
+  fPlotCounter++;
+  TH1D* post_fit = new TH1D(tempName, tempName, NumXBins, XBins);
+
+  if (fPostFitFile != "") {
+    
+    std::ifstream configFile;
+    configFile.open(fPostFitFile.Data());
+    double bin_contents;
+
+    for (int i_bin = 1; i_bin <= NumXBins; i_bin++) {
+      configFile >> bin_contents;
+      post_fit->SetBinContent(i_bin, bin_contents);
+    }
+
+    configFile.close();
+
+    post_fit->SetLineWidth(2);
+    post_fit->SetLineColor(2);
+
+    if (fMakeRatio)
+      AddRatioLine(int(AllHists.size()));
+    AllHists.push_back(post_fit);
+    AddLegendEntry("Post Fit", 2);
+
   }
 
   Message(eDebug, "There are now %i total histograms to plot.", AllHists.size());

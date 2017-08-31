@@ -23,7 +23,11 @@ load("likelihood_functions")
 stopifnot(exists('yields'))
 
 data <- yields[yields$type == 'data', ]$contents
-signals <- unique(yields[yields$type == 'signal', ]$process)
+if (sum(args == c("bg")) == 1) {
+  signals <- c("")
+} else {
+  signals <- unique(yields[yields$type == 'signal', ]$process)
+}
 
 for (i_signal in 1:length(signals)) {
 
@@ -32,37 +36,48 @@ for (i_signal in 1:length(signals)) {
 
     return(
       nlog_likelihood_thetas(theta) -
-      binned_poisson_likelihood(data, 0, theta, lambda_function)
+      binned_poisson_likelihood(data, theta, lambda_function)
     )
 
   }
 
-  result <- optim(starting_theta, log_likelihood)
+  result <- optim(starting_theta, log_likelihood,
+                  control=list(maxit=1000000))
 
   # Write output file
 
-#  if (sum(args == c("time")) == 1) {
-#    out_name <- paste(file_directory, "/fit_result_", format(Sys.time(), "%y%m%d_%H%M"),
-#                      ".txt", sep="")
-#  } else {
-#    out_name <- paste(file_directory, "/fit_result.txt", sep="")
-#  }
+  store_result <- data.frame(region=uc_yields$region,
+                             bin=uc_yields$bin,
+                             start=lambda_function(starting_theta),
+                             end=lambda_function(result$par),
+                             data=data)
 
-#  sink(out_name)
-#  for (i_proc in 1:ncol(theta_matrix)) {
-#    cat(colnames(theta_matrix)[i_proc])
-#    cat("    ")
-#    cat(result[["par"]][i_proc])
-#    cat("\n")
-#  }
-#  sink()
+  if (debug) {
+    print(result)
+    print(store_result)
+  }
 
-  print(result)
-  print(data.frame(region=uc_yields$region,
-                   bin=uc_yields$bin,
-                   start=lambda_function(0, starting_theta),
-                   end=lambda_function(0, result$par),
-                   data=data))
+  regions <- unique(store_result$region)
+
+  for (i_region in 1:length(regions)) {
+
+    if (sum(args == c("stamp")) == 1) {
+      stamp <- paste("_", format(Sys.time(), "%y%m%d_%H%M"), sep="")
+    } else {
+      stamp <- ""
+    }
+
+    sink(file.path(
+           dirname(input_file),
+           paste(signals[i_signal], "_", regions[i_region], stamp, ".txt", sep="")
+         ))
+
+    contents <- store_result[store_result$region == regions[i_region], ]$end
+    for (i_bin in 1:length(contents)) {
+      cat(contents[i_bin])
+      cat("\n")
+    }
+    sink()
+  }
+
 }
-
-#print(out_name)

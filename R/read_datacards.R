@@ -126,7 +126,11 @@ if (exists('input_file')) {
   yields_indir <- mutate(merged_links[!proc_list, ],
                          connect_bin = connect_control(connect_to, bin, yields_direct))
 
-  starting_theta <- append(rep(1, nrow(yields_master)), rep(0, nrow(merged_links)))
+  # Starting theta values, tacking mu on at the end
+
+  starting_theta <- append(
+                      append(rep(1, nrow(yields_master)), rep(0, nrow(merged_links))),
+                      c(1))
 
   # Get the indices for splitting the theta parameters
 
@@ -145,15 +149,20 @@ if (exists('input_file')) {
 
   get_lambda_function <- function(signal_process) {
 
-    signal <- yields[yields$process == signal_process, ]$contents
+    if (signal_process == '') {
+      signal <- rep(0, length(uncontrolled_yields))
+    } else {
+      signal <- yields[yields$process == signal_process, ]$contents
+    }
 
-    lambdas <- function(mu, theta) {
+    lambdas <- function(theta) {
 
-      output <- mu * signal + uncontrolled_yields
-
+      mu <- abs(theta[indirect_end + 1])
       theta_free <- theta[1:n_master]
       theta_direct <- theta[direct_start:direct_end]
       theta_indirect <- theta[indirect_start:indirect_end]
+
+      output <- mu * signal + uncontrolled_yields
 
       final_free <- yields_master$contents * theta_free
 

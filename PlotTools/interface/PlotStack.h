@@ -84,6 +84,9 @@ class PlotStack : public FileConfigReader
   /// Use this to set whether the signal sits on top or not
   void SetAddSignal      ( Bool_t add )               { fAddSignal = add;                         }
 
+  /// Use this to get a post-fit line
+  void SetPostFitFile  ( TString file_name )          { fPostFitFile = file_name;                 }
+
  private:
   TString               fForceTop = "";             ///< A legend entry that is on the top of backgrounds
   Double_t              fMinLegendFrac = 0.0;       ///< If a background contributes less than this, it's grouped in others
@@ -100,6 +103,7 @@ class PlotStack : public FileConfigReader
   Bool_t                fSortBackground = true;     ///< Bool to sort the backgrounds
   Bool_t                fSortSignal = true;         ///< Bool to sort the signals
   Bool_t                fAddSignal = true;          ///< Bool to determine where the signal sits
+  TString               fPostFitFile = "";          ///< Holds the location of post-fit plots
 
   ClassDef(PlotStack, 1)
 };

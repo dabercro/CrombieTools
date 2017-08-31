@@ -19,13 +19,13 @@ first_example <- function(x, theta_matrix) {
 
 # This is the log likelihood of binned data assuming poissonian distribution for each
 # data is the data from the real or toy experiment
-# mu scales the signal shape and theta does all the other shaping.
+# mu, the last value of theta, scales the signal shape and the rest of the theta does all the other shaping.
 
-binned_poisson_likelihood <- function(data, mu, theta, lambda_function, log = TRUE) {
+binned_poisson_likelihood <- function(data, theta, lambda_function, log = TRUE) {
 
   # Get the lambdas from theta and mu
 
-  lambdas = lambda_function(mu, theta)
+  lambdas = lambda_function(theta)
 
   return(sum(dpois(data, lambdas, log)))
 

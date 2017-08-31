@@ -70,6 +70,11 @@ class ParallelStackContainer:
         @param exprArg is a list of arguments for the plotter used in PlotStack.MakePlots()
         """
 
+        if os.environ.get('FIT'):
+            self.Plotter.SetPostFitFile(os.path.join('datacards', 'mchi_100_mdm_1_%s.txt' % region))
+        else:
+            self.Plotter.SetPostFitFile('')
+
         SetCuts(category, region, self.Plotter)
         holdCut = self.Plotter.GetDefaultWeight()
 
