@@ -17,12 +17,21 @@ input_file = args[1]
 load("read_datacards")
 load("shape_datacards")
 load("likelihood_functions")
+load("dump_fit_results")
 
 ## FIT ##
+
+if (sum(args == c("fresh")) == 1) {
+  read_sqlite3(file_name, "DROP TABLE IF EXISTS postfit_yields", stmt=TRUE)
+  read_sqlite3(file_name, "DROP TABLE IF EXISTS fit_params", stmt=TRUE)
+}
+
+create_results_tables(input_file)
 
 stopifnot(exists('yields'))
 
 data <- yields[yields$type == 'data', ]$contents
+
 if (sum(args == c("bg")) == 1) {
   signals <- c("")
 } else {
@@ -49,7 +58,7 @@ for (i_signal in 1:length(signals)) {
   store_result <- data.frame(region=uc_yields$region,
                              bin=uc_yields$bin,
                              start=lambda_function(starting_theta),
-                             end=lambda_function(result$par),
+                             yield=lambda_function(result$par),
                              data=data)
 
   if (debug) {
@@ -57,27 +66,6 @@ for (i_signal in 1:length(signals)) {
     print(store_result)
   }
 
-  regions <- unique(store_result$region)
-
-  for (i_region in 1:length(regions)) {
-
-    if (sum(args == c("stamp")) == 1) {
-      stamp <- paste("_", format(Sys.time(), "%y%m%d_%H%M"), sep="")
-    } else {
-      stamp <- ""
-    }
-
-    sink(file.path(
-           dirname(input_file),
-           paste(signals[i_signal], "_", regions[i_region], stamp, ".txt", sep="")
-         ))
-
-    contents <- store_result[store_result$region == regions[i_region], ]$end
-    for (i_bin in 1:length(contents)) {
-      cat(contents[i_bin])
-      cat("\n")
-    }
-    sink()
-  }
+  dump_fit_result(input_file, result, store_result, signals[i_signal])
 
 }

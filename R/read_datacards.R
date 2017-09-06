@@ -3,14 +3,31 @@ library(DBI)
 
 # Define the way files are read
 
-read_sqlite3 <- function(file_name, query) {
+read_sqlite3 <- function(file_name, query, stmt = FALSE) {
 
   conn <- dbConnect(RSQLite::SQLite(), file_name)
 
-  output <- dbGetQuery(conn, query)
+  if (stmt) {
+    dbFunc <- dbExecute
+  } else {
+    dbFunc <- dbGetQuery
+  }
+  output <- dbFunc(conn, query)
+
   dbDisconnect(conn)
 
   return(output)
+
+}
+
+no_table <- function(file_name, table_name) {
+
+  return(
+    read_sqlite3(
+       file_name,
+       "SELECT count(*) from sqlite_master WHERE type='table' and name = 'fit_params'"
+    )[1] == 0
+  )
 
 }
 
@@ -126,11 +143,12 @@ if (exists('input_file')) {
   yields_indir <- mutate(merged_links[!proc_list, ],
                          connect_bin = connect_control(connect_to, bin, yields_direct))
 
-  # Starting theta values, tacking mu on at the end
+  # Starting theta values
+  # Tacking mu and normalization on at the end
 
   starting_theta <- append(
                       append(rep(1, nrow(yields_master)), rep(0, nrow(merged_links))),
-                      c(1))
+                      c(1, 1))
 
   # Get the indices for splitting the theta parameters
 
@@ -190,7 +208,7 @@ if (exists('input_file')) {
         output[o_bin] <- output[o_bin] + R_direct[yields_indir$connect_bin[i_bin]] * R_indirect[i_bin]
       }
 
-      return(output)
+      return(theta[indirect_end + 2] * output)
     }
 
     return(lambdas)

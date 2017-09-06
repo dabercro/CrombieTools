@@ -71,7 +71,7 @@ class ParallelStackContainer:
         """
 
         if os.environ.get('FIT'):
-            self.Plotter.SetPostFitFile(os.path.join('datacards', 'mchi_100_mdm_1_%s.txt' % region))
+            self.Plotter.SetPostFitFile(os.path.join('datacards', '_%s.txt' % region))
         else:
             self.Plotter.SetPostFitFile('')
 
