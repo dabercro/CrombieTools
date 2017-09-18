@@ -3,6 +3,7 @@
 
 import os
 import time
+import datetime
 import sys
 import logging
 import shutil
@@ -14,6 +15,7 @@ import CrombieTools.LoadConfig
 from collections import defaultdict
 
 logging.basicConfig(level=logging.INFO)
+LOG = logging.getLogger('submit')
 
 
 def connect():
@@ -45,7 +47,7 @@ def add_samples_to_database(sample_file_name):
             )
 
         if not os.path.exists(file_list):
-            logging.warning('File: %s does not exists. Consider removing %s from sample list', file_list, sample)
+            LOG.warning('File: %s does not exists. Consider removing %s from sample list', file_list, sample)
             continue
 
         with open(file_list, 'r') as file_file:
@@ -112,7 +114,7 @@ def prepare_for_submit(jobs):
     # Check that the tarball exists
     tarball = os.path.join(os.environ['CMSSW_BASE'], 'condor.tgz')
     if not os.path.exists(tarball):
-        logging.error('%s is missing. Make sure you make this.', tarball)
+        LOG.error('%s is missing. Make sure you make this.', tarball)
         exit(3)
 
     # Get locations of condor config, and html path
@@ -128,6 +130,8 @@ def prepare_for_submit(jobs):
 
     condor_cfg_name = os.path.join(local_condor, 'condor.cfg')
 
+    conn, curs = connect()
+
     with open(condor_cfg_name, 'a') as condor_cfg:
         condor_cfg.write('Executable = %s\n' % \
                              os.path.join(os.environ['CROMBIEPATH'],
@@ -136,28 +140,35 @@ def prepare_for_submit(jobs):
 
         # Set the output log locations and the file mapping
         for job, output_dir, output_name in jobs:
-            log_dir = os.path.join(html_path, 'logs', output_dir.split('/')[-1])
+            if os.path.exists(os.path.join(output_dir, output_name)):
+                continue
+
+            curs.execute('SELECT attempts FROM queue WHERE id = %s', job)
+            attempt = curs.fetchone()[0]
+            curs.execute('UPDATE queue SET attempts = %s WHERE id = %s', (attempt + 1, job))
+
+            LOG.debug('Appending %s to condor submission file', job)
+
+            log_dir = os.path.join(html_path, 'logs', 
+                                   output_dir.split('/')[-2],
+                                   output_dir.split('/')[-1])
 
             if not os.path.exists(log_dir):
                 os.makedirs(log_dir)
 
-            condor_cfg.write('Output = %s\n' % os.path.join(log_dir, '%i.out' % job))
-            condor_cfg.write('Error = %s\n' % os.path.join(log_dir, '%i.err' % job))
+            log_basename = os.path.join(log_dir, '%s_%i' % (output_name.split('.')[0], attempt))
+
+            condor_cfg.write('Output = %s.out\n' % log_basename)
+            condor_cfg.write('Error = %s.err\n' % log_basename)
             condor_cfg.write('transfer_output_files = %s\n' % output_name)
             condor_cfg.write('transfer_output_remaps = "%s = %s"\n' % \
                                  (output_name, os.path.join(output_dir, output_name)))
             condor_cfg.write('Arguments = %i\nQueue\n' % job)
 
+    conn.commit()
+    conn.close()
+
     return condor_cfg_name
-
-
-def submit(config_file):
-
-    # Return the exit code from the condor_submit.
-    # Check that the configuration file exists first.
-    if os.path.exists(config_file):
-        return os.system('condor_submit %s' % config_file)
-    return 1
 
 
 def report_submission(jobs):
@@ -170,68 +181,93 @@ def report_submission(jobs):
     conn.close()
 
 
-def check_jobs(jobs):
+def submit(jobs):
 
+    config_file = prepare_for_submit(jobs)
+
+    # Return the exit code from the condor_submit.
+    # Check that the configuration file exists first.
+    if os.path.exists(config_file):
+        report_submission(jobs)
+        return os.system('condor_submit %s' % config_file)
+
+
+def check_jobs():
     # Check to see if any of the submitted jobs are still needing to be run
     # Pop out jobs that are finished
 
     conn, curs = connect()
     
-    condor_q = "condor_q " + os.environ['USER'] + " {0} -format '%s\n' Args"
-    def get_job_list(constraint):
+    curs.execute("SELECT id, output_dir, output_file FROM queue WHERE status != 'finished'")
+    jobs = [(int(row[0]), row[1], row[2]) for row in curs.fetchall()]
 
-        proc = subprocess.Popen([condor_q.format(constraint)],
-                                stdout=subprocess.PIPE,
-                                shell=True)
+    condor_q = "condor_q " + os.environ['USER'] + " -format '%s\n' Args"
+    proc = subprocess.Popen([condor_q],
+                            stdout=subprocess.PIPE,
+                            shell=True)
 
-        stdout, _ = proc.communicate()
+    stdout, _ = proc.communicate()
+    running_jobs = [int(id.strip()) for id in stdout.split('\n') \
+                        if id.strip()]
 
-        return [int(id.strip()) for id in stdout.split('\n') \
-                    if id.strip()]
+    LOG.info('Checking %i jobs', len(jobs))
 
-    held_jobs = get_job_list("-constraint 'JobStatus == 5'")
-    running_jobs = get_job_list("-constraint 'JobStatus != 4'")
+    # List for jobs to resubmit
+    resub = []
+    def add_resub(job):
+        LOG.debug('Adding job %s to be resubmitted', job[0])
+        resub.append(job)
+        curs.execute("UPDATE queue SET status = 'failed' WHERE id = %s", job[0])
+        
 
-    # Take care of all the completed jobs
     for job in jobs:
+        # If running, do nothing
+        output_file = os.path.join(job[1], job[2])
+        LOG.debug('Checking job %s at %s', job[0], output_file)
+
         if job[0] in running_jobs:
+            LOG.debug('Job is running')
             continue
 
-        output_file = os.path.join(job[1], job[2])
         if os.path.exists(output_file):
 
-            curs.execute("SELECT num_events FROM queue WHERE id = %s", job[0])
-            num_events = curs.fetchone()
+            curs.execute("SELECT total_events FROM queue WHERE id = %s", job[0])
+            num_events = curs.fetchone()[0]
 
-            if subprocess.check_call(['crombie findtree --class TH1F --verify',
-                                      num_events[0], output_file],
-                                     shell=True) == 0:
+            try:
+                LOG.debug('Checking %s has %s events', output_file, num_events)
+                subprocess.check_call(['crombie', 'findtree', '--class', 'TH1F', '--verify',
+                                       num_events, output_file])
 
                 curs.execute("UPDATE queue SET status = 'finished' WHERE id = %s", job[0])
+                LOG.info('Job %s finished', job[0])
                 jobs.pop(jobs.index(job))
 
-            else:
-                curs.execute("UPDATE queue SET status = 'failed' WHERE id = %s", job[0])
+            except subprocess.CalledProcessError:
+                LOG.warning('Bad file %s', output_file)
+                os.remove(output_file)
+                add_resub(job)
+        else:
+            LOG.warning('File %s does not exist!', output_file)
+            add_resub(job)
 
-
-    # Find jobs to resubmit
-    resub = []
-    for job in jobs:
-        if job[0] in held_jobs:
-            resub.append(job)
-            curs.execute("UPDATE queue SET status = 'failed' WHERE id = %s", job[0])
 
     # Remove the held jobs
-    if submit(prepare_for_submit(resub)) == 0:
-        subprocess.call(['condor_rm', os.environ['USER'], '-constraint', "'JobStatus == 5'"],
-                        shell=True)
-        report_submission(resub)
+    submit(resub)
 
     conn.commit()
     conn.close()
 
+    LOG.info('Total jobs to finish: %i', len(jobs))
+    LOG.info('Already running: %i', len(running_jobs))
+    LOG.info('Resubmitted: %i', len(resub))
+
+    return len(jobs)
+
 
 def check_bad_files():
+    LOG.info('Checking bad files.')
+
     conn, curs = connect()
 
     samples = defaultdict(set)
@@ -245,14 +281,18 @@ def check_bad_files():
         if status == 'missing' and not os.path.exists(file_name):
             verified = True
 
-        if (status == 'corrupt') and (subprocess.check_call(['crombie findtree', file_name],
-                                                            shell=True) != 0):
-            verified = True
-            os.remove(file_name)
+        if (status == 'corrupt'):
+        
+            try:
+                subprocess.check_call(['crombie', 'findtree', file_name])
+            except subprocess.CalledProcessError:
+                verified = True
+                os.remove(file_name)
 
-        split_name = file_name.split('/')
-        # Get the book name and add the dataset
-        samples['/'.join(split_name[-4:-2])].add(split_name[-2])
+        if verified:
+            split_name = file_name.split('/')
+            # Get the book name and add the dataset
+            samples['/'.join(split_name[-4:-2])].add(split_name[-2])
 
     for book, datasets in samples.iteritems():
         for dataset in datasets:
@@ -267,17 +307,21 @@ def check_bad_files():
 
 if __name__ == '__main__':
 
-    check_bad_files()
-    jobs = add_samples_to_database(sys.argv[1])
+    jobs = 1
 
-    # If the submission works, report the submitted jobs
-    if submit(prepare_for_submit(jobs)) == 0:
-        report_submission(jobs)
+    # Submit new jobs
+    submit(add_samples_to_database(sys.argv[1]))
 
     while jobs:
-        time.sleep(250)
-        check_bad_files()
-        check_jobs(jobs)
-        print 'Jobs remaining: %i' % len(jobs)
+        LOG.info('Starting submit cycle %s',
+                 datetime.datetime.fromtimestamp(int(time.time())).strftime('%B %d, %Y %H:%M:%S'))
+        # Check job output, which also resubmits jobs
+        jobs = check_jobs()
+        LOG.info('Jobs remaining: %i', jobs)
 
-    check_bad_files()
+        if jobs:
+            time.sleep(300)
+            # Remove held jobs
+            os.system('condor_rm %s --constraint \'JobStatus == 5\'' % os.environ['USER'])
+            # Check the panda files
+            check_bad_files()

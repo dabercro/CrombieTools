@@ -3,4 +3,4 @@ Submodule of CrombieTools.
 Gives access to AnalysisTools classes.
 """
 
-__all__ = ['CutflowMaker', 'FitTools', 'HistAnalysis', 'LimitTreeMaker', 'TmvaClassifier', 'XSecAdder']
+__all__ = ['CutflowMaker', 'FitTools', 'HistAnalysis', 'LimitTreeMaker', 'XSecAdder']

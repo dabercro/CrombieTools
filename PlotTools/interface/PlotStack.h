@@ -85,7 +85,8 @@ class PlotStack : public FileConfigReader
   void SetAddSignal      ( Bool_t add )               { fAddSignal = add;                         }
 
   /// Use this to get a post-fit line
-  void SetPostFitFile  ( TString file_name )          { fPostFitFile = file_name;                 }
+  void SetPostFitFile  ( TString file_name, TString region ) 
+                                                    { fPostFitFile = file_name; fRegion = region; }
 
  private:
   TString               fForceTop = "";             ///< A legend entry that is on the top of backgrounds
@@ -104,6 +105,7 @@ class PlotStack : public FileConfigReader
   Bool_t                fSortSignal = true;         ///< Bool to sort the signals
   Bool_t                fAddSignal = true;          ///< Bool to determine where the signal sits
   TString               fPostFitFile = "";          ///< Holds the location of post-fit plots
+  TString               fRegion = "";               ///< Holds the region for post-fit plots
 
   ClassDef(PlotStack, 1)
 };

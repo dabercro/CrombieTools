@@ -11,9 +11,9 @@
 #include "TF2.h"
 #include "TF1.h"
 
-#include "PlotBase.h"
+#include "FileConfigReader.h"
 
-class Plot2D : public PlotBase
+class Plot2D : public FileConfigReader
 {
  public:
   Plot2D();

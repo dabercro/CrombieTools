@@ -1,4 +1,5 @@
 import os
+import sqlite3
 from .. import Load, DirFromEnv, Nminus1Cut
 
 newStackPlotter = Load('PlotStack')
@@ -71,9 +72,9 @@ class ParallelStackContainer:
         """
 
         if os.environ.get('FIT'):
-            self.Plotter.SetPostFitFile(os.path.join('datacards', '_%s.txt' % region))
+            self.Plotter.SetPostFitFile(os.environ['FIT'], region)
         else:
-            self.Plotter.SetPostFitFile('')
+            self.Plotter.SetPostFitFile('', '')
 
         SetCuts(category, region, self.Plotter)
         holdCut = self.Plotter.GetDefaultWeight()

@@ -8,6 +8,7 @@
 
 #include <fstream>
 #include <algorithm>
+#include <sqlite3.h>
 
 #include "TFile.h"
 #include "TLegend.h"
@@ -300,16 +301,34 @@ PlotStack::MakeCanvas(TString FileBase, Int_t NumXBins, Double_t *XBins,
 
   if (fPostFitFile != "") {
     
-    std::ifstream configFile;
-    configFile.open(fPostFitFile.Data());
-    double bin_contents;
+    const char* signal_name = fSignalFileInfo.size() == 0 ? "" : fSignalFileInfo[0]->fTreeName.Data();
 
-    for (int i_bin = 1; i_bin <= NumXBins; i_bin++) {
-      configFile >> bin_contents;
-      post_fit->SetBinContent(i_bin, bin_contents);
+    sqlite3 *conn;
+    if(sqlite3_open(fPostFitFile.Data(), &conn) != SQLITE_OK) {
+      Message(eError, "Can't open database in %s", fPostFitFile.Data());
+      sqlite3_close(conn);
+      exit(50);
     }
 
-    configFile.close();
+    for (int i_bin = 1; i_bin <= NumXBins; i_bin++) {
+      sqlite3_stmt *fetch_stmt;
+      sqlite3_prepare_v2(conn, R"SQL(
+SELECT yield FROM postfit_yields
+WHERE region = ? AND bin = ? AND signal = ?
+)SQL", -1, &fetch_stmt, NULL);
+
+      sqlite3_bind_text(fetch_stmt, 1, fRegion.Data(), -1, NULL);
+      sqlite3_bind_int(fetch_stmt, 2, i_bin);
+      sqlite3_bind_text(fetch_stmt, 3, signal_name, -1, NULL);
+
+      int rc = sqlite3_step(fetch_stmt);
+
+      post_fit->SetBinContent(i_bin, sqlite3_column_double(fetch_stmt, 0));
+
+      sqlite3_finalize(fetch_stmt);
+    }
+
+    sqlite3_close(conn);
 
     post_fit->SetLineWidth(2);
     post_fit->SetLineColor(2);

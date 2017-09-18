@@ -17,3 +17,8 @@ def setupResolution(aPlotter=plotter):
 def newResolutionPlotter():
     aPlotter = newFitPlotter()
     return setupResolution(aPlotter)
+
+def SetParameterLimits(plotter, *args):
+    for index, limits in enumerate(args):
+        if limits:
+            plotter.SetParameterLimits(index, *args)
