@@ -511,6 +511,7 @@ void PlotBase::LineDrawing(std::vector<T*> theLines, Int_t index, Bool_t same)
   Message(eDebug, "Plotting: %i, Data Index: %i, Options: %s",
           index, fDataIndex, options.Data());
   Message(eDebug, "Line color: %i", theLines[index]->GetLineColor());
+  Message(eDebug, "Fill color: %i", theLines[index]->GetFillColor());
 
   if (index == fDataIndex)
     options = "PE";
@@ -619,6 +620,8 @@ void PlotBase::BaseCanvas(TString FileBase, std::vector<T*> theLines,
         theLines[iLine]->SetLineWidth(fLineWidths[iLine]);
         theLines[iLine]->SetLineStyle(fLineStyles[iLine]);
         theLines[iLine]->SetLineColor(fLineColors[iLine]);
+        if (std::is_base_of<TGraph, T>::value)
+          theLines[iLine]->SetFillColor(fLineColors[iLine]);
 
       }
 

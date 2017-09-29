@@ -30,6 +30,8 @@ PlotFitParameters::~PlotFitParameters()
 void
 PlotFitParameters::ClearFits()
 {
+  DisplayFunc(__func__);
+
   fMeans.resize(0);
   fFits.resize(0);
   fCovs.resize(0);
@@ -39,6 +41,8 @@ PlotFitParameters::ClearFits()
 void
 PlotFitParameters::GetMeans(Int_t NumXBins, const Double_t *XBins)
 {
+  DisplayFunc(__func__);
+
   fFitXBins = NumXBins;
   UInt_t NumPlots = 0;
 
@@ -89,6 +93,10 @@ void
 PlotFitParameters::DoFit(TF1* fitFunc, TF1* looseFunc, TH2D* histToFit,
                          TF1**& fitHolder, TMatrixDSym**& covHolder)
 {
+  DisplayFunc(__func__);
+
+  Message(eDebug, "Going to fit hist with %f events", histToFit->GetEntries());
+
   Int_t NumXBins = histToFit->GetXaxis()->GetNbins();
   const Double_t *XBins = histToFit->GetXaxis()->GetXbins()->GetArray();
 
@@ -104,6 +112,8 @@ PlotFitParameters::DoFit(TF1* fitFunc, TF1* looseFunc, TH2D* histToFit,
   covHolder = new TMatrixDSym*[NumXBins];
 
   for (Int_t iXBin = 0; iXBin != NumXBins; ++iXBin) {
+    Message(eDebug, "Going to fit bin %i", iXBin);
+
     TCanvas *tempCanvas = new TCanvas();
     for (UInt_t iParam = 0; iParam != fGuessParams.size(); ++iParam)
       fitFunc->SetParameter(fGuessParams[iParam], fGuesses[iParam]);
@@ -130,10 +140,13 @@ PlotFitParameters::DoFit(TF1* fitFunc, TF1* looseFunc, TH2D* histToFit,
       }
     TH1D *projection = histToFit->ProjectionY(tempName+"_py", lowerBin, upperBin);
 
+    Message(eDebug, "Projection has integral %f", projection->GetEntries());
+
     if (fLooseFunction != "") {
+      Message(eDebug, "Using loose function: %s", looseFunc->GetTitle());
+
       projection->Fit(looseFunc, fFitOptions, "", MinY, MaxY);
-      for (UInt_t iParam = 0; iParam != fParamFrom.size(); ++iParam)
-        fitFunc->SetParameter(fParamTo[iParam],looseFunc->GetParameter(fParamFrom[iParam]));
+      MapTo(fitFunc, looseFunc);
     }
     TFitResultPtr fitResult = projection->Fit(fitFunc, fFitOptions + "S", "", MinY, MaxY);
     if (fDumpingFits) {
@@ -150,6 +163,8 @@ PlotFitParameters::DoFit(TF1* fitFunc, TF1* looseFunc, TH2D* histToFit,
         tempComponent->Draw("SAME");
         components.push_back(tempComponent);
       }
+
+      dumpName = AddOutDir(dumpName);
 
       if (bC)
         tempCanvas->SaveAs(dumpName+".C");
@@ -172,6 +187,8 @@ PlotFitParameters::DoFit(TF1* fitFunc, TF1* looseFunc, TH2D* histToFit,
 std::vector<TGraphErrors*>
 PlotFitParameters::MakeGraphs(TString ParameterExpr)
 {
+  DisplayFunc(__func__);
+
   Double_t epsilon = 0.001;
 
   TGraphErrors *tempGraph;

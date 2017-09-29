@@ -310,7 +310,8 @@ if __name__ == '__main__':
     jobs = 1
 
     # Submit new jobs
-    submit(add_samples_to_database(sys.argv[1]))
+    if len(sys.argv) > 1:
+        submit(add_samples_to_database(sys.argv[1]))
 
     while jobs:
         LOG.info('Starting submit cycle %s',

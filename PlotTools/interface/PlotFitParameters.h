@@ -43,7 +43,7 @@ class PlotFitParameters : public Plot2D
 
   TF1*                       MakeFunction            ( TString function, Double_t /* MinX */, Double_t /* MaxX */,
                                                        Double_t MinY, Double_t MaxY )
-                                                                                          { return new TF1("func",function,MinY,MaxY); }
+                                                                                          { return new TF1("func", function, MinY, MaxY); }
   Int_t                      fFitXBins;               ///< Holds the number of XBins in fFits for cleaning
   std::vector<TH1*>          fMeans;                  ///< Means of x variable bins for setting x values of TGraphs
   std::vector<TString>       fFunctionComponents;

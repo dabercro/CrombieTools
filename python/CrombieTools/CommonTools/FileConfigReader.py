@@ -31,7 +31,11 @@ def SetupConfigFromEnv(obj):
     @param obj is the python object that inherits from FileConfigReader.
     """
 
-    obj.SetDebugLevel(int(os.environ.get('DEBUG', 1)))
+    level = int(os.environ.get('DEBUG', 1))
+    if os.environ.get('DEBUG'):
+        print 'Setting debug level to %i' % level
+
+    obj.SetDebugLevel(level)
 
     def readMC(config):
         obj.ReadMCConfig(config, obj.kBackground)

@@ -71,6 +71,7 @@ void
 Plot2D::SetParameterLimits(Int_t param, Double_t low, Double_t high)
 {
 
+  DisplayFunc(__func__);
   fParams.push_back(param);
   fParamLows.push_back(low);
   fParamHighs.push_back(high);
@@ -81,6 +82,7 @@ Plot2D::SetParameterLimits(Int_t param, Double_t low, Double_t high)
 void
 Plot2D::SetLooseLimits(Int_t param, Double_t low, Double_t high)
 {
+  DisplayFunc(__func__);
   fLooseParams.push_back(param);
   fLooseParamLows.push_back(low);
   fLooseParamHighs.push_back(high);
@@ -91,6 +93,7 @@ void
 Plot2D::AddMapping(Int_t from, Int_t to, Double_t fact)
 {
 
+  DisplayFunc(__func__);
   fParamFrom.push_back(from);
   fParamTo.push_back(to);
   fParamFactor.push_back(fact);
@@ -102,8 +105,14 @@ void
 Plot2D::MapTo(TF1* fitFunc, TF1* looseFunc)
 {
 
-  for (UInt_t iParam = 0; iParam != fParamFrom.size(); ++iParam)
-    fitFunc->SetParameter(fParamTo[iParam],looseFunc->GetParameter(fParamFrom[iParam]) * fParamFactor[iParam]);
+  DisplayFunc(__func__);
+
+  for (UInt_t iParam = 0; iParam != fParamFrom.size(); ++iParam) {
+    double value = looseFunc->GetParameter(fParamFrom[iParam]) * fParamFactor[iParam];
+    Message(eDebug, "Mapping param %i times %f to %i; value %f",
+            fParamFrom[iParam], fParamFactor[iParam], fParamTo[iParam], value);
+    fitFunc->SetParameter(fParamTo[iParam], value);
+  }
 
 }
 
@@ -113,6 +122,7 @@ Plot2D::DoFit(TF1* fitFunc, TF1* looseFunc, TH2D* histToFit,
               TF1**& fitHolder, TMatrixDSym**& covHolder)
 {
 
+  DisplayFunc(__func__);
   fitHolder = new TF1*[1];
   covHolder = new TMatrixDSym*[1];
   TCanvas *tempCanvas = new TCanvas();
@@ -135,6 +145,8 @@ Plot2D::DoFit(TF1* fitFunc, TF1* looseFunc, TH2D* histToFit,
     TString dumpName;
     dumpName.Form("DumpFit_%04d_2D", fNumFitDumps++);
 
+    dumpName = AddOutDir(dumpName);
+
     if (bC)
       tempCanvas->SaveAs(dumpName+".C");
     if (bPNG)
@@ -152,6 +164,7 @@ Plot2D::DoFits(Int_t NumXBins, Double_t *XBins,
                Int_t NumYBins, Double_t MinY, Double_t MaxY)
 {
 
+  DisplayFunc(__func__);
   ClearFits();
   UInt_t NumPlots = 0;
 
@@ -189,7 +202,7 @@ Plot2D::DoFits(Int_t NumXBins, Double_t *XBins,
   TH2D *tempHist;
   TProfile *tempProfile;
 
-  TF1 *looseFunc = 0;
+  TF1 *looseFunc = NULL;
 
   if (fLooseFunction != "") {
 
@@ -234,12 +247,19 @@ Plot2D::DoFits(Int_t NumXBins, Double_t *XBins,
     fPlotCounter++;
     tempHist = new TH2D(tempName, tempName, NumXBins, XBins, NumYBins, MinY, MaxY);
     tempHist->Sumw2();
-    inTree->Draw(inExpr+":"+fInExprX+">>"+tempName, inCut);
+
+    TString drawCommand = inExpr + ":" + fInExprX + ">>" + tempName;
+
+    Message(eDebug, "About to use tree at %p to draw %s with cut %s",
+            inTree, drawCommand.Data(), inCut.GetTitle());
+
+    inTree->Draw(drawCommand, inCut);
+    Message(eDebug, "Histogram has %f events", tempHist, tempHist->Integral());
 
     TString dumpTitle = fLegendEntries[iPlot] + ";" + inExpr + ";Num Events";
 
-    if (fLooseFunction != "")
-      looseFunc->SetTitle(dumpTitle);
+    // if (fLooseFunction != "")
+    //   looseFunc->SetTitle(dumpTitle);
 
     fitFunc->SetTitle(dumpTitle);
     tempHist->SetTitle(fLegendEntries[iPlot] + ";" + fInExprX + ";" + inExpr + ";Num Events");
@@ -271,6 +291,7 @@ std::vector<TF1*>
 Plot2D::MakeFuncs(TString ParameterExpr, Double_t MinX, Double_t MaxX)
 {
 
+  DisplayFunc(__func__);
   TF1 *tempFunc;
   std::vector<TF1*> theFuncs;
 
@@ -299,6 +320,7 @@ std::vector<TGraphErrors*>
 Plot2D::MakeGraphs(TString ParameterExpr)
 {
 
+  DisplayFunc(__func__);
   Double_t MinX = 0.0;
   Double_t MaxX = 0.0;
 

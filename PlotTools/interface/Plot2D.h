@@ -67,7 +67,7 @@ class Plot2D : public FileConfigReader
 
   virtual    TF1*            MakeFunction              ( TString function, Double_t MinX, Double_t MaxX,
                                                          Double_t MinY, Double_t MaxY )
-                                                                                   { return new TF2("func",function,MinX,MaxX,MinY,MaxY); }
+                                                                                   { return new TF2("func", function, MinX, MaxX, MinY, MaxY); }
 
   virtual    void            ClearFits                 ();
 
