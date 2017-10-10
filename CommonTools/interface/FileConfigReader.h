@@ -139,6 +139,9 @@ class FileConfigReader : public InOutDirectoryHolder, public PlotHists
   /// Loads the fit result into memory for this stacks to make
   void LoadFitResult      ( const char* fit_result );
 
+  /// Allows reader to avoid skipping when reading in exception configs
+  void       SetKeepAllFiles                ( Bool_t keep )                             { fKeepAllFiles = keep;    }
+
  protected:
   Double_t   fLuminosity = 2000.0;                        ///< The Luminosity in inverse pb
   TString    fDataTreeName = "data";                      ///< The base name of the data in a limit tree
@@ -171,8 +174,6 @@ class FileConfigReader : public InOutDirectoryHolder, public PlotHists
   /// Return a pointer to a proper vector of FileInfo
   std::vector<FileInfo*> *GetFileInfo       ( FileType type );
 
-  /// Allows reader to avoid skipping when reading in exception configs
-  void       SetKeepAllFiles                ( Bool_t keep )                             { fKeepAllFiles = keep;    }
   /// Allows reader to avoid skipping when reading in exception configs
   void       SetMultiplyLumi                ( Bool_t doMultiply )                    { fMultiplyLumi = doMultiply; }
 
