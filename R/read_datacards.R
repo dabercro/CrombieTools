@@ -36,10 +36,7 @@ get_yields <- function(file_name) {
   return(
     read_sqlite3(
       file_name,
-      "
-      SELECT region, process, bin, contents, stat_unc, name AS type
-      FROM yields INNER JOIN types ON types.type = yields.type
-      ")
+      "SELECT region, process, bin, contents, stat_unc, type FROM yields")
     )
 
 }
@@ -49,9 +46,7 @@ get_master <- function(file_name) {
   return(
     read_sqlite3(
       file_name,
-      "
-      SELECT process, region FROM links WHERE connect_to = ''
-      ")
+      "SELECT process, region FROM links WHERE connect_to = '*'")
     )
 
 }
@@ -61,9 +56,7 @@ get_links <- function(file_name) {
   return(
     read_sqlite3(
       file_name,
-      "
-      SELECT process, region, connect_to FROM links WHERE connect_to != ''
-      ")
+      "SELECT process, region, connect_to FROM links WHERE connect_to != '*'")
     )
 
 }

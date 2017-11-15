@@ -48,7 +48,6 @@ YieldDump::DumpYieldFiles(const char* out_file, Int_t NumXBins, Double_t *XBins)
 
   // Create table with all the uncertainties
 
-  SimpleExecute(conn, "CREATE TABLE IF NOT EXISTS types (type INT PRIMARY KEY, name VARCHAR(32))");
   SimpleExecute(conn, R"SQL(
 CREATE TABLE IF NOT EXISTS yields (
 region VARCHAR(64),
@@ -56,7 +55,7 @@ process VARCHAR(64),
 bin INT,
 contents DOUBLE,
 stat_unc DOUBLE,
-type INT,
+type VARCHAR(32),
 PRIMARY KEY (region, process, bin)
 )
 )SQL");
@@ -64,19 +63,6 @@ PRIMARY KEY (region, process, bin)
   int rc; 
 
   for (auto iTypeFile = types_files.begin(); iTypeFile != types_files.end(); ++iTypeFile) {
-
-    // Create the custom enum table
-    sqlite3_stmt *types_stmt;
-    sqlite3_prepare_v2(conn, "INSERT OR IGNORE INTO types VALUES(?, ?)", -1, &types_stmt, NULL);
-
-    sqlite3_bind_int(types_stmt, 1, iTypeFile->first);
-    sqlite3_bind_text(types_stmt, 2, iTypeFile->second.data(), -1, NULL);
-    rc = sqlite3_step(types_stmt);
-
-    if (rc != SQLITE_OK and rc != SQLITE_DONE)
-      Message(eError, "Error from connection:\n%s", sqlite3_errmsg(conn));
-
-    sqlite3_finalize(types_stmt);
 
     // Get the histogram
     auto processes = ReturnTreeNames(iTypeFile->first);
@@ -89,7 +75,9 @@ PRIMARY KEY (region, process, bin)
 
       for (auto iProcess = processes.begin(); iProcess != processes.end(); ++iProcess) {
 
-        Message(eInfo, "Getting histograms from %s for %s region.", iProcess->Data(), fRegionCuts[iCut].GetName());
+        Message(eInfo, "Getting histograms from %s for %s region.",
+                iProcess->Data(), fRegionCuts[iCut].GetName());
+
         auto proc_hist = GetHist(NumXBins, XBins, iTypeFile->first, *iProcess, kLimitName);
 
         // Get the contents of each histogram to dump into file
@@ -103,7 +91,7 @@ PRIMARY KEY (region, process, bin)
           sqlite3_bind_int(yield_stmt, 3, iBin);
           sqlite3_bind_double(yield_stmt, 4, proc_hist->GetBinContent(iBin));
           sqlite3_bind_double(yield_stmt, 5, proc_hist->GetBinError(iBin));
-          sqlite3_bind_int(yield_stmt, 6, iTypeFile->first);
+          sqlite3_bind_text(yield_stmt, 6, iTypeFile->second.data(), -1, NULL);
 
           rc = sqlite3_step(yield_stmt);
           if (rc != SQLITE_OK and rc != SQLITE_DONE)

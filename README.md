@@ -38,3 +38,7 @@ Navigate with the sidebar if viewing Doxgen-generated pages.
 
 Use the tabs or sidebar of the reference website to explore different
 classes available through CrombieTools.
+
+## TODO
+
+@todo Document the fitting tools
