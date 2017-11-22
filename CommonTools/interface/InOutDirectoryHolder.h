@@ -7,6 +7,8 @@
 #ifndef CROMBIETOOLS_COMMONTOOLS_INOUTDIRECTORYHOLDER_H
 #define CROMBIETOOLS_COMMONTOOLS_INOUTDIRECTORYHOLDER_H
 
+#include <map>
+
 #include "TString.h"
 #include "InDirectoryHolder.h"
 
@@ -32,6 +34,9 @@ class InOutDirectoryHolder : public InDirectoryHolder
   /// Sets whether or not to overwrite files
   inline void       SetOverwriteFiles   ( Bool_t overwrite ) { fOverwriteFiles = overwrite;                         }
 
+  /// Adds a mapping from input to output file name
+  void   SetInputOutputMap    ( TString input, TString output )  { fInOutMap[input] = output;                       }
+
  protected:
   /**
      A helper function that prepends the output directory to a filename.
@@ -44,6 +49,7 @@ class InOutDirectoryHolder : public InDirectoryHolder
   TString           AddOutDir           ( TString FileName ) const;
 
  private:
+  std::map<TString, TString> fInOutMap; ///< Stores name changes from input to output directories
   TString    fOutDirectory = "";        ///< Stores the output directory, and always ends with a '/'
   Bool_t     fOverwriteFiles = true;    ///< Sets whether or not to overwrite output files
 };
@@ -53,7 +59,9 @@ class InOutDirectoryHolder : public InDirectoryHolder
 TString
 InOutDirectoryHolder::AddOutDir(TString FileName) const {
 
-  TString output = AddDirectory(fOutDirectory, FileName);
+  auto search = fInOutMap.find(FileName);
+  TString out_name = search == fInOutMap.end() ? FileName : search->second;
+  TString output = AddDirectory(fOutDirectory, out_name);
 
   if (!fOverwriteFiles) {
 

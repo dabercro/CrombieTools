@@ -25,9 +25,12 @@ if __name__ == '__main__':
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
 
-    for branch in  input_tree.GetListOfBranches():
-        file_name = os.path.join(output_dir, branch.GetName())
+    for branch in [br.GetName() for br in input_tree.GetListOfBranches()]:
+        if 'packedPuppi' in branch:
+            continue
+
+        file_name = os.path.join(output_dir, branch)
         canvas = TCanvas()
-        input_tree.Draw(branch.GetName())
+        input_tree.Draw(branch)
         for ext in ['C', 'png', 'pdf']:
             canvas.SaveAs(file_name + '.' + ext)

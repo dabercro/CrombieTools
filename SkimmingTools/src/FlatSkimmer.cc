@@ -60,6 +60,18 @@ void FlatSkimmer::Skim(TString fileName)
   SetReportFile(fileName);
   TFile *inFile = TFile::Open(AddInDir(fileName));
   TTree *inTree = (TTree*) inFile->Get(fTreeName);
+
+  if (fDisableFile != "") {
+    std::ifstream disableFile(fDisableFile.Data());
+    TString branchToDisable;
+    while (!disableFile.eof()) {
+      disableFile >> branchToDisable;
+      if (branchToDisable != "")
+        inTree->SetBranchStatus(branchToDisable, 0);
+    }
+    disableFile.close();
+  }
+
   TTreeFormula *cutter = new TTreeFormula("cutter",fCut,inTree);
 
   Int_t runNum  = 0;
