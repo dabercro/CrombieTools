@@ -21,7 +21,8 @@ parser.add_argument('-l', '--lumi', metavar='EXPR', dest='lumiExpr', default='lu
 parser.add_argument('-f', '--freq', metavar='NUM', dest='reportFreq', type=int, default=100000, help='Set the reporting frequency.')
 parser.add_argument('-e', '--filters', metavar='FILE', nargs='*', dest='filters', default=[], help='Set the filter files.')
 parser.add_argument('-d', '--duplicate', action='store_true', dest='doDuplicate', help='Turn on duplicate checking.')
-parser.add_argument('-x', metavar='FILE', type=str, dest='disableFile', default='', help='File that will remove branches from the full tree')
+parser.add_argument('-x', '--disable', metavar='FILE', type=str, dest='disableFile', default='', help='File that will remove branches from the full tree')
+parser.add_argument('-m', '--map', metavar='FILE', type=str, dest='mapfile', default='', help='File that will map input file names to output files')
 
 args = parser.parse_args()
 
@@ -56,5 +57,11 @@ for copyObject in args.copyObjects:
     skimmer.AddCopyObject(copyObject)
 for eventFilter in args.filters:
     skimmer.AddEventFilter(eventFilter)
+
+if args.mapfile:
+    with open(args.mapfile, 'r') as mapfile:
+        for line in mapfile:
+            in_file, out_file = line.split()
+            skimmer.SetInputOutputMap(in_file, out_file)
 
 RunOnDirectory(skimmer, args.numMaxProcesses)
