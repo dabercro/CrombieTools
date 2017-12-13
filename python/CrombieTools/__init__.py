@@ -111,10 +111,10 @@ def Nminus1Cut(inCut, varToRemove, returnCuts=False):
     @todo I want this to ignore cuts next to an '||'? Or I have the weird '&&' veto thing... That's trickier to fix
     """
     holdCut = str(inCut)
-    matches = re.findall(r'[0-9\.]*\s*[=<>]*\s*(?<!\w)' + re.escape(varToRemove) + r'(?!\w)\s*[=<>]*\s*[0-9\.]*', holdCut)
+    matches = re.findall(r'(?<!\w)' + re.escape(varToRemove) + r'(?!\w)\s*[=<>]+\s*[0-9\.]+', holdCut)
     cutList = []
     for match in matches:
-        cutMatch = re.search(r'(?<!\w)[\d\.]+(?!\w)', match)
+        cutMatch = re.search(r'(?<!\w)[\d\.]+(?!\w)$', match)
         if cutMatch:
             cutList.append(float(cutMatch.group()))
         holdCut = holdCut.replace(match, '(1)', 1)

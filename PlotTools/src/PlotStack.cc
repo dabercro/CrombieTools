@@ -141,7 +141,7 @@ PlotStack::MakeCanvas(TString FileBase, Int_t NumXBins, Double_t *XBins,
   for (UInt_t iHist = 0; iHist < DataHists.size(); iHist++)
     DataHist->Add(DataHists[iHist]);
 
-  Message(eInfo, "Number of data events: %i, integral: %f", (Int_t) DataHist->GetEntries(), DataHist->Integral("width"));
+  Message(eInfo, "Number of data events: %i, integral: %f", (Int_t) DataHist->GetEntries(), DataHist->Integral("width")/fEventsPer);
 
   std::vector<HistHolder*> HistHolders = MergeHistograms(kBackground, MCHists);
 
@@ -181,7 +181,7 @@ PlotStack::MakeCanvas(TString FileBase, Int_t NumXBins, Double_t *XBins,
       tempHist = (TH1D*) HistHolders[iHist]->fHist->Clone();
 
       Message(eInfo, "%s  :  %f", HistHolders[iHist]->fEntry.Data(),
-              tempHist->Integral(0, NumXBins + 1, "width"));
+              tempHist->Integral(0, NumXBins + 1, "width")/fEventsPer);
 
       dumpFile->WriteTObject(tempHist, TString::Format("%s-%s",
                                                        fDefaultExpr.Data(),
@@ -197,7 +197,7 @@ PlotStack::MakeCanvas(TString FileBase, Int_t NumXBins, Double_t *XBins,
       tempHist = (TH1D*) (*iHist)->fHist->Clone();
 
       Message(eInfo, "%s  :  %f", (*iHist)->fTree.Data(),
-              tempHist->Integral(0, NumXBins + 1, "width"));
+              tempHist->Integral(0, NumXBins + 1, "width")/fEventsPer);
 
       dumpFile->WriteTObject(tempHist, TString::Format("%s-%s",
                                                        fDefaultExpr.Data(),
@@ -210,7 +210,7 @@ PlotStack::MakeCanvas(TString FileBase, Int_t NumXBins, Double_t *XBins,
     // Data Histogram
 
     tempHist = (TH1D*) DataHist->Clone();
-    Message(eInfo, "Data     :  %f", tempHist->Integral(0, NumXBins + 1, "width"));
+    Message(eInfo, "Data     :  %f", tempHist->Integral(0, NumXBins + 1, "width")/fEventsPer);
     dumpFile->WriteTObject(tempHist, TString::Format("%s-data", fDefaultExpr.Data()));
     dumpFile->Close();
 
@@ -229,7 +229,7 @@ PlotStack::MakeCanvas(TString FileBase, Int_t NumXBins, Double_t *XBins,
     Message(eDebug, "Stacking up histogram: %i", iLarger);
     Message(eInfo, "Entry %s has total integral %f",
             HistHolders[iLarger]->fEntry.Data(),
-            HistHolders[iLarger]->fHist->Integral("width"));
+            HistHolders[iLarger]->fHist->Integral("width")/fEventsPer);
 
     for (UInt_t iSmaller = iLarger + 1; iSmaller != HistHolders.size(); ++iSmaller) {
       Message(eDebug, "Adding %i to %i", iSmaller, iLarger);
@@ -267,7 +267,7 @@ PlotStack::MakeCanvas(TString FileBase, Int_t NumXBins, Double_t *XBins,
 
   }
 
-  Message(eInfo, "Total background contribution: %f", HistHolders[0]->fHist->Integral("width"));
+  Message(eInfo, "Total background contribution: %f", HistHolders[0]->fHist->Integral("width")/fEventsPer);
 
   AddLegendEntry("Data", 1);
   SetDataIndex(int(AllHists.size()));

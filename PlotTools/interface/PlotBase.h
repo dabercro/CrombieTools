@@ -193,6 +193,8 @@ class PlotBase : virtual public Debug
   /// Set additional drawing options to force all lines to have
   void                   SetDrawOpts              ( TString options )                             { fDrawOpts = options;         }
 
+  void                   SetLeftMargin            ( float left )        { fLeftMargin = left; }
+
  protected:
   UInt_t                     fPlotCounter = 0;           ///< This is used so that making scratch plots does not overlap
 
@@ -283,6 +285,7 @@ class PlotBase : virtual public Debug
   Double_t                   fCutXMax = 0.0;             ///< Maximum value of cut line x
 
   TString                    fDrawOpts = "";             ///< The options that all lines are drawn with
+  float                      fLeftMargin = 0.0;
 
   /// Draws the cuts lines
   void                       DrawCutLines         ();
@@ -654,6 +657,9 @@ void PlotBase::BaseCanvas(TString FileBase, std::vector<T*> theLines,
   if (fMakeRatio) {
 
     TPad *pad1 = new TPad("pad1", "pad1", 0, 1.0 - ratioFrac, 1, 1.0);
+    if (fLeftMargin)
+      pad1->SetLeftMargin(fLeftMargin);
+
     pad1->SetBottomMargin(0.025);
     pad1->Draw();
     pad1->cd();
@@ -722,6 +728,9 @@ void PlotBase::BaseCanvas(TString FileBase, std::vector<T*> theLines,
 
     theCanvas->cd();
     TPad *pad2 = new TPad("pad2", "pad2", 0, 0, 1, 1 - ratioFrac);
+    if (fLeftMargin)
+      pad2->SetLeftMargin(fLeftMargin);
+
     pad2->SetTopMargin(0.05);
     pad2->SetBottomMargin(0.4);
 
@@ -820,12 +829,12 @@ void PlotBase::BaseCanvas(TString FileBase, std::vector<T*> theLines,
     latex3->SetTextSize(0.035);
     latex3->SetTextFont(62);
     latex3->SetTextAlign(11);
-    latex3->DrawLatex(0.12, 0.96, "CMS");
+    latex3->DrawLatex(0.19, 0.96, "CMS");
     latex3->SetTextSize(0.030);
     latex3->SetTextFont(52);
     latex3->SetTextAlign(11);
 
-    latex3->DrawLatex(0.20, 0.96, fCMSLabel);
+    latex3->DrawLatex(0.27, 0.96, fCMSLabel);
 
     fDeleteThese.push_back(latex3);
 

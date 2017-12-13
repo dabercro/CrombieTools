@@ -86,7 +86,7 @@ class ParallelStackContainer:
             kwargs = expr.pop()
 
         # Different expressions for data and MC
-        self.Plotter.SetDataExpression(kwargs.get('data_expr',''))
+        self.Plotter.SetDataExpression(kwargs.get('data_expr', ''))
 
         # If not skipping Nminus1 cuts
         if kwargs.get('doNminus1', True):
@@ -101,7 +101,7 @@ class ParallelStackContainer:
         if self.LimitHistsDir:
             self.Plotter.SetDumpFileName(os.path.join(self.LimitHistsDir, '%s_%s.root' % (region, expr[0])))
 
-        expr[0] = '_'.join([category, region, kwargs.get('var_name', expr[0])])
+        expr[0] = '_'.join([category, region, kwargs.get('var_name', expr[0]).replace(',', '__').replace(')', '__').replace('(', '__')])
 
         if (self.Overwrite or
             not os.path.exists(str(self.Plotter.GetOutDirectory()) + expr[0] + '.pdf')):
