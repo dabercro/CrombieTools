@@ -27,34 +27,48 @@ class Branch:
 
 class Function:
     def __init__(self, signature, prefixes):
-        self.name = re.match(r'(.*)\(.*\)', signature).group(1)
-        self.signature = signature.replace('(', '(%s_enum base, ' % self.name)
+        self.enum_name = re.match(r'(.*)\(.*\)', signature).group(1)
+        self.signature = signature.replace('(', '(const %s_enum base, ' % self.enum_name).replace(', ', ', const ')
         self.prefixes = prefixes
         self.variables = []
 
     def add_var(self, variable, value, data_type):
-        self.variables.append((variable, value, data_type))
+        self.variables.append((('_%s' % variable).rstrip('_'), value, TYPES[data_type]))
 
-    def declare(self):
-        return """enum class %s_enum : int {
+    def declare(self, functions):
+        output = '{0}\n  void %s;' % (self.signature)
+
+        for func in functions:
+            # Just use the first occurance of an identical enum class
+            if func.enum_name == self.enum_name:
+                break
+            if func.prefixes == self.prefixes:
+                output = output.replace('%s_enum' % self.enum_name, '%s_enum' % func.enum_name)
+                self.signature = self.signature.replace('%s_enum' % self.enum_name, '%s_enum' % func.enum_name)
+                self.enum_name = func.enum_name
+
+                return output.format('')
+
+        return output.format("""
+  enum class %s_enum : int {
     %s
   };
   const std::vector<std::string> %s_names = {
     %s
-  };
-  void %s;
-""" % (self.name, ',\n    '.join(['%s = %s' % (pref, index) for index, pref in enumerate(self.prefixes)]),
-       self.name, ',\n    '.join(['"%s"' % pref for pref in self.prefixes]),
-       self.signature)
+  };""" % (self.enum_name, ',\n    '.join(['%s = %s' % (pref, index) for index, pref in enumerate(self.prefixes)]),
+           self.enum_name, ',\n    '.join(['"%s"' % pref for pref in self.prefixes])))
+
 
     def implement(self, classname):
+        incr = ['++', '--']
         return """void %s::%s {
   %s
 }
 """ % (classname, self.signature,
-       '\n  '.join([
-           'set({3}_names[static_cast<int>(base)] + "{0}", static_cast<{1}>({2}));'.format(('_%s' % var).rstrip('_'), TYPES[t], val, self.name)
-           for var, val, t in self.variables]
+       '\n  '.join(['{3}*({2}*)(t->GetBranch(({1}_names[static_cast<int>(base)] + "{0}").data())->GetAddress());'. format(var, self.enum_name, t, val)
+                    for var, val, t in self.variables if val in incr] +
+                   ['set({3}_names[static_cast<int>(base)] + "{0}", static_cast<{1}>({2}));'.format(var, t, val, self.enum_name)
+                    for var, val, t in self.variables if val not in incr]
        ))
 
 
@@ -83,7 +97,7 @@ if __name__ == '__main__':
                 continue
 
             # Check for includes
-            match = re.match(r'(".*")', line)
+            match = re.match(r'([<"].*[">])', line)
             if match:
                 includes.append(match.group(1))
                 continue
@@ -107,11 +121,12 @@ if __name__ == '__main__':
                     in_function = None
 
                 components = match.group(1).split(',') if match.group(1) else []
-                if match.group(1).startswith('+'):
-                    components[0] = components[0].lstrip('+')
-                    prefixes += components
-                else:
-                    prefixes = sum([['%s%s' % (pref, comp) for comp in components] for pref in prefixes], []) or components
+                if components:
+                    if match.group(1).startswith('+'):
+                        components[0] = components[0].lstrip('+')
+                        prefixes += components
+                    else:
+                        prefixes = sum([['%s%s' % (pref, comp) for comp in components] for pref in prefixes], []) or components
 
                 function_sig = match.group(2)
                 if function_sig:
@@ -170,7 +185,7 @@ if __name__ == '__main__':
 
   template <typename T>
   void set(std::string name, T val) { *(T*)(t->GetBranch(name.data())->GetAddress()) = val; }
-""" % (RESET_SIGNATURE, '\n  '.join([f.declare() for f in functions])))
+""" % (RESET_SIGNATURE, '\n  '.join([f.declare(functions) for f in functions])))
 
         write('};')
 
