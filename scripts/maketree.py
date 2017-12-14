@@ -28,7 +28,7 @@ class Branch:
 class Function:
     def __init__(self, signature, prefixes):
         self.enum_name = re.match(r'(.*)\(.*\)', signature).group(1)
-        self.signature = signature.replace('(', '(const %s_enum base, ' % self.enum_name).replace(', ', ', const ')
+        self.signature = 'set_' + signature.replace('(', '(const %s_enum base, ' % self.enum_name).replace(', ', ', const ')
         self.prefixes = prefixes
         self.variables = []
 
@@ -36,7 +36,7 @@ class Function:
         self.variables.append((('_%s' % variable).rstrip('_'), value, TYPES[data_type]))
 
     def declare(self, functions):
-        output = '{0}\n  void %s;' % (self.signature)
+        output = '{0}void %s;' % (self.signature)
 
         for func in functions:
             # Just use the first occurance of an identical enum class
@@ -55,8 +55,9 @@ class Function:
   };
   const std::vector<std::string> %s_names = {
     %s
-  };""" % (self.enum_name, ',\n    '.join(['%s = %s' % (pref, index) for index, pref in enumerate(self.prefixes)]),
-           self.enum_name, ',\n    '.join(['"%s"' % pref for pref in self.prefixes])))
+  };
+  """ % (self.enum_name, ',\n    '.join(['%s = %s' % (pref, index) for index, pref in enumerate(self.prefixes)]),
+         self.enum_name, ',\n    '.join(['"%s"' % pref for pref in self.prefixes])))
 
 
     def implement(self, classname):
@@ -133,7 +134,7 @@ if __name__ == '__main__':
                     in_function = Function(function_sig, prefixes)
                 continue
 
-            match = re.match(r'(\w*)(/(\w))?(\s?=\s?([\w\.]+))?(\s?->\s?(.*))?', line)
+            match = re.match(r'(\w*)(/(\w))?(\s?=\s?([\w\.\(\)]+))?(\s?->\s?(.*))?', line)
             if match:
                 var = match.group(1)
                 data_type = match.group(3) or DEFAULT_TYPE
@@ -176,7 +177,6 @@ if __name__ == '__main__':
   void %s;
   void fill() { t->Fill(); }
   void write(TObject* obj) { f->WriteTObject(obj, obj->GetName()); }
-
   %s
 
  private:
@@ -209,4 +209,4 @@ void %s::%s {
         for func in functions:
             write(func.implement(classname))
 
-        write('\n#endif')
+        write('#endif')
