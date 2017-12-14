@@ -26,24 +26,42 @@ class Branch:
 
 
 class Function:
-    def __init__(self, signature):
-        self.signature = signature.replace('(', '(std::string base, ')
-        self.vars = []
+    def __init__(self, signature, prefixes):
+        self.name = re.match(r'(.*)\(.*\)', signature).group(1)
+        self.signature = signature.replace('(', '(%s_enum base, ' % self.name)
+        self.prefixes = prefixes
+        self.variables = []
 
-    def add_var(self, variable, value):
-        self.vars.append((variable, value))
+    def add_var(self, variable, value, data_type):
+        self.variables.append((variable, value, data_type))
 
     def declare(self):
-        return 'void %s;' % self.signature
+        return """enum class %s_enum : int {
+    %s
+  };
+  const std::vector<std::string> %s_names = {
+    %s
+  };
+  void %s;
+""" % (self.name, ',\n    '.join(['%s = %s' % (pref, index) for index, pref in enumerate(self.prefixes)]),
+       self.name, ',\n    '.join(['"%s"' % pref for pref in self.prefixes]),
+       self.signature)
 
-    def implement(self):
-        pass
+    def implement(self, classname):
+        return """void %s::%s {
+  %s
+}
+""" % (classname, self.signature,
+       '\n  '.join([
+           'set({3}_names[static_cast<int>(base)] + "{0}", static_cast<{1}>({2}));'.format(('_%s' % var).rstrip('_'), TYPES[t], val, self.name)
+           for var, val, t in self.variables]
+       ))
 
 
 if __name__ == '__main__':
     classname = os.path.basename(sys.argv[1]).split('.')[0]
 
-    includes = ['<string>', '<map>', '"TObject.h"', '"TFile.h"', '"TTree.h"']
+    includes = ['<string>', '<vector>', '"TObject.h"', '"TFile.h"', '"TTree.h"']
     prefixes = []
     all_branches = []
     functions = []
@@ -81,26 +99,36 @@ if __name__ == '__main__':
                     RESET_SIGNATURE = match.group(4)
                 continue
 
-            match = re.match(r'([\w,]*)\s?-->\s?([\w_]*\(.*\))?', line)
+            match = re.match(r'(\+?[\w,]*)\s?-->\s?([\w_]*\(.*\))?', line)
             if match:
-                components = match.group(1).split(',')
-                prefixes = sum([['%s%s' % (pref, comp) for comp in components] for pref in prefixes], []) or components
+                # Pass off previous function as quickly as possible to prevent prefix changing
+                if in_function:
+                    functions.append(copy.deepcopy(in_function))
+                    in_function = None
+
+                components = match.group(1).split(',') if match.group(1) else []
+                if match.group(1).startswith('+'):
+                    components[0] = components[0].lstrip('+')
+                    prefixes += components
+                else:
+                    prefixes = sum([['%s%s' % (pref, comp) for comp in components] for pref in prefixes], []) or components
+
                 function_sig = match.group(2)
                 if function_sig:
-                    in_function = Function(function_sig)
+                    in_function = Function(function_sig, prefixes)
                 continue
 
-            match = re.match(r'(\w*)(/(\w))?(\s?=\s?(\w+))?(\s?->\s?(.*))?', line)
+            match = re.match(r'(\w*)(/(\w))?(\s?=\s?([\w\.]+))?(\s?->\s?(.*))?', line)
             if match:
                 var = match.group(1)
                 data_type = match.group(3) or DEFAULT_TYPE
                 val = match.group(5) or DEFAULT_VAL
 
-                branches = [Branch('%s_%s' % (pref, var), data_type, val) for pref in prefixes] or [Branch(var, data_type, val)]
+                branches = [Branch(('%s_%s' % (pref, var)).rstrip('_'), data_type, val) for pref in prefixes] or [Branch(var, data_type, val)]
 
                 all_branches.extend(branches)
                 if in_function is not None:
-                    in_function.add_var(var, match.group(7))
+                    in_function.add_var(var, match.group(7), data_type)
                 continue
 
     # Let's put the branches in some sort of order
@@ -109,43 +137,61 @@ if __name__ == '__main__':
     with open('%s.h' % classname, 'w') as output:
         write = lambda x: output.write('%s\n' % x)
 
+        # Write the beginning of the file
         write("""#ifndef CROMBIE_{0}_H
 #define CROMBIE_{0}_H
 """.format(classname.upper()))
         for inc in includes:
             write('#include %s' % inc)
 
+        # Start the class definition
         write('\nclass %s {' % classname)
         write("""
  public:
-  {0}(const char* name, const char* outfile_name);
+  {0}(const char* outfile_name, const char* name = "events");
   ~{0}() {1}
 """.format(classname, '{ write(t); f->Close(); }'))
 
+        # Write the elements for the memory of each branch
         for branch in all_branches:
             write('  %s %s;' % (TYPES[branch.data_type], branch.name))
 
+        # Some functions, and define the private members
         write("""
   void %s;
   void fill() { t->Fill(); }
   void write(TObject* obj) { f->WriteTObject(obj, obj->GetName()); }
 
+  %s
+
  private:
   TFile* f;
   TTree* t;  
-""" % RESET_SIGNATURE)
+
+  template <typename T>
+  void set(std::string name, T val) { *(T*)(t->GetBranch(name.data())->GetAddress()) = val; }
+""" % (RESET_SIGNATURE, '\n  '.join([f.declare() for f in functions])))
 
         write('};')
 
+        # Initialize the class
         write("""
-%s::%s(const char* name, const char* outfile_name) {
-  f = new TFile(outfile_name, "RECREATE");
+%s::%s(const char* outfile_name, const char* name) {
+  f = new TFile(outfile_name, "CREATE");
   t = new TTree(name, name);
 
   %s
 }
 """ % (classname, classname, '\n  '.join(['t->Branch("{0}", &{0}, "{0}/{1}");'.format(b.name, b.data_type) for b in all_branches])))
 
+        # reset function
+        write("""
+void %s::%s {
+  %s
+}
+""" % (classname, RESET_SIGNATURE, '\n  '.join(['{0} = {1};'.format(b.name, b.default_val) for b in all_branches])))
 
+        for func in functions:
+            write(func.implement(classname))
 
         write('\n#endif')
