@@ -1,6 +1,9 @@
 #ifndef CMSSW_PARSE_H
 #define CMSSW_PARSE_H
 
+#include <string.h>
+#include <assert.h>
+#include <stdio.h>
 #include <sys/stat.h>
 
 void print_usage(const char* first_arg) {
