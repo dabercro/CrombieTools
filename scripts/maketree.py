@@ -7,10 +7,10 @@ import copy
 
 
 TYPES = {
-    'I': 'int',
-    'l': 'long',
-    'F': 'float',
-    'O': 'bool'
+    'I': 'Int_t',
+    'l': 'Long_t',
+    'F': 'Float_t',
+    'O': 'Bool_t'
 }
 
 DEFAULT_TYPE = 'F'
