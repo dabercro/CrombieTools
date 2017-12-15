@@ -105,7 +105,7 @@ else                                                        # If doxygen is not 
     echo ""
     echo "If you don't want to install these, check out the main page of my documentation here:"
     echo ""
-    echo "http://dabercro.web.cern.ch/dabercro/CrombieToolsDocs/"
+    echo "http://t3serv001.mit.edu/~dabercro/CrombieToolsDocs/"
     echo ""
 
 fi
