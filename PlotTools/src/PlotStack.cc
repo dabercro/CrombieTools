@@ -211,7 +211,7 @@ PlotStack::MakeCanvas(TString FileBase, Int_t NumXBins, Double_t *XBins,
 
     tempHist = (TH1D*) DataHist->Clone();
     Message(eInfo, "Data     :  %f", tempHist->Integral(0, NumXBins + 1, "width")/fEventsPer);
-    dumpFile->WriteTObject(tempHist, TString::Format("%s-data", fDefaultExpr.Data()));
+    dumpFile->WriteTObject(tempHist, TString::Format("%s-data_obs", fDefaultExpr.Data()));
     dumpFile->Close();
 
   }
