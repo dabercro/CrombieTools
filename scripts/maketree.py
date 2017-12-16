@@ -28,7 +28,7 @@ class Branch:
 class Function:
     def __init__(self, signature, prefixes):
         self.enum_name = re.match(r'(.*)\(.*\)', signature).group(1)
-        self.signature = 'set_' + signature.replace('(', '(const %s_enum base, ' % self.enum_name).replace(', ', ', const ')
+        self.signature = 'set_' + signature.replace('(', '(const %s base, ' % self.enum_name).replace(', ', ', const ')
         self.prefixes = prefixes
         self.variables = []
 
@@ -43,14 +43,14 @@ class Function:
             if func.enum_name == self.enum_name:
                 break
             if func.prefixes == self.prefixes:
-                output = output.replace('%s_enum' % self.enum_name, '%s_enum' % func.enum_name)
-                self.signature = self.signature.replace('%s_enum' % self.enum_name, '%s_enum' % func.enum_name)
+                output = output.replace('const %s' % self.enum_name, 'const %s' % func.enum_name)
+                self.signature = self.signature.replace('const %s' % self.enum_name, 'const %s' % func.enum_name)
                 self.enum_name = func.enum_name
 
                 return output.format('')
 
         return output.format("""
-  enum class %s_enum : int {
+  enum class %s : int {
     %s
   };
   const std::vector<std::string> %s_names = {
@@ -185,16 +185,13 @@ if __name__ == '__main__':
 
   template <typename T>
   void set(std::string name, T val) { *(T*)(t->GetBranch(name.data())->GetAddress()) = val; }
+};
 """ % (RESET_SIGNATURE, '\n  '.join([f.declare(functions) for f in functions])))
 
-        write('};')
-
         # Initialize the class
-        write("""
-%s::%s(const char* outfile_name, const char* name) {
+        write("""%s::%s(const char* outfile_name, const char* name) {
   f = new TFile(outfile_name, "CREATE");
   t = new TTree(name, name);
-
   %s
 }
 """ % (classname, classname, '\n  '.join(['t->Branch("{0}", &{0}, "{0}/{1}");'.format(b.name, b.data_type) for b in all_branches])))
@@ -211,14 +208,14 @@ void %s::%s {
 
         # Template enum conversion
         def write_convert(first, second):
-            write(("""{0}::{1}_enum to_{1}({0}::{2}_enum e_cls) {begin}
+            write(("""{0}::{1} to_{1}({0}::{2} e_cls) {begin}
   switch (e_cls) {begin}
   case %s
   default:
     throw;
   {end}
 {end}
-""" % '\n  case '.join(['{0}::{2}_enum::%s:\n    return {0}::{1}_enum::%s;' %
+""" % '\n  case '.join(['{0}::{2}::%s:\n    return {0}::{1}::%s;' %
                        (pref, pref) for pref in second.prefixes if pref in first.prefixes])).format(
                            classname, first.enum_name, second.enum_name, first.prefixes[0], begin='{', end='}'))
             
