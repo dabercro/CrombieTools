@@ -61,6 +61,9 @@ class PlotStack : public FileConfigReader
   /// Set the name of a .root file to dump the separate histograms used in the plots.
   void SetDumpFileName   ( TString dumpName )         { fDumpRootName = dumpName;                 }
 
+  /// Set the suffix of dumped histograms
+  void SetHistSuff       ( TString suff )             { fHistSuff = suff;                         }
+
   /**
      Insert a histogram from file into the stack plot.
      Most histograms in the stack plot are created from TTree::Draw() functions acting on trees.
@@ -101,6 +104,7 @@ class PlotStack : public FileConfigReader
 
   Bool_t                fDebug = false;             ///< Dumps yield tests
   TString               fDumpRootName = "";         ///< File where each histogram in stack is dumped
+  TString               fHistSuff = "";
   Bool_t                fSortBackground = true;     ///< Bool to sort the backgrounds
   Bool_t                fSortSignal = true;         ///< Bool to sort the signals
   Bool_t                fAddSignal = true;          ///< Bool to determine where the signal sits

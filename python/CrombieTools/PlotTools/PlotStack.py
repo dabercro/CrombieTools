@@ -100,6 +100,7 @@ class ParallelStackContainer:
 
         if self.LimitHistsDir:
             self.Plotter.SetDumpFileName(os.path.join(self.LimitHistsDir, '%s_%s.root' % (region, expr[0])))
+            self.Plotter.SetHistSuff('__' + region)
 
         expr[0] = '_'.join([category, region, kwargs.get('var_name', expr[0]).replace(',', '__').replace(')', '__').replace('(', '__')])
 

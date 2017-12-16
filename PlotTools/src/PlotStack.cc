@@ -183,9 +183,10 @@ PlotStack::MakeCanvas(TString FileBase, Int_t NumXBins, Double_t *XBins,
       Message(eInfo, "%s  :  %f", HistHolders[iHist]->fEntry.Data(),
               tempHist->Integral(0, NumXBins + 1, "width")/fEventsPer);
 
-      dumpFile->WriteTObject(tempHist, TString::Format("%s-%s",
+      dumpFile->WriteTObject(tempHist, TString::Format("%s__%s__%s",
                                                        fDefaultExpr.Data(),
-                                                       HistHolders[iHist]->fTree.Data()
+                                                       HistHolders[iHist]->fTree.Data(),
+                                                       fHistSuff.Data()
                                                        )
                              );
     }
@@ -199,9 +200,10 @@ PlotStack::MakeCanvas(TString FileBase, Int_t NumXBins, Double_t *XBins,
       Message(eInfo, "%s  :  %f", (*iHist)->fTree.Data(),
               tempHist->Integral(0, NumXBins + 1, "width")/fEventsPer);
 
-      dumpFile->WriteTObject(tempHist, TString::Format("%s-%s",
+      dumpFile->WriteTObject(tempHist, TString::Format("%s__%s__%s",
                                                        fDefaultExpr.Data(),
-                                                       (*iHist)->fTree.Data()
+                                                       (*iHist)->fTree.Data(),
+                                                       fHistSuff.Data()
                                                        )
                              );
 
@@ -211,7 +213,11 @@ PlotStack::MakeCanvas(TString FileBase, Int_t NumXBins, Double_t *XBins,
 
     tempHist = (TH1D*) DataHist->Clone();
     Message(eInfo, "Data     :  %f", tempHist->Integral(0, NumXBins + 1, "width")/fEventsPer);
-    dumpFile->WriteTObject(tempHist, TString::Format("%s-data_obs", fDefaultExpr.Data()));
+    dumpFile->WriteTObject(tempHist, TString::Format("%s__data_obs__%s",
+                                                     fDefaultExpr.Data(),
+                                                     fHistSuff.Data()
+                                                     )
+                           );
     dumpFile->Close();
 
   }
