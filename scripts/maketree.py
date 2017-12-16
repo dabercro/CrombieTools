@@ -54,9 +54,11 @@ class Function:
   enum class %s : int {
     %s
   };
+ private:
   const std::vector<std::string> %s_names = {
     %s
   };
+ public:
   """ % (self.enum_name, ',\n    '.join(['%s = %s' % (pref, index) for index, pref in enumerate(self.prefixes)]),
          self.enum_name, ',\n    '.join(['"%s"' % pref for pref in self.prefixes])))
 
