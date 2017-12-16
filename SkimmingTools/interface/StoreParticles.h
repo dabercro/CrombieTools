@@ -1,3 +1,4 @@
+#include <initializer_list>
 #include <utility>
 #include <vector>
 #include <functional>
@@ -8,7 +9,7 @@ template<typename E, typename T, typename F>
 class ObjectStore {
  public:
 
-  ObjectStore(std::vector<E> sorted_enums, std::function<F(T*)> compare) : compare(compare) {
+  ObjectStore(std::initializer_list<E> sorted_enums, std::function<F(T*)> compare) : compare(compare) {
     for (auto valid_enum : sorted_enums)
       store.push_back({valid_enum, nullptr});
     total = store.size();

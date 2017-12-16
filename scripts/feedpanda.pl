@@ -1,0 +1,114 @@
+#! /usr/bin/env perl
+
+use strict;
+use warnings;
+use Data::Dumper qw(Dumper);
+
+# Check arguments and print help function if needed
+sub print_use {
+    print "Usage: $0 PANDADEF SOURCE SOURCE ... OUTPUTHEAD\n\n";
+    print "PANDADEF    Must be a PandaTree def file\n";
+    print "SOURCE      Source file(s) that you would like to analyze\n";
+    print "OUTPUTHEAD  Place where you would like to put the output header\n";
+    return "\nYou did something wrong with arguments\n";
+}
+# Check presence of arguments
+my $out_file = pop @ARGV or die print_use;
+if (not @ARGV) {
+    die print_use;
+}
+
+# Check that each source file exists
+foreach my $fname (@ARGV) {
+    if (not -e $fname) {
+        print "File $fname does not exist!\n\n";
+        die print_use;
+    }
+}
+
+# Check first line of header
+
+
+# Location of Panda definitions
+my $def_file = shift @ARGV;
+my @source;
+my @branches = ('triggers');
+
+foreach my $infile (@ARGV) {
+    open (my $handle, '<', $infile);
+    push @source, <$handle>;
+    close $handle;
+}
+
+# Filter to get the members called
+chomp(@source = grep { /\.|(->)/ } @source);
+
+for (@source) {
+    if (/event\.(\w+\(?)/) {
+        if ((substr $1, -1) ne '(') {
+            push @branches, $1;
+        }
+    }
+}
+
+sub uniq_sort {
+    my %seen;
+    return sort(grep {! $seen{$_}++ } @_);
+}
+
+# Get unique branches from first pass
+@branches = uniq_sort @branches;
+
+# Now check def file for references to load
+open (my $handle, '<', $def_file);
+chomp (my @pandadef = grep { /->/ } <$handle>);
+close $handle;
+my %poss_refs;
+my @last_branches;
+while (@last_branches != @branches) {
+    @last_branches = uniq_sort @branches;
+    # Fill more branches
+    foreach my $branch (@branches) {
+        foreach my $line (@pandadef) {
+            if ($line =~ /$branch\.(\w+)->(\w+)/) {
+                push @{$poss_refs{$1}}, $2;
+            }
+        }
+    }
+    foreach my $key (keys %poss_refs) {
+        @{$poss_refs{$key}} = uniq_sort @{$poss_refs{$key}};
+        my @new_branches = grep { /(\.|->)$key/ } @source;
+        if (@new_branches) {
+            push @branches, @{$poss_refs{$key}};
+        }
+    }
+    @branches = uniq_sort @branches;
+}
+
+# Now we have our branches. Time to write a header file!
+open (my $out, '>', $out_file);
+
+print $out <<HEAD;
+#ifndef CROMBIE_FEEDPANDA_H
+#define CROMBIE_FEEDPANDA_H 1
+
+#include "TTree.h"
+
+#include "PandaTree/Framework/interface/IOUtils.h"
+#include "PandaTree/Objects/interface/Event.h"
+
+void feedpanda(panda::Event& event, TTree* input) {
+  event.setStatus(*input, {"!*"});
+  event.setAddress(*input,
+HEAD
+
+print $out '    {"' . join("\",\n     \"", @branches) . '"';
+
+print $out <<HEAD;
+});
+}
+
+#endif
+HEAD
+
+close $out;
