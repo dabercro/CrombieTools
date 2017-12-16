@@ -27,7 +27,16 @@ foreach my $fname (@ARGV) {
 }
 
 # Check first line of header
-
+if (-e $out_file) {
+    open (my $handle, '<', $out_file);
+    chomp (my $first = <$handle>);
+    close $handle;
+    if ($first ne '#ifndef CROMBIE_FEEDPANDA_H') {
+        print "First line of $out_file looks suspicious! I don't want to overwrite:\n";
+        print "$first\n";
+        die print_use;
+    }
+}
 
 # Location of Panda definitions
 my $def_file = shift @ARGV;
