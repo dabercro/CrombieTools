@@ -19,10 +19,11 @@ RESET_SIGNATURE = 'reset()'
 
 
 class Branch:
-    def __init__(self, name, data_type, default_val):
+    def __init__(self, name, data_type, default_val, is_saved):
         self.name = name
         self.data_type = data_type
         self.default_val = default_val
+        self.is_saved = is_saved
 
 
 class Function:
@@ -134,17 +135,18 @@ if __name__ == '__main__':
                     in_function = Function(function_sig, prefixes)
                 continue
 
-            match = re.match(r'(\w*)(/(\w))?(\s?=\s?([\w\.\(\)]+))?(\s?->\s?(.*))?', line)
+            match = re.match(r'(\#\s*)?(\w*)(/(\w))?(\s?=\s?([\w\.\(\)]+))?(\s?->\s?(.*))?', line)
             if match:
-                var = match.group(1)
-                data_type = match.group(3) or DEFAULT_TYPE
-                val = match.group(5) or DEFAULT_VAL
+                var = match.group(2)
+                data_type = match.group(4) or DEFAULT_TYPE
+                val = match.group(6) or DEFAULT_VAL
+                is_saved = not bool(match.group(1))
 
-                branches = [Branch(('%s_%s' % (pref, var)).rstrip('_'), data_type, val) for pref in prefixes] or [Branch(var, data_type, val)]
+                branches = [Branch(('%s_%s' % (pref, var)).rstrip('_'), data_type, val, is_saved) for pref in prefixes] or [Branch(var, data_type, val, is_saved)]
 
                 all_branches.extend(branches)
                 if in_function is not None:
-                    in_function.add_var(var, match.group(7), data_type)
+                    in_function.add_var(var, match.group(8), data_type)
                 continue
 
     # Let's put the branches in some sort of order
@@ -194,7 +196,7 @@ if __name__ == '__main__':
   t = new TTree(name, name);
   %s
 }
-""" % (classname, classname, '\n  '.join(['t->Branch("{0}", &{0}, "{0}/{1}");'.format(b.name, b.data_type) for b in all_branches])))
+""" % (classname, classname, '\n  '.join(['t->Branch("{0}", &{0}, "{0}/{1}");'.format(b.name, b.data_type) for b in all_branches if b.is_saved])))
 
         # reset function
         write("""
