@@ -2,7 +2,6 @@
 
 use strict;
 use warnings;
-use Data::Dumper qw(Dumper);
 
 # Check arguments and print help function if needed
 sub print_use {
