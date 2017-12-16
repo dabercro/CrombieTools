@@ -1,6 +1,7 @@
 #ifndef CMSSW_PARSE_H
 #define CMSSW_PARSE_H
 
+#include <ctime>
 #include <string.h>
 #include <assert.h>
 #include <stdio.h>
@@ -44,7 +45,11 @@ int check_files_then_send(int argc, char** argv, int (*desired_main)(int, char**
     }
   }
 
-  return desired_main(argc, argv);
+  time_t start_time = time(NULL);
+  auto exit_code = desired_main(argc, argv);
+  printf("\nFinished %i files in %li seconds.\n\n", argc - 2, time(nullptr) - start_time);
+
+  return exit_code;
 
 }
 
