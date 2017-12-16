@@ -211,19 +211,24 @@ void %s::%s {
 
         # Template enum conversion
         def write_convert(first, second):
-            write("""template <class T, %s V>
-struct convert;
-
-%s""" % ('%s::%s_enum' % (classname, second.enum_name),
-         '\n'.join(['template <> struct convert <%s, %s> { %s res = %s; }' % ('%s::%s' % (classname, first.enum_name))])))
+            write(("""{0}::{1}_enum to_{1}({0}::{2}_enum e_cls) {begin}
+  switch (e_cls) {begin}
+  case %s
+  default:
+    throw;
+  {end}
+{end}
+""" % '\n  case '.join(['{0}::{2}_enum::%s:\n    return {0}::{1}_enum::%s;' %
+                       (pref, pref) for pref in second.prefixes if pref in first.prefixes])).format(
+                           classname, first.enum_name, second.enum_name, first.prefixes[0], begin='{', end='}'))
             
 
         prev_func = None
         for func in functions:
             if prev_func and func.prefixes != prev_func.prefixes:
                 if False not in [prev in func.prefixes for prev in prev_func.prefixes]:
-                    print func.prefixes
-                    print prev_func.prefixes
+                    write_convert(prev_func, func)
+                    write_convert(func, prev_func)
 
             prev_func = func
 
