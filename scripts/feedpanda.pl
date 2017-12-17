@@ -102,7 +102,6 @@ print $out <<HEAD;
 
 #include "TTree.h"
 
-#include "PandaTree/Framework/interface/IOUtils.h"
 #include "PandaTree/Objects/interface/Event.h"
 
 void feedpanda(panda::Event& event, TTree* input) {
