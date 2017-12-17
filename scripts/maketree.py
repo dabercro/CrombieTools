@@ -7,9 +7,16 @@ import copy
 
 
 TYPES = {
+    'B': 'Char_t',
+    'b': 'UChar_t',
+    'S': 'Short_t',
+    's': 'UShort_t',
     'I': 'Int_t',
-    'l': 'Long_t',
+    'i': 'UInt_t',
     'F': 'Float_t',
+    'D': 'Double_t',
+    'L': 'Long64_t',
+    'l': 'ULong64_t',
     'O': 'Bool_t'
 }
 
