@@ -1,3 +1,6 @@
+#ifndef CROMBIE_STOREPARTICLES_H
+#define CROMBIE_STOREPARTICLES_H 1
+
 #include <initializer_list>
 #include <utility>
 #include <vector>
@@ -9,10 +12,16 @@ template<typename E, typename T, typename F>
 class ObjectStore {
  public:
 
-  ObjectStore(std::initializer_list<E> sorted_enums, std::function<F(T*)> compare) : compare(compare) {
+  enum class order {
+    eAsc,
+    eDesc
+  };
+
+ ObjectStore(std::initializer_list<E> sorted_enums,
+             std::function<F(T*)> compare, order which = order::eDesc)
+   : compare(compare), which_order(which), total(sorted_enums.size()) {
     for (auto valid_enum : sorted_enums)
       store.push_back({valid_enum, nullptr});
-    total = store.size();
   }
 
   ~ObjectStore () {}
@@ -27,7 +36,7 @@ class ObjectStore {
       num_filled++;
     // Insertion sort: find location
     for (;it != store.begin(); --it) {
-      if (compare(addr) < compare((it - 1)->second))
+      if ((compare(addr) < compare((it - 1)->second)) == (which_order == order::eDesc))
         break;
     }
     // Insertion sort: move elements down
@@ -39,7 +48,11 @@ class ObjectStore {
   }
 
  private:
-  std::function<F(T*)> compare;
+  const std::function<F(T*)> compare;
+  const order which_order;
+
+  const unsigned total;
   unsigned num_filled = 0;
-  unsigned total;
 };
+
+#endif
