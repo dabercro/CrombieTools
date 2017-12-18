@@ -83,8 +83,6 @@ do
                 STATUS="corrupt"
             fi
 
-            wget -O $IN_FILE.report "http://t3serv001.mit.edu/~dabercro/submit/?report=$FULL_IN&status=$STATUS"
-
             if [ ! -d $(dirname `dirname $FULL_IN`) ]
             then
 
@@ -105,6 +103,19 @@ do
                 test -f $NEW_INPUT_DIR/$IN_FILE || xrdcp root://xrootd.cmsaf.mit.edu//$INPUT_DIR/$IN_FILE $NEW_INPUT_DIR/$IN_FILE
                 ln -s $NEW_INPUT_DIR/$IN_FILE $IN_FILE
 
+                if ! findtree.py $IN_FILE
+                then
+                    rm $NEW_INPUT_DIR/$IN_FILE
+                    STATUS="not_downloading"
+                fi
+
+            fi
+
+            wget -O $IN_FILE.report "http://t3serv001.mit.edu/~dabercro/submit/?report=$FULL_IN&status=$STATUS"
+
+            if [ "$STATUS" = "not_downloading" ]
+            then
+                exit 0     # Gracefully
             fi
 
         fi
@@ -136,4 +147,5 @@ ls -lh
 # The condor.cfg maps the output file to the correct place
 
 # Give the exit code from the slimmer
+echo "Exiting with $exitcode"
 exit $exitcode
