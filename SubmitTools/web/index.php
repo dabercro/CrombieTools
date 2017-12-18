@@ -45,6 +45,7 @@ elseif (isset($_GET['report'])) {
 else {
 
   echo '<a href="?">Home</a> <br>';
+  echo '<a href="http://t3serv007.mit.edu/condormon/">Condormon</a> <br>';
   echo '<a href="logs">All Logs</a> <br>';
 
   if (isset($_GET['file']) and isset($_GET['dir'])) {
