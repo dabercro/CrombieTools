@@ -73,12 +73,13 @@ class Function:
     def implement(self, classname):
         incr = ['++', '--']
         return """void %s::%s {
+  auto& base_name = %s_names[static_cast<int>(base)];
   %s
 }
-""" % (classname, self.signature,
-       '\n  '.join(['{3}*({2}*)(t->GetBranch(({1}_names[static_cast<int>(base)] + "{0}").data())->GetAddress());'. format(var, self.enum_name, t, val)
+""" % (classname, self.signature, self.enum_name,
+       '\n  '.join(['{2}*({1}*)(t->GetBranch((base_name + "{0}").data())->GetAddress());'. format(var, t, val)
                     for var, val, t in self.variables if val in incr] +
-                   ['set({3}_names[static_cast<int>(base)] + "{0}", static_cast<{1}>({2}));'.format(var, t, val, self.enum_name)
+                   ['set(base_name + "{0}", static_cast<{1}>({2}));'.format(var, t, val)
                     for var, val, t in self.variables if val not in incr]
        ))
 
