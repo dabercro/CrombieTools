@@ -15,7 +15,7 @@ import CrombieTools.LoadConfig
 from collections import defaultdict
 
 logging.basicConfig(level=logging.INFO)
-LOG = logging.getLogger('submit')
+LOG = logging.getLogger('squid')
 
 
 def connect():
@@ -119,7 +119,7 @@ def prepare_for_submit(jobs):
 
     # Get locations of condor config, and html path
     local_condor = os.path.join(os.environ['PWD'], 'condor')
-    html_path = os.path.join(os.environ['HOME'], 'public_html/submit')
+    html_path = os.path.join(os.environ['HOME'], 'public_html/squid')
     if not os.path.exists(local_condor):
         os.mkdir(local_condor)
 
@@ -276,12 +276,17 @@ def check_bad_files():
 
     # Verify the report
     for file_name, status in curs.fetchall():
+        continue         # Skip all the rest of this stuff for now
         verified = False
 
-        if status == 'missing' and not os.path.exists(file_name):
+        source = file_name.replace('/mnt/hadoop/cms', '/mnt/hadoop/scratch/' + os.environ['USER'])
+
+        # Corrupt files might be missing too if I interrupted this step earlier
+        if status in ['missing', 'corrupt'] and not os.path.exists(file_name):
             verified = True
 
-        if (status == 'corrupt'):
+        # Only check existing corrupt files if they're old
+        elif status == 'corrupt' and (time.time() - os.stat(file_name).st_mtime) > (3600 * 12):
         
             try:
                 subprocess.check_call(['crombie', 'findtree', file_name])
@@ -290,9 +295,12 @@ def check_bad_files():
                 os.remove(file_name)
 
         if verified:
-            split_name = file_name.split('/')
-            # Get the book name and add the dataset
-            samples['/'.join(split_name[-4:-2])].add(split_name[-2])
+            if os.path.exists(source):
+                shutil.move(source, file_name)
+            else:
+                split_name = file_name.split('/')
+                # Get the book name and add the dataset
+                samples['/'.join(split_name[-4:-2])].add(split_name[-2])
 
     for book, datasets in samples.iteritems():
         for dataset in datasets:
@@ -300,7 +308,7 @@ def check_bad_files():
                 'echo "y" | /home/cmsprod/DynamicData/SmartCache/Client/requestSample.sh %s %s' % (book, dataset),
                 shell=True)
 
-    curs.execute('DELETE FROM check_these')
+    curs.execute('DELETE FROM check_these where status = "missing" or status = "corrupt"')
     conn.commit()
     conn.close()
 

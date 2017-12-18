@@ -1,10 +1,10 @@
 #! /bin/bash
 
-echo `pwd`
+pwd
 
 ID=$1
 
-wget -O params.json http://t3serv001.mit.edu/~dabercro/submit/\?id=$ID
+wget -O params.json http://t3serv001.mit.edu/~dabercro/squid/\?id=$ID
 
 # Bootstrap jq out of our tarball
 
@@ -50,11 +50,11 @@ fi
 echo ""
 echo "After CMSSW setup"
 echo ""
+pwd
+ls -lh
 
 # Download or softlink Panda files
 
-echo `pwd`
-ls -lh
 SCRATCH=/mnt/hadoop/scratch/dabercro
 
 for IN_FILE in $INPUT_FILES
@@ -111,11 +111,11 @@ do
 
             fi
 
-            wget -O $IN_FILE.report "http://t3serv001.mit.edu/~dabercro/submit/?report=$FULL_IN&status=$STATUS"
+            wget -O $IN_FILE.report "http://t3serv001.mit.edu/~dabercro/squid/?report=$FULL_IN&status=$STATUS&me=$ID"
 
             if [ "$STATUS" = "not_downloading" ]
             then
-                exit 0     # Gracefully
+                exit 0     # Gracefully retreat
             fi
 
         fi
@@ -128,7 +128,7 @@ echo ""
 echo "After download"
 echo ""
 
-echo `pwd`
+pwd
 ls -lh
 
 # Run the slimmer
@@ -141,7 +141,7 @@ echo ""
 echo "After slimmer"
 echo ""
 
-echo `pwd`
+pwd
 ls -lh
 
 # The condor.cfg maps the output file to the correct place
