@@ -70,9 +70,9 @@ Float_t TwoScaleFactorCorrector::Evaluate()
       // If both tight are non-unity, then do the combination equation
       if (leg1_tight.first)
         Output =
-          (leg1_tight.first * leg1_tight.first * leg1_loose +
-           leg2_tight.first * leg2_tight.first * leg2_loose) /
-          (leg1_tight.first + leg2_tight.first);
+          (leg1_tight.second * leg1_tight.second * leg1_loose +
+           leg2_tight.second * leg2_tight.second * leg2_loose) /
+          (leg1_tight.second + leg2_tight.second);
       // If neither were good, just do two loose scale factors
       else
         Output = leg1_loose * leg2_loose;
