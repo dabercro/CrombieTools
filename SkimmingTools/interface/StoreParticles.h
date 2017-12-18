@@ -59,7 +59,7 @@ class ObjectStore {
     }
     // Insertion sort: move elements down
     { // Extra scope so temp_extra doesn't leak
-      S temp_extra = 0;
+      S temp_extra {};
       for(T* temp = nullptr; it != store.end() && addr; ++it) {
         temp = it->particle;
         it->particle = addr;
