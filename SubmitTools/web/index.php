@@ -5,11 +5,10 @@ ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 mysqli_report(MYSQLI_REPORT_STRICT);
 
+// Connect to MySQL database
 $conn = new mysqli('t3serv015.mit.edu', 'submit', 'submitter', 'submit_queue');
 
 if (isset($_GET['id'])) {
-  // Connect to MySQL database
-
   $stmt = $conn->prepare('SELECT exe, input_dir, output_dir, input_files, output_file, scram_arch, base, cmssw comments FROM queue WHERE id=?');
   $stmt->bind_param('s', $_GET['id']);
   $stmt->execute();
@@ -43,10 +42,7 @@ elseif (isset($_GET['report'])) {
   echo 'Reported ' . $status . ' file to check: ' . $_GET['report'];
 }
 else {
-
-  echo '<a href="?">Home</a> <br>';
-  echo '<a href="http://t3serv007.mit.edu/condormon/">Condormon</a> <br>';
-  echo '<a href="logs">All Logs</a> <br>';
+  echo '<h3><a href="?">Home</a> <a href="http://t3serv007.mit.edu/condormon/">Condormon</a> <a href="logs">All Logs</a></h3>';
 
   if (isset($_GET['file']) and isset($_GET['dir'])) {
     $path = join('/', array_slice(explode('/', $_GET['dir']), -2, 2));
@@ -56,36 +52,33 @@ else {
       echo '<a href="' . $file . '">' . $file . '</a> size: ' . filesize($file) . ' <br>';
     }
   }
-  elseif (isset($_GET['dir'])) {
-    $match = $_GET['dir'] . '%';
-    if (isset($_GET['logs'])) {
-      $first_head = ' Status: ';
-      $second_head = ' Attempts: ';
-      $stmt = $conn->prepare('SELECT output_file, status, attempts FROM queue WHERE output_dir LIKE ?');
-      $link = '<a href="?dir=' . $_GET['dir'] . '&file=';
+  else {
+    $first_head = ' In progress: ';
+    $second_head = ' Finished: ';
+    if (isset($_GET['dir'])) {
+      $match = $_GET['dir'] . '%';
+      if (isset($_GET['logs'])) {
+        $stmt = $conn->prepare('SELECT output_file, status, attempts FROM queue WHERE output_dir LIKE ?');
+        $link = '<a href="?dir=' . $_GET['dir'] . '&file=';
+        $first_head = ' Status: ';
+        $second_head = ' Attempts: ';
+      }
+      else {
+        $stmt = $conn->prepare('SELECT output_dir, SUM(status != "finished") AS not_fin, SUM(status = "finished") AS finished FROM queue WHERE output_dir LIKE ? GROUP BY output_dir');
+        $link = '<a href="?logs=yep&dir=';
+      }
+      $stmt->bind_param('s', $match);
     }
     else {
-      $first_head = ' In progress: ';
-      $second_head = ' Finished: ';
-      $stmt = $conn->prepare('SELECT output_dir, SUM(status != "finished") AS not_fin, SUM(status = "finished") AS finished FROM queue WHERE output_dir LIKE ? GROUP BY output_dir');
-      $link = '<a href="?logs=yep&dir=';
+      $stmt = $conn->prepare('SELECT SUBSTRING(output_dir, 1, LOCATE(SUBSTRING_INDEX(output_dir, "/", -1), output_dir) - 1) AS out_dir, SUM(status != "finished") AS not_fin, SUM(status = "finished") AS finished FROM queue GROUP BY out_dir;');
+      $link = '<a href="?dir=';
     }
-    $stmt->bind_param('s', $match);
     $stmt->execute();
     $stmt->bind_result($output, $first, $second);
     while ($stmt->fetch()) {
       echo $link . $output . '">' . $output . '</a>' . $first_head . $first . $second_head . $second . ' <br>';
     }
     $stmt->close();
-  }
-  else {
-    $out_dirs = $conn->query('SELECT SUBSTRING(output_dir, 1, LOCATE(SUBSTRING_INDEX(output_dir, "/", -1), output_dir) - 1) AS out_dir, SUM(status != "finished") AS not_fin, SUM(status = "finished") AS finished FROM queue GROUP BY out_dir;');
-
-    while ($row = $out_dirs->fetch_array(MYSQLI_ASSOC)) {
-      echo '<a href="?dir=' . $row['out_dir'] . '">' . $row['out_dir'] . '</a> In progress: ' . $row['not_fin'] . ' Finished: ' . $row['finished'] . ' <br>';
-    }
-
-    $out_dirs->close();
   }
 }
 
