@@ -14,11 +14,14 @@
 /// Calculate deltaPhi between two particles
 float deltaPhi(float phi1, float phi2)
 {
-  float PHI = fabs(phi1-phi2);
-  if (PHI<=3.14159265)
-    return fabs(PHI);
-  else
-    return fabs(2*3.14159265-PHI);
+  const float pi = 3.14159265358979323846;
+  auto make_pm = [pi](float phi) {
+    if (phi > pi)
+      phi -= 2*pi;
+    return phi;
+  };
+
+  return fabs(make_pm(fabs(make_pm(phi1) - make_pm(phi2))));
 }
 
 /// Calculate deltaR between two particles
