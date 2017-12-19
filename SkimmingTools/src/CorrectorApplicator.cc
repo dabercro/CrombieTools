@@ -84,6 +84,7 @@ void CorrectorApplicator::ApplyCorrections(TString fileName)
     fillBranches.push_back(outTree->Branch(fName, &(Addresses[fName]), fName+"/F"));
   }
   for (UInt_t iCorrector = 0; iCorrector != fCorrectors.size(); ++iCorrector) {
+    fCorrectors[iCorrector]->CompareFileName(fileName);
     fCorrectors[iCorrector]->SetInTree(theTree);
     if (fSaveAll) {
       TString checkName = fCorrectors[iCorrector]->GetName();

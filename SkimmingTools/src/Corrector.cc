@@ -4,6 +4,8 @@
   @author Daniel Abercrombie <dabercro@mit.edu>
 */
 
+#include <regex>
+
 #include "TAxis.h"
 #include "Corrector.h"
 
@@ -96,7 +98,7 @@ std::pair<bool, Float_t> Corrector::EvaluateWithFlag()
   bool flag = false;
   Float_t Output = (fHistReader == eZeroCenteredUnc) ? 0.0 : 1.0;
 
-  if (fInTree != NULL && fCutFormula->EvalInstance() != 0) {
+  if (fMatchedFileName && fInTree != NULL && fCutFormula->EvalInstance() != 0) {
     flag = true;
     if (fNumDims == 1) {
       Double_t evalX = GetFormulaResult(0);
@@ -159,6 +161,12 @@ void Corrector::InitializeTree()
       fFormulas.push_back(tempFormula);
     }
   }
+}
+
+//--------------------------------------------------------------------
+Bool_t Corrector::CompareFileName(TString fileName) {
+  fMatchedFileName = (fMatchFileName == "") or (std::regex_match(fileName.Data(), std::regex(fMatchFileName.Data())));
+  return fMatchedFileName;
 }
 
 //--------------------------------------------------------------------

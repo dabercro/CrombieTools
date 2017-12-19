@@ -43,7 +43,7 @@ class FormulaCorrector : public Corrector
 
  private:
   TString                  fFormulaString;
-  TTreeFormula*            fFormula;
+  TTreeFormula*            fFormula = NULL;
 
   ClassDef(FormulaCorrector,1)
 };

@@ -51,6 +51,9 @@ class Corrector : virtual public Debug
   /// Evaluate the TTree pointer fInTree at its current entry.
   virtual    Float_t    Evaluate          ();
 
+  /// Compares the file name to the Regex and returns true if corrections will be applied
+  Bool_t                CompareFileName   ( TString fileName );
+
   /// Get the name of the branch that this Corrector would like to write to.
   TString               GetName           () const              { return fName;                                            }
 
@@ -78,7 +81,10 @@ class Corrector : virtual public Debug
   };
 
   /// Set the type of histogram reader
-  void                  SetHistReader   ( HistReader reader )   { fHistReader = reader;                                    }
+  void                  SetHistReader    ( HistReader reader )   { fHistReader = reader;                                    }
+
+  /// Set a RegEx for the Corrector to check against the filename. If no match, corrections are not applied
+  void                  SetMatchFileName ( TString regexpr )        { fMatchFileName = regexpr;                             }
 
  protected:
 
@@ -103,6 +109,9 @@ class Corrector : virtual public Debug
   HistReader                  fHistReader = eValue;   ///< The method to reading histograms
   /// Evaluate one of the formulae
   Double_t                    GetFormulaResult            ( Int_t index );
+
+  TString               fMatchFileName;
+  Bool_t                fMatchedFileName;             ///< A flag telling this corrector if the file has been matched
 
   ClassDef(Corrector,1)
 };

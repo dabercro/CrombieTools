@@ -8,12 +8,11 @@ Contains the constructor and default object for FormulaCorrector.
 
 
 from .. import Load
-from .Corrector import MakeCorrector
 
-newFormulaCorrector  = Load('FormulaCorrector')
+newFormulaCorrector = Load('FormulaCorrector')
 """FormulaCorrector constructor"""
 
-def MakeFormulaCorrector(Name, Formula, inCut):
+def MakeFormulaCorrector(Name, Formula, inCut='1'):
     """Make a FormulaCorrector object
 
     @param Name is the name of the branch for this Corrector if the CorrectorApplicator

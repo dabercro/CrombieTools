@@ -18,7 +18,7 @@ newApplicator = Load('CorrectorApplicator')
 """CorrectorApplicator constructor"""
 
 
-def MakeApplicator(name, saveAll, inputTree='events', outputTree='events', reportFreq=100000):
+def MakeApplicator(name, saveAll, inputTree='events', outputTree='events', reportFreq=100000, isUnc=False):
     """Make a CorrectorApplicator with parameters filled
 
     @param name is a string that names the branch to merge all of the correction factors into.
@@ -27,12 +27,14 @@ def MakeApplicator(name, saveAll, inputTree='events', outputTree='events', repor
     @param inputTree is the name of the tree to read as input.
     @param outputTree is the name of the tree to place the output branches.
     @param reportFreq is the number of events to pass between reporting progress.
+    @param isUnc sets whether this corrector is for uncertainties or not
     @returns a CorrectorApplicator object.
     """
     applicator = newApplicator(name, saveAll)
     applicator.SetInputTreeName(inputTree)
     applicator.SetOutputTreeName(outputTree)
     applicator.SetReportFrequency(reportFreq)
+    applicator.SetIsUncertainty(isUnc)
     return applicator
 
 
