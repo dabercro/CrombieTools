@@ -1,0 +1,47 @@
+<?php
+
+   if (count($checked)) {
+     $style_dirs = ' style="display:none;"';
+     $style_showdirs = '';
+   } else {
+     $style_showdirs = ' style="display:none;"';
+     $style_dirs = '';
+   }
+
+?>
+
+      <form>
+        <input type="submit" value="Show me the plots!"> <input type="checkbox" name="share" value="True">Make a sharable page
+        <input type="checkbox" name="rev" value="no"<?php if ($rev_name == 'no') echo ' checked';?>>Do not reverse names to sort<br>
+        <button id="showdirs" type="button"<?php echo $style_showdirs;?>>Select Directories</button>
+        Match these names: 
+        <input type="text" name="expr" value="<?php echo $exprs;?>" size="50">
+        Per Row:
+        <input type="text" name="width" value="<?php echo $raw_width;?>" size="4">
+        <div id="dirs"<?php echo $style_dirs;?>>
+          <?php
+          foreach ($firstDirs as $directory) {
+             if (in_array($directory, $checked))
+               echo '<input type="checkbox" name="dirs[]" value="' . $directory . '" checked>' . $directory . ' <br>';
+             else
+               echo '<input type="checkbox" name="dirs[]" value="' . $directory . '">' . $directory . ' <br>';
+          }
+          ?>
+          <div id="allmessage">
+            These are just the <?php echo $passNum;?> most recent directories
+          </div>
+          <button id="showalldirs" type="button">Show All Directories</button>
+          <div id="alldirs" style="display:none;">
+          <?php
+          foreach ($restDirs as $directory) {
+             if (in_array($directory, $checked))
+               echo '<input type="checkbox" name="dirs[]" value="' . $directory . '" checked>' . $directory . ' <br>';
+             else
+               echo '<input type="checkbox" name="dirs[]" value="' . $directory . '">' . $directory . ' <br>';
+          }
+          ?>
+          </div>
+        </div>
+        <br>
+      </form>
+      <form><input type="submit" value="Go Home"></form>

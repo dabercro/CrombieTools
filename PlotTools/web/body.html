@@ -1,0 +1,54 @@
+<!DOCTYPE HTML>
+<html lang=en>
+  <head>
+    <meta name="viewport" content="width=device-width,user-scalable=yes"/> 
+    <style>
+      body {
+        margin-left:4em;
+        margin-right:4em;
+        padding:1em;
+        word-wrap:break-word;
+      }
+      div.plot {
+        float:left;
+        width:<?php echo $width;?>%;
+      }
+    </style>
+    <title>View Crombie Plots</title>
+    <?php
+    if ($share == 'Nope')
+      echo '<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.2/jquery.min.js"></script>';
+    ?>
+  </head>
+
+  <body>
+    <div>
+      Get .tar.gz File:
+      <a href="returntar.php?files=<?php echo urlencode($joined_files);?>" target="blank">PDF, PNG, and C macros</a>
+      <a href="returntar.php?only=pdf&files=<?php echo urlencode($joined_files);?>" target="blank">Just PDF</a>
+      <a href="returntar.php?only=png&files=<?php echo urlencode($joined_files);?>" target="blank">Just PNG</a>
+      <?php
+      if ($share == 'Nope')
+         include 'selection.html';
+      ?>
+      </div>
+
+    <?php
+    foreach ($file_list as $filename) {
+       echo '<div class="plot">';
+       echo '<div style="height: 2.5em;">';
+       echo '<p> <a href="' . $plotdir . $filename . '.C">' . $filename . '</a></p>';
+       echo '</div>';
+       echo '<a href="' . $plotdir . $filename . '.pdf"><img src="' . $plotdir . $filename . '.png" alt="A picture of ' . $filename . '" width="100%"></a>';
+       echo '</div>';
+    }
+    if (count($checked) and $share == 'Nope')
+       include 'downloadtar.html';
+    ?>
+
+  </body>
+  <?php
+  if ($share == 'Nope')
+    include 'foot.html';
+  ?>
+</html>

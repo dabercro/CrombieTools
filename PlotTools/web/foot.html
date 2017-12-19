@@ -1,0 +1,18 @@
+  <script>
+    $(document).ready(function(){
+        $("#showdirs").click(function(){
+            $("#dirs").toggle();
+        });
+        $("#showalldirs").click(function(){
+
+            if ($("#showalldirs").html() == "Show All Directories") {
+               $("#showalldirs").html("Hide All Directories")
+            } else {
+               $("#showalldirs").html("Show All Directories")
+            }
+
+            $("#alldirs").toggle();
+            $("#allmessage").toggle();
+        });
+    });
+  </script>
