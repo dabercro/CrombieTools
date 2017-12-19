@@ -111,6 +111,10 @@ class PlotStack : public FileConfigReader
   TString               fPostFitFile = "";          ///< Holds the location of post-fit plots
   TString               fRegion = "";               ///< Holds the region for post-fit plots
 
+  /// Makes the canvas from histogram vectors. All other MakeCanvas pass through here.
+  void   MakeCanvas   (TString FileBase, std::vector<TH1D*> DataHists, std::vector<TH1D*> MCHists, std::vector<TH1D*> SignalHists,
+                       TString XLabel, TString YLabel, Bool_t logY);
+
   ClassDef(PlotStack, 1)
 };
 

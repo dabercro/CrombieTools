@@ -84,9 +84,43 @@ PlotStack::MergeHistograms(FileType type, std::vector<TH1D*> hists) {
 
 //--------------------------------------------------------------------
 void
-PlotStack::MakeCanvas(TString FileBase, Int_t NumXBins, Double_t *XBins,
+PlotStack::MakeCanvas(TString FileBase, Int_t NumXBins, Double_t MinX, Double_t MaxX,
                       TString XLabel, TString YLabel, Bool_t logY)
 {
+  bool reset_per = (fEventsPer == 0);
+  if (reset_per)
+    SetEventsPer((MaxX - MinX)/NumXBins);
+
+  Double_t XBins[NumXBins+1];
+  ConvertToArray(NumXBins, MinX, MaxX, XBins);
+  MakeCanvas(FileBase, NumXBins, XBins, XLabel, YLabel, logY);
+
+  if (reset_per)
+    SetEventsPer(0);
+}
+
+//--------------------------------------------------------------------
+void
+PlotStack::MakeCanvas(TString FileBase, Int_t NumXBins, Double_t *XBins,
+                      TString XLabel, TString YLabel, Bool_t logY) {
+  SetIncludeErrorBars(true);
+  std::vector<TH1D*> DataHists = GetHistList(NumXBins, XBins, kData);
+  Message(eDebug, "Number of Data Histograms: %i", DataHists.size());
+  SetIncludeErrorBars(false);
+  std::vector<TH1D*> MCHists = GetHistList(NumXBins, XBins, kBackground);
+  Message(eDebug, "Number of MC Histograms: %i", MCHists.size());
+  std::vector<TH1D*> SignalHists;
+  if (fSignalFileInfo.size() != 0)
+    SignalHists = GetHistList(NumXBins, XBins, kSignal);
+  Message(eDebug, "Number of Signal Histograms: %i", SignalHists.size());
+
+  MakeCanvas(FileBase, DataHists, MCHists, SignalHists, XLabel, YLabel, logY);
+}
+
+//--------------------------------------------------------------------
+void
+PlotStack::MakeCanvas(TString FileBase, std::vector<TH1D*> DataHists, std::vector<TH1D*> MCHists, std::vector<TH1D*> SignalHists,
+                      TString XLabel, TString YLabel, Bool_t logY) {
   DisplayFunc(__func__);
   Message(eInfo, "Making File :   %s", FileBase.Data());
   Message(eInfo, "Plotting    :   %s", fDefaultExpr.Data());
@@ -106,6 +140,9 @@ PlotStack::MakeCanvas(TString FileBase, Int_t NumXBins, Double_t *XBins,
       YLabel.Form("Events/%.1f", fEventsPer);
   }
 
+  const Int_t NumXBins = MCHists[0]->GetNbinsX();
+  const Double_t *XBins = MCHists[0]->GetXaxis()->GetXbins()->GetArray();
+
   SetLumiLabel(float(fLuminosity/1000.0));
   ResetLegend();
 
@@ -121,17 +158,6 @@ PlotStack::MakeCanvas(TString FileBase, Int_t NumXBins, Double_t *XBins,
     templateFile = TFile::Open(fTemplateFiles[iTemp]);
     TemplateFiles.push_back(templateFile);
   }
-
-  SetIncludeErrorBars(true);
-  std::vector<TH1D*> DataHists = GetHistList(NumXBins, XBins, kData);
-  Message(eDebug, "Number of Data Histograms: %i", DataHists.size());
-  SetIncludeErrorBars(false);
-  std::vector<TH1D*> MCHists = GetHistList(NumXBins, XBins, kBackground);
-  Message(eDebug, "Number of MC Histograms: %i", MCHists.size());
-  std::vector<TH1D*> SignalHists;
-  if (fSignalFileInfo.size() != 0)
-    SignalHists = GetHistList(NumXBins, XBins, kSignal);
-  Message(eDebug, "Number of Signal Histograms: %i", SignalHists.size());
 
   SetLegendFill(true);
   TH1D *DataHist = (TH1D*) DataHists[0]->Clone("DataHist");
@@ -366,23 +392,6 @@ WHERE region = ? AND bin = ? AND signal = ?
     TemplateFiles[iTemp]->Close();
 
   CloseFiles();
-}
-
-//--------------------------------------------------------------------
-void
-PlotStack::MakeCanvas(TString FileBase, Int_t NumXBins, Double_t MinX, Double_t MaxX,
-                      TString XLabel, TString YLabel, Bool_t logY)
-{
-  bool reset_per = (fEventsPer == 0);
-  if (reset_per)
-    SetEventsPer((MaxX - MinX)/NumXBins);
-
-  Double_t XBins[NumXBins+1];
-  ConvertToArray(NumXBins, MinX, MaxX, XBins);
-  MakeCanvas(FileBase, NumXBins, XBins, XLabel, YLabel, logY);
-
-  if (reset_per)
-    SetEventsPer(0);
 }
 
 //--------------------------------------------------------------------
