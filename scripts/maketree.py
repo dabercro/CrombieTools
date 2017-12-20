@@ -58,7 +58,7 @@ class Function:
                 return output.format('')
 
         return output.format("""
-  enum class %s : int {
+  enum class %s : unsigned {
     %s
   };
  private:
@@ -73,7 +73,7 @@ class Function:
     def implement(self, classname):
         incr = ['++', '--']
         return """void %s::%s {
-  auto& base_name = %s_names[static_cast<int>(base)];
+  auto& base_name = %s_names[static_cast<unsigned>(base)];
   %s
 }
 """ % (classname, self.signature, self.enum_name,
