@@ -95,6 +95,7 @@ class Corrector : virtual public Debug
   TString               fInCut = "1";                 ///< Corrector cut
   TTreeFormula*         fCutFormula = NULL;           ///< Formula for cut
   Bool_t                fIsCopy = false;              ///< Track if instance is a copy
+  Bool_t                fMatchedFileName;             ///< A flag telling this corrector if the file has been matched
 
  private:
   TFile*                fCorrectionFile = NULL;       ///< Name of file containing correction histogram
@@ -111,7 +112,6 @@ class Corrector : virtual public Debug
   Double_t                    GetFormulaResult            ( Int_t index );
 
   TString               fMatchFileName;
-  Bool_t                fMatchedFileName;             ///< A flag telling this corrector if the file has been matched
 
   ClassDef(Corrector,1)
 };
