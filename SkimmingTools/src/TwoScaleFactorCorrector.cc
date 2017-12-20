@@ -49,7 +49,7 @@ Float_t TwoScaleFactorCorrector::Evaluate()
 {
   Float_t Output = 1.0;
 
-  if (fInTree != NULL && fCutFormula->EvalInstance() != 0) {
+  if (fMatchedFileName && fInTree != NULL && fCutFormula->EvalInstance() != 0) {
     // Evaluate each tight inner corrector.
     auto leg1_tight = fCorrectors[1]->EvaluateWithFlag();
     auto leg2_tight = fCorrectors[3]->EvaluateWithFlag();

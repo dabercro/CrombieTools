@@ -38,7 +38,7 @@ Float_t FormulaCorrector::Evaluate()
 {
   Float_t Output = 1.0;
 
-  if (fInTree != NULL && fCutFormula->EvalInstance() != 0)
+  if (fMatchedFileName && fInTree != NULL && fCutFormula->EvalInstance() != 0)
     Output = fFormula->EvalInstance();
 
   return Output;
