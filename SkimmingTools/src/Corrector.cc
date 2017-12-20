@@ -84,6 +84,20 @@ Double_t Corrector::GetFormulaResult(Int_t index)
 }
 
 //--------------------------------------------------------------------
+Float_t Corrector::DoEval() {
+  Double_t evalX = GetFormulaResult(0);
+  if (fNumDims > 1) {
+    Double_t evalY = GetFormulaResult(1);
+    if (fNumDims > 2) {
+      Double_t evalZ = GetFormulaResult(2);
+      return fCorrectionHist->GetBinContent(fCorrectionHist->FindBin(evalX,evalY,evalZ));
+    }
+    return fCorrectionHist->GetBinContent(fCorrectionHist->FindBin(evalX,evalY));
+  }
+  return fCorrectionHist->GetBinContent(fCorrectionHist->FindBin(evalX));
+}
+
+//--------------------------------------------------------------------
 
 /**
    @returns value of correction histogram using the expressions added
@@ -100,21 +114,7 @@ std::pair<bool, Float_t> Corrector::EvaluateWithFlag()
 
   if (fMatchedFileName && fInTree != NULL && fCutFormula->EvalInstance() != 0) {
     flag = true;
-    if (fNumDims == 1) {
-      Double_t evalX = GetFormulaResult(0);
-      Output = fCorrectionHist->GetBinContent(fCorrectionHist->FindBin(evalX));
-    }
-    else if (fNumDims == 2) {
-      Double_t evalX = GetFormulaResult(0);
-      Double_t evalY = GetFormulaResult(1);
-      Output = fCorrectionHist->GetBinContent(fCorrectionHist->FindBin(evalX,evalY));
-    }
-    else if (fNumDims == 3) {
-      Double_t evalX = GetFormulaResult(0);
-      Double_t evalY = GetFormulaResult(1);
-      Double_t evalZ = GetFormulaResult(2);
-      Output = fCorrectionHist->GetBinContent(fCorrectionHist->FindBin(evalX,evalY,evalZ));
-    }
+    Output = DoEval();
   }
 
   if (fHistReader == eUnityCenteredUnc)

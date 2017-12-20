@@ -45,44 +45,29 @@ void TwoScaleFactorCorrector::SetInTree(TTree* tree)
             set by SetInCut(). In that case, a default value is returned (1.0).
 */
 
-Float_t TwoScaleFactorCorrector::Evaluate()
+Float_t TwoScaleFactorCorrector::DoEval()
 {
-  Float_t Output = 1.0;
+  // Evaluate each tight inner corrector.
+  auto leg1_tight = fCorrectors[1]->EvaluateWithFlag();
+  auto leg2_tight = fCorrectors[3]->EvaluateWithFlag();
 
-  if (fMatchedFileName && fInTree != NULL && fCutFormula->EvalInstance() != 0) {
-    // Evaluate each tight inner corrector.
-    auto leg1_tight = fCorrectors[1]->EvaluateWithFlag();
-    auto leg2_tight = fCorrectors[3]->EvaluateWithFlag();
+  auto leg1_loose = fCorrectors[0]->Evaluate();
+  auto leg2_loose = fCorrectors[2]->Evaluate();
 
-    // If only one is tight, call the other's loose, and multiply
-    if ((bool) leg1_tight.first != (bool) leg2_tight.first) {
-      if (leg1_tight.first)
-        Output = leg1_tight.second * fCorrectors[2]->Evaluate();
-      else
-        Output = leg2_tight.second * fCorrectors[0]->Evaluate();
+  // If only one is tight, use the other's loose, and multiply
+  if ((bool) leg1_tight.first != (bool) leg2_tight.first) {
+    if (leg1_tight.first)
+      return leg1_tight.second * leg2_loose;
 
-    }
-    else {
-
-      auto leg1_loose = fCorrectors[0]->Evaluate();
-      auto leg2_loose = fCorrectors[2]->Evaluate();
-
-      // If both tight are non-unity, then do the combination equation
-      if (leg1_tight.first)
-        Output =
-          (leg1_tight.second * leg1_tight.second * leg1_loose +
-           leg2_tight.second * leg2_tight.second * leg2_loose) /
-          (leg1_tight.second + leg2_tight.second);
-      // If neither were good, just do two loose scale factors
-      else
-        Output = leg1_loose * leg2_loose;
-
-    }
-
+    return leg2_tight.second * leg1_loose;
   }
 
-  return Output;
+  // If both tight are non-unity, then do the combination equation
+  if (leg1_tight.first)
+    return (leg1_tight.second * leg1_tight.second * leg1_loose + leg2_tight.second * leg2_tight.second * leg2_loose) /
+      (leg1_tight.second + leg2_tight.second);
 
+  return leg1_loose * leg2_loose;
 }
 
 //--------------------------------------------------------------------

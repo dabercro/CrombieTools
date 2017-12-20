@@ -49,7 +49,7 @@ class Corrector : virtual public Debug
   /// Evaluate the TTree pointer fInTree at its current entry and return a status bit corresponding to cut.
   std::pair<bool, Float_t>    EvaluateWithFlag    ();
   /// Evaluate the TTree pointer fInTree at its current entry.
-  virtual    Float_t    Evaluate          ();
+  Float_t    Evaluate                             ();
 
   /// Compares the file name to the Regex and returns true if corrections will be applied
   Bool_t                CompareFileName   ( TString fileName );
@@ -90,6 +90,7 @@ class Corrector : virtual public Debug
 
   TString               fName;                        ///< Name of branch to write to
   void                  InitializeTree    ();         ///< Function to initialize TTreeFormula on the tree
+  virtual  Float_t      DoEval            ();         ///< Function that actually does the evaluation of the correction factor
 
   TTree*                fInTree = NULL;               ///< Pointer to tree being read
   TString               fInCut = "1";                 ///< Corrector cut

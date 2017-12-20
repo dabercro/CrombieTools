@@ -34,14 +34,9 @@ void FormulaCorrector::SetInTree(TTree* tree)
 
 //--------------------------------------------------------------------
 
-Float_t FormulaCorrector::Evaluate()
+Float_t FormulaCorrector::DoEval()
 {
-  Float_t Output = 1.0;
-
-  if (fMatchedFileName && fInTree != NULL && fCutFormula->EvalInstance() != 0)
-    Output = fFormula->EvalInstance();
-
-  return Output;
+  return fFormula->EvalInstance();
 }
 
 //--------------------------------------------------------------------

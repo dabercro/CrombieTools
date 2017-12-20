@@ -55,13 +55,13 @@ class TwoScaleFactorCorrector : public Corrector
   /// Copy this TwoScaleFactorCorrector for parallelization
   TwoScaleFactorCorrector* Copy                         ();
 
-  /// Evaluate the TTree pointer fInTree at its current entry.
-  Float_t                  Evaluate                     ();
-
   /// Set the pointer to the TTree the Corrector objects inside are reading.
   void                     SetInTree                    ( TTree* tree );
 
  private:
+  /// Evaluate the TTree pointer fInTree at its current entry.
+  Float_t                  DoEval                       ();
+
   Corrector* fCorrectors[TSFCORRECTOR_NCORRECTORS];   ///< Pointers to the Correctors
 
   ClassDef(TwoScaleFactorCorrector,1)

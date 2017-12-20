@@ -35,13 +35,13 @@ class FormulaCorrector : public Corrector
   /// Copy this FormulaCorrector for parallelization
   FormulaCorrector* Copy                         ();
 
-  /// Evaluate the TTree pointer fInTree at its current entry.
-  Float_t                  Evaluate                     ();
-
   /// Set the pointer to the TTree the Corrector objects inside are reading.
   void                     SetInTree                    ( TTree* tree );
 
  private:
+  /// Evaluate the TTree pointer fInTree at its current entry.
+  Float_t                  DoEval                       ();
+
   TString                  fFormulaString;
   TTreeFormula*            fFormula = NULL;
 
