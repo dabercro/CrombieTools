@@ -9,8 +9,9 @@ mysqli_report(MYSQLI_REPORT_STRICT);
 $conn = new mysqli('t3serv015.mit.edu', 'submit', 'submitter', 'submit_queue');
 
 if (isset($_GET['id'])) {
+  $id = $_GET['id'];
   $stmt = $conn->prepare('SELECT exe, input_dir, output_dir, input_files, output_file, scram_arch, base, cmssw comments FROM queue WHERE id=?');
-  $stmt->bind_param('s', $_GET['id']);
+  $stmt->bind_param('s', $id);
   $stmt->execute();
   $stmt->bind_result($exe, $in_dir, $out_dir, $in_file, $out_file, $arch, $base, $cmssw);
   $stmt->fetch();
@@ -29,6 +30,13 @@ if (isset($_GET['id'])) {
 
   header('Content-Type: application/json');
   echo str_replace('\/', '/', json_encode($result));
+
+  $old_stat = 'submitted';
+  $new_stat = 'running';
+  $stmt = $conn->prepare('UPDATE queue SET status=? WHERE id=? AND status=?');
+  $stmt->bind_param('sss', $new_stat, $id, $old_stat);
+  $stmt->execute();
+  $stmt->close();
 }
 elseif (isset($_GET['report'])) {
   $status = isset($_GET['status']) ? $_GET['status'] : 'missing';
