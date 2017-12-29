@@ -52,10 +52,9 @@ foreach my $infile (@ARGV) {
 chomp(@source = grep { /\.|(->)/ } @source);
 
 for (@source) {
-    if (/event\.(\w+\(?)/) {
-        if ((substr $1, -1) ne '(') {
-            push @branches, $1;
-        }
+    # Don't match with function members of event
+    if (/event\.(\w+)(?!\w*\()/) {
+        push @branches, $1;
     }
 }
 
