@@ -19,6 +19,9 @@ def MakeHist(inputFile, outputFile='', outputHist='', writer=histWriter):
     @param writer specifies a HistWriter to use. This is probably rarely, if ever, needs to be changed.
     """
 
+    writer.SetFileName(outputFile)
+    writer.SetHistName(outputHist)
+
     import os.path as op
 
     if outputFile == '':
@@ -27,4 +30,19 @@ def MakeHist(inputFile, outputFile='', outputHist='', writer=histWriter):
     if outputHist == '':
         outputHist = op.splitext(op.basename(inputFile))[0]
 
-    writer.MakeHist(outputFile, outputHist, inputFile)
+    # Check the configuration file to see if it's 2D
+    numX = 0
+    numY = 0
+    with open(inputFile, 'r') as check_input:
+        for line in check_input:
+            if not numX:
+                numX = len(line.split())
+                if numX == 2:
+                    break
+            else:
+                numY += 1
+
+    if numY:
+        writer.Make2DHist(inputFile, numX, numY)
+    else:
+        writer.MakeHist(inputFile)

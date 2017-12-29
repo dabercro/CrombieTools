@@ -25,6 +25,9 @@ class HistWriter
   HistWriter( TString fileName = "output.root", TString histName = "corrections" );
   virtual ~HistWriter();
 
+  /// Writes a 2D histogram based on a configuration file. Needs the dimensions to simplify logic...
+  void                  Make2DHist        ( TString configName, unsigned numX, unsigned numY );
+
   /// Writes a histogram based on a configuration file.
   void                  MakeHist          ( TString configName );
 

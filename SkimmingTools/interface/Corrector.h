@@ -86,6 +86,8 @@ class Corrector : virtual public Debug
   /// Set a RegEx for the Corrector to check against the filename. If no match, corrections are not applied
   void                  SetMatchFileName ( TString regexpr )        { fMatchFileName = regexpr;                             }
 
+  bool                  Merge = true;     ///< Flag determining whether or not to merge into the CorrectorApplicator branch
+
  protected:
 
   TString               fName;                        ///< Name of branch to write to
@@ -112,7 +114,7 @@ class Corrector : virtual public Debug
   /// Evaluate one of the formulae
   Double_t                    GetFormulaResult            ( Int_t index );
 
-  TString               fMatchFileName;
+  TString               fMatchFileName = "";
 
   ClassDef(Corrector,1)
 };

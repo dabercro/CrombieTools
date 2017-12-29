@@ -132,7 +132,7 @@ void CorrectorApplicator::ApplyCorrections(TString fileName)
     // Evaluate the correctors and save the factor values
     for (UInt_t iCorrector = 0; iCorrector != fCorrectors.size(); ++iCorrector) {
       tempValue = fCorrectors[iCorrector]->Evaluate();
-      if (fName != "") {
+      if (fName != "" && fCorrectors[iCorrector]->Merge) {
         if (fIsUncertainty)
           Addresses[fName] += tempValue * tempValue;
         else
