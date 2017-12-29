@@ -26,6 +26,6 @@ def MakeFormulaCorrector(Name, Formula, inCut='1', matchName=''):
 
     corrector = newFormulaCorrector(Name, Formula)
     corrector.SetInCut(inCut)
-    corrector.SetMatchName(matchName)
+    corrector.SetMatchFileName(matchName)
 
     return corrector
