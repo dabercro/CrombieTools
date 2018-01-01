@@ -1,7 +1,6 @@
 #ifndef CROMBIE_STOREPARTICLES_H
 #define CROMBIE_STOREPARTICLES_H 1
 
-#include <initializer_list>
 #include <utility>
 #include <vector>
 #include <functional>
@@ -28,9 +27,9 @@ class ObjectStore {
     eDesc
   };
 
- ObjectStore(std::initializer_list<E> sorted_enums,
-             std::function<F(T*)> compare,
-             order which = order::eDesc)
+ ObjectStore(const std::vector<E> sorted_enums,
+             const std::function<F(T*)> compare,
+             const order which = order::eDesc)
    : compare(compare), which_order(which), total(sorted_enums.size()) {
     for (auto valid_enum : sorted_enums)
       store.push_back({valid_enum, nullptr, {}});
