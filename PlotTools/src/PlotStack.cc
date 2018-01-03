@@ -119,6 +119,23 @@ PlotStack::MakeCanvas(TString FileBase, Int_t NumXBins, Double_t *XBins,
 
 //--------------------------------------------------------------------
 void
+PlotStack::MakeCanvas(TString FileBase, TString XLabel, TString YLabel, Bool_t logY) {
+  SetIncludeErrorBars(true);
+  std::vector<TH1D*> DataHists = GetHistList(FileBase, kData);
+  Message(eDebug, "Number of Data Histograms: %i", DataHists.size());
+  SetIncludeErrorBars(false);
+  std::vector<TH1D*> MCHists = GetHistList(FileBase, kBackground);
+  Message(eDebug, "Number of MC Histograms: %i", MCHists.size());
+  std::vector<TH1D*> SignalHists;
+  if (fSignalFileInfo.size() != 0)
+    SignalHists = GetHistList(FileBase, kSignal);
+  Message(eDebug, "Number of Signal Histograms: %i", SignalHists.size());
+
+  MakeCanvas(FileBase, DataHists, MCHists, SignalHists, XLabel, YLabel, logY);
+}
+
+//--------------------------------------------------------------------
+void
 PlotStack::MakeCanvas(TString FileBase, std::vector<TH1D*> DataHists, std::vector<TH1D*> MCHists, std::vector<TH1D*> SignalHists,
                       TString XLabel, TString YLabel, Bool_t logY) {
   DisplayFunc(__func__);
@@ -381,12 +398,20 @@ WHERE region = ? AND bin = ? AND signal = ?
 
   BaseCanvas(AddOutDir(FileBase), AllHists, XLabel, YLabel, logY);
 
-  for (UInt_t iHist = 0; iHist != AllHists.size(); ++iHist)
-    delete AllHists[iHist];
-  for (UInt_t iHist = 0; iHist != MCHists.size(); ++iHist)
-    delete MCHists[iHist];
-  for (UInt_t iHist = 0; iHist != DataHists.size(); ++iHist)
-    delete DataHists[iHist];
+  if (not fPrepared) { // If Prepared, stored and owned properly by PlotPreparer base
+    for (UInt_t iHist = 0; iHist != AllHists.size(); ++iHist) {
+      delete AllHists[iHist];
+      AllHists[iHist] = nullptr;
+    }
+    for (UInt_t iHist = 0; iHist != MCHists.size(); ++iHist) {
+      delete MCHists[iHist];
+      MCHists[iHist] = nullptr;
+    }
+    for (UInt_t iHist = 0; iHist != DataHists.size(); ++iHist) {
+      delete DataHists[iHist];
+      DataHists[iHist] = nullptr;
+    }
+  }
 
   for (UInt_t iTemp = 0; iTemp != fTemplateEntries.size(); ++iTemp)
     TemplateFiles[iTemp]->Close();

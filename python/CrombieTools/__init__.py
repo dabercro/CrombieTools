@@ -45,11 +45,12 @@ dependencies = { 'FlatSkimmer' :         ['GoodLumiFilter'],
                  'CorrectorApplicator' : ['Corrector'],
                  'TmvaClassifier' :      ['TreeContainer'],
                  'FitTools' :            ['HistAnalysis'],
-                 'TwoScaleFactorCorrector' : ['Corrector']
+                 'TwoScaleFactorCorrector' : ['Corrector'],
+                 'FormulaCorrector' :    ['Corrector']
                  }
 
 loadAddOn = '+'
-"""Add characters after LoadMacro command."""
+"""Add characters after LoadMacro command. Modified if CrombieTools.debug is imported"""
 
 def Load(className):
     """ Loads a class from Crombie Tools into ROOT.

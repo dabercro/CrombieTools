@@ -62,19 +62,20 @@ struct FileInfo
   /// The constructor fills all of the entries
   FileInfo ( TString treeName, TString fileName, Double_t XSec,
              TString entry, Int_t colorstyle, TString allHist,
-             UncertaintyInfo *uncInfo = 0 ) {
-    fTreeName = treeName;
-    fFileName = fileName;
-    fXSec = XSec;
-    fEntry = entry;
-    fColorStyle = colorstyle;
-    if (allHist == "" || fXSec < 0)
-      fXSecWeight = 1.0;
-    else
-      fXSecWeight = GetXSecWeight(fFileName, fXSec, allHist);
-    fUncertaintyInfo = uncInfo;
+             UncertaintyInfo *uncInfo = nullptr )
+  : fTreeName{treeName},
+    fFileName{fileName},
+    fXSec{XSec},
+    fEntry{entry},
+    fColorStyle{colorstyle},
+    fXSecWeight{(allHist == "" || fXSec < 0) ? 1.0 : GetXSecWeight(fFileName, fXSec, allHist)},
+    fUncertaintyInfo{uncInfo}
+  { }
+
+  ~FileInfo () {
+    if (fUncertaintyInfo)
+      delete fUncertaintyInfo;
   }
-  virtual ~FileInfo()  {}
 
   TString  fTreeName;                ///< Base name for the Limit Tree made by LimitTreeMaker
   TString  fFileName;                ///< Name of the file

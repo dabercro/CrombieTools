@@ -197,6 +197,10 @@ class FileConfigReader : public InOutDirectoryHolder, public PlotHists
 
 };
 
+// Dump this into global namespace because fuck typing
+using FileType = FileConfigReader::FileType;
+const std::vector<FileType> gFileTypes {FileType::kBackground, FileType::kSignal, FileType::kData};
+
 //--------------------------------------------------------------------
 FileConfigReader::FileConfigReader()
 { }

@@ -10,7 +10,7 @@
 #define CROMBIETOOLS_PLOTTOOLS_PLOTSTACK_H
 
 #include "HistHolder.h"
-#include "FileConfigReader.h"
+#include "PlotPreparer.h"
 
 /**
    @ingroup plotgroup
@@ -21,7 +21,7 @@
    Many appearance flags must be set through this class's methods though.
 */
 
-class PlotStack : public FileConfigReader
+class PlotStack : public PlotPreparer
 {
  public:
   PlotStack();
@@ -40,6 +40,9 @@ class PlotStack : public FileConfigReader
   /// Binning with fixed width
   void MakeCanvas        ( TString FileBase, Int_t NumXBins, Double_t MinX, Double_t MaxX,
                            TString XLabel, TString YLabel = "", Bool_t logY = false );
+
+  /// Make plots with the PlotPreparer
+  void MakeCanvas        ( TString FileBase, TString XLabel, TString YLabel = "", Bool_t logY = false );
 
   /**
      Sets the legend entry that will be on the top of the stack.

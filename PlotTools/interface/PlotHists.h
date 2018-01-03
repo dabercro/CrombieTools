@@ -65,8 +65,7 @@ class PlotHists : public PlotBase
   Bool_t    fNormalizedHists = false;             ///< Can normalize histograms in order to compare shapes
   Int_t     fNormalizeTo = -1;                    ///< If not specified, normalized to 1
   std::vector<UInt_t>           fSysUncIndices;   ///< Indices of histograms to apply systematic uncertainties
-  std::vector<UncertaintyInfo*> fUncerts;         ///< Uncertainties to apply to histograms
-  std::vector<UncertaintyInfo*> fDeleteUnc;       ///< Uncertainties created by the class to delete at the end
+  std::vector<UncertaintyInfo> fUncerts;          ///< Uncertainties to apply to histograms
   TString   fUncExpr = "";                        ///< Branch expressions to add to the systematic uncertainty
 
 };
@@ -77,10 +76,7 @@ PlotHists::PlotHists()
 
 //--------------------------------------------------------------------
 PlotHists::~PlotHists()
-{
-  for (UInt_t iDelete = 0; iDelete != fDeleteUnc.size(); ++iDelete)
-    delete fDeleteUnc[iDelete];
-}
+{ }
 
 //--------------------------------------------------------------------
 void
@@ -88,9 +84,7 @@ PlotHists::AddUncertainty(UInt_t index, TString FileName, TString HistName,
                           Int_t startBin, Int_t endBin )
 {
   fSysUncIndices.push_back(index);
-  UncertaintyInfo* Uncert = new UncertaintyInfo("", FileName, HistName, startBin, endBin);
-  fUncerts.push_back(Uncert);
-  fDeleteUnc.push_back(Uncert);
+  fUncerts.push_back({"", FileName, HistName, startBin, endBin});
 }
 
 //--------------------------------------------------------------------
@@ -214,7 +208,7 @@ PlotHists::MakeHists(Int_t NumXBins, Double_t *XBins)
   }
 
   for (UInt_t iUncert = 0; iUncert != fSysUncIndices.size(); ++iUncert)
-    ApplyUncertainty(theHists[fSysUncIndices[iUncert]], fUncerts[iUncert]);
+    ApplyUncertainty(theHists[fSysUncIndices[iUncert]], &(fUncerts[iUncert]));
 
   return theHists;
 }

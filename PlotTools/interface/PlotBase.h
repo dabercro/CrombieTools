@@ -196,6 +196,8 @@ class PlotBase : virtual public Debug
   void                   SetLeftMargin            ( float left )        { fLeftMargin = left; }
 
  protected:
+  /// Get a temporary name for a histogram
+  TString                    TempHistName ()      { TString tempName; tempName.Form("Hist_%d", fPlotCounter++); return tempName; }
   UInt_t                     fPlotCounter = 0;           ///< This is used so that making scratch plots does not overlap
 
   TTree*                     fDefaultTree = NULL;        ///< Default Tree if needed
