@@ -89,6 +89,7 @@ PlotPreparer::ClearHists() {
   for (auto& file : fPlots) {
     for (auto plot : file.second)
       delete plot;
+    file.second.resize(0);
   }
   fPlots.clear();
 
@@ -177,10 +178,17 @@ PlotPreparer::PreparePlots() {
       else
         inputtree = static_cast<TTree*>(inputfile->FindObjectAny(fTreeName));
 
+      std::set<TString> needed;
+
       for (auto& formula : fFormulas) {
         delete formula.second.first;
         formula.second.first = new TTreeFormula(formula.first, formula.first, inputtree);
+        AddNeccessaryBranches(needed, inputtree, formula.first);
       }
+
+      inputtree->SetBranchStatus('*', 0);
+      for (auto need : needed)
+        inputtree->SetBranchStatus(need, 1);
 
       auto nentries = SetNumberOfEntries(inputtree);
       auto& plots = fPlots[filename];

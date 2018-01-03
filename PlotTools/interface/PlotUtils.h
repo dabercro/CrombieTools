@@ -3,8 +3,10 @@
 
 #include <algorithm>
 #include <limits>
+#include <set>
 
 #include "TFile.h"
+#include "TTree.h"
 #include "TF1.h"
 #include "TH1D.h"
 #include "TH1.h"
@@ -269,6 +271,16 @@ void SetupCanvas(Debug* debugger, std::vector<TGraphErrors*> theLines, TCanvas *
 
   theCanvas->DrawFrame(XMin, YMin, XMax, YMax, ";" + XLabel + ";" + YLabel);
 }
+
+/// Adds branches needed from tree for formula expression into the set of needed
+void AddNecessaryBranches(std::set<TString>& needed, TTree* tree, TString expr) {
+  for (auto branch : *(tree->GetListOfBranches())) {
+    auto name = branch->GetName();
+    if (needed.find(name) == needed.end() && expr.Contains(name))
+      needed.insert(name);
+  }
+}
+
 /* @} */
 
 #endif
