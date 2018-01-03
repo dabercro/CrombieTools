@@ -17,6 +17,7 @@
 
 #include "FileConfigReader.h"
 #include "ProgressReporter.h"
+#include "PlotUtils.h"
 
 /**
    @ingroup plotgroup
@@ -183,10 +184,10 @@ PlotPreparer::PreparePlots() {
       for (auto& formula : fFormulas) {
         delete formula.second.first;
         formula.second.first = new TTreeFormula(formula.first, formula.first, inputtree);
-        AddNeccessaryBranches(needed, inputtree, formula.first);
+        AddNecessaryBranches(needed, inputtree, formula.first);
       }
 
-      inputtree->SetBranchStatus('*', 0);
+      inputtree->SetBranchStatus("*", 0);
       for (auto need : needed)
         inputtree->SetBranchStatus(need, 1);
 
