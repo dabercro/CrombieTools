@@ -30,7 +30,7 @@ class PlotInfo {
  public:
   PlotInfo(TH1D* hist, Double_t& expr, Double_t& weight, Double_t eventsper)
     : hist{hist}, expr{expr}, weight{weight}, eventsper{eventsper} {}
-  ~PlotInfo() { delete hist; }
+  // ~PlotInfo() { delete hist; } ??? Causes crash, and I really don't know why
 
   TH1D*           hist;   ///< The histogram that everything else is filling
   Double_t&       expr;   ///< The expression filling the plot
@@ -90,6 +90,7 @@ PlotPreparer::ClearHists() {
   for (auto& file : fPlots) {
     for (auto plot : file.second)
       delete plot;
+
     file.second.resize(0);
   }
   fPlots.clear();
