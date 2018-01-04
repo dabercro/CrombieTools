@@ -120,18 +120,23 @@ PlotStack::MakeCanvas(TString FileBase, Int_t NumXBins, Double_t *XBins,
 //--------------------------------------------------------------------
 void
 PlotStack::MakeCanvas(TString FileBase, TString XLabel, TString YLabel, Bool_t logY) {
-  SetIncludeErrorBars(true);
-  std::vector<TH1D*> DataHists = GetHistList(FileBase, kData);
-  Message(eDebug, "Number of Data Histograms: %i", DataHists.size());
-  SetIncludeErrorBars(false);
-  std::vector<TH1D*> MCHists = GetHistList(FileBase, kBackground);
-  Message(eDebug, "Number of MC Histograms: %i", MCHists.size());
-  std::vector<TH1D*> SignalHists;
-  if (fSignalFileInfo.size() != 0)
-    SignalHists = GetHistList(FileBase, kSignal);
-  Message(eDebug, "Number of Signal Histograms: %i", SignalHists.size());
+  try {
+    SetIncludeErrorBars(true);
+    std::vector<TH1D*> DataHists = GetHistList(FileBase, kData);
+    Message(eDebug, "Number of Data Histograms: %i", DataHists.size());
+    SetIncludeErrorBars(false);
+    std::vector<TH1D*> MCHists = GetHistList(FileBase, kBackground);
+    Message(eDebug, "Number of MC Histograms: %i", MCHists.size());
+    std::vector<TH1D*> SignalHists;
+    if (fSignalFileInfo.size() != 0)
+      SignalHists = GetHistList(FileBase, kSignal);
+    Message(eDebug, "Number of Signal Histograms: %i", SignalHists.size());
 
-  MakeCanvas(FileBase, DataHists, MCHists, SignalHists, XLabel, YLabel, logY);
+    MakeCanvas(FileBase, DataHists, MCHists, SignalHists, XLabel, YLabel, logY);
+  }
+  catch(out_of_range e) {
+    Message(eError, "Didn't get %s from histograms...", FileBase.Data());
+  }
 }
 
 //--------------------------------------------------------------------

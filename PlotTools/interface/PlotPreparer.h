@@ -23,18 +23,18 @@
    @ingroup plotgroup
    @class PlotInfo
    Structure for holding information about plots
-
 */
 
 class PlotInfo {
  public:
-  PlotInfo(TH1D* hist, Double_t& expr, Double_t& weight, Double_t eventsper)
-    : hist{hist}, expr{expr}, weight{weight}, eventsper{eventsper} {}
+  PlotInfo(TH1D* hist, Double_t& expr, Double_t& cut, Double_t& weight, Double_t eventsper)
+    : hist{hist}, expr{expr}, cut{cut}, weight{weight}, eventsper{eventsper} {}
   /* ~PlotInfo() { delete hist; } // ??? Causes crash, and I really don't know why */
 
   TH1D*           hist;   ///< The histogram that everything else is filling
-  Double_t&       expr;   ///< The expression filling the plot
-  Double_t&       weight; ///< The cut string filling the plot
+  Double_t&       expr;   ///< Reference to the expression filling the plot
+  Double_t&       cut;    ///< Reference to the cut
+  Double_t&       weight; ///< Reference to the weight
   Double_t        eventsper;   ///< Holds the desired normalization of the bin for this plot
 };
 
@@ -56,9 +56,9 @@ class PlotPreparer : public FileConfigReader, public ProgressReporter {
   std::vector<TH1D*> GetHistList ( TString FileBase, FileType type );
 
   /// Add a histogram to plot
-  void AddHist ( TString FileBase, Int_t NumXBins, Double_t *XBins, TString dataExpr, TString mcExpr, TString dataCut, TString mcCut );
+  void AddHist ( TString FileBase, Int_t NumXBins, Double_t *XBins, TString dataExpr, TString mcExpr, TString cut, TString dataWeight, TString mcWeight );
   /// Add a histogram to plot
-  void AddHist ( TString FileBase, Int_t NumXBins, Double_t MinX, Double_t MaxX, TString dataExpr, TString mcExpr, TString dataCut, TString mcCut );
+  void AddHist ( TString FileBase, Int_t NumXBins, Double_t MinX, Double_t MaxX, TString dataExpr, TString mcExpr, TString cut, TString dataWeight, TString mcWeight );
 
  protected:
   bool fPrepared {false}; ///< A flag indicating whether or not the plots have been prepared by this class
@@ -101,7 +101,7 @@ PlotPreparer::ClearHists() {
 }
 
 void
-PlotPreparer::AddHist(TString FileBase, Int_t NumXBins, Double_t MinX, Double_t MaxX, TString dataExpr, TString mcExpr, TString dataCut, TString mcCut)
+PlotPreparer::AddHist(TString FileBase, Int_t NumXBins, Double_t MinX, Double_t MaxX, TString dataExpr, TString mcExpr, TString cut, TString dataWeight, TString mcWeight)
 {
   bool reset_per = (fEventsPer == 0);
   if (reset_per)
@@ -109,28 +109,28 @@ PlotPreparer::AddHist(TString FileBase, Int_t NumXBins, Double_t MinX, Double_t 
 
   Double_t XBins[NumXBins+1];
   ConvertToArray(NumXBins, MinX, MaxX, XBins);
-  AddHist(FileBase, NumXBins, XBins, dataExpr, mcExpr, dataCut, mcCut);
+  AddHist(FileBase, NumXBins, XBins, dataExpr, mcExpr, cut, dataWeight, mcWeight);
 
   if (reset_per)
     SetEventsPer(0);
 }
 
 void
-PlotPreparer::AddHist(TString FileBase, Int_t NumXBins, Double_t* XBins, TString dataExpr, TString mcExpr, TString dataCut, TString mcCut)
+PlotPreparer::AddHist(TString FileBase, Int_t NumXBins, Double_t* XBins, TString dataExpr, TString mcExpr, TString cut, TString dataWeight, TString mcWeight)
 {
   DisplayFunc(__func__);
   Message(eDebug, "File Name: %s", FileBase.Data());
   Message(eDebug, "Data expr: %s", dataExpr.Data());
   Message(eDebug, "MC expr: %s", mcExpr.Data());
-  Message(eDebug, "Data cut: %s", dataCut.Data());
-  Message(eDebug, "MC cut: %s", mcCut.Data());
+  Message(eDebug, "Data cut: %s", dataWeight.Data());
+  Message(eDebug, "MC cut: %s", mcWeight.Data());
 
   if (fHistograms.find(FileBase) == fHistograms.end())
     fHistograms[FileBase] = {};
 
   auto& hists = fHistograms[FileBase];
 
-  const std::vector<TString> exprs {dataExpr, mcExpr, dataCut, mcCut};
+  const std::vector<TString> exprs {dataExpr, mcExpr, cut, dataWeight, mcWeight};
   for (auto& expr : exprs) {
     if (fFormulas.find(expr) == fFormulas.end())
       fFormulas[expr] = std::make_pair<TTreeFormula*, Double_t>(nullptr, {});
@@ -143,7 +143,7 @@ PlotPreparer::AddHist(TString FileBase, Int_t NumXBins, Double_t* XBins, TString
     auto& hist_list = hists[type];
 
     auto& expr = (type == FileType::kData) ? dataExpr : mcExpr;
-    auto& cut = (type == FileType::kData) ? dataCut : mcCut;
+    auto& weight = (type == FileType::kData) ? dataWeight : mcWeight;
 
     const auto& infos = *(GetFileInfo(type));
     for (auto info : infos) {
@@ -154,7 +154,7 @@ PlotPreparer::AddHist(TString FileBase, Int_t NumXBins, Double_t* XBins, TString
       auto& plots = fPlots[inputname];
 
       auto tempname = TempHistName();
-      PlotInfo* tempinfo = new PlotInfo(new TH1D(tempname, tempname, NumXBins, XBins), fFormulas[expr].second, fFormulas[cut].second, fEventsPer);
+      PlotInfo* tempinfo = new PlotInfo(new TH1D(tempname, tempname, NumXBins, XBins), fFormulas[expr].second, fFormulas[cut].second, fFormulas[weight].second, fEventsPer);
       plots.push_back(tempinfo);
       hist_list.push_back(tempinfo->hist);
     }
@@ -208,10 +208,12 @@ PlotPreparer::PreparePlots() {
         inputtree->GetEntry(i_entry);
 
         for (auto& formula : fFormulas)
-          formula.second.second = formula.second.first->EvalInstance();
+          if (formula.second.first)
+            formula.second.second = formula.second.first->EvalInstance();
 
         for (auto plot : plots)
-          plot->hist->Fill(plot->expr, plot->weight);
+          if (plot->cut)
+            plot->hist->Fill(plot->expr, plot->weight);
       }
 
       inputfile->Close();

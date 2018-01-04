@@ -185,8 +185,9 @@ def PreparePlots(categories, regions, exprArgs):
     for cat in categories:
         for region in regions:
             for expr in exprArgs:
-                args = ['_'.join([cat, region, expr[0]])] + expr[1:] + [expr[0], expr[0],
-                                                                        '(%s)*(%s)' % (cuts.cut(cat, region), cuts.dataMCCuts(region, True)),
-                                                                        '(%s)*(%s)' % (cuts.cut(cat, region), cuts.dataMCCuts(region, False))
-                                                                        ]
+                cut = Nminus1Cut(cuts.cut(cat, region), expr[0])
+                args = ['_'.join([cat, region,
+                                  expr[0].replace(',', '__').replace(')', '__').replace('(', '__')])] + expr[1:] + [expr[0], expr[0], cut,
+                                                                                                                      cuts.dataMCCuts(region, True),
+                                                                                                                      cuts.dataMCCuts(region, False)]
                 plotter.AddHist(*args)
