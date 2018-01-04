@@ -191,3 +191,11 @@ def PreparePlots(categories, regions, exprArgs):
                                                                                                                       cuts.dataMCCuts(region, True),
                                                                                                                       cuts.dataMCCuts(region, False)]
                 plotter.AddHist(*args)
+
+#    for name in [name.Data() for name in plotter.GetAllFileNames()]:
+#        plotter.RunFile(name)
+
+#    from ..Parallelization import RunParallel
+#    RunParallel(plotter, 'RunFile', [[name.Data()] for name in plotter.GetAllFileNames()], doCopy=False)
+
+#    plotter.fPrepared = True

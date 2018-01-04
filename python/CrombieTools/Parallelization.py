@@ -15,7 +15,7 @@ from time import time
 """Number of processors from environment"""
 DefaultNumProcs = int(os.environ.get('CrombieNLocalProcs') or 1)
 
-def RunParallel(objectToRun, functionName, parametersLists, procs=DefaultNumProcs, printing=True):
+def RunParallel(objectToRun, functionName, parametersLists, procs=DefaultNumProcs, printing=True, doCopy=True):
     """ Starts parallel processes.
 
     @param objectToRun is an objectToRun that can be copied and run independently when
@@ -24,11 +24,12 @@ def RunParallel(objectToRun, functionName, parametersLists, procs=DefaultNumProc
     @param parametersLists is a list of lists. Each sublist contains the parameters for the functionName.
     @param procs is the maximum number of processors that will be used.
     @param printing tells which files are about to be processed and how long they took if True.
+    @param doCopy copies the object that the function should be run over
     """
 
     totStartTime = time()
 
-    if 'Copy' not in dir(objectToRun):
+    if 'Copy' not in dir(objectToRun) and doCopy:
         print('Object not copyable.')
         print('Exiting...')
         exit(1)
@@ -45,7 +46,7 @@ def RunParallel(objectToRun, functionName, parametersLists, procs=DefaultNumProc
     def runOnQueue(inQueue):
         running = True
 
-        objCopy = objectToRun.Copy()
+        objCopy = objectToRun.Copy() if doCopy else objectToRun
         functionToRun = getattr(objCopy, functionName)
 
         while running:
@@ -65,7 +66,8 @@ def RunParallel(objectToRun, functionName, parametersLists, procs=DefaultNumProc
 
                 running = False
 
-        del objCopy
+        if (doCopy):
+            del objCopy
 
     if printing:
         print('About to use {0} processers.'.format(procs))
@@ -121,4 +123,4 @@ def RunOnDirectory(objectToRun, procs=DefaultNumProcs, printing=True):
                 continue
             theFiles.append([inFileName])
 
-    RunParallel(objectToRun,'RunOnFile',theFiles,procs,printing)
+    RunParallel(objectToRun, 'RunOnFile', theFiles, procs, printing)
