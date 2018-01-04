@@ -10,6 +10,7 @@
 #define CROMBIETOOLS_COMMONTOOLS_FILEINFO_H
 
 #include <iostream>
+#include <sys/stat.h>
 
 #include "TFile.h"
 #include "TH1D.h"
@@ -59,6 +60,7 @@ Double_t GetXSecWeight(TString fileName, Double_t XSec, TString allHistName)
 
 struct FileInfo
 {
+  FileInfo () {}
   /// The constructor fills all of the entries
   FileInfo ( TString treeName, TString fileName, Double_t XSec,
              TString entry, Int_t colorstyle, TString allHist,
@@ -70,7 +72,11 @@ struct FileInfo
     fColorStyle{colorstyle},
     fXSecWeight{(allHist == "" || fXSec < 0) ? 1.0 : GetXSecWeight(fFileName, fXSec, allHist)},
     fUncertaintyInfo{uncInfo}
-  { }
+  {
+    struct stat file_stat;
+    stat(fFileName.Data(), &file_stat);
+    fSize = file_stat.st_size;
+  }
 
   ~FileInfo () {
     if (fUncertaintyInfo)
@@ -84,6 +90,9 @@ struct FileInfo
   Int_t    fColorStyle;              ///< Fill color or line style (if signal) for that file
   Double_t fXSecWeight;              ///< Weight determined by GetXSecWeight()
   UncertaintyInfo *fUncertaintyInfo; ///< Structure to supply uncertainty weight to a file
+  Int_t    fSize;                    ///< Size of the file
 };
+
+inline Bool_t operator<(const FileInfo& a, const FileInfo& b) { return a.fSize < b.fSize; }
 
 #endif

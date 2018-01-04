@@ -12,6 +12,8 @@
 #include <map>
 #include <vector>
 #include <utility>
+#include <queue>
+#include <mutex>
 
 #include "TTreeFormula.h"
 
@@ -72,13 +74,23 @@ class PlotPreparer : public FileConfigReader, public ProgressReporter {
   /// A vector of all the plots that are being made, mapped by input file names
   std::map<TString, std::vector<PlotInfo*>> fPlots;
 
+  /// Files to run over in parallel
+  std::priority_queue<FileInfo>  file_queue;
+
   /// A function to clear the histograms map
-  void ClearHists ();
+  void ClearHists   ();
 
   /// Prepare all of the plots if none have been prepared yet
   void PreparePlots ();
 
+  /// Runs a single thread over files
+  void RunThread    ();
+
 };
+
+namespace {
+  std::mutex queue_lock;
+}
 
 PlotPreparer::~PlotPreparer() {
   ClearHists();
@@ -178,63 +190,81 @@ PlotPreparer::PreparePlots() {
 
   for (auto type : gFileTypes) {
     const auto& infos = *(GetFileInfo(type));
-    for (auto info : infos) {
-      auto filename = info->fFileName;
-      std::cout << "About to run over file " << filename.Data() << std::endl;
-      auto* inputfile = TFile::Open(filename);
-      TTree* inputtree;
-      if (fTreeName.Contains("/"))
-        inputtree = static_cast<TTree*>(inputfile->Get(fTreeName));
-      else
-        inputtree = static_cast<TTree*>(inputfile->FindObjectAny(fTreeName));
+    for (auto info : infos)
+      file_queue.push(*info);
+  }
 
-      std::set<TString> needed;
+  RunThread();
+}
 
-      for (auto& formula : fFormulas) {
-        delete formula.second.first;
-        formula.second.first = new TTreeFormula(formula.first, formula.first, inputtree);
-        AddNecessaryBranches(needed, inputtree, formula.first);
-      }
+void
+PlotPreparer::RunThread() {
+  bool running = true;
+  FileInfo info;
+  while(true) {
+    queue_lock.lock();
+    running = !file_queue.empty();
+    if (running) {
+      info = file_queue.top();
+      file_queue.pop();
+    }
+    queue_lock.unlock();
+    if (not running)
+      break;
 
-      inputtree->SetBranchStatus("*", 0);
-      for (auto need : needed)
-        inputtree->SetBranchStatus(need, 1);
+    auto filename = info.fFileName;
+    std::cout << "About to run over file " << filename.Data() << std::endl;
+    auto* inputfile = TFile::Open(filename);
+    TTree* inputtree;
+    if (fTreeName.Contains("/"))
+      inputtree = static_cast<TTree*>(inputfile->Get(fTreeName));
+    else
+      inputtree = static_cast<TTree*>(inputfile->FindObjectAny(fTreeName));
 
-      auto nentries = SetNumberOfEntries(inputtree);
-      auto& plots = fPlots[filename];
+    std::set<TString> needed;
 
-      for (decltype(nentries) i_entry = 0; i_entry < nentries; ++i_entry) {
-        ReportProgress(i_entry);
-        inputtree->GetEntry(i_entry);
+    for (auto& formula : fFormulas) {
+      delete formula.second.first;
+      formula.second.first = new TTreeFormula(formula.first, formula.first, inputtree);
+      AddNecessaryBranches(needed, inputtree, formula.first);
+    }
 
-        for (auto& formula : fFormulas)
-          if (formula.second.first)
-            formula.second.second = formula.second.first->EvalInstance();
+    inputtree->SetBranchStatus("*", 0);
+    for (auto need : needed)
+      inputtree->SetBranchStatus(need, 1);
 
-        for (auto plot : plots)
-          if (plot->cut)
-            plot->hist->Fill(plot->expr, plot->weight);
-      }
+    auto nentries = SetNumberOfEntries(inputtree);
+    auto& plots = fPlots[filename];
 
-      inputfile->Close();
+    for (decltype(nentries) i_entry = 0; i_entry < nentries; ++i_entry) {
+      ReportProgress(i_entry);
+      inputtree->GetEntry(i_entry);
 
-      for (auto plot : plots) {
-        auto* hist = plot->hist;
-        auto tempname = TempHistName();
-        TH1D* tempHist = static_cast<TH1D*>(hist->Clone(TempHistName()));
+      for (auto& formula : fFormulas)
+        if (formula.second.first)
+          formula.second.second = formula.second.first->EvalInstance();
 
-        for (Int_t iBin = 1; iBin != tempHist->GetNbinsX() + 1; ++iBin)
-          tempHist->SetBinContent(iBin, tempHist->GetBinWidth(iBin)/plot->eventsper);
-        SetZeroError(tempHist);
+      for (auto plot : plots)
+        if (plot->cut)
+          plot->hist->Fill(plot->expr, plot->weight);
+    }
 
-        Division(hist, tempHist);
+    inputfile->Close();
 
-        delete tempHist;
+    for (auto plot : plots) {
+      auto* hist = plot->hist;
+      auto tempname = TempHistName();
+      TH1D* tempHist = static_cast<TH1D*>(hist->Clone(TempHistName()));
 
-        if (type != kData)
-          hist->Scale(info->fXSecWeight);
+      for (Int_t iBin = 1; iBin != tempHist->GetNbinsX() + 1; ++iBin)
+        tempHist->SetBinContent(iBin, tempHist->GetBinWidth(iBin)/plot->eventsper);
+      SetZeroError(tempHist);
 
-      }
+      Division(hist, tempHist);
+
+      delete tempHist;
+
+      hist->Scale(info.fXSecWeight);
     }
   }
 }
