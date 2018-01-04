@@ -90,7 +90,7 @@ struct FileInfo
   Int_t    fColorStyle;              ///< Fill color or line style (if signal) for that file
   Double_t fXSecWeight;              ///< Weight determined by GetXSecWeight()
   UncertaintyInfo *fUncertaintyInfo; ///< Structure to supply uncertainty weight to a file
-  Int_t    fSize;                    ///< Size of the file
+  unsigned long    fSize;            ///< Size of the file
 };
 
 inline Bool_t operator<(const FileInfo& a, const FileInfo& b) { return a.fSize < b.fSize; }

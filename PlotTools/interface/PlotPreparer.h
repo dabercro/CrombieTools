@@ -13,7 +13,6 @@
 #include <vector>
 #include <utility>
 #include <queue>
-#include <mutex>
 
 #include "TTreeFormula.h"
 
@@ -68,8 +67,8 @@ class PlotPreparer : public FileConfigReader, public ProgressReporter {
  private:
   /// A map containing pointers to all the histograms on the free store
   std::map<TString, std::map<FileType, std::vector<TH1D*>>>   fHistograms;
-  /// A map containing all the formulas and results of expressions
-  std::map<TString, std::pair<TTreeFormula*, Double_t>>       fFormulas;
+  /// A map from filename to map containing all the formulas and results of expressions
+  std::map<TString, std::map<TString, std::pair<TTreeFormula*, Double_t>>>   fFormulas;
 
   /// A vector of all the plots that are being made, mapped by input file names
   std::map<TString, std::vector<PlotInfo*>> fPlots;
@@ -88,10 +87,6 @@ class PlotPreparer : public FileConfigReader, public ProgressReporter {
 
 };
 
-namespace {
-  std::mutex queue_lock;
-}
-
 PlotPreparer::~PlotPreparer() {
   ClearHists();
 }
@@ -107,8 +102,9 @@ PlotPreparer::ClearHists() {
   }
   fPlots.clear();
 
-  for (auto form : fFormulas)
-    delete form.second.first;
+  for (auto formulas : fFormulas)
+    for (auto form : formulas.second)
+      delete form.second.first;
   fFormulas.clear();
 }
 
@@ -143,10 +139,6 @@ PlotPreparer::AddHist(TString FileBase, Int_t NumXBins, Double_t* XBins, TString
   auto& hists = fHistograms[FileBase];
 
   const std::vector<TString> exprs {dataExpr, mcExpr, cut, dataWeight, mcWeight};
-  for (auto& expr : exprs) {
-    if (fFormulas.find(expr) == fFormulas.end())
-      fFormulas[expr] = std::make_pair<TTreeFormula*, Double_t>(nullptr, {});
-  }
 
   for (auto type : gFileTypes) {
     if (hists.find(type) == hists.end())
@@ -165,8 +157,17 @@ PlotPreparer::AddHist(TString FileBase, Int_t NumXBins, Double_t* XBins, TString
         fPlots[inputname] = {};
       auto& plots = fPlots[inputname];
 
+      if (fFormulas.find(inputname) == fFormulas.end())
+        fFormulas[inputname] = {};
+      auto& formulas = fFormulas[inputname];
+
+      for (auto& expr : exprs) {
+        if (formulas.find(expr) == formulas.end())
+          formulas[expr] = std::make_pair<TTreeFormula*, Double_t>(nullptr, {});
+      }
+
       auto tempname = TempHistName();
-      PlotInfo* tempinfo = new PlotInfo(new TH1D(tempname, tempname, NumXBins, XBins), fFormulas[expr].second, fFormulas[cut].second, fFormulas[weight].second, fEventsPer);
+      PlotInfo* tempinfo = new PlotInfo(new TH1D(tempname, tempname, NumXBins, XBins), formulas[expr].second, formulas[cut].second, formulas[weight].second, fEventsPer);
       plots.push_back(tempinfo);
       hist_list.push_back(tempinfo->hist);
     }
@@ -194,6 +195,7 @@ PlotPreparer::PreparePlots() {
       file_queue.push(*info);
   }
 
+  // I can't do anything more fancy with Python, it seems
   RunThread();
 }
 
@@ -202,18 +204,18 @@ PlotPreparer::RunThread() {
   bool running = true;
   FileInfo info;
   while(true) {
-    queue_lock.lock();
     running = !file_queue.empty();
     if (running) {
       info = file_queue.top();
       file_queue.pop();
     }
-    queue_lock.unlock();
+
     if (not running)
       break;
 
     auto filename = info.fFileName;
     std::cout << "About to run over file " << filename.Data() << std::endl;
+
     auto* inputfile = TFile::Open(filename);
     TTree* inputtree;
     if (fTreeName.Contains("/"))
@@ -223,7 +225,8 @@ PlotPreparer::RunThread() {
 
     std::set<TString> needed;
 
-    for (auto& formula : fFormulas) {
+    auto& formulas = fFormulas[filename];
+    for (auto& formula : formulas) {
       delete formula.second.first;
       formula.second.first = new TTreeFormula(formula.first, formula.first, inputtree);
       AddNecessaryBranches(needed, inputtree, formula.first);
@@ -240,7 +243,7 @@ PlotPreparer::RunThread() {
       ReportProgress(i_entry);
       inputtree->GetEntry(i_entry);
 
-      for (auto& formula : fFormulas)
+      for (auto& formula : formulas)
         if (formula.second.first)
           formula.second.second = formula.second.first->EvalInstance();
 
@@ -264,7 +267,8 @@ PlotPreparer::RunThread() {
 
       delete tempHist;
 
-      hist->Scale(info.fXSecWeight);
+      if (info.fXSec > 0)
+        hist->Scale(info.fXSecWeight);
     }
   }
 }
