@@ -163,3 +163,30 @@ def MakePlots(categories, regions, exprArgs, overwrite=True, parallel=True, show
         else:
             for args in passToParallel:
                 bPlotter.MakePlot(*args)
+
+
+def PreparePlots(categories, regions, exprArgs):
+    """
+    Prepares plotter with plots to make
+    @param categories list of categories
+    @param regions list of regions to plot
+    @param exprArgs list of tuples containing (expr, nbins, xbins) or (expr, nbins, min, max)
+    """
+
+    from ..LoadConfig import cuts
+    from . import AddOutDir
+
+    if type(categories) != list:
+        PreparePlots([categories], regions, exprArgs)
+
+    elif type(regions) != list:
+        PreparePlots(categories, [regions], exprArgs)
+    
+    for cat in categories:
+        for region in regions:
+            for expr in exprArgs:
+                args = ['_'.join([cat, region, expr[0]])] + expr[1:] + [expr[0], expr[0],
+                                                                        '(%s)*(%s)' % (cuts.cut(cat, region), cuts.dataMCCuts(region, True)),
+                                                                        '(%s)*(%s)' % (cuts.cut(cat, region), cuts.dataMCCuts(region, False))
+                                                                        ]
+                plotter.AddHist(*args)

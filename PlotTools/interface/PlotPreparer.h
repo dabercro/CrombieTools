@@ -30,7 +30,7 @@ class PlotInfo {
  public:
   PlotInfo(TH1D* hist, Double_t& expr, Double_t& weight, Double_t eventsper)
     : hist{hist}, expr{expr}, weight{weight}, eventsper{eventsper} {}
-  // ~PlotInfo() { delete hist; } ??? Causes crash, and I really don't know why
+  /* ~PlotInfo() { delete hist; } // ??? Causes crash, and I really don't know why */
 
   TH1D*           hist;   ///< The histogram that everything else is filling
   Double_t&       expr;   ///< The expression filling the plot
@@ -118,6 +118,13 @@ PlotPreparer::AddHist(TString FileBase, Int_t NumXBins, Double_t MinX, Double_t 
 void
 PlotPreparer::AddHist(TString FileBase, Int_t NumXBins, Double_t* XBins, TString dataExpr, TString mcExpr, TString dataCut, TString mcCut)
 {
+  DisplayFunc(__func__);
+  Message(eDebug, "File Name: %s", FileBase.Data());
+  Message(eDebug, "Data expr: %s", dataExpr.Data());
+  Message(eDebug, "MC expr: %s", mcExpr.Data());
+  Message(eDebug, "Data cut: %s", dataCut.Data());
+  Message(eDebug, "MC cut: %s", mcCut.Data());
+
   if (fHistograms.find(FileBase) == fHistograms.end())
     fHistograms[FileBase] = {};
 
@@ -159,6 +166,7 @@ PlotPreparer::GetHistList (TString FileBase, FileType type) {
   if (not fPrepared)
     PreparePlots();
 
+  Message(eDebug, "Getting hists for FileName %s and type %i", FileBase.Data(), type);
   return fHistograms.at(FileBase).at(type);
 }
 
@@ -172,7 +180,7 @@ PlotPreparer::PreparePlots() {
     const auto& infos = *(GetFileInfo(type));
     for (auto info : infos) {
       auto filename = info->fFileName;
-      Message(eDebug, "About to run over file %s", filename.Data()); 
+      std::cout << "About to run over file " << filename.Data() << std::endl;
       auto* inputfile = TFile::Open(filename);
       TTree* inputtree;
       if (fTreeName.Contains("/"))
