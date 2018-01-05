@@ -55,20 +55,16 @@ class PlotPreparer : public FileConfigReader {
   // Use default constructor
   virtual ~PlotPreparer ();
 
-  // Don't mask the FileConfigReader functions of the same name
-  using FileConfigReader::GetHistList;
-  /// Get the HistList for a given file name, and type
-  std::vector<TH1D*> GetHistList ( TString FileBase, FileType type );
-
   /// Add a histogram to plot
   void AddHist ( TString FileBase, Int_t NumXBins, Double_t *XBins, TString dataExpr, TString mcExpr, TString cut, TString dataWeight, TString mcWeight );
   /// Add a histogram to plot
   void AddHist ( TString FileBase, Int_t NumXBins, Double_t MinX, Double_t MaxX, TString dataExpr, TString mcExpr, TString cut, TString dataWeight, TString mcWeight );
 
-  /// Returns list of FileInfos in proper priority order
-  std::vector<TString> GetAllFileNames ();
-  /// Run over file based on name
-  void RunFile (TString name);
+ protected:
+  // Don't mask the FileConfigReader functions of the same name
+  using FileConfigReader::GetHistList;
+  /// Get the HistList for a given file name, and type
+  std::vector<TH1D*> GetHistList ( TString FileBase, FileType type );
 
   /// A flag indicating whether or not the plots have been prepared by this class
   bool fPrepared {false};
@@ -90,9 +86,6 @@ class PlotPreparer : public FileConfigReader {
 
   /// Prepare all of the plots if none have been prepared yet
   void PreparePlots ();
-
-  /// Returns list of FileInfos in proper priority order
-  std::vector<FileInfo> GetAllFileInfos ();
 
   /// Runs all plots over a single file
   void RunFile (FileInfo& info);
@@ -120,6 +113,8 @@ PlotPreparer::ClearHists() {
     for (auto form : formulas.second)
       delete form.second.first;
   fFormulas.clear();
+
+  fPrepared = false;
 }
 
 void
@@ -198,31 +193,6 @@ PlotPreparer::GetHistList (TString FileBase, FileType type) {
   return fHistograms.at(FileBase).at(type);
 }
 
-std::vector<FileInfo>
-PlotPreparer::GetAllFileInfos() {
-  for (auto type : gFileTypes) {
-    const auto& infos = *(GetFileInfo(type));
-    for (auto info : infos)
-      file_queue.push(*info);
-  }
-
-  std::vector<FileInfo> output;
-  while(!file_queue.empty()) {
-    auto info = file_queue.top();
-    file_queue.pop();
-    output.push_back(info);
-  }
-  return output;
-}
-
-std::vector<TString>
-PlotPreparer::GetAllFileNames() {
-  std::vector<TString> output;
-  for (auto info : GetAllFileInfos())
-    output.push_back(info.fFileName);
-  return output;
-}
-
 void
 PlotPreparer::PreparePlots() {
   if (fPrepared)
@@ -247,10 +217,6 @@ PlotPreparer::PreparePlots() {
     thread->Join();
     delete thread;
   }
-
-  // I can't do anything more fancy with Python, it seems
-  /* for (auto& info : GetAllFileInfos()) */
-  /*   RunFile(info); */
 }
 
 void
@@ -326,24 +292,6 @@ PlotPreparer::RunFile(FileInfo& info) {
   output_lock.Lock();
   std::cout << "Finished file " << filename.Data() << std::endl;
   output_lock.UnLock();
-}
-
-void
-PlotPreparer::RunFile(TString name) {
-  FileInfo* info = nullptr;
-  for (auto type : gFileTypes) {
-    auto* infos = GetFileInfo(type);
-    for (auto check : *infos) {
-      if (check->fFileName == name) {
-        info = check;
-        break;
-      }
-    }
-    if (info)
-      break;
-  }
-  if(info)
-    RunFile(*info);
 }
 
 void*
