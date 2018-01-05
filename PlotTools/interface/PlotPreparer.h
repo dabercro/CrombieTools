@@ -60,6 +60,9 @@ class PlotPreparer : public FileConfigReader {
   /// Add a histogram to plot
   void AddHist ( TString FileBase, Int_t NumXBins, Double_t MinX, Double_t MaxX, TString dataExpr, TString mcExpr, TString cut, TString dataWeight, TString mcWeight );
 
+  /// Set the number of cores to use in the plotting
+  void SetNumThreads ( UInt_t nthreads ) { fNumThreads = nthreads; }
+
  protected:
   // Don't mask the FileConfigReader functions of the same name
   using FileConfigReader::GetHistList;
@@ -80,6 +83,9 @@ class PlotPreparer : public FileConfigReader {
 
   /// Files to run over in parallel
   std::priority_queue<FileInfo>  file_queue;
+
+  /// Number of cores to prepare plots with
+  UInt_t fNumThreads {1};
 
   /// A function to clear the histograms map
   void ClearHists   ();
@@ -205,9 +211,11 @@ PlotPreparer::PreparePlots() {
       file_queue.push(*info);
   }
 
-  int num_threads = 8;
+  if (not fNumThreads)
+    fNumThreads++;
+
   std::vector<TThread*> threads;
-  for (int i_thread = 0; i_thread < num_threads; ++i_thread) {
+  for (decltype(fNumThreads) i_thread = 0; i_thread < fNumThreads; ++i_thread) {
     TThread* temp = new TThread(RunThread, this);
     threads.push_back(temp);
     temp->Run(this);

@@ -20,7 +20,10 @@ def SetFunctionFromEnv(targets):
             try:
                 func(os.environ[envname])
             except:
-                func(float(os.environ[envname]))
+                try:
+                    func(float(os.environ[envname]))
+                except:
+                    func(int(os.environ[envname]))
 
 
 def SetupConfigFromEnv(obj):
