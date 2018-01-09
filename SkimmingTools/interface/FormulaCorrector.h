@@ -26,9 +26,10 @@
 
 class FormulaCorrector : public Corrector
 {
+  // Private, only used by Copy
+  FormulaCorrector()  {}
  public:
   /// Constructor setting the name of a branch it would like to write to.
-  FormulaCorrector()  {}
   FormulaCorrector( TString name, TString formula );
   virtual ~FormulaCorrector();
 

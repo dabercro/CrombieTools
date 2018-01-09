@@ -73,9 +73,12 @@ void Corrector::SetCorrectionHist(TString hist1, TString hist2)
 }
 
 //--------------------------------------------------------------------
-Double_t Corrector::GetFormulaResult(Int_t index)
+Double_t Corrector::GetFormulaResult(Int_t index, Bool_t use_mins)
 {
   Double_t eval = fFormulas[index]->EvalInstance();
+  if (not use_mins)
+    return eval;
+
   if (eval < fMins[index])
     eval = fMins[index];
   else if (eval > fMaxs[index])
@@ -90,9 +93,9 @@ Float_t Corrector::DoEval() {
     Double_t evalY = GetFormulaResult(1);
     if (fNumDims > 2) {
       Double_t evalZ = GetFormulaResult(2);
-      return fCorrectionHist->GetBinContent(fCorrectionHist->FindBin(evalX,evalY,evalZ));
+      return fCorrectionHist->GetBinContent(fCorrectionHist->FindBin(evalX, evalY, evalZ));
     }
-    return fCorrectionHist->GetBinContent(fCorrectionHist->FindBin(evalX,evalY));
+    return fCorrectionHist->GetBinContent(fCorrectionHist->FindBin(evalX, evalY));
   }
   return fCorrectionHist->GetBinContent(fCorrectionHist->FindBin(evalX));
 }
@@ -146,18 +149,18 @@ void Corrector::InitializeTree()
   if (fCutFormula)
     delete fCutFormula;
 
-  fCutFormula = new TTreeFormula(fInCut,fInCut,fInTree);
+  fCutFormula = new TTreeFormula(fInCut, fInCut, fInTree);
 
   if (fFormulas.size() != 0) {
-    for (UInt_t iFormula = 0; iFormula != fFormulas.size(); ++iFormula)
-      delete fFormulas[iFormula];
+    for (auto iFormula : fFormulas)
+      delete iFormula;
     fFormulas.resize(0);
   }
 
   if (fInExpressions.size() != 0) {
     TTreeFormula* tempFormula;
-    for (UInt_t iExpression = 0; iExpression != fInExpressions.size(); ++iExpression) {
-      tempFormula = new TTreeFormula(fInExpressions[iExpression],fInExpressions[iExpression],fInTree);
+    for (auto& iExpression : fInExpressions) {
+      tempFormula = new TTreeFormula(iExpression, iExpression, fInTree);
       fFormulas.push_back(tempFormula);
     }
   }

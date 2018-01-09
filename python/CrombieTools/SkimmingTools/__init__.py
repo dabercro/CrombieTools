@@ -3,4 +3,4 @@ Submodule of CrombieTools.
 Gives access to Corrector related classes, FlatSkimmer and GoodLumiFilter, and HistWriter.
 """
 
-__all__ = ['Corrector', 'FlatSkimmer', 'HistWriter', 'TwoScaleFactorCorrector', 'FormulaCorrector']
+__all__ = ['Corrector', 'FlatSkimmer', 'HistWriter', 'TwoScaleFactorCorrector', 'FormulaCorrector', 'TMVACorrector']

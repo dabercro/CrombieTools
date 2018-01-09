@@ -1,5 +1,6 @@
 #! /bin/bash
 
+hostname
 pwd
 
 ID=$1

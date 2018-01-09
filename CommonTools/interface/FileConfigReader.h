@@ -376,8 +376,7 @@ void FileConfigReader::ReadMCConfig(TString config, TString fileDir)
 
   Message(eInfo, "Input directory is %s", GetInDirectory().Data());
 
-  std::ifstream configFile;
-  configFile.open(config.Data());
+  std::ifstream configFile {config.Data()};
   TString LimitTreeName;
   TString FileName;
   TString XSec;
@@ -545,9 +544,6 @@ void FileConfigReader::ReadMCConfig(TString config, TString fileDir)
     }
 
   }
-
-  configFile.close();
-
 }
 
 //--------------------------------------------------------------------
@@ -798,8 +794,7 @@ FileConfigReader::LoadFitResult(const char* fit_result) {
   fFitResult.clear();
 
   // Open file
-  std::ifstream fitFile;
-  fitFile.open(fit_result);
+  std::ifstream fitFile {fit_result};
 
   // Read it in
   TString key;

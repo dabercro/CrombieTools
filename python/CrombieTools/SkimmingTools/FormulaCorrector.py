@@ -1,4 +1,4 @@
-"""@package CrombieTools.SkimmingTools.Corrector
+"""@package CrombieTools.SkimmingTools.FormulaCorrector
 
 Submodule of CrombieTools.SkimmingTools
 Contains the constructor and default object for FormulaCorrector.

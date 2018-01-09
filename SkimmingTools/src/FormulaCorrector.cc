@@ -10,10 +10,9 @@ ClassImp(FormulaCorrector)
 
 //--------------------------------------------------------------------
 FormulaCorrector::FormulaCorrector(TString name, TString formula)
-{
-  fName = name;
-  fFormulaString = formula;
-}
+: Corrector(name),
+  fFormulaString{formula}
+{}
 
 //--------------------------------------------------------------------
 FormulaCorrector::~FormulaCorrector()

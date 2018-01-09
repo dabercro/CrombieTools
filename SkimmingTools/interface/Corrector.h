@@ -100,6 +100,11 @@ class Corrector : virtual public Debug
   Bool_t                fIsCopy = false;              ///< Track if instance is a copy
   Bool_t                fMatchedFileName;             ///< A flag telling this corrector if the file has been matched
 
+  /// Evaluate one of the formulae. If use_lims, then don't give a result that would go off the relevant axis
+  Double_t              GetFormulaResult            ( Int_t index, Bool_t use_mins = true );
+  /// Get the number of dimensions that the formulas hold
+  Int_t                 GetNumDims                  () { return fNumDims; }
+
  private:
   TFile*                fCorrectionFile = NULL;       ///< Name of file containing correction histogram
   TH1*                  fCorrectionHist = NULL;       ///< Name of correction histogram
@@ -111,8 +116,6 @@ class Corrector : virtual public Debug
   std::vector<Double_t>       fMins;                  ///< Minimum possible values of each axis
   std::vector<Double_t>       fMaxs;                  ///< Maximum possible values of each axis
   HistReader                  fHistReader = eValue;   ///< The method to reading histograms
-  /// Evaluate one of the formulae
-  Double_t                    GetFormulaResult            ( Int_t index );
 
   TString               fMatchFileName = "";
 
