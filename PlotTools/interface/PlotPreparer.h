@@ -145,6 +145,7 @@ PlotPreparer::AddHist(TString FileBase, Int_t NumXBins, Double_t* XBins, TString
   Message(eDebug, "File Name: %s", FileBase.Data());
   Message(eDebug, "Data expr: %s", dataExpr.Data());
   Message(eDebug, "MC expr: %s", mcExpr.Data());
+  Message(eDebug, "Cut: %s", cut.Data());
   Message(eDebug, "Data cut: %s", dataWeight.Data());
   Message(eDebug, "MC cut: %s", mcWeight.Data());
 
@@ -177,14 +178,15 @@ PlotPreparer::AddHist(TString FileBase, Int_t NumXBins, Double_t* XBins, TString
       auto& formulas = fFormulas[inputname];
 
       for (auto& expr : exprs) {
-        if (formulas.find(expr) == formulas.end())
+        if (formulas.find(expr) == formulas.end()) {
+          Message(eDebug, "Adding formula expression: %s", expr.Data());
           formulas[expr] = std::make_pair<TTreeFormula*, Double_t>(nullptr, {});
+        }
       }
 
       auto tempname = TempHistName();
       PlotInfo* tempinfo = new PlotInfo(new TH1D(tempname, tempname, NumXBins, XBins), formulas[expr].second, formulas[cut].second, formulas[weight].second, fEventsPer);
       plots.push_back(tempinfo);
-      Message(eDebug, "Created new hist at %p", tempinfo->hist);
       hist_list.push_back(tempinfo->hist);
     }
   }
@@ -270,13 +272,8 @@ PlotPreparer::RunFile(FileInfo& info) {
         formula.second.second = formula.second.first->EvalInstance();
 
     for (auto plot : plots)
-      if (plot->cut) {
+      if (plot->cut)
         plot->hist->Fill(plot->expr, plot->weight);
-        if ((int) plot->hist->GetEntries() % 1000 == 0) {
-          Message(eInfo, "Filling hist %p with value %f and weight %f", plot->hist, plot->expr, plot->weight);
-          Message(eInfo, "Hist at %p now has %i entries", plot->hist, (int) plot->hist->GetEntries());
-        }
-      }
   }
 
   inputfile->Close();

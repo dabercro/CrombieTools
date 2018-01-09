@@ -22,7 +22,7 @@ class Trainer(object):
         # All of these are "private". Please don't touch directly
         self.input_file = TFile(input_file)
         self.output_file = TFile(output_file, 'RECREATE')
-        self.trainer = TMVA.Trainer(name, self.output_file, options)
+        self.trainer = TMVA.Factory(name, self.output_file, options)
         self.weight = None
         self.cut = None
         self.variables = None   # Flag that variables have been set

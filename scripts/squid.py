@@ -262,6 +262,9 @@ def check_jobs():
     LOG.info('Already running: %i', len(running_jobs))
     LOG.info('Resubmitted: %i', len(resub))
 
+    if len(jobs) > (len(running_jobs) + len(resub)):
+        return check_jobs()
+
     return len(jobs)
 
 
