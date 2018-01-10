@@ -9,12 +9,9 @@
 #ifndef CROMBIETOOLS_SKIMMINGTOOLS_TWOSCALEFACTORCORRECTOR_H
 #define CROMBIETOOLS_SKIMMINGTOOLS_TWOSCALEFACTORCORRECTOR_H
 
-#define TSFCORRECTOR_NCORRECTORS 4
-
 #include <vector>
 #include "TString.h"
 #include "TTree.h"
-#include "TTreeFormula.h"
 
 #include "Corrector.h"
 
@@ -58,11 +55,15 @@ class TwoScaleFactorCorrector : public Corrector
   /// Set the pointer to the TTree the Corrector objects inside are reading.
   void                     SetInTree                    ( TTree* tree );
 
+  /// Gets the list of formulas that this corrector is using
+  std::vector<TString>  GetFormulas       ();
+
  private:
   /// Evaluate the TTree pointer fInTree at its current entry.
   Float_t                  DoEval                       ();
 
-  Corrector* fCorrectors[TSFCORRECTOR_NCORRECTORS];   ///< Pointers to the Correctors
+  static constexpr int TSFCORRECTOR_NCORRECTORS = 4;
+  std::vector<Corrector*> fCorrectors;               ///< Pointers to the Correctors
 
   ClassDef(TwoScaleFactorCorrector,1)
 };

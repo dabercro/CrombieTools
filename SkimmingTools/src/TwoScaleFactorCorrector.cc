@@ -12,29 +12,23 @@ ClassImp(TwoScaleFactorCorrector)
 TwoScaleFactorCorrector::TwoScaleFactorCorrector(TString name,
                                                  Corrector* Leg1Loose, Corrector* Leg1Tight,
                                                  Corrector* Leg2Loose, Corrector* Leg2Tight)
-{
-  fName = name;
-  fCorrectors[0] = Leg1Loose;
-  fCorrectors[1] = Leg1Tight;
-  fCorrectors[2] = Leg2Loose;
-  fCorrectors[3] = Leg2Tight;
-}
+: Corrector(name),
+  fCorrectors {Leg1Loose, Leg1Tight, Leg2Loose, Leg2Tight}
+{}
 
 //--------------------------------------------------------------------
 TwoScaleFactorCorrector::~TwoScaleFactorCorrector()
 {
-  for (int iCorr = 0; iCorr < TSFCORRECTOR_NCORRECTORS; iCorr++) {
-    if (fCorrectors[iCorr])
-      delete fCorrectors[iCorr];
-  }
+  for (auto iCorr : fCorrectors)
+    delete iCorr;
 }
 
 //--------------------------------------------------------------------
 void TwoScaleFactorCorrector::SetInTree(TTree* tree)
 {
   Corrector::SetInTree(tree);
-  for (int iCorr = 0; iCorr < TSFCORRECTOR_NCORRECTORS; iCorr++)
-    fCorrectors[iCorr]->SetInTree(tree);
+  for (auto iCorr : fCorrectors)
+    iCorr->SetInTree(tree);
 }
 
 //--------------------------------------------------------------------
@@ -80,4 +74,13 @@ TwoScaleFactorCorrector* TwoScaleFactorCorrector::Copy()
     newTwoScaleFactorCorrector->fCorrectors[iCorr] = fCorrectors[iCorr]->Copy();
 
   return newTwoScaleFactorCorrector;
+}
+
+std::vector<TString> TwoScaleFactorCorrector::GetFormulas() {
+  std::vector<TString> all_formulas;
+  for (auto i_corr : fCorrectors) {
+    auto formulas = i_corr->GetFormulas();
+    all_formulas.insert(all_formulas.end(), formulas.begin(), formulas.end());
+  }
+  return all_formulas;
 }

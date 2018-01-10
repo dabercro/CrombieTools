@@ -200,3 +200,9 @@ Corrector* Corrector::Copy()
   newCorrector->fIsCopy = true;
   return newCorrector;
 }
+
+std::vector<TString> Corrector::GetFormulas() {
+  std::vector<TString> all_formulas {fInExpressions};
+  all_formulas.push_back(fInCut);
+  return all_formulas;
+}

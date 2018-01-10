@@ -13,9 +13,7 @@ ClassImp(TMVACorrector)
 TMVACorrector::TMVACorrector(TString name, TString weights_file)
 : Corrector(name),
   fWeightsFile{weights_file}
-{
-  reader->BookMVA(fName, fWeightsFile);
-}
+{}
 
 TMVACorrector::~TMVACorrector() {
   delete reader;
@@ -39,6 +37,7 @@ void TMVACorrector::ReadVarConfig(const char* config) {
       reader->AddVariable(var_name, &fFormulaResults.back());
     }
   }
+  reader->BookMVA(fName, fWeightsFile);
 }
 
 Float_t TMVACorrector::DoEval() {
@@ -53,11 +52,12 @@ Float_t TMVACorrector::DoEval() {
 TMVACorrector* TMVACorrector::Copy()
 {
   TMVACorrector *newTMVACorrector = new TMVACorrector(fName, fWeightsFile);
-  auto* reader = newTMVACorrector->reader;
+  auto* newreader = newTMVACorrector->reader;
   *newTMVACorrector = *this;
-  newTMVACorrector->reader = reader;
+  newTMVACorrector->reader = newreader;
   for (decltype(GetNumDims()) iDim = 0; iDim < GetNumDims(); ++iDim)
     newTMVACorrector->reader->AddVariable(fVarNames[iDim], &(newTMVACorrector->fFormulaResults[iDim]));
+  newreader->BookMVA(fName, fWeightsFile);
 
   newTMVACorrector->fIsCopy = true;
   return newTMVACorrector;

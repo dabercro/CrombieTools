@@ -12,6 +12,7 @@
 #include "TBranch.h"
 #include "TMath.h"
 
+#include "PlotUtils.h"
 #include "CorrectorApplicator.h"
 
 ClassImp(CorrectorApplicator)
@@ -73,6 +74,8 @@ void CorrectorApplicator::ApplyCorrections(TString fileName)
   else
     outTree = new TTree(fOutputTreeName,fOutputTreeName);
 
+  theTree->SetBranchStatus("*", 0);
+
   // Now set the correctors and make branches for them
   std::vector<TBranch*> fillBranches;
   std::map<TString, Float_t> Addresses;
@@ -83,11 +86,18 @@ void CorrectorApplicator::ApplyCorrections(TString fileName)
       Addresses[fName] = 1.0;
     fillBranches.push_back(outTree->Branch(fName, &(Addresses[fName]), fName+"/F"));
   }
-  for (UInt_t iCorrector = 0; iCorrector != fCorrectors.size(); ++iCorrector) {
-    fCorrectors[iCorrector]->CompareFileName(fileName);
-    fCorrectors[iCorrector]->SetInTree(theTree);
+  for (auto iCorrector : fCorrectors) {
+    std::set<TString> needed;
+    for (auto formula : iCorrector->GetFormulas())
+      AddNecessaryBranches(needed, theTree, formula);
+
+    for (auto need : needed)
+      theTree->SetBranchStatus(need, 1);
+
+    iCorrector->CompareFileName(fileName);
+    iCorrector->SetInTree(theTree);
     if (fSaveAll) {
-      TString checkName = fCorrectors[iCorrector]->GetName();
+      TString checkName = iCorrector->GetName();
       if (!outTree->GetBranch(checkName)) {
         Addresses[checkName] = 1.0;
         fillBranches.push_back(outTree->Branch(checkName, &(Addresses[checkName]), checkName+"/F"));

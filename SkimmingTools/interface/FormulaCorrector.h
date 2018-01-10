@@ -39,6 +39,9 @@ class FormulaCorrector : public Corrector
   /// Set the pointer to the TTree the Corrector objects inside are reading.
   void                     SetInTree                    ( TTree* tree );
 
+  /// Gets the list of formulas that this corrector is using
+  std::vector<TString>  GetFormulas       ();
+
  private:
   /// Evaluate the TTree pointer fInTree at its current entry.
   Float_t                  DoEval                       ();

@@ -46,3 +46,9 @@ FormulaCorrector* FormulaCorrector::Copy()
   newFormulaCorrector->fIsCopy = true;
   return newFormulaCorrector;
 }
+
+std::vector<TString> FormulaCorrector::GetFormulas() {
+  std::vector<TString> all_formulas {Corrector::GetFormulas()};
+  all_formulas.push_back(fFormulaString);
+  return all_formulas;
+}

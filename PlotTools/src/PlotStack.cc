@@ -323,6 +323,13 @@ PlotStack::MakeCanvas(TString FileBase, std::vector<TH1D*> DataHists, std::vecto
 
   Message(eInfo, "Total background contribution: %f", HistHolders[0]->fHist->Integral("width")/fEventsPer);
 
+  if (not DataHist->Integral()) {
+    auto* match = AllHists[0];
+    for (int i_bin = 1; i_bin <= NumXBins; ++i_bin) {
+      DataHist->SetBinContent(i_bin, match->GetBinContent(i_bin));
+    }
+  }
+
   AddLegendEntry("Data", 1);
   SetDataIndex(int(AllHists.size()));
   AllHists.push_back(DataHist);
@@ -348,13 +355,10 @@ PlotStack::MakeCanvas(TString FileBase, std::vector<TH1D*> DataHists, std::vecto
     Message(eDebug, "There are now %i total histograms to plot.", AllHists.size());
   }
 
-  TString tempName;
-  tempName.Form("Hist_%d", fPlotCounter);
-  fPlotCounter++;
-  TH1D* post_fit = new TH1D(tempName, tempName, NumXBins, XBins);
-
   if (fPostFitFile != "") {
-    
+    TString tempName = TempHistName();
+    TH1D* post_fit = new TH1D(tempName, tempName, NumXBins, XBins);
+
     const char* signal_name = fSignalFileInfo.size() == 0 ? "" : fSignalFileInfo[0]->fTreeName.Data();
 
     sqlite3 *conn;

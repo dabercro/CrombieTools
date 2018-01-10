@@ -47,8 +47,7 @@ class Trainer(object):
                 target_func = self.trainer.AddVariable
                 if inputs[0] == 'SPEC':
                     target_func = self.trainer.AddSpectator
-
-                inputs = inputs[1:]
+                    inputs = inputs[1:]
 
                 if len(inputs) == 1:
                     target_func(inputs[0])

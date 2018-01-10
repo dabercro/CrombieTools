@@ -69,6 +69,9 @@ class Corrector : virtual public Debug
   /// Set the pointer to the TTree this Corrector is reading.
   virtual    void       SetInTree         ( TTree* tree )       { fInTree = tree; InitializeTree();                        }
 
+  /// Gets the list of formulas that this corrector is using
+  virtual    std::vector<TString>  GetFormulas       ();
+
   /**
      Used to set the way to read the correction histogram.
      Note that the uncertainty is added in quadrature, so the unity-centered uncertainty

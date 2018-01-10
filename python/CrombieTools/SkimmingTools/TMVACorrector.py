@@ -27,6 +27,7 @@ def MakeTMVACorrector(Name, Weights, Config, inCut='1', matchName=''):
     """
 
     corrector = newTMVACorrector(Name, Weights)
+    corrector.Merge = False
     corrector.ReadVarConfig(Config)
     corrector.SetInCut(inCut)
     corrector.SetMatchFileName(matchName)
