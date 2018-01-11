@@ -78,14 +78,37 @@ class Trainer(object):
 
     # Static member
     methods = {
+        'Variable': TMVA.Types.kVariable,
+        'Cuts': TMVA.Types.kCuts,
+        'Likelihood': TMVA.Types.kLikelihood,
         'PDERS': TMVA.Types.kPDERS,
-        'PDEFoam': TMVA.Types.kPDEFoam,
+        'HMatrix': TMVA.Types.kHMatrix,
+        'Fisher': TMVA.Types.kFisher,
         'KNN': TMVA.Types.kKNN,
-        'LD': TMVA.Types.kLD,
-        'FDA': TMVA.Types.kFDA,
-        'MLP': TMVA.Types.kMLP,
+        'CFMlpANN': TMVA.Types.kCFMlpANN,
+        'TMlpANN': TMVA.Types.kTMlpANN,
+        'BDT': TMVA.Types.kBDT,
+        'DT': TMVA.Types.kDT,
+        'RuleFit': TMVA.Types.kRuleFit,
         'SVM': TMVA.Types.kSVM,
-        'BDT': TMVA.Types.kBDT
+        'MLP': TMVA.Types.kMLP,
+        'BayesClassifier': TMVA.Types.kBayesClassifier,
+        'FDA': TMVA.Types.kFDA,
+        'Boost': TMVA.Types.kBoost,
+        'PDEFoam': TMVA.Types.kPDEFoam,
+        'LD': TMVA.Types.kLD,
+        'Plugins': TMVA.Types.kPlugins,
+        'Category': TMVA.Types.kCategory,
+        'DNN': TMVA.Types.kDNN,
+        'PyRandomForest': TMVA.Types.kPyRandomForest,
+        'PyAdaBoost': TMVA.Types.kPyAdaBoost,
+        'PyGTB': TMVA.Types.kPyGTB,
+        'PyKeras': TMVA.Types.kPyKeras,
+        'C50': TMVA.Types.kC50,
+        'RSNNS': TMVA.Types.kRSNNS,
+        'RSVM': TMVA.Types.kRSVM,
+        'RXGB': TMVA.Types.kRXGB,
+        'MaxMethod': TMVA.Types.kMaxMethod
         }
 
     def add_method(self, method, name, opts):

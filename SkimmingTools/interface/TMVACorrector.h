@@ -13,6 +13,7 @@
 
 #include "TString.h"
 #include "TTreeFormula.h"
+#include "TMVA/IMethod.h"
 #include "TMVA/Reader.h"
 
 #include "Corrector.h"
@@ -44,6 +45,7 @@ class TMVACorrector : public Corrector
   std::vector<Float_t> fFormulaResults;               ///< Results of the formulae are stored in here for the reader
   std::vector<TString> fVarNames;                     ///< Keep the variable names for copy operations
   TString fWeightsFile;                               ///< Keep this variable for copy operations
+  TMVA::IMethod* method {};                           ///< Pointer to method to evaluate
 
 };
 

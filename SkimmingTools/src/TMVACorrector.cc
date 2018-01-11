@@ -37,14 +37,14 @@ void TMVACorrector::ReadVarConfig(const char* config) {
       reader->AddVariable(var_name, &fFormulaResults.back());
     }
   }
-  reader->BookMVA(fName, fWeightsFile);
+  method = reader->BookMVA(fName, fWeightsFile);
 }
 
 Float_t TMVACorrector::DoEval() {
   for (decltype(GetNumDims()) iDim = 0; iDim < GetNumDims(); ++iDim)
     fFormulaResults[iDim] = GetFormulaResult(iDim, false);
 
-  Float_t output = reader->EvaluateMVA(fName);
+  Float_t output = method->GetMvaValue();
   return output;
 }
 
@@ -57,7 +57,7 @@ TMVACorrector* TMVACorrector::Copy()
   newTMVACorrector->reader = newreader;
   for (decltype(GetNumDims()) iDim = 0; iDim < GetNumDims(); ++iDim)
     newTMVACorrector->reader->AddVariable(fVarNames[iDim], &(newTMVACorrector->fFormulaResults[iDim]));
-  newreader->BookMVA(fName, fWeightsFile);
+  newTMVACorrector->method = newTMVACorrector->reader->BookMVA(fName, fWeightsFile);
 
   newTMVACorrector->fIsCopy = true;
   return newTMVACorrector;
