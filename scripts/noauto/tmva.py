@@ -23,6 +23,7 @@ class Trainer(object):
         self.input_file = TFile(input_file)
         self.output_file = TFile(output_file, 'RECREATE')
         self.trainer = TMVA.Factory(name, self.output_file, options)
+        self.loader = TMVA.DataLoader('dataset')
         self.weight = None
         self.cut = None
         self.variables = None   # Flag that variables have been set
@@ -44,9 +45,9 @@ class Trainer(object):
                 if not inputs:
                     continue
 
-                target_func = self.trainer.AddVariable
+                target_func = self.loader.AddVariable
                 if inputs[0] == 'SPEC':
-                    target_func = self.trainer.AddSpectator
+                    target_func = self.loader.AddSpectator
                     inputs = inputs[1:]
 
                 if len(inputs) == 1:
@@ -62,7 +63,7 @@ class Trainer(object):
 
     def set_target(self, name, expr):
         self.target = True
-        self.trainer.AddTarget('%s:=%s' % (name, expr))
+        self.loader.AddTarget('%s:=%s' % (name, expr))
 
     def prepare(self, opts):
         if None in [self.cut, self.weight]:
@@ -71,10 +72,10 @@ class Trainer(object):
 
         self.prepared = True
 
-        self.trainer.AddRegressionTree(self.input_file.Get('events'), 1.0)
-        self.trainer.SetWeightExpression(self.weight, 'Regression');
+        self.loader.AddRegressionTree(self.input_file.Get('events'), 1.0)
+        self.loader.SetWeightExpression(self.weight, 'Regression');
 
-        self.trainer.PrepareTrainingAndTestTree(self.cut, opts)
+        self.loader.PrepareTrainingAndTestTree(self.cut, opts)
 
     # Static member
     methods = {
@@ -115,7 +116,7 @@ class Trainer(object):
         if not name:
             name = method
 
-        self.trainer.BookMethod(self.methods[method], name, opts)
+        self.trainer.BookMethod(self.loader, self.methods[method], name, opts)
 
     def train(self):
         attrs = {attr: getattr(self, attr) for attr in dir(self)
@@ -151,7 +152,7 @@ if __name__ == '__main__':
     parser.add_argument('--output', dest='output', metavar='FILE', help='The name of the output file, which will be overwritten by training', default='TMVA.root')
     parser.add_argument('--methodname', dest='method_name', metavar='NAME', help='What to name the method the BDT output', default='')
     parser.add_argument('--trainername', dest='trainer_name', metavar='NAME', help='Name of the trainer', default='TMVA')
-    parser.add_argument('--traineropt', dest='trainer_opts', metavar='OPTS', help='Options for the trainer', default='!V:!Silent:Color:DrawProgressBar')
+    parser.add_argument('--traineropt', dest='trainer_opts', metavar='OPTS', help='Options for the trainer', default='!V:!Silent:Color:DrawProgressBar:AnalysisType=Regression')
     parser.add_argument('--targetname', dest='target_name', metavar='NAME', help='The name of the target', default='target')
 
     args = parser.parse_args()

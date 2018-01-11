@@ -23,20 +23,23 @@ TYPES = {
 DEFAULT_TYPE = 'F'
 DEFAULT_VAL = '0'
 RESET_SIGNATURE = 'reset()'
+FILL_SIGNATURE = 'fill()'
 
 
 class Branch:
+    branches = {}
     def __init__(self, name, data_type, default_val, is_saved):
         self.name = name
         self.data_type = data_type
         self.default_val = default_val
         self.is_saved = is_saved
+        self.branches[self.name] = self
 
 
 class Function:
     def __init__(self, signature, prefixes):
         self.enum_name = re.match(r'(.*)\(.*\)', signature).group(1)
-        self.signature = 'set_' + signature.replace('(', '(const %s base, ' % self.enum_name).replace(', ', ', const ')
+        self.signature = 'set_' + signature.replace('(', '(const %s base, ' % self.enum_name).replace(', ', ', const ').replace(', const )', ')')
         self.prefixes = prefixes
         self.variables = []
 
@@ -71,6 +74,14 @@ class Function:
 
 
     def implement(self, classname):
+        for index in range(len(self.variables)):
+            var, value, t = self.variables[index]
+            for replace in re.findall(r'<>[_\w]*', value):
+                suff = replace.lstrip('<>')
+                value = value.replace(replace, '(*(%s*)(addresses.at(base_name + "%s")))' % (TYPES[Branch.branches[self.prefixes[0] + suff].data_type], suff))
+
+            self.variables[index] = (var, value, t)
+
         incr = ['++', '--']
         return """void %s::%s {
   auto& base_name = %s_names[static_cast<unsigned>(base)];
@@ -87,11 +98,14 @@ class Function:
 if __name__ == '__main__':
     classname = os.path.basename(sys.argv[1]).split('.')[0]
 
-    includes = ['<string>', '<vector>', '"TObject.h"', '"TFile.h"', '"TTree.h"']
+    includes = ['<string>', '<vector>', '<unordered_map>', '"TObject.h"', '"TFile.h"', '"TTree.h"']
     prefixes = []
-    all_branches = []
     functions = []
+    mod_fill = []
     in_function = None
+
+    def create_branches(var, data_type, val, is_saved):
+        return [Branch(('%s_%s' % (pref, var)).rstrip('_'), data_type, val, is_saved) for pref in prefixes] or [Branch(var, data_type, val, is_saved)]
 
     with open(sys.argv[1], 'r') as config_file:
         for raw_line in config_file:
@@ -109,22 +123,25 @@ if __name__ == '__main__':
                 continue
 
             # Check for includes
-            match = re.match(r'([<"].*[">])', line)
+            match = re.match(r'^([<"].*[">])$', line)
             if match:
                 includes.append(match.group(1))
                 continue
 
             # Check for default values or reset function signature
-            match = re.match(r'{(/(\w))?(-?\d+)?(reset\(.*\))?}', line)
+            match = re.match(r'{(/(\w))?(-?\d+)?(reset\(.*\))?(fill\(.*\))?}', line)
             if match:
                 if match.group(2):
                     DEFAULT_TYPE = match.group(2)
                 elif match.group(3):
                     DEFAULT_VAL = match.group(3)
                 elif match.group(4):
-                    RESET_SIGNATURE = match.group(4)
+                    RESET_SIGNATURE = match.group(4).replace('(', '(const ').replace(', ', ', const ')
+                elif match.group(5):
+                    FILL_SIGNATURE = match.group(5).replace('(', '(const ').replace(', ', ', const ')
                 continue
 
+            # Get "class" enums and/or functions for setting
             match = re.match(r'(\+?[\w,]*)\s?-->\s?([\w_]*\(.*\))?', line)
             if match:
                 # Pass off previous function as quickly as possible to prevent prefix changing
@@ -132,35 +149,47 @@ if __name__ == '__main__':
                     functions.append(copy.deepcopy(in_function))
                     in_function = None
 
+                # Get the different classes that are being added
                 components = match.group(1).split(',') if match.group(1) else []
                 if components:
                     if match.group(1).startswith('+'):
                         components[0] = components[0].lstrip('+')
                         prefixes += components
                     else:
-                        prefixes = sum([['%s%s' % (pref, comp) for comp in components] for pref in prefixes], []) or components
+                        prefixes = ['%s%s' % (pref, comp) for pref in prefixes for comp in components] or components
 
                 function_sig = match.group(2)
                 if function_sig:
                     in_function = Function(function_sig, prefixes)
                 continue
 
-            match = re.match(r'(\#\s*)?(\w*)(/(\w))?(\s?=\s?([\w\.\(\)]+))?(\s?->\s?(.*))?', line)
+            # Get TMVA information to evaluate
+            match = re.match(r'^\[(.*);\s*(.*);\s*(.*);\s*(.*)\]$', line)
+            if match:
+                print match.groups()
+                var = match.group(1)
+                create_branches(var, DEFAULT_TYPE, DEFAULT_VAL, True)
+                continue
+
+            # Add branch names individually
+            match = re.match(r'(\#\s*)?(\w*)(/(\w))?(\s?=\s?([\w\.\(\)]+))?(\s?->\s?(.*?))?(\s?<-\s?(.*?))?$', line)
             if match:
                 var = match.group(2)
                 data_type = match.group(4) or DEFAULT_TYPE
                 val = match.group(6) or DEFAULT_VAL
                 is_saved = not bool(match.group(1))
+                create_branches(var, data_type, val, is_saved)
 
-                branches = [Branch(('%s_%s' % (pref, var)).rstrip('_'), data_type, val, is_saved) for pref in prefixes] or [Branch(var, data_type, val, is_saved)]
-
-                all_branches.extend(branches)
                 if in_function is not None:
                     in_function.add_var(var, match.group(8), data_type)
+
+                if match.group(9):
+                    mod_fill.append('%s = %s;' % (var, match.group(10)))
+
                 continue
 
     # Let's put the branches in some sort of order
-    all_branches.sort(lambda x, y: cmp(x.name, y.name))
+    all_branches = [Branch.branches[key] for key in sorted(Branch.branches)]
 
     with open('%s.h' % classname, 'w') as output:
         write = lambda x: output.write('%s\n' % x)
@@ -187,7 +216,7 @@ if __name__ == '__main__':
         # Some functions, and define the private members
         write("""
   void %s;
-  void fill() { t->Fill(); }
+  void %s;
   void write(TObject* obj) { f->WriteTObject(obj, obj->GetName()); }
   %s
 
@@ -197,37 +226,46 @@ if __name__ == '__main__':
 
   template <typename T>
   void set(std::string name, T val) { *(T*)(t->GetBranch(name.data())->GetAddress()) = val; }
+
+  const std::unordered_map<std::string, void*> addresses {
+    %s
+  };
 };
-""" % (RESET_SIGNATURE, '\n  '.join([f.declare(functions) for f in functions])))
+""" % (RESET_SIGNATURE, FILL_SIGNATURE, '\n  '.join([f.declare(functions) for f in functions]),
+       ',\n    '.join(['{"%s", &%s}' % (key, key) for key in sorted(Branch.branches)])))
 
         # Initialize the class
         write("""%s::%s(const char* outfile_name, const char* name) {
   f = new TFile(outfile_name, "CREATE");
   t = new TTree(name, name);
   %s
-}
-""" % (classname, classname, '\n  '.join(['t->Branch("{0}", &{0}, "{0}/{1}");'.format(b.name, b.data_type) for b in all_branches if b.is_saved])))
+}""" % (classname, classname, '\n  '.join(['t->Branch("{0}", &{0}, "{0}/{1}");'.format(b.name, b.data_type) for b in all_branches if b.is_saved])))
 
         # reset function
         write("""
 void %s::%s {
   %s
-}
-""" % (classname, RESET_SIGNATURE, '\n  '.join(['{0} = {1};'.format(b.name, b.default_val) for b in all_branches])))
+}""" % (classname, RESET_SIGNATURE, '\n  '.join(['{0} = {1};'.format(b.name, b.default_val) for b in all_branches])))
+
+        # fill function
+        write("""
+void %s::%s {
+  %s
+}""" % (classname, FILL_SIGNATURE, '\n  '.join(mod_fill + ['t->Fill();'])))
 
         for func in functions:
             write(func.implement(classname))
 
         # Template enum conversion
         def write_convert(first, second):
-            write(("""{0}::{1} to_{1}({0}::{2} e_cls) {begin}
+            write(("""
+{0}::{1} to_{1}({0}::{2} e_cls) {begin}
   switch (e_cls) {begin}
   case %s
   default:
     throw;
   {end}
-{end}
-""" % '\n  case '.join(['{0}::{2}::%s:\n    return {0}::{1}::%s;' %
+{end}""" % '\n  case '.join(['{0}::{2}::%s:\n    return {0}::{1}::%s;' %
                        (pref, pref) for pref in second.prefixes if pref in first.prefixes])).format(
                            classname, first.enum_name, second.enum_name, first.prefixes[0], begin='{', end='}'))
             
@@ -241,4 +279,4 @@ void %s::%s {
 
             prev_func = func
 
-        write('#endif')
+        write('\n#endif')
