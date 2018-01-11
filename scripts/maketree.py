@@ -36,6 +36,27 @@ class Branch:
         self.branches[self.name] = self
 
 
+class Reader:
+    readers = []
+    def __init__(self, weights, prefix, output, inputs):
+        self.weights = weights
+        self.output = '%s_%s' % (prefix, output)
+        self.inputs = [(label, inp.replace('<>', prefix)) for label, inp in inputs]
+        self.name = 'reader_%s' % self.output
+        self.method = 'method_%s' % self.output
+        self.floats = []
+        self.readers.append(self)
+
+    def float_inputs(self, mod_fill):
+        for index, inp in enumerate(self.inputs):
+            address = inp[1]
+            if Branch.branches[address].data_type != 'F':
+                newaddress = '_tmva_float_%s' % address
+                mod_fill.insert(0, '%s = %s;' % (newaddress, address))
+                self.floats.append(newaddress)
+                self.inputs[index] = (inp[0], newaddress)
+
+
 class Function:
     def __init__(self, signature, prefixes):
         self.enum_name = re.match(r'(.*)\(.*\)', signature).group(1)
@@ -105,7 +126,8 @@ if __name__ == '__main__':
     in_function = None
 
     def create_branches(var, data_type, val, is_saved):
-        return [Branch(('%s_%s' % (pref, var)).rstrip('_'), data_type, val, is_saved) for pref in prefixes] or [Branch(var, data_type, val, is_saved)]
+        branches = [(pref, Branch(('%s_%s' % (pref, var)).rstrip('_'), data_type, val, is_saved)) for pref in prefixes] or [('', Branch(var, data_type, val, is_saved))]
+        return [(p, b.name) for p, b in branches]
 
     with open(sys.argv[1], 'r') as config_file:
         for raw_line in config_file:
@@ -164,11 +186,21 @@ if __name__ == '__main__':
                 continue
 
             # Get TMVA information to evaluate
-            match = re.match(r'^\[(.*);\s*(.*);\s*(.*);\s*(.*)\]$', line)
+            match = re.match(r'^\[(.*);\s*(.*);\s*(.*)\]$', line)
             if match:
-                print match.groups()
+                if '"TMVA/Reader.h"' not in includes:
+                    includes.append('"TMVA/Reader.h"')
+                    includes.append('"TMVA/IMethod.h"')
+
                 var = match.group(1)
-                create_branches(var, DEFAULT_TYPE, DEFAULT_VAL, True)
+                weights = match.group(2)
+                config = match.group(3)
+                branches = create_branches(var, 'F', 0, True)
+                with open(config, 'r') as conf_file:
+                    inputs = [line.strip().split() for line in conf_file]
+                    for reader in [Reader(weights, p, var, inputs) for p, b in branches]:
+                        mod_fill.append('%s = %s->GetMvaValue();' % (reader.output, reader.method))
+
                 continue
 
             # Add branch names individually
@@ -180,16 +212,23 @@ if __name__ == '__main__':
                 is_saved = not bool(match.group(1))
                 create_branches(var, data_type, val, is_saved)
 
-                if in_function is not None:
+                if in_function is not None and match.group(7):
                     in_function.add_var(var, match.group(8), data_type)
 
                 if match.group(9):
-                    mod_fill.append('%s = %s;' % (var, match.group(10)))
+                    # create_branches returns a list of prefixes and the new branch names
+                    branches = create_branches(var, data_type, val, is_saved)
+                    for p, b in branches:
+                        mod_fill.append('%s = %s;' % (b, match.group(10).replace('<>', p)))
 
                 continue
 
     # Let's put the branches in some sort of order
     all_branches = [Branch.branches[key] for key in sorted(Branch.branches)]
+
+    # Check that all of the TMVA inputs are floats
+    for reader in Reader.readers:
+        reader.float_inputs(mod_fill)
 
     with open('%s.h' % classname, 'w') as output:
         write = lambda x: output.write('%s\n' % x)
@@ -230,16 +269,22 @@ if __name__ == '__main__':
   const std::unordered_map<std::string, void*> addresses {
     %s
   };
+%s%s
 };
 """ % (RESET_SIGNATURE, FILL_SIGNATURE, '\n  '.join([f.declare(functions) for f in functions]),
-       ',\n    '.join(['{"%s", &%s}' % (key, key) for key in sorted(Branch.branches)])))
+       ',\n    '.join(['{"%s", &%s}' % (key, key) for key in sorted(Branch.branches)]),
+       ''.join(['\n  Float_t %s;' % address for reader in Reader.readers for address in reader.floats]),
+       ''.join(['\n  TMVA::Reader %s {"Silent"};\n  TMVA::IMethod* %s {};' % (reader.name, reader.method) for reader in Reader.readers])))
 
         # Initialize the class
-        write("""%s::%s(const char* outfile_name, const char* name) {
-  f = new TFile(outfile_name, "CREATE");
-  t = new TTree(name, name);
+        write("""%s::%s(const char* outfile_name, const char* name)
+: f {new TFile(outfile_name, "CREATE")},
+  t {new TTree(name, name)}
+{
   %s
-}""" % (classname, classname, '\n  '.join(['t->Branch("{0}", &{0}, "{0}/{1}");'.format(b.name, b.data_type) for b in all_branches if b.is_saved])))
+%s%s}""" % (classname, classname, '\n  '.join(['t->Branch("{0}", &{0}, "{0}/{1}");'.format(b.name, b.data_type) for b in all_branches if b.is_saved]),
+            ''.join(['  %s.AddVariable("%s", &%s);\n' % (reader.name, label, var) for reader in Reader.readers for label, var in reader.inputs]),
+            ''.join(['  %s = %s.BookMVA("%s", "%s");\n' % (reader.method, reader.name, reader.output, reader.weights) for reader in Reader.readers])))
 
         # reset function
         write("""
@@ -248,6 +293,13 @@ void %s::%s {
 }""" % (classname, RESET_SIGNATURE, '\n  '.join(['{0} = {1};'.format(b.name, b.default_val) for b in all_branches])))
 
         # fill function
+        for index, value in enumerate(mod_fill):
+            for replace in re.findall(r'<>[_\w]*', value):
+                suff = replace.lstrip('<>')
+                value = value.replace(replace, '(*(%s*)(addresses.at(base_name + "%s")))' % (TYPES[Branch.branches[self.prefixes[0] + suff].data_type], suff))
+
+            mod_fill[index] = value
+
         write("""
 void %s::%s {
   %s
