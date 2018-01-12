@@ -32,7 +32,7 @@ class ObjectStore {
              const order which = order::eDesc)
    : compare(compare), which_order(which), total(sorted_enums.size()) {
     for (auto valid_enum : sorted_enums)
-      store.push_back({valid_enum, nullptr, {}});
+      store.push_back({valid_enum, nullptr, {}, {}});
   }
 
   ~ObjectStore () {}
@@ -59,23 +59,10 @@ class ObjectStore {
         break;
     }
     // Insertion sort: move elements down
-    { // Extra scope so temp_extra doesn't leak
-      S temp_extra {};
-      F temp_result {};
-      T* temp_particle {};
-      for(; it != store.end() && particle; ++it) {
-        temp_particle = it->particle;
-        it->particle = particle;
-        particle = temp_particle;
-
-        temp_result = it->result;
-        it->result = result;
-        result = temp_result;
-
-        temp_extra = it->extra;
-        it->extra = extra;
-        extra = temp_extra;
-      }
+    for(; it != store.end() && particle; ++it) {
+      std::swap(it->particle, particle);
+      std::swap(it->result, result);
+      std::swap(it->extra, extra);
     }
   }
 

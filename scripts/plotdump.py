@@ -5,7 +5,7 @@ import sys
 
 sys.argv.append('-b')
 
-from ROOT import TFile, TCanvas
+import ROOT
 
 if __name__ == '__main__':
 
@@ -18,19 +18,22 @@ if __name__ == '__main__':
 
         exit(1)
 
-    input_file = TFile(sys.argv[1])
+    input_file = ROOT.TFile(sys.argv[1])
     input_tree = input_file.events
 
     output_dir = sys.argv[2]
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
 
+    print 'Making plots in', output_dir
+    ROOT.gErrorIgnoreLevel = ROOT.kWarning
+
     for branch in [br.GetName() for br in input_tree.GetListOfBranches()] + sys.argv[3:-1]:
         if 'packedPuppi' in branch:
             continue
 
         file_name = ''
-        canvas = TCanvas()
+        canvas = ROOT.TCanvas()
         plots = branch.split(',')
         cut = '' if len(plots) == 1 else plots[1].strip()
         opt = ''
