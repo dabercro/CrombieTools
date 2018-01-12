@@ -23,7 +23,6 @@ class Trainer(object):
         self.input_file = TFile(input_file)
         self.output_file = TFile(output_file, 'RECREATE')
         self.trainer = TMVA.Factory(name, self.output_file, options)
-        self.loader = TMVA.DataLoader('dataset')
         self.weight = None
         self.cut = None
         self.variables = None   # Flag that variables have been set
@@ -45,9 +44,9 @@ class Trainer(object):
                 if not inputs:
                     continue
 
-                target_func = self.loader.AddVariable
+                target_func = self.trainer.AddVariable
                 if inputs[0] == 'SPEC':
-                    target_func = self.loader.AddSpectator
+                    target_func = self.trainer.AddSpectator
                     inputs = inputs[1:]
 
                 if len(inputs) == 1:
@@ -63,7 +62,7 @@ class Trainer(object):
 
     def set_target(self, name, expr):
         self.target = True
-        self.loader.AddTarget('%s:=%s' % (name, expr))
+        self.trainer.AddTarget('%s:=%s' % (name, expr))
 
     def prepare(self, opts):
         if None in [self.cut, self.weight]:
@@ -72,51 +71,28 @@ class Trainer(object):
 
         self.prepared = True
 
-        self.loader.AddRegressionTree(self.input_file.Get('events'), 1.0)
-        self.loader.SetWeightExpression(self.weight, 'Regression');
+        self.trainer.AddRegressionTree(self.input_file.Get('events'), 1.0)
+        self.trainer.SetWeightExpression(self.weight, 'Regression');
 
-        self.loader.PrepareTrainingAndTestTree(self.cut, opts)
+        self.trainer.PrepareTrainingAndTestTree(self.cut, opts)
 
     # Static member
     methods = {
-        'Variable': TMVA.Types.kVariable,
-        'Cuts': TMVA.Types.kCuts,
-        'Likelihood': TMVA.Types.kLikelihood,
         'PDERS': TMVA.Types.kPDERS,
-        'HMatrix': TMVA.Types.kHMatrix,
-        'Fisher': TMVA.Types.kFisher,
-        'KNN': TMVA.Types.kKNN,
-        'CFMlpANN': TMVA.Types.kCFMlpANN,
-        'TMlpANN': TMVA.Types.kTMlpANN,
-        'BDT': TMVA.Types.kBDT,
-        'DT': TMVA.Types.kDT,
-        'RuleFit': TMVA.Types.kRuleFit,
-        'SVM': TMVA.Types.kSVM,
-        'MLP': TMVA.Types.kMLP,
-        'BayesClassifier': TMVA.Types.kBayesClassifier,
-        'FDA': TMVA.Types.kFDA,
-        'Boost': TMVA.Types.kBoost,
         'PDEFoam': TMVA.Types.kPDEFoam,
+        'KNN': TMVA.Types.kKNN,
         'LD': TMVA.Types.kLD,
-        'Plugins': TMVA.Types.kPlugins,
-        'Category': TMVA.Types.kCategory,
-        'DNN': TMVA.Types.kDNN,
-        'PyRandomForest': TMVA.Types.kPyRandomForest,
-        'PyAdaBoost': TMVA.Types.kPyAdaBoost,
-        'PyGTB': TMVA.Types.kPyGTB,
-        'PyKeras': TMVA.Types.kPyKeras,
-        'C50': TMVA.Types.kC50,
-        'RSNNS': TMVA.Types.kRSNNS,
-        'RSVM': TMVA.Types.kRSVM,
-        'RXGB': TMVA.Types.kRXGB,
-        'MaxMethod': TMVA.Types.kMaxMethod
+        'FDA': TMVA.Types.kFDA,
+        'MLP': TMVA.Types.kMLP,
+        'SVM': TMVA.Types.kSVM,
+        'BDT': TMVA.Types.kBDT
         }
 
     def add_method(self, method, name, opts):
         if not name:
             name = method
 
-        self.trainer.BookMethod(self.loader, self.methods[method], name, opts)
+        self.trainer.BookMethod(self.methods[method], name, opts)
 
     def train(self):
         attrs = {attr: getattr(self, attr) for attr in dir(self)
@@ -152,7 +128,7 @@ if __name__ == '__main__':
     parser.add_argument('--output', dest='output', metavar='FILE', help='The name of the output file, which will be overwritten by training', default='TMVA.root')
     parser.add_argument('--methodname', dest='method_name', metavar='NAME', help='What to name the method the BDT output', default='')
     parser.add_argument('--trainername', dest='trainer_name', metavar='NAME', help='Name of the trainer', default='TMVA')
-    parser.add_argument('--traineropt', dest='trainer_opts', metavar='OPTS', help='Options for the trainer', default='!V:!Silent:Color:DrawProgressBar:AnalysisType=Regression')
+    parser.add_argument('--traineropt', dest='trainer_opts', metavar='OPTS', help='Options for the trainer', default='!V:!Silent:Color:DrawProgressBar')
     parser.add_argument('--targetname', dest='target_name', metavar='NAME', help='The name of the target', default='target')
 
     args = parser.parse_args()
