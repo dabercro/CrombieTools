@@ -34,7 +34,7 @@ if __name__ == '__main__':
 
         file_name = ''
         canvas = ROOT.TCanvas()
-        plots = branch.split(',')
+        plots = branch.split(';')
         cut = '' if len(plots) == 1 else plots[1].strip()
         opt = ''
         file_name = plots[0].replace('/', '__').replace('(', '__').replace(')', '__').replace(',', '__').replace('|', '__')
