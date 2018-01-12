@@ -305,7 +305,8 @@ void %s::%s {
         write("""
 void %s::%s {
   %s
-}""" % (classname, FILL_SIGNATURE, '\n  '.join(mod_fill + ['t->Fill();'])))
+}
+""" % (classname, FILL_SIGNATURE, '\n  '.join(mod_fill + ['t->Fill();'])))
 
         for func in functions:
             write(func.implement(classname))
