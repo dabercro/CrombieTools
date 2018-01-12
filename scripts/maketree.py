@@ -186,7 +186,7 @@ if __name__ == '__main__':
                 continue
 
             # Get TMVA information to evaluate
-            match = re.match(r'^\[(.*);\s*(.*);\s*(.*)\]$', line)
+            match = re.match(r'^\[(.*);\s*(.*);\s*(.*)\](\s?=\s?(.*))?$', line)
             if match:
                 if '"TMVA/Reader.h"' not in includes:
                     includes.append('"TMVA/Reader.h"')
@@ -195,11 +195,13 @@ if __name__ == '__main__':
                 var = match.group(1)
                 weights = match.group(2)
                 config = match.group(3)
-                branches = create_branches(var, 'F', 0, True)
-                with open(config, 'r') as conf_file:
-                    inputs = [line.strip().split() for line in conf_file]
-                    for reader in [Reader(weights, p, var, inputs) for p, b in branches]:
-                        mod_fill.append('%s = %s->GetMvaValue();' % (reader.output, reader.method))
+                default = match.group(5) or DEFAULT_VAL
+                branches = create_branches(var, 'F', default, True)
+                if os.path.exists(config) and os.path.exists(weights):
+                    with open(config, 'r') as conf_file:
+                        inputs = [line.strip().split() for line in conf_file]
+                        for reader in [Reader(weights, p, var, inputs) for p, b in branches]:
+                            mod_fill.append('%s = %s->GetMvaValue();' % (reader.output, reader.method))
 
                 continue
 

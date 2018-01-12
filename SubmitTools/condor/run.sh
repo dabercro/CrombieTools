@@ -48,6 +48,11 @@ else
 
 fi
 
+if [ -d $CMSSW_BASE/data ]
+then
+    ln -s $CMSSW_BASE/data data
+fi
+
 echo ""
 echo "After CMSSW setup"
 echo ""
