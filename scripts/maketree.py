@@ -38,7 +38,8 @@ class Branch:
 
 class Reader:
     readers = []
-    def __init__(self, weights, prefix, output, inputs):
+    def __init__(self, method, weights, prefix, output, inputs):
+        self.method_type = method
         self.weights = weights
         self.output = '%s_%s' % (prefix, output)
         self.inputs = [(label, inp.replace('<>', prefix)) for label, inp in inputs]
@@ -186,21 +187,23 @@ if __name__ == '__main__':
                 continue
 
             # Get TMVA information to evaluate
-            match = re.match(r'^\[(.*);\s*(.*);\s*(.*)\](\s?=\s?(.*))?$', line)
+            match = re.match(r'^\[(.*);\s(.*);\s*(.*);\s*(.*)\](\s?=\s?(.*))?$', line)
             if match:
                 if '"TMVA/Reader.h"' not in includes:
+                    includes.append('"TMVA/Types.h"')
                     includes.append('"TMVA/Reader.h"')
                     includes.append('"TMVA/IMethod.h"')
 
-                var = match.group(1)
-                weights = match.group(2)
-                config = match.group(3)
-                default = match.group(5) or DEFAULT_VAL
+                method = match.group(1)
+                var = match.group(2)
+                weights = match.group(3)
+                config = match.group(4)
+                default = match.group(6) or DEFAULT_VAL
                 branches = create_branches(var, 'F', default, True)
                 if os.path.exists(config) and os.path.exists(weights):
                     with open(config, 'r') as conf_file:
                         inputs = [line.strip().split() for line in conf_file]
-                        for reader in [Reader(weights, p, var, inputs) for p, b in branches]:
+                        for reader in [Reader(method, weights, p, var, inputs) for p, b in branches]:
                             mod_fill.append('%s = %s->GetMvaValue();' % (reader.output, reader.method))
 
                 continue
@@ -286,7 +289,7 @@ if __name__ == '__main__':
   %s
 %s%s}""" % (classname, classname, '\n  '.join(['t->Branch("{0}", &{0}, "{0}/{1}");'.format(b.name, b.data_type) for b in all_branches if b.is_saved]),
             ''.join(['  %s.AddVariable("%s", &%s);\n' % (reader.name, label, var) for reader in Reader.readers for label, var in reader.inputs]),
-            ''.join(['  %s = %s.BookMVA("%s", "%s");\n' % (reader.method, reader.name, reader.output, reader.weights) for reader in Reader.readers])))
+            ''.join(['  %s = %s.BookMVA(TMVA::Types::k%s, "%s");\n' % (reader.method, reader.name, reader.method_type, reader.weights) for reader in Reader.readers])))
 
         # reset function
         write("""
