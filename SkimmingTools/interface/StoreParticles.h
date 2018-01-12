@@ -41,28 +41,36 @@ class ObjectStore {
     const E branch;
     T* particle;
     S extra;
+    F result;
   };
 
   std::vector<Particle> store;
 
- void check (T& obj, S extra = {}) {
-    T* addr = &obj;
+  void check (T& obj, S extra = {}) {
+    T* particle = &obj;
+    F result = compare(particle);
     // Get the first empty iterator or the end
     auto it = store.begin() + num_filled;
     if (num_filled < total)
       num_filled++;
     // Insertion sort: find location
     for (;it != store.begin(); --it) {
-      if ((compare(addr) < compare((it - 1)->particle)) == (which_order == order::eDesc))
+      if ((result < (it - 1)->result) == (which_order == order::eDesc))
         break;
     }
     // Insertion sort: move elements down
     { // Extra scope so temp_extra doesn't leak
       S temp_extra {};
-      for(T* temp = nullptr; it != store.end() && addr; ++it) {
-        temp = it->particle;
-        it->particle = addr;
-        addr = temp;
+      F temp_result {};
+      T* temp_particle {};
+      for(; it != store.end() && particle; ++it) {
+        temp_particle = it->particle;
+        it->particle = particle;
+        particle = temp_particle;
+
+        temp_result = it->result;
+        it->result = result;
+        result = temp_result;
 
         temp_extra = it->extra;
         it->extra = extra;

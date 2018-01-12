@@ -26,6 +26,30 @@ RESET_SIGNATURE = 'reset()'
 FILL_SIGNATURE = 'fill()'
 
 
+class Parser:
+    def __init__(self, comment='!'):
+        self.defs = {}
+        self.comment = comment
+
+    def parse(self, raw_line):
+        input_line = raw_line.strip()
+
+        # Skip empty lines or comments (!)
+        if not input_line or input_line[0] == self.comment:
+            return []
+
+        for matches in re.finditer(r'<([^\|<>]*)\|([^\|<>]*)\|([^<>]*)>', input_line):
+            input_line = input_line.replace(matches.group(0),
+                                            matches.group(1) +
+                                            ('%s, %s' % (matches.group(3), matches.group(1))).join([suff.strip() for suff in matches.group(2).split(',')]) +
+                                            matches.group(3)
+                                            )
+
+        match = re.match(r'(.*\$.*)\|\s*(.*)', input_line)
+        lines = [match.group(1).replace('$$', var.strip().title()).replace('$', var.strip()) for var in match.group(2).split(',')] if match else [input_line]
+        return lines
+
+
 class Branch:
     branches = {}
     def __init__(self, name, data_type, default_val, is_saved):
@@ -129,101 +153,101 @@ if __name__ == '__main__':
         branches = [(pref, Branch(('%s_%s' % (pref, var)).rstrip('_'), data_type, val, is_saved)) for pref in prefixes] or [('', Branch(var, data_type, val, is_saved))]
         return [(p, b.name) for p, b in branches]
 
+    parser = Parser()
+
     with open(sys.argv[1], 'r') as config_file:
         for raw_line in config_file:
-            line = raw_line.strip()
+            for line in parser.parse(raw_line):
+                line = line.strip()
 
-            # Skip empty lines or comments (!)
-            if not line or line[0] == '!':
-                continue
-
-            if line == '<--':
-                if in_function:
-                    functions.append(in_function)
-                in_function = None
-                prefixes = []
-                continue
-
-            # Check for includes
-            match = re.match(r'^([<"].*[">])$', line)
-            if match:
-                includes.append(match.group(1))
-                continue
-
-            # Check for default values or reset function signature
-            match = re.match(r'{(/(\w))?(-?\d+)?(reset\(.*\))?(fill\(.*\))?}', line)
-            if match:
-                if match.group(2):
-                    DEFAULT_TYPE = match.group(2)
-                elif match.group(3):
-                    DEFAULT_VAL = match.group(3)
-                elif match.group(4):
-                    RESET_SIGNATURE = match.group(4).replace('(', '(const ').replace(', ', ', const ')
-                elif match.group(5):
-                    FILL_SIGNATURE = match.group(5).replace('(', '(const ').replace(', ', ', const ')
-                continue
-
-            # Get "class" enums and/or functions for setting
-            match = re.match(r'(\+?[\w,]*)\s?-->\s?([\w_]*\(.*\))?', line)
-            if match:
-                # Pass off previous function as quickly as possible to prevent prefix changing
-                if in_function:
-                    functions.append(copy.deepcopy(in_function))
+                if line == '<--':
+                    if in_function:
+                        functions.append(in_function)
                     in_function = None
+                    prefixes = []
+                    continue
 
-                # Get the different classes that are being added
-                components = match.group(1).split(',') if match.group(1) else []
-                if components:
-                    if match.group(1).startswith('+'):
-                        components[0] = components[0].lstrip('+')
-                        prefixes += components
-                    else:
-                        prefixes = ['%s%s' % (pref, comp) for pref in prefixes for comp in components] or components
+                # Check for includes
+                match = re.match(r'^([<"].*[">])$', line)
+                if match:
+                    includes.append(match.group(1))
+                    continue
 
-                function_sig = match.group(2)
-                if function_sig:
-                    in_function = Function(function_sig, prefixes)
-                continue
+                # Check for default values or reset function signature
+                match = re.match(r'{(/(\w))?(-?\d+)?(reset\(.*\))?(fill\(.*\))?}', line)
+                if match:
+                    if match.group(2):
+                        DEFAULT_TYPE = match.group(2)
+                    elif match.group(3):
+                        DEFAULT_VAL = match.group(3)
+                    elif match.group(4):
+                        RESET_SIGNATURE = match.group(4).replace('(', '(const ').replace(', ', ', const ')
+                    elif match.group(5):
+                        FILL_SIGNATURE = match.group(5).replace('(', '(const ').replace(', ', ', const ')
+                    continue
 
-            # Get TMVA information to evaluate
-            match = re.match(r'^\[(.*);\s*(.*);\s*(.*)\](\s?=\s?(.*))?$', line)
-            if match:
-                if '"TMVA/Reader.h"' not in includes:
-                    includes.append('"TMVA/Reader.h"')
-                    includes.append('"TMVA/IMethod.h"')
+                # Get "class" enums and/or functions for setting
+                match = re.match(r'(\+?[\w,]*)\s?-->\s?([\w_]*\(.*\))?', line)
+                if match:
+                    # Pass off previous function as quickly as possible to prevent prefix changing
+                    if in_function:
+                        functions.append(copy.deepcopy(in_function))
+                        in_function = None
 
-                var = match.group(1)
-                weights = match.group(2)
-                config = match.group(3)
-                default = match.group(5) or DEFAULT_VAL
-                branches = create_branches(var, 'F', default, True)
-                if os.path.exists(config) and os.path.exists(weights):
-                    with open(config, 'r') as conf_file:
-                        inputs = [line.strip().split() for line in conf_file]
-                        for reader in [Reader(weights, p, var, inputs) for p, b in branches]:
-                            mod_fill.append('%s = %s->GetMvaValue();' % (reader.output, reader.method))
+                    # Get the different classes that are being added
+                    components = match.group(1).split(',') if match.group(1) else []
+                    if components:
+                        if match.group(1).startswith('+'):
+                            components[0] = components[0].lstrip('+')
+                            prefixes += components
+                        else:
+                            prefixes = ['%s%s' % (pref, comp) for pref in prefixes for comp in components] or components
 
-                continue
+                    function_sig = match.group(2)
+                    if function_sig:
+                        in_function = Function(function_sig, prefixes)
+                    continue
 
-            # Add branch names individually
-            match = re.match(r'(\#\s*)?(\w*)(/(\w))?(\s?=\s?([\w\.\(\)]+))?(\s?->\s?(.*?))?(\s?<-\s?(.*?))?$', line)
-            if match:
-                var = match.group(2)
-                data_type = match.group(4) or DEFAULT_TYPE
-                val = match.group(6) or DEFAULT_VAL
-                is_saved = not bool(match.group(1))
-                create_branches(var, data_type, val, is_saved)
+                # Get TMVA information to evaluate
+                match = re.match(r'^\[(.*);\s*(.*);\s*(.*)\](\s?=\s?(.*))?$', line)
+                if match:
+                    if '"TMVA/Reader.h"' not in includes:
+                        includes.append('"TMVA/Reader.h"')
+                        includes.append('"TMVA/IMethod.h"')
 
-                if in_function is not None and match.group(7):
-                    in_function.add_var(var, match.group(8), data_type)
+                    var = match.group(1)
+                    weights = match.group(2)
+                    config = match.group(3)
+                    default = match.group(5) or DEFAULT_VAL
+                    branches = create_branches(var, 'F', default, True)
+                    if os.path.exists(config) and os.path.exists(weights):
+                        with open(config, 'r') as conf_file:
+                            inputs = [line.strip().split() for line in conf_file]
+                            for reader in [Reader(weights, p, var, inputs) for p, b in branches]:
+                                mod_fill.append('%s = %s->GetMvaValue();' % (reader.output, reader.method))
 
-                if match.group(9):
-                    # create_branches returns a list of prefixes and the new branch names
-                    branches = create_branches(var, data_type, val, is_saved)
-                    for p, b in branches:
-                        mod_fill.append('%s = %s;' % (b, match.group(10).replace('<>', p)))
+                    continue
 
-                continue
+                # Add branch names individually
+                match = re.match(r'(\#\s*)?(\w*)(/(\w))?(\s?=\s?([\w\.\(\)]+))?(\s?->\s?(.*?))?(\s?<-\s?(.*?))?$', line)
+                if match:
+                    var = match.group(2)
+                    data_type = match.group(4) or DEFAULT_TYPE
+                    val = match.group(6) or DEFAULT_VAL
+                    is_saved = not bool(match.group(1))
+                    create_branches(var, data_type, val, is_saved)
+
+                    if in_function is not None and match.group(7):
+                        in_function.add_var(var, match.group(8), data_type)
+
+                    if match.group(9):
+                        # create_branches returns a list of prefixes and the new branch names
+                        branches = create_branches(var, data_type, val, is_saved)
+                        for p, b in branches:
+                            mod_fill.append('%s = %s;' % (b, match.group(10).replace('<>', p)))
+                    continue
+
+    ## Finished parsing the configuration file
 
     # Let's put the branches in some sort of order
     all_branches = [Branch.branches[key] for key in sorted(Branch.branches)]
