@@ -5,6 +5,7 @@ import sys
 import re
 import copy
 
+from xml.etree import ElementTree
 
 TYPES = {
     'B': 'Char_t',
@@ -24,6 +25,22 @@ DEFAULT_TYPE = 'F'
 DEFAULT_VAL = '0'
 RESET_SIGNATURE = 'reset()'
 FILL_SIGNATURE = 'fill()'
+
+
+class MyXMLParser:
+    def __init__(self, tag, member):
+        self.tag = tag
+        self.member = member
+        self.output = []
+    def start(self, tag, attr):
+        if tag == self.tag:
+            self.output.append(attr[self.member])
+    def end(self, _):
+        pass
+    def data(self, _):
+        pass
+    def close(self):
+        return self.output
 
 
 class Parser:
@@ -217,14 +234,14 @@ if __name__ == '__main__':
 
                     var = match.group(1)
                     weights = match.group(2)
-                    config = match.group(3)
+                    trained_with = match.group(3)
                     default = match.group(5) or DEFAULT_VAL
                     branches = create_branches(var, 'F', default, True)
-                    if os.path.exists(config) and os.path.exists(weights):
-                        with open(config, 'r') as conf_file:
-                            inputs = [line.strip().split() for line in conf_file]
-                            for reader in [Reader(weights, p, var, inputs) for p, b in branches]:
-                                mod_fill.append('%s = %s->GetMvaValue();' % (reader.output, reader.method))
+                    if os.path.exists(weights):
+                        xml_vars = ElementTree.parse(weights, ElementTree.XMLParser(target=MyXMLParser('Variable', 'Expression'))).getroot()
+                        inputs = [(v, v.replace(trained_with, '<>')) for v in xml_vars]
+                        for reader in [Reader(weights, p, var, inputs) for p, b in branches]:
+                            mod_fill.append('%s = %s->GetMvaValue();' % (reader.output, reader.method))
 
                     continue
 
@@ -290,7 +307,7 @@ if __name__ == '__main__':
   TTree* t;  
 
   template <typename T>
-  void set(std::string name, T val) { *(T*)(t->GetBranch(name.data())->GetAddress()) = val; }
+  void set(std::string name, T val) { *((T*)addresses.at(name)) = val; }
 
   const std::unordered_map<std::string, void*> addresses {
     %s
@@ -319,13 +336,6 @@ void %s::%s {
 }""" % (classname, RESET_SIGNATURE, '\n  '.join(['{0} = {1};'.format(b.name, b.default_val) for b in all_branches])))
 
         # fill function
-        for index, value in enumerate(mod_fill):
-            for replace in re.findall(r'<>[_\w]*', value):
-                suff = replace.lstrip('<>')
-                value = value.replace(replace, '(*(%s*)(addresses.at(base_name + "%s")))' % (TYPES[Branch.branches[self.prefixes[0] + suff].data_type], suff))
-
-            mod_fill[index] = value
-
         write("""
 void %s::%s {
   %s

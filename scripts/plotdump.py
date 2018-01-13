@@ -28,7 +28,9 @@ if __name__ == '__main__':
     print 'Making plots in', output_dir
     ROOT.gErrorIgnoreLevel = ROOT.kWarning
 
-    for branch in [br.GetName() for br in input_tree.GetListOfBranches()] + sys.argv[3:-1]:
+    branches = [] if os.environ.get('quick') else [br.GetName() for br in input_tree.GetListOfBranches()]
+
+    for branch in branches + sys.argv[3:-1]:
         if 'packedPuppi' in branch:
             continue
 
@@ -37,7 +39,7 @@ if __name__ == '__main__':
         plots = branch.split(';')
         cut = '' if len(plots) == 1 else plots[1].strip()
         opt = ''
-        file_name = plots[0].replace('/', '__').replace('(', '__').replace(')', '__').replace(',', '__').replace('|', '__')
+        file_name = plots[0].replace('/', '__').replace('(', '__').replace(')', '__').replace(',', '__').replace('|', '__').replace(' ', '__')
         for index, plot in enumerate(plots[0].split('|')):
             input_tree.SetLineColor(index + 1)
             input_tree.Draw(plot.strip(), cut, opt)
