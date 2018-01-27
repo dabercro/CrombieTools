@@ -69,7 +69,8 @@ class Parser:
 
 class Branch:
     branches = {}
-    def __init__(self, name, data_type, default_val, is_saved):
+    def __init__(self, pref, name, data_type, default_val, is_saved):
+        self.prefix = pref
         self.name = name
         self.data_type = data_type
         self.default_val = default_val
@@ -167,8 +168,8 @@ if __name__ == '__main__':
     in_function = None
 
     def create_branches(var, data_type, val, is_saved):
-        branches = [(pref, Branch(('%s_%s' % (pref, var)).rstrip('_'), data_type, val, is_saved)) for pref in prefixes] or [('', Branch(var, data_type, val, is_saved))]
-        return [(p, b.name) for p, b in branches]
+        branches = [Branch(pref, ('%s_%s' % (pref, var)).rstrip('_'), data_type, val, is_saved) for pref in prefixes] or [Branch('', var, data_type, val, is_saved)]
+        return branches
 
     parser = Parser()
 
@@ -238,9 +239,9 @@ if __name__ == '__main__':
                     default = match.group(5) or DEFAULT_VAL
                     branches = create_branches(var, 'F', default, True)
                     if os.path.exists(weights):
-                        xml_vars = ElementTree.parse(weights, ElementTree.XMLParser(target=MyXMLParser('Variable', 'Expression'))).getroot()
+                        xml_vars = ElementTree.parse(weights, ElementTree.XMLParser(target=MyXMLParser('Variable', 'Label'))).getroot()
                         inputs = [(v, v.replace(trained_with, '<>')) for v in xml_vars]
-                        for reader in [Reader(weights, p, var, inputs) for p, b in branches]:
+                        for reader in [Reader(weights, b.prefix, var, inputs) for b in branches]:
                             mod_fill.append('%s = %s->GetMvaValue();' % (reader.output, reader.method))
 
                     continue
@@ -260,8 +261,8 @@ if __name__ == '__main__':
                     if match.group(9):
                         # create_branches returns a list of prefixes and the new branch names
                         branches = create_branches(var, data_type, val, is_saved)
-                        for p, b in branches:
-                            mod_fill.append('%s = %s;' % (b, match.group(10).replace('<>', p)))
+                        for b in branches:
+                            mod_fill.append('%s = %s;' % (b, match.group(10).replace('<>', b.prefix)))
                     continue
 
     ## Finished parsing the configuration file

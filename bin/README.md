@@ -155,7 +155,7 @@ optional arguments:
     </td>
     <td align="left">
       This automatically generates a tree from a configuration file.
-      There is more information on these configuration files [here](@ref flattrees).
+      There is more information on these configuration files [here](@ref maketree).
     </td>
   </tr>
   <tr>
@@ -216,15 +216,6 @@ optional arguments:
         </tr>
         <tr>
           <td align="left" valign="top">
-            <code>tags</code>
-          </td>
-          <td align="left">
-            Prints the `-I` and `-L` tags for compiling with g++ using CrombieTools.
-            `crombie tags` can then be placed directly in your Makefile.
-          </td>
-        </tr>
-        <tr>
-          <td align="left" valign="top">
             <code>test</code>
           </td>
           <td align="left">
@@ -233,6 +224,15 @@ optional arguments:
           </td>
         </tr>
       </table>
+    </td>
+  </tr>
+  <tr>
+    <td align="left" valign="top">
+      <code>tags</code>
+    </td>
+    <td align="left">
+      Prints the `-I` and `-L` tags for compiling with g++ using CrombieTools.
+      `crombie tags` can then be placed directly in your Makefile.
     </td>
   </tr>
   <tr>
