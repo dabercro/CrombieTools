@@ -28,9 +28,9 @@ The following sections describe the format of your configuration file and how th
 
 # Comments
 
-Lines beginning with the character `!` are comments and are ignored by the parser.
+Comments start with `!` and can be started anywhere in the line.
 (My only programming course was in FORTRAN, and I wanted to feel young again.)
-Blank lines are also ignored.
+Lines starting with comments or blank lines are completely ignored.
 
 # Includes
 
@@ -58,7 +58,42 @@ To change the fill declaration, just put `fill` in a line like the previous inst
 
 # Defining Branches {#branchdef}
 
+Like the [old flat tree generator](@ref flattrees) in CrombieTools, branches can be defined with a type and a default value like
 
+    branch_name/F = 1
+
+The branch is set to the expression after the `=` during the `reset()` function call.
+This can allow values to be read directly from another tree.
+For example, if we use the `reset()` redefiniton example in the [previous section](@ref funcsig),
+we can always directly set the run, lumi, and event numbers with the following config.
+
+    ! Define the new reset signature
+    {reset(panda::Event& event)}
+
+    run_number/I = event.runNumber
+    lumi_number/I = event.lumiNumber
+    event_number/l = event.eventNumber
+
+    ! We can even do MET
+    met/F = event.pfMet.pt
+
+With these lines, these branches are entirely taken care of inside of `reset()`.
+This is just one of many mechanisms we will cover to help you define how a branch is filled
+in the same line that you declare the existence of the branch.
+
+In addition, a branch can be filled at the end of the event by the `fill()` call, by placing the expression after `<-`.
+
+    ! Include deltaPhi function
+    "PlotTools/interface/KinematicFunctions.h"
+    dphi_mets/F <- deltaPhi(metphi, trkmetphi)
+
+    ! Maybe we want to do something fancy at the end
+    ! Make sure you redefine a signature at most once though
+    {fill(panda::Jet& jet1, panda::Jet& jet2)}
+    dijet_m/F <- (jet1.p4() + jet2.p4()).M()
+
+Branches can also be set by other functions, by using a `->` operator.
+That will be covered in detail in (@ref setdef).
 
 ## Setting Default Values
 
@@ -77,11 +112,38 @@ Default `reset()` values are set the following way.
 
     {-5}
 
+Default `reset()` values can only be integers.
+Note that the expressions following `=` can be much more creative,
+but I see little reason to support that for defaults.
+If you are happy with using all of the defaults for a branch, you can simply declare the branch name,
+and the class writer will take care of all the rest.
+The following line is perfectly valid in the configuration file.
+
+    branch_name
+
+These lines expand like the following
+
+    ! At the start of the config, defaults are /F and = 0
+    branch_float  ! Equivalent to "branch_float/F = 0"
+
+    {/I}
+    branch_zero   ! Equivalent to "branch_zero/I = 0"
+    {-5}
+    branch_neg    ! Equivalent to "branch_zero/I = -5"
+
 # Branch Prefixes {#prefixdef}
 
 
 
+## Prefix Hierarchy
+
+
+
 # Set Functions {#setdef}
+
+
+
+## Converting Prefix Classes
 
 
 

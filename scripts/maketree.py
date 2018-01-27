@@ -49,10 +49,10 @@ class Parser:
         self.comment = comment
 
     def parse(self, raw_line):
-        input_line = raw_line.strip()
+        input_line = raw_line.split(self.comment)[0].strip()
 
         # Skip empty lines or comments (!)
-        if not input_line or input_line[0] == self.comment:
+        if not input_line:
             return []
 
         for matches in re.finditer(r'<([^\|<>]*)\|([^\|<>]*)\|([^<>]*)>', input_line):
