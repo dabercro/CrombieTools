@@ -13,7 +13,7 @@ The `flattree.h` file will define a class `flattree` with the following construc
 
 Public members of the `flattree` class include all of the
 [branches](@ref branchdef) by name, [prefix enums](@ref prefixdef),
-[set functions](@ref setdef), and [`reset()`, `fill()`](@ref funcsig), and `write()`.
+[set functions](@ref setdef), and [reset(), fill()](@ref funcsig), and `write()`.
 
 I want to make a quick comment about `write()` since all other features of `flattree` are documented in more detail below.
 The declaration of `write()` is the following.

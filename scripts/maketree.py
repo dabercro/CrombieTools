@@ -227,19 +227,20 @@ if __name__ == '__main__':
                     continue
 
                 # Get TMVA information to evaluate
-                match = re.match(r'^\[(.*);\s*(.*);\s*(.*)\](\s?=\s?(.*))?$', line)
+                match = re.match(r'^(\#\s*)?\[(.*);\s*(.*);\s*(.*)\](\s?=\s?(.*))?$', line)
                 if match:
                     if '"TMVA/Reader.h"' not in includes:
                         includes.append('"TMVA/Reader.h"')
                         includes.append('"TMVA/IMethod.h"')
 
-                    var = match.group(1)
-                    weights = match.group(2)
-                    trained_with = match.group(3)
-                    default = match.group(5) or DEFAULT_VAL
-                    branches = create_branches(var, 'F', default, True)
-                    if os.path.exists(weights):
-                        xml_vars = ElementTree.parse(weights, ElementTree.XMLParser(target=MyXMLParser('Variable', 'Label'))).getroot()
+                    is_saved = not bool(match.group(1))
+                    var = match.group(2)
+                    weights = match.group(3)
+                    trained_with = match.group(4)
+                    default = match.group(6) or DEFAULT_VAL
+                    branches = create_branches(var, 'F', default, is_saved)
+                    if os.path.exists(weights) and is_saved:
+                        xml_vars = ElementTree.parse(weights, ElementTree.XMLParser(target=MyXMLParser('Variable', 'Expression'))).getroot()
                         inputs = [(v, v.replace(trained_with, '<>')) for v in xml_vars]
                         for reader in [Reader(weights, b.prefix, var, inputs) for b in branches]:
                             mod_fill.append('%s = %s->GetMvaValue();' % (reader.output, reader.method))
@@ -262,7 +263,7 @@ if __name__ == '__main__':
                         # create_branches returns a list of prefixes and the new branch names
                         branches = create_branches(var, data_type, val, is_saved)
                         for b in branches:
-                            mod_fill.append('%s = %s;' % (b, match.group(10).replace('<>', b.prefix)))
+                            mod_fill.append('%s = %s;' % (b.name, match.group(10).replace('<>', b.prefix)))
                     continue
 
     ## Finished parsing the configuration file
