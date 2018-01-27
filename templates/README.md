@@ -225,6 +225,8 @@ These are the environment variables used in the slimming and skimming of an anal
 
 # Generating flat trees for output {#flattrees}
 
+This is now deprecated, see [here](@ref maketree) for documentation of new tool.
+
 There is a tool for generating flat tree classes for the user.
 The variables that you want to include in a flat tree can be specified in `OutTree.txt` or whatever you rename it to.
 The format of the configuration file is `<branchName>/<type>=<default>`.
@@ -247,7 +249,7 @@ This feature is not tested extensively since I don't use it.
 You can also preface a type with `V` for (pointers of) vectors of these types.
 After writing a tree configuration file with name `OutTree.txt`, just run
 
-    crombie maketree OutTree
+    crombie oldmaketree OutTree
 
 This makes a class that contains your tree.
 This is done automatically for you in the default `runSlimmer.py` template.
