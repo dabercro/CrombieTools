@@ -33,7 +33,7 @@ if (isset($_GET['id'])) {
 
   $old_stat = 'submitted';
   $new_stat = 'running';
-  $stmt = $conn->prepare('UPDATE queue SET status=? WHERE id=? AND status=?');
+  $stmt = $conn->prepare('UPDATE queue SET status=?, last_checked=NOW() WHERE id=? AND status=?');
   $stmt->bind_param('sss', $new_stat, $id, $old_stat);
   $stmt->execute();
   $stmt->close();
@@ -84,6 +84,9 @@ else {
     $stmt->execute();
     $stmt->bind_result($output, $first, $second);
     while ($stmt->fetch()) {
+      if ($first == 'finished') {
+        $first = '<font color="#00ff00">finished</font>';
+      }
       echo $link . $output . '">' . $output . '</a>' . $first_head . $first . $second_head . $second . ' <br>';
     }
     $stmt->close();
