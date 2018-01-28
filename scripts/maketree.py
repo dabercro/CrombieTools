@@ -106,8 +106,8 @@ class Function:
         self.prefixes = prefixes
         self.variables = []
 
-    def add_var(self, variable, value, data_type):
-        self.variables.append((('_%s' % variable).rstrip('_'), value, TYPES[data_type]))
+    def add_var(self, variable, value):
+        self.variables.append((('_%s' % variable).rstrip('_'), value))
 
     def declare(self, functions):
         output = '{0}void %s;' % (self.signature)
@@ -137,31 +137,29 @@ class Function:
 
 
     def implement(self, classname):
-        for index in range(len(self.variables)):
-            var, value, t = self.variables[index]
-            for replace in re.findall(r'<>[_\w]*', value):
-                suff = replace.lstrip('<>')
-                value = value.replace(replace, '(*(%s*)(addresses.at(base_name + "%s")))' % (TYPES[Branch.branches[self.prefixes[0] + suff].data_type], suff))
-
-            self.variables[index] = (var, value, t)
-
         incr = ['++', '--']
         return """void %s::%s {
-  auto& base_name = %s_names[static_cast<unsigned>(base)];
-  %s
+  switch(base) {
+%s
+    break;
+  default:
+    throw;
+  }
 }
-""" % (classname, self.signature, self.enum_name,
-       '\n  '.join(['{2}*({1}*)(t->GetBranch((base_name + "{0}").data())->GetAddress());'. format(var, t, val)
-                    for var, val, t in self.variables if val in incr] +
-                   ['set(base_name + "{0}", static_cast<{1}>({2}));'.format(var, t, val)
-                    for var, val, t in self.variables if val not in incr]
-       ))
+""" % (classname, self.signature,
+       '\n    break;\n'.join(
+           ['\n'.join(['  case %s::%s::%s:' % (classname, self.enum_name, pref)] +
+                      ['    %s%s%s;' % (val, pref, var)
+                       for var, val in self.variables if val in incr] +
+                      ['    %s%s = %s;' % (pref, var, val.replace('<>', pref))
+                       for var, val in self.variables if val not in incr])
+            for pref in self.prefixes]))
 
 
 if __name__ == '__main__':
     classname = os.path.basename(sys.argv[1]).split('.')[0]
 
-    includes = ['<string>', '<vector>', '<unordered_map>', '"TObject.h"', '"TFile.h"', '"TTree.h"']
+    includes = ['<string>', '<vector>', '"TObject.h"', '"TFile.h"', '"TTree.h"']
     prefixes = []
     functions = []
     mod_fill = []
@@ -257,7 +255,7 @@ if __name__ == '__main__':
                     create_branches(var, data_type, val, is_saved)
 
                     if in_function is not None and match.group(7):
-                        in_function.add_var(var, match.group(8), data_type)
+                        in_function.add_var(var, match.group(8))
 
                     if match.group(9):
                         # create_branches returns a list of prefixes and the new branch names
@@ -308,16 +306,9 @@ if __name__ == '__main__':
   TFile* f;
   TTree* t;  
 
-  template <typename T>
-  void set(std::string name, T val) { *((T*)addresses.at(name)) = val; }
-
-  const std::unordered_map<std::string, void*> addresses {
-    %s
-  };
 %s%s
 };
 """ % (RESET_SIGNATURE, FILL_SIGNATURE, '\n  '.join([f.declare(functions) for f in functions]),
-       ',\n    '.join(['{"%s", &%s}' % (key, key) for key in sorted(Branch.branches)]),
        ''.join(['\n  Float_t %s;' % address for reader in Reader.readers for address in reader.floats]),
        ''.join(['\n  TMVA::Reader %s {"Silent"};\n  TMVA::IMethod* %s {};' % (reader.name, reader.method) for reader in Reader.readers])))
 

@@ -37,7 +37,7 @@ Lines starting with comments and blank lines are completely ignored.
 A single line of a header file name enclosed in `<>` or `""` will be added into the header file as an include.
 These lines can be placed anywhere in the config file,
 but they will be placed at the top of the header file in the order they appear in the config.
-`<string>`, `<vector>`, `<unordered_map>`, `"TObject.h"`, `"TFile.h"`, and `"TTree.h"` are always included
+`<string>`, `<vector>`, `"TObject.h"`, `"TFile.h"`, and `"TTree.h"` are always included
 since they are used in the class implementation, so there is no need to include any of these again.
 
 # Changing reset() and fill() Declarations {#funcsig}
