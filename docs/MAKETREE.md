@@ -30,7 +30,7 @@ The following sections describe the format of your configuration file and how th
 
 Comments start with `!` and can be started anywhere in the line.
 (My only programming course was in FORTRAN, and I wanted to feel young again.)
-Lines starting with comments or blank lines are completely ignored.
+Lines starting with comments and blank lines are completely ignored.
 
 # Includes
 
@@ -52,7 +52,7 @@ To change the signature of `reset()`, we would place a line like the following i
     {reset(panda::Event& event)}
 
 The class implementation prepends all of the argument types with `const` automatically,
-so there is not need (in fact, is a bug) for you to specify that yourself.
+so there is no need (in fact, it is a bug) for you to specify that yourself.
 
 To change the fill declaration, just put `fill` in a line like the previous instead of `reset`.
 
@@ -81,7 +81,8 @@ With these lines, these branches are entirely taken care of inside of `reset()`.
 This is just one of many mechanisms we will cover to help you define how a branch is filled
 in the same line that you declare the existence of the branch.
 
-In addition, a branch can be filled at the end of the event by the `fill()` call, by placing the expression after `<-`.
+Another one of these mechanisms is that a branch can be filled at the end of the event by the `fill()` call.
+This is done by placing the desired expression after `<-`.
 
     ! Include deltaPhi function
     "PlotTools/interface/KinematicFunctions.h"
@@ -94,6 +95,12 @@ In addition, a branch can be filled at the end of the event by the `fill()` call
 
 Branches can also be set by other functions, by using a `->` operator.
 That will be covered in detail in (@ref setdef).
+
+I would like to make One final about the branches.
+No matter what order the branches are declared or what [prefixes](@ref prefixdef) are defined,
+the branches are all booked in alphabetical order.
+This may be slightly jarring if you are expecting `run_number` at the top of your TTree when opening your `.root` file.
+However, this is typically much better than leaving ordering to the frantic analyzer.
 
 ## Setting Default Values
 
@@ -115,6 +122,7 @@ Default `reset()` values are set the following way.
 Default `reset()` values can only be integers.
 Note that the expressions following `=` can be much more creative,
 but I see little reason to support that for defaults.
+
 If you are happy with using all of the defaults for a branch, you can simply declare the branch name,
 and the class writer will take care of all the rest.
 The following line is perfectly valid in the configuration file.

@@ -227,7 +227,7 @@ if __name__ == '__main__':
                     continue
 
                 # Get TMVA information to evaluate
-                match = re.match(r'^(\#\s*)?\[(.*);\s*(.*);\s*(.*)\](\s?=\s?(.*))?$', line)
+                match = re.match(r'^(\#\s*)?\[([^;]*);\s*([^;]*)(;\s*(.*))?\](\s?=\s?(.*))?$', line)
                 if match:
                     if '"TMVA/Reader.h"' not in includes:
                         includes.append('"TMVA/Reader.h"')
@@ -236,12 +236,12 @@ if __name__ == '__main__':
                     is_saved = not bool(match.group(1))
                     var = match.group(2)
                     weights = match.group(3)
-                    trained_with = match.group(4)
-                    default = match.group(6) or DEFAULT_VAL
+                    trained_with = match.group(5)
+                    default = match.group(7) or DEFAULT_VAL
                     branches = create_branches(var, 'F', default, is_saved)
                     if os.path.exists(weights) and is_saved:
                         xml_vars = ElementTree.parse(weights, ElementTree.XMLParser(target=MyXMLParser('Variable', 'Expression'))).getroot()
-                        inputs = [(v, v.replace(trained_with, '<>')) for v in xml_vars]
+                        inputs = [(v, v.replace(trained_with or Branch.branches[v].prefix, '<>')) for v in xml_vars]
                         for reader in [Reader(weights, b.prefix, var, inputs) for b in branches]:
                             mod_fill.append('%s = %s->GetMvaValue();' % (reader.output, reader.method))
 
