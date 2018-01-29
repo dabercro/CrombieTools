@@ -99,8 +99,8 @@ class Reader:
     readers = []
     def __init__(self, weights, prefix, output, inputs):
         self.weights = weights
-        self.output = '%s_%s' % (prefix, output)
-        self.inputs = [(label, inp.replace('[]', prefix)) for label, inp in inputs]
+        self.output = ('%s_%s' % (prefix, output)).strip('_')
+        self.inputs = [(label, inp.replace('[]', prefix) if prefix else label) for label, inp in inputs]
         self.name = 'reader_%s' % self.output
         self.method = 'method_%s' % self.output
         self.floats = []
@@ -141,17 +141,10 @@ class Function:
                 return output.format('')
 
         return output.format("""
-  enum class %s : unsigned {
+  enum class %s {
     %s
   };
- private:
-  const std::vector<std::string> %s_names = {
-    %s
-  };
- public:
-  """ % (self.enum_name, ',\n    '.join(['%s = %s' % (pref, index) for index, pref in enumerate(self.prefixes)]),
-         self.enum_name, ',\n    '.join(['"%s"' % pref for pref in self.prefixes])))
-
+  """ % (self.enum_name, ',\n    '.join(self.prefixes)))
 
     def implement(self, classname):
         incr = ['++', '--']
@@ -257,7 +250,7 @@ if __name__ == '__main__':
                         xml_vars = ElementTree.parse(weights, ElementTree.XMLParser(target=MyXMLParser('Variable', 'Expression'))).getroot()
                         inputs = [(v, v.replace(trained_with or Branch.branches[v].prefix, '[]')) for v in xml_vars]
                         for reader in [Reader(weights, b.prefix, var, inputs) for b in branches]:
-                            mod_fill.insert(0, '%s = %s->GetMvaValue();' % (reader.output, reader.method))
+                            mod_fill.append('%s = %s->GetMvaValue();' % (reader.output, reader.method))
 
                     continue
 
@@ -355,14 +348,14 @@ void %s::%s {
 
         # Template enum conversion
         def write_convert(first, second):
-            write(("""
-{0}::{1} to_{1}({0}::{2} e_cls) {begin}
+            write(("""{0}::{1} to_{1}({0}::{2} e_cls) {begin}
   switch (e_cls) {begin}
   case %s
   default:
     throw;
   {end}
-{end}""" % '\n  case '.join(['{0}::{2}::%s:\n    return {0}::{1}::%s;' %
+{end}
+""" % '\n  case '.join(['{0}::{2}::%s:\n    return {0}::{1}::%s;' %
                        (pref, pref) for pref in second.prefixes if pref in first.prefixes])).format(
                            classname, first.enum_name, second.enum_name, first.prefixes[0], begin='{', end='}'))
             
@@ -376,6 +369,6 @@ void %s::%s {
 
             prev_func = func
 
-        write('\n#endif')
+        write('#endif')
 
     print 'Created %s class with %i branches' % (classname, len(all_branches))

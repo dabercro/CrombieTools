@@ -26,13 +26,13 @@ That important writing step is handled by the `flattree` destructor right before
 
 The following sections describe the format of your configuration file and how they will affect the `flattree` format.
 
-# Comments
+# Comments {#comments}
 
 Comments start with `!` and can be started anywhere in the line.
 (My only programming course was in FORTRAN, and I wanted to feel young again.)
 Lines starting with comments and blank lines are completely ignored.
 
-# Includes
+# Includes {#includes}
 
 A single line of a header file name enclosed in `<>` or `""` will be added into the header file as an include.
 These lines can be placed anywhere in the config file,
@@ -139,13 +139,81 @@ These lines expand like the following
     {-5}
     branch_neg    ! Equivalent to "branch_neg/I = -5"
 
+Note, these default settings are not affected by scopes at all, which are described in the [next section](@ref prefixdef).
+
 # Branch Prefixes {#prefixdef}
 
+I like my trees really flat (with no vectors or arrays).
+This can lead to tedious and repetitive typing and bugs.
+To avoid this, the configuration file allows for users to make a number of prefixes,
+which will all have identical branches, and identical methods of [setting](@ref setdef) values.
+Here, we will just talk about the identical creation of branches.
+A simple example is given by the following.
 
+    jet1, jet2 {
+      pt/F = -5
+    }
+
+The prefixes are `jet1`, and `jet2`.
+Each declaration of prefixes starts a prefix scope.
+Branches declared inside of a prefix scope are expanded into a format `prefix_branchname`.
+In other words, the previous example will give you the same branches as the following.
+
+    jet1_pt/F = -5
+    jet2_pt/F = -5
+
+Scopes can be nested. Each prefix is prepended to each new prefix, just like the branch names.
+However, the `_` character is not inserted into the final branch name.
+
+    {/F}
+    {-5}
+
+    jet, bjet {
+      1, 2 {
+        pt
+        m
+      }
+    }
+
+This is equivalent to the following.
+
+     jet1_pt/F = -5
+     bjet1_pt/F = -5
+     jet2_pt/F = -5
+     bjet2_pt/F = -5
+     jet1_m/F = -5
+     bjet1_m/F = -5
+     jet2_m/F = -5
+     bjet2_m/F = -5
 
 ## Prefix Hierarchy
 
+In the very last example, I started mixing jets and b-jets.
+Of course, we normally have more variables that we are interested in for b-jets.
+There is a mechanism to have one set of prefixes contain all of the branches of a different set, and not vice versa.
+This is a weak sort of inheritance.
+It can be invoked by placing a `+` in front of a new prefix declaration while inside of some other prefix scope.
 
+    {/F}
+    {-5}
+
+    bjet1, bjet2 {
+      csv
+      +jet1, jet2 {
+        pt
+      }
+    }
+
+This is equivalent to the following.
+
+    bjet1_csv/F = -5
+    bjet2_csv/F = -5
+    bjet1_pt/F = -5
+    bjet2_pt/F = -5
+    jet1_pt/F = -5
+    jet2_pt/F = -5
+
+Note that jet and b-jets have `pt`, but only b-jets have `csv` members.
 
 # Set Functions {#setdef}
 
@@ -155,7 +223,7 @@ These lines expand like the following
 
 
 
-# Expansion
+# Expansion {#expand}
 
 
 
@@ -184,4 +252,4 @@ prefixes and stuff will also be added into the final tree.
 
 Again, this should be used to reduce the amount of repetitive typing and related bugs creeping in.
 
-# TMVA Weights
+# TMVA Weights {#tmvabranch}
