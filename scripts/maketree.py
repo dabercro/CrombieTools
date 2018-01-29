@@ -257,7 +257,7 @@ if __name__ == '__main__':
                         xml_vars = ElementTree.parse(weights, ElementTree.XMLParser(target=MyXMLParser('Variable', 'Expression'))).getroot()
                         inputs = [(v, v.replace(trained_with or Branch.branches[v].prefix, '[]')) for v in xml_vars]
                         for reader in [Reader(weights, b.prefix, var, inputs) for b in branches]:
-                            mod_fill.append('%s = %s->GetMvaValue();' % (reader.output, reader.method))
+                            mod_fill.insert(0, '%s = %s->GetMvaValue();' % (reader.output, reader.method))
 
                     continue
 
