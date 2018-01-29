@@ -22,6 +22,8 @@ if __name__ == '__main__':
     input_tree = input_file.events
 
     output_dir = sys.argv[2]
+    if not output_dir.startswith('/'):
+        output_dir = os.path.join(os.environ['HOME'], 'public_html', 'plots', output_dir)
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
 
