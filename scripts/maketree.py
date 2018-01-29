@@ -377,3 +377,5 @@ void %s::%s {
             prev_func = func
 
         write('\n#endif')
+
+    print 'Created %s class with %i branches' % (classname, len(all_branches))
