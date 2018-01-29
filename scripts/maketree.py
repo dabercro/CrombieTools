@@ -67,6 +67,23 @@ class Parser:
         return lines
 
 
+prefixes = []   # Unfortunately, I wrote a lot of code with this global name already, so let's use it
+class Prefixes:
+    current = None
+    def __init__(self, addition, components):
+        global prefixes
+        self.parent = copy.deepcopy(self.current)
+        inputs = [comp.strip() for comp in components.split(',')]
+        self.prefs = ['%s%s' % (pref, comp) for pref in prefixes for comp in inputs] or inputs if not addition else prefixes + inputs
+        prefixes = self.prefs
+        Prefixes.current = self
+
+    def get_parent(self):
+        global prefixes
+        Prefixes.current = self.parent
+        prefixes = self.parent.prefs if self.parent else []
+        
+
 class Branch:
     branches = {}
     def __init__(self, pref, name, data_type, default_val, is_saved):
@@ -83,7 +100,7 @@ class Reader:
     def __init__(self, weights, prefix, output, inputs):
         self.weights = weights
         self.output = '%s_%s' % (prefix, output)
-        self.inputs = [(label, inp.replace('<>', prefix)) for label, inp in inputs]
+        self.inputs = [(label, inp.replace('[]', prefix)) for label, inp in inputs]
         self.name = 'reader_%s' % self.output
         self.method = 'method_%s' % self.output
         self.floats = []
@@ -151,7 +168,7 @@ class Function:
            ['\n'.join(['  case %s::%s::%s:' % (classname, self.enum_name, pref)] +
                       ['    %s%s%s;' % (val, pref, var)
                        for var, val in self.variables if val in incr] +
-                      ['    %s%s = %s;' % (pref, var, val.replace('<>', pref))
+                      ['    %s%s = %s;' % (pref, var, val.replace('[]', pref))
                        for var, val in self.variables if val not in incr])
             for pref in self.prefixes]))
 
@@ -160,7 +177,6 @@ if __name__ == '__main__':
     classname = os.path.basename(sys.argv[1]).split('.')[0]
 
     includes = ['<string>', '<vector>', '"TObject.h"', '"TFile.h"', '"TTree.h"']
-    prefixes = []
     functions = []
     mod_fill = []
     in_function = None
@@ -175,13 +191,6 @@ if __name__ == '__main__':
         for raw_line in config_file:
             for line in parser.parse(raw_line):
                 line = line.strip()
-
-                if line == '<--':
-                    if in_function:
-                        functions.append(in_function)
-                    in_function = None
-                    prefixes = []
-                    continue
 
                 # Check for includes
                 match = re.match(r'^([<"].*[">])$', line)
@@ -203,25 +212,32 @@ if __name__ == '__main__':
                     continue
 
                 # Get "class" enums and/or functions for setting
-                match = re.match(r'(\+?[\w,]*)\s?-->\s?([\w_]*\(.*\))?', line)
+                match = re.match(r'(\+)?([\w,\s]*){', line)
+                if match:
+                    # Get the different classes that are being added
+                    Prefixes(bool(match.group(1)), match.group(2))
+
+                    continue
+
+                # End previous enum scope
+                match = re.match(r'}', line)
+                if match:
+                    if in_function:
+                        functions.append(in_function)
+                    in_function = None
+                    Prefixes.current.get_parent()
+
+                    continue
+
+                # Get functions for setting values
+                match = re.match('^(\w+\(.+\))$', line)
                 if match:
                     # Pass off previous function as quickly as possible to prevent prefix changing
                     if in_function:
                         functions.append(copy.deepcopy(in_function))
                         in_function = None
 
-                    # Get the different classes that are being added
-                    components = match.group(1).split(',') if match.group(1) else []
-                    if components:
-                        if match.group(1).startswith('+'):
-                            components[0] = components[0].lstrip('+')
-                            prefixes += components
-                        else:
-                            prefixes = ['%s%s' % (pref, comp) for pref in prefixes for comp in components] or components
-
-                    function_sig = match.group(2)
-                    if function_sig:
-                        in_function = Function(function_sig, prefixes)
+                    in_function = Function(match.group(1), prefixes)
                     continue
 
                 # Get TMVA information to evaluate
@@ -239,7 +255,7 @@ if __name__ == '__main__':
                     branches = create_branches(var, 'F', default, is_saved)
                     if os.path.exists(weights) and is_saved:
                         xml_vars = ElementTree.parse(weights, ElementTree.XMLParser(target=MyXMLParser('Variable', 'Expression'))).getroot()
-                        inputs = [(v, v.replace(trained_with or Branch.branches[v].prefix, '<>')) for v in xml_vars]
+                        inputs = [(v, v.replace(trained_with or Branch.branches[v].prefix, '[]')) for v in xml_vars]
                         for reader in [Reader(weights, b.prefix, var, inputs) for b in branches]:
                             mod_fill.append('%s = %s->GetMvaValue();' % (reader.output, reader.method))
 
@@ -261,7 +277,7 @@ if __name__ == '__main__':
                         # create_branches returns a list of prefixes and the new branch names
                         branches = create_branches(var, data_type, val, is_saved)
                         for b in branches:
-                            mod_fill.append('%s = %s;' % (b.name, match.group(10).replace('<>', b.prefix)))
+                            mod_fill.append('%s = %s;' % (b.name, match.group(10).replace('[]', b.prefix)))
                     continue
 
     ## Finished parsing the configuration file
@@ -304,8 +320,7 @@ if __name__ == '__main__':
 
  private:
   TFile* f;
-  TTree* t;  
-
+  TTree* t;
 %s%s
 };
 """ % (RESET_SIGNATURE, FILL_SIGNATURE, '\n  '.join([f.declare(functions) for f in functions]),

@@ -137,7 +137,7 @@ These lines expand like the following
     {/I}
     branch_zero   ! Equivalent to "branch_zero/I = 0"
     {-5}
-    branch_neg    ! Equivalent to "branch_zero/I = -5"
+    branch_neg    ! Equivalent to "branch_neg/I = -5"
 
 # Branch Prefixes {#prefixdef}
 
