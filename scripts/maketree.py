@@ -55,16 +55,27 @@ class Parser:
         if not input_line:
             return []
 
-        for matches in re.finditer(r'<([^\|<>]*)\|([^\|<>]*)\|([^<>]*)>', input_line):
-            input_line = input_line.replace(matches.group(0),
-                                            matches.group(1) +
-                                            ('%s, %s' % (matches.group(3), matches.group(1))).join([suff.strip() for suff in matches.group(2).split(',')]) +
-                                            matches.group(3)
-                                            )
+        start = ''
+        while input_line != start:
+            start = input_line
+            for matches in list(re.finditer(r'<([^<>{}]*){(.*?)}([^<>]*)>', input_line)) + list(re.finditer(r'<([^<>{}]*)\|([^\|]*?)\|([^<>\|]*)>', input_line)):
+                beg, end = ('<', '>') if '|' in matches.group(1) or '{' in matches.group(3) and '}' in matches.group(3) else ('', '')
+                input_line = input_line.replace(
+                    matches.group(0),
+                    beg + matches.group(1) +
+                    ('%s%s, %s%s' % (matches.group(3), end, beg, matches.group(1))).join([suff.strip() for suff in matches.group(2).split(',')]) +
+                    matches.group(3) + end
+                )
 
-        match = re.match(r'(.*\$.*)\|\s*(.*)', input_line)
-        lines = [match.group(1).replace('$$', var.strip().title()).replace('$', var.strip()) for var in match.group(2).split(',')] if match else [input_line]
-        return lines
+        match = re.match(r'(.*)\|([^\s])?\s+(.*)', input_line)
+        if match:
+            char = match.group(2) or '$'
+            lines = [match.group(1).replace(char * 3, var.strip().upper()).replace(char * 2, var.strip().title()).replace(char, var.strip())
+                     for var in match.group(3).split(',')]
+            return [line for l in lines for line in self.parse(l)]  # Recursively parse lines in case multiple expansions are present
+        else:
+            return [input_line]
+        
 
 
 prefixes = []   # Unfortunately, I wrote a lot of code with this global name already, so let's use it
