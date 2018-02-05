@@ -18,9 +18,11 @@ TMVA.Tools.Instance()
 
 
 class Trainer(object):
-    def __init__(self, input_file, output_file, name, options):
+    def __init__(self, signal_file, back_file, regression_file, output_file, name, options):
         # All of these are "private". Please don't touch directly
-        self.input_file = TFile(input_file)
+        self.signal_file = TFile(signal_file) if signal_file else None
+        self.back_file = TFile(back_file) if back_file else None
+        self.input_file = TFile(regression_file) if regression_file else None
         self.output_file = TFile(output_file, 'RECREATE')
         self.trainer = TMVA.Factory(name, self.output_file, options)
         self.weight = None
@@ -30,7 +32,9 @@ class Trainer(object):
         self.prepared = None    # Flag that trees have been prepared
 
     def __del__(self):
-        self.input_file.Close()
+        for f in [self.input_file, self.signal_file, self.back_file]:
+            if f:
+                f.Close()
         self.output_file.Close()
 
     def read_var_config(self, config):
@@ -71,10 +75,16 @@ class Trainer(object):
 
         self.prepared = True
 
-        self.trainer.AddRegressionTree(self.input_file.Get('events'), 1.0)
-        self.trainer.SetWeightExpression(self.weight, 'Regression');
-
-        self.trainer.PrepareTrainingAndTestTree(self.cut, opts)
+        if self.input_file:
+            self.trainer.AddRegressionTree(self.input_file.Get('events'), 1.0)
+            self.trainer.SetWeightExpression(self.weight, 'Regression');
+            self.trainer.PrepareTrainingAndTestTree(self.cut, opts)
+        else:
+            self.trainer.AddSignalTree(self.signal_file.Get('events'), 1.0)
+            self.trainer.AddBackgroundTree(self.back_file.Get('events'), 1.0)
+            self.trainer.SetSignalWeightExpression(self.weight)
+            self.trainer.SetBackgroundWeightExpression(self.weight)
+            self.trainer.PrepareTrainingAndTestTree(self.cut, self.cut, opts)
 
     # Static member
     methods = {
@@ -95,13 +105,6 @@ class Trainer(object):
         self.trainer.BookMethod(self.methods[method], name, opts)
 
     def train(self):
-        attrs = {attr: getattr(self, attr) for attr in dir(self)
-                 if not callable(getattr(self, attr)) and not attr.startswith('__')}
-        if None in attrs.values():
-            logging.error('Something is not set correctly')
-            logging.error('%s', attrs)
-            exit(2)
-
         self.trainer.TrainAllMethods()
         self.trainer.TestAllMethods()
         self.trainer.EvaluateAllMethods()
@@ -115,15 +118,16 @@ if __name__ == '__main__':
         )
 
     parser.add_argument('-c', '--config', dest='config', metavar='FILE', help='The config file that contains the names of training variables')
-    parser.add_argument('-i', '--input', dest='input', metavar='FILE', help='The name of the input file')
+    parser.add_argument('-r', '--regression', dest='regression', metavar='FILE', help='The name of the input file for regression tree', default='')
+    parser.add_argument('-s', '--signal', dest='signal', metavar='FILE', help='The name of the input file for signal tree', default='')
+    parser.add_argument('-b', '--background', dest='background', metavar='FILE', help='The name of the input file for background tree', default='')
     parser.add_argument('-w', '--weight', dest='weight', metavar='EXPR', help='The weight of the events')
     parser.add_argument('-x', '--cut', dest='cut', metavar='EXPR', help='The cut that events must pass to be trained on')
-    parser.add_argument('-t', '--target', dest='target', metavar='EXPR', help='The expression we want the regression for')
+    parser.add_argument('-t', '--target', dest='target', metavar='EXPR', help='The expression we want the regression for', default='')
     parser.add_argument('-m', '--method', dest='method', metavar='NAME', help='Method to use in training')
     parser.add_argument('-o', '--methodopt', dest='method_opts', metavar='OPTS', help='Options for method')
 
-    parser.add_argument('-p', '--prepare', dest='prepare', metavar='OPTS', help='The options for preparing the test and training trees',
-                        default='nTrain_Regression=1000000:nTest_Regression=1000000:SplitMode=Random:NormMode=NumEvents:!V')
+    parser.add_argument('-p', '--prepare', dest='prepare', metavar='OPTS', help='The options for preparing the test and training trees')
 
     parser.add_argument('--output', dest='output', metavar='FILE', help='The name of the output file, which will be overwritten by training', default='TMVA.root')
     parser.add_argument('--methodname', dest='method_name', metavar='NAME', help='What to name the method the BDT output', default='')
@@ -133,13 +137,14 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
 
-    trainer = Trainer(args.input, args.output, args.trainer_name, args.trainer_opts)
+    trainer = Trainer(args.signal, args.background, args.regression, args.output, args.trainer_name, args.trainer_opts)
 
     trainer.read_var_config(args.config)
 
     trainer.set_weight(args.weight)
     trainer.set_cut(args.cut)
-    trainer.set_target(args.target_name, args.target)
-    trainer.add_method(args.method, args.method_name, args.method_opts)
+    if args.target:
+        trainer.set_target(args.target_name, args.target)
     trainer.prepare(args.prepare)
+    trainer.add_method(args.method, args.method_name, args.method_opts)
     trainer.train()

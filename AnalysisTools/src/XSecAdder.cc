@@ -28,57 +28,59 @@ XSecAdder::~XSecAdder()
 //--------------------------------------------------------------------
 void XSecAdder::AddXSecs()
 {
-  for (std::vector<FileInfo*>::iterator iInfo = fMCFileInfo.begin(); iInfo != fMCFileInfo.end(); ++iInfo) {
+  for (auto& infos : {fMCFileInfo, fSignalFileInfo}) {
+    for (auto* info : infos) {
 
-    TFile *file = new TFile((*iInfo)->fFileName,"UPDATE");
-    if (!file)
-      exit(0);
+      TFile *file = new TFile(info->fFileName,"UPDATE");
+      if (!file)
+        exit(0);
 
-    TTree *tree = (TTree*) file->Get(fInTreeName);
-    TTree *outTree;
+      TTree *tree = (TTree*) file->Get(fInTreeName);
+      TTree *outTree;
 
-    if (fOutTreeName != fInTreeName)
-      outTree = new TTree(fOutTreeName, fOutTreeName);
-    else
-      outTree = tree;
-
-    Int_t nentries = tree->GetEntries();
-    Float_t weight = (*iInfo)->fXSecWeight;
-
-    std::map<TString, Float_t> mergeBranches;
-
-    for (UInt_t iMerge = 0; iMerge != fMergeBranches.size(); ++iMerge) {
-      mergeBranches[fMergeBranches[iMerge]] = 1.0;
-      tree->SetBranchAddress(fMergeBranches[iMerge], &(mergeBranches[fMergeBranches[iMerge]]));
-    }
-
-    if (fOutTreeName != fInTreeName || (!tree->GetBranch(fBranchName))) {
-
-      Float_t XSecWeight = 1.;
-      TBranch *XSecWeightBr = outTree->Branch(fBranchName, &XSecWeight,fBranchName + "/F");
-
-      for (int entry = 0; entry < nentries; entry++) {
-        if (entry % 500000 == 0)  /// @todo Make a ReportFrequency class
-          std::cout << "Processing... " << float(entry)/float(nentries)*100 << "%" << std::endl;
-        XSecWeight = weight;
-
-        if (fMergeBranches.size() != 0)
-          tree->GetEntry(entry);
-
-        for (UInt_t iMerge = 0; iMerge != fMergeBranches.size(); ++iMerge)
-          XSecWeight *= mergeBranches[fMergeBranches[iMerge]];
-
-        if (fOutTreeName == fInTreeName)
-          XSecWeightBr->Fill();
-        else
-          outTree->Fill();
-      }
-      if (fOutTreeName == fInTreeName)
-        outTree->Write();
+      if (fOutTreeName != fInTreeName)
+        outTree = new TTree(fOutTreeName, fOutTreeName);
       else
-        outTree->Write(fOutTreeName, TObject::kOverwrite);
-    }
+        outTree = tree;
 
-    file->Close();
+      Int_t nentries = tree->GetEntries();
+      Float_t weight = info->fXSecWeight;
+
+      std::map<TString, Float_t> mergeBranches;
+
+      for (UInt_t iMerge = 0; iMerge != fMergeBranches.size(); ++iMerge) {
+        mergeBranches[fMergeBranches[iMerge]] = 1.0;
+        tree->SetBranchAddress(fMergeBranches[iMerge], &(mergeBranches[fMergeBranches[iMerge]]));
+      }
+
+      if (fOutTreeName != fInTreeName || (!tree->GetBranch(fBranchName))) {
+
+        Float_t XSecWeight = 1.;
+        TBranch *XSecWeightBr = outTree->Branch(fBranchName, &XSecWeight,fBranchName + "/F");
+
+        for (int entry = 0; entry < nentries; entry++) {
+          if (entry % 500000 == 0)  /// @todo Make a ReportFrequency class
+            std::cout << "Processing... " << float(entry)/float(nentries)*100 << "%" << std::endl;
+          XSecWeight = weight;
+
+          if (fMergeBranches.size() != 0)
+            tree->GetEntry(entry);
+
+          for (UInt_t iMerge = 0; iMerge != fMergeBranches.size(); ++iMerge)
+            XSecWeight *= mergeBranches[fMergeBranches[iMerge]];
+
+          if (fOutTreeName == fInTreeName)
+            XSecWeightBr->Fill();
+          else
+            outTree->Fill();
+        }
+        if (fOutTreeName == fInTreeName)
+          outTree->Write();
+        else
+          outTree->Write(fOutTreeName, TObject::kOverwrite);
+      }
+
+      file->Close();
+    }
   }
 }
