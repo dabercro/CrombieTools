@@ -4,6 +4,7 @@ import os
 import sys
 import re
 import copy
+import subprocess
 
 from xml.etree import ElementTree
 
@@ -25,7 +26,7 @@ DEFAULT_TYPE = 'F'
 DEFAULT_VAL = '0'
 RESET_SIGNATURE = 'reset()'
 FILL_SIGNATURE = 'fill()'
-
+FILTER = {'--': [], '++': []}
 
 class MyXMLParser:
     def __init__(self, tag, member):
@@ -67,14 +68,18 @@ class Parser:
                     matches.group(3) + end
                 )
 
-        match = re.match(r'(.*)\|([^\s])?\s+(.*)', input_line)
+        match = re.match(r'(.*)\|([^\s])?\s+(.*)', input_line)  # Search for substitution
         if match:
             char = match.group(2) or '$'
             lines = [match.group(1).replace(char * 3, var.strip().upper()).replace(char * 2, var.strip().title()).replace(char, var.strip())
                      for var in match.group(3).split(',')]
             return [line for l in lines for line in self.parse(l)]  # Recursively parse lines in case multiple expansions are present
-        else:
-            return [input_line]
+
+        match = re.match(r'.*(\`(.*)\`).*', input_line)   # Search for shell commands
+        if match:
+            input_line = input_line.replace(match.group(1), subprocess.check_output(match.group(2).split()).strip())
+            
+        return [input_line]
         
 
 
@@ -265,6 +270,13 @@ if __name__ == '__main__':
 
                     continue
 
+                # Event filter
+                match = re.match(r'(\+\+|--)(.*)(\+\+|--)', line)
+                if match:
+                    FILTER[match.group(1)] = ['if (!(%s))' % match.group(2).strip(),       # Filter at front (--) or back (++) of fill
+                                              '  return;']
+                    continue
+
                 # Add branch names individually
                 match = re.match(r'(\#\s*)?(\w*)(/(\w))?(\s?=\s?([\w\.\(\)]+))?(\s?->\s?(.*?))?(\s?<-\s?(.*?))?$', line)
                 if match:
@@ -348,6 +360,7 @@ void %s::%s {
 }""" % (classname, RESET_SIGNATURE, '\n  '.join(['{0} = {1};'.format(b.name, b.default_val) for b in all_branches])))
 
         # fill function
+        mod_fill = FILTER['--'] + mod_fill + FILTER['++']
         write("""
 void %s::%s {
   %s
