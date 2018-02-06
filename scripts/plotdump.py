@@ -31,6 +31,7 @@ if __name__ == '__main__':
     ROOT.gErrorIgnoreLevel = ROOT.kWarning
 
     branches = [] if os.environ.get('quick') else [br.GetName() for br in input_tree.GetListOfBranches()]
+    default_cut = os.environ.get('cut', '')
 
     for branch in branches + sys.argv[3:-1]:
         if 'packedPuppi' in branch:
@@ -39,9 +40,9 @@ if __name__ == '__main__':
         file_name = ''
         canvas = ROOT.TCanvas()
         plots = branch.split(';')
-        cut = '' if len(plots) == 1 else plots[1].strip()
+        cut = default_cut if len(plots) == 1 else plots[1].strip()
         opt = ''
-        file_name = branch.replace('/', '__').replace('(', '__').replace(')', '__').replace(',', '__').replace('|', '__').replace(' ', '__').replace(';', '___').replace('!', '_')
+        file_name = branch.replace('/', '_').replace('(', '_').replace(')', '_').replace(',', '_').replace('|', '__').replace(' ', '_').replace(';', '__').replace('!', '_').replace('<', '_').replace('&', '_')
         index = 1
         for plot in plots[0].split('|'):
             for x in cut.split('|'):
