@@ -3,7 +3,7 @@
 import sys
 
 from CrombieTools.AnalysisTools.XSecAdder import RunXSecAdder, xSecAdder
-from CrombieTools.CommonTools.FileConfigReader import SetupConfigFromEnv
+from CrombieTools.CommonTools.FileConfigReader import SetupConfigFromEnv, SetFunctionFromEnv
 
 if __name__ == '__main__':
 
@@ -11,5 +11,6 @@ if __name__ == '__main__':
         xSecAdder.SetKeepAllFiles(False)
 
     SetupConfigFromEnv(xSecAdder)
+    SetFunctionFromEnv([(xSecAdder.SetNumThreads, 'CrombieNLocalProcs')])
 
     RunXSecAdder()

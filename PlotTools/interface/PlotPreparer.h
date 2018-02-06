@@ -12,17 +12,11 @@
 #include <map>
 #include <vector>
 #include <utility>
-#include <queue>
 
 #include "TTreeFormula.h"
-#include "TMutex.h"
-#include "TThread.h"
 
-#include "FileConfigReader.h"
+#include "ParallelRunner.h"
 #include "PlotUtils.h"
-
-TMutex queue_lock;
-TMutex output_lock;
 
 /**
    @ingroup plotgroup
@@ -50,7 +44,7 @@ class PlotInfo {
    Will usually be inherited by some other class that wants to make lots of plots.
 */
 
-class PlotPreparer : public FileConfigReader {
+class PlotPreparer : public ParallelRunner {
  public:
   // Use default constructor
   virtual ~PlotPreparer ();
@@ -59,9 +53,6 @@ class PlotPreparer : public FileConfigReader {
   void AddHist ( TString FileBase, Int_t NumXBins, Double_t *XBins, TString dataExpr, TString mcExpr, TString cut, TString dataWeight, TString mcWeight );
   /// Add a histogram to plot
   void AddHist ( TString FileBase, Int_t NumXBins, Double_t MinX, Double_t MaxX, TString dataExpr, TString mcExpr, TString cut, TString dataWeight, TString mcWeight );
-
-  /// Set the number of cores to use in the plotting
-  void SetNumThreads ( UInt_t nthreads ) { fNumThreads = nthreads; }
 
  protected:
   // Don't mask the FileConfigReader functions of the same name
@@ -81,12 +72,6 @@ class PlotPreparer : public FileConfigReader {
   /// A vector of all the plots that are being made, mapped by input file names
   std::map<TString, std::vector<PlotInfo*>> fPlots;
 
-  /// Files to run over in parallel
-  std::priority_queue<FileInfo>  file_queue;
-
-  /// Number of cores to prepare plots with
-  UInt_t fNumThreads {1};
-
   /// A function to clear the histograms map
   void ClearHists   ();
 
@@ -94,10 +79,7 @@ class PlotPreparer : public FileConfigReader {
   void PreparePlots ();
 
   /// Runs all plots over a single file
-  void RunFile (FileInfo& info);
-
-  /// Runs a single thread over files
-  static void* RunThread (void* prep);
+  void RunFile (FileInfo& info) override;
 };
 
 PlotPreparer::~PlotPreparer() {
@@ -207,26 +189,7 @@ PlotPreparer::PreparePlots() {
     return;
   fPrepared = true;
 
-  for (auto type : gFileTypes) {
-    const auto& infos = *(GetFileInfo(type));
-    for (auto info : infos)
-      file_queue.push(*info);
-  }
-
-  if (not fNumThreads)
-    fNumThreads++;
-
-  std::vector<TThread*> threads;
-  for (decltype(fNumThreads) i_thread = 0; i_thread < fNumThreads; ++i_thread) {
-    TThread* temp = new TThread(RunThread, this);
-    threads.push_back(temp);
-    temp->Run(this);
-  }
-
-  for (auto thread : threads) {
-    thread->Join();
-    delete thread;
-  }
+  RunThreads();
 }
 
 void
@@ -297,28 +260,6 @@ PlotPreparer::RunFile(FileInfo& info) {
   output_lock.Lock();
   std::cout << "Finished file " << filename.Data() << std::endl;
   output_lock.UnLock();
-}
-
-void*
-PlotPreparer::RunThread(void* prep) {
-  auto* yo = reinterpret_cast<PlotPreparer*>(prep);
-  bool running = true;
-  FileInfo info;
-  while(true) {
-    queue_lock.Lock();
-    running = !yo->file_queue.empty();
-    if (running) {
-      info = yo->file_queue.top();
-      yo->file_queue.pop();
-    }
-    queue_lock.UnLock();
-
-    if (not running)
-      break;
-
-    yo->RunFile(info);
-  }
-  return nullptr;
 }
 
 #endif

@@ -12,7 +12,7 @@
 #include <vector>
 
 #include "TString.h"
-#include "FileConfigReader.h"
+#include "ParallelRunner.h"
 
 /**
    @ingroup analysisgroup
@@ -23,7 +23,7 @@
    Still needs to be multiplied by Luminosity to get proper number of events.
 */
 
-class XSecAdder : public FileConfigReader
+class XSecAdder : public ParallelRunner
 {
  public:
   /// Constructor setting the name of a branch it would like to write to.
@@ -48,6 +48,8 @@ class XSecAdder : public FileConfigReader
   TString fBranchName;                  ///< Name of Branch to write to
 
   std::vector<TString> fMergeBranches;  ///< List of branches to merge into the new branch
+
+  void RunFile(FileInfo& info);         ///< Run over a single file
 
   ClassDef(XSecAdder,1)
 };

@@ -71,6 +71,11 @@ _crombie_subs () {                                  # Function to fill COMPREPLY
 
         COMPREPLY=( $(compgen -W "copy test" $cur ) )
 
+    elif [ "$prev" = "addxs" ]                      # "crombie addxs" can skip files commented in config
+    then
+
+        COMPREPLY=( $(compgen -W "skip" $cur ) )
+
     elif [ "${COMP_WORDS[1]}" = "generatedocs" ]    # "crombie generatedocs copy" can go to different places
     then
 
