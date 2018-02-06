@@ -29,19 +29,23 @@ FILL_SIGNATURE = 'fill()'
 FILTER = {'--': [], '++': []}
 
 class MyXMLParser:
-    def __init__(self, tag, member):
+    def __init__(self, tag, spec_tag, member):
         self.tag = tag
+        self.spec_tag = spec_tag
         self.member = member
         self.output = []
+        self.spectators = []
     def start(self, tag, attr):
         if tag == self.tag:
             self.output.append(attr[self.member])
+        elif tag == self.spec_tag:
+            self.spectators.append(attr[self.member])
     def end(self, _):
         pass
     def data(self, _):
         pass
     def close(self):
-        return self.output
+        return self.output, self.spectators
 
 
 class Parser:
@@ -113,10 +117,12 @@ class Branch:
 
 class Reader:
     readers = []
-    def __init__(self, weights, prefix, output, inputs):
+    def __init__(self, weights, prefix, output, inputs, specs):
         self.weights = weights
         self.output = ('%s_%s' % (prefix, output)).strip('_')
-        self.inputs = [(label, inp.replace('[]', prefix) if prefix else label) for label, inp in inputs]
+        sub_pref = lambda x: [(label, inp.replace('[]', prefix) if prefix else label) for label, inp in x]
+        self.inputs = sub_pref(inputs)
+        self.specs = sub_pref(specs)
         self.name = 'reader_%s' % self.output
         self.method = 'method_%s' % self.output
         self.floats = []
@@ -263,9 +269,11 @@ if __name__ == '__main__':
                     default = match.group(7) or DEFAULT_VAL
                     branches = create_branches(var, 'F', default, is_saved)
                     if os.path.exists(weights) and is_saved:
-                        xml_vars = ElementTree.parse(weights, ElementTree.XMLParser(target=MyXMLParser('Variable', 'Expression'))).getroot()
-                        inputs = [(v, v.replace(trained_with or Branch.branches[v].prefix, '[]')) for v in xml_vars]
-                        for reader in [Reader(weights, b.prefix, var, inputs) for b in branches]:
+                        xml_vars, xml_specs = ElementTree.parse(weights, ElementTree.XMLParser(target=MyXMLParser('Variable', 'Spectator', 'Expression'))).getroot()
+                        rep_pref = lambda x: [(v, v.replace(trained_with or Branch.branches[v].prefix, '[]')) for v in x]
+                        inputs = rep_pref(xml_vars)
+                        specs = rep_pref(xml_specs)
+                        for reader in [Reader(weights, b.prefix, var, inputs, specs) for b in branches]:
                             mod_fill.append('%s = %s->GetMvaValue();' % (reader.output, reader.method))
 
                     continue
@@ -349,9 +357,10 @@ if __name__ == '__main__':
   t {new TTree(name, name)}
 {
   %s
-%s%s}""" % (classname, classname, '\n  '.join(['t->Branch("{0}", &{0}, "{0}/{1}");'.format(b.name, b.data_type) for b in all_branches if b.is_saved]),
-            ''.join(['  %s.AddVariable("%s", &%s);\n' % (reader.name, label, var) for reader in Reader.readers for label, var in reader.inputs]),
-            ''.join(['  %s = %s.BookMVA("%s", "%s");\n' % (reader.method, reader.name, reader.output, reader.weights) for reader in Reader.readers])))
+%s%s%s}""" % (classname, classname, '\n  '.join(['t->Branch("{0}", &{0}, "{0}/{1}");'.format(b.name, b.data_type) for b in all_branches if b.is_saved]),
+              ''.join(['  %s.AddVariable("%s", &%s);\n' % (reader.name, label, var) for reader in Reader.readers for label, var in reader.inputs]),
+              ''.join(['  %s.AddSpectator("%s", &%s);\n' % (reader.name, label, var) for reader in Reader.readers for label, var in reader.specs]),
+              ''.join(['  %s = %s.BookMVA("%s", "%s");\n' % (reader.method, reader.name, reader.output, reader.weights) for reader in Reader.readers])))
 
         # reset function
         write("""

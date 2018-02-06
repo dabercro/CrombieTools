@@ -167,9 +167,10 @@ echo "Done trying."
 
 cd $here
 
-echo "Compiling everything left over."
-crombie compile
-check
+## Makes a huge mess because of global mutexes in RunParallel
+# echo "Compiling everything left over."
+# crombie compile
+# check
 
 cd $returnto
 

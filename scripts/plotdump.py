@@ -41,11 +41,14 @@ if __name__ == '__main__':
         plots = branch.split(';')
         cut = '' if len(plots) == 1 else plots[1].strip()
         opt = ''
-        file_name = plots[0].replace('/', '__').replace('(', '__').replace(')', '__').replace(',', '__').replace('|', '__').replace(' ', '__')
-        for index, plot in enumerate(plots[0].split('|')):
-            input_tree.SetLineColor(index + 1)
-            input_tree.Draw(plot.strip(), cut, opt)
-            opt = 'same'
+        file_name = branch.replace('/', '__').replace('(', '__').replace(')', '__').replace(',', '__').replace('|', '__').replace(' ', '__').replace(';', '___').replace('!', '_')
+        index = 1
+        for plot in plots[0].split('|'):
+            for x in cut.split('|'):
+                input_tree.SetLineColor(index)
+                input_tree.Draw(plot.strip(), x, opt)
+                opt = 'same'
+                index += 1
 
         for ext in ['C', 'png', 'pdf']:
             canvas.SaveAs(os.path.join(output_dir, file_name + '.' + ext))
