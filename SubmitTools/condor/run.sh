@@ -18,7 +18,6 @@ tar -xf condor.tgz bin/*/jq --strip=2
 EXE=$(./jq -r '.exe' params.json)
 INPUT_DIR=$(./jq -r '.input_dir' params.json)
 INPUT_FILES=$(./jq -r '.input_files | join(" ")' params.json)
-OUTPUT_DIR=/mnt/hadoop/cms$(./jq -r '.output_dir' params.json)
 OUTPUT_FILE=$(./jq -r '.output_file' params.json)
 SCRAM_ARCH=$(./jq -r '.arch' params.json)
 CMSSW_VERSION=$(./jq -r '.cmssw' params.json)
@@ -62,6 +61,7 @@ ls -lh
 # Download or softlink Panda files
 
 SCRATCH=/mnt/hadoop/scratch/dabercro
+NEW_INPUT_DIR=$SCRATCH$INPUT_DIR
 
 for IN_FILE in $INPUT_FILES
 do
@@ -80,6 +80,11 @@ do
 
             ln -s $FULL_IN $IN_FILE
 
+            if [ -f $NEW_INPUT_DIR/$IN_FILE ]
+            then
+                rm $NEW_INPUT_DIR/$IN_FILE    # Clear up downloaded files no longer needed
+            fi
+
         else
 
             if [ ! -f $FULL_IN ]
@@ -96,8 +101,6 @@ do
 
             elif [ -d $SCRATCH ]
             then
-
-                NEW_INPUT_DIR=$SCRATCH$INPUT_DIR
 
                 echo ""
                 echo "test -d $NEW_INPUT_DIR || mkdir -p $NEW_INPUT_DIR"
