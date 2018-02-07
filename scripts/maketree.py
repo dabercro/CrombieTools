@@ -28,6 +28,8 @@ RESET_SIGNATURE = 'reset()'
 FILL_SIGNATURE = 'fill()'
 FILTER = {'--': [], '++': []}
 
+PREF_HOLDER = '[]'
+
 class MyXMLParser:
     def __init__(self, tag, spec_tag, member):
         self.tag = tag
@@ -106,6 +108,7 @@ class Prefixes:
 
 class Branch:
     branches = {}
+    floats = set()
     def __init__(self, pref, name, data_type, default_val, is_saved):
         self.prefix = pref
         self.name = name
@@ -117,10 +120,11 @@ class Branch:
 
 class Reader:
     readers = []
-    def __init__(self, weights, prefix, output, inputs, specs):
+    def __init__(self, weights, prefix, output, inputs, specs, subs):
         self.weights = weights
         self.output = ('%s_%s' % (prefix, output)).strip('_')
-        sub_pref = lambda x: [(label, inp.replace('[]', prefix) if prefix else label) for label, inp in x]
+        sub_pref = lambda x: [(label, subs.get(inp, inp).replace(PREF_HOLDER, prefix) if prefix else label)
+                              for label, inp in x]
         self.inputs = sub_pref(inputs)
         self.specs = sub_pref(specs)
         self.name = 'reader_%s' % self.output
@@ -133,9 +137,11 @@ class Reader:
             address = inp[1]
             if Branch.branches[address].data_type != 'F':
                 newaddress = '_tmva_float_%s' % address
-                mod_fill.insert(0, '%s = %s;' % (newaddress, address))
-                self.floats.append(newaddress)
                 self.inputs[index] = (inp[0], newaddress)
+                if address not in Branch.floats:
+                    Branch.floats.add(address)
+                    mod_fill.insert(0, '%s = %s;' % (newaddress, address))
+                    self.floats.append(newaddress)
 
 
 class Function:
@@ -183,7 +189,7 @@ class Function:
            ['\n'.join(['  case %s::%s::%s:' % (classname, self.enum_name, pref)] +
                       ['    %s%s%s;' % (val, pref, var)
                        for var, val in self.variables if val in incr] +
-                      ['    %s%s = %s;' % (pref, var, val.replace('[]', pref))
+                      ['    %s%s = %s;' % (pref, var, val.replace(PREF_HOLDER, pref))
                        for var, val in self.variables if val not in incr])
             for pref in self.prefixes]))
 
@@ -266,14 +272,21 @@ if __name__ == '__main__':
                     var = match.group(2)
                     weights = match.group(3)
                     trained_with = match.group(5)
+                    subs = {}
+                    if trained_with and os.path.exists(trained_with):  # In this case, trained_with actually points to a file that lists substitutions
+                        with open(trained_with, 'r') as sub_file:
+                            for line in sub_file:
+                                info = line.split()
+                                subs[info[0]] = info[1]
+
                     default = match.group(7) or DEFAULT_VAL
                     branches = create_branches(var, 'F', default, is_saved)
                     if os.path.exists(weights) and is_saved:
                         xml_vars, xml_specs = ElementTree.parse(weights, ElementTree.XMLParser(target=MyXMLParser('Variable', 'Spectator', 'Expression'))).getroot()
-                        rep_pref = lambda x: [(v, v.replace(trained_with or Branch.branches[v].prefix, '[]')) for v in x]
+                        rep_pref = lambda x: [(v, v.replace(trained_with or Branch.branches[v].prefix or PREF_HOLDER, PREF_HOLDER)) for v in x]
                         inputs = rep_pref(xml_vars)
                         specs = rep_pref(xml_specs)
-                        for reader in [Reader(weights, b.prefix, var, inputs, specs) for b in branches]:
+                        for reader in [Reader(weights, b.prefix, var, inputs, specs, subs) for b in branches]:
                             mod_fill.append('%s = %s->GetMvaValue();' % (reader.output, reader.method))
 
                     continue
@@ -301,7 +314,7 @@ if __name__ == '__main__':
                         # create_branches returns a list of prefixes and the new branch names
                         branches = create_branches(var, data_type, val, is_saved)
                         for b in branches:
-                            mod_fill.append('%s = %s;' % (b.name, match.group(10).replace('[]', b.prefix)))
+                            mod_fill.append('%s = %s;' % (b.name, match.group(10).replace(PREF_HOLDER, b.prefix)))
                     continue
 
     ## Finished parsing the configuration file
