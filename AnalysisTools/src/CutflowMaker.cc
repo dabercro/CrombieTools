@@ -7,6 +7,7 @@
 #include "TH1.h"
 
 #include "CutflowMaker.h"
+#include "PlotUtils.h"
 
 ClassImp(CutflowMaker)
 
@@ -23,6 +24,7 @@ CutflowMaker::GetCutflow(UInt_t index)
 
     std::vector<TTreeFormula*> formulae;
     TTreeFormula *tempFormula;
+    std::set<TString> needed;
 
     for (UInt_t iCut = 0; iCut != fCuts.size(); ++iCut) {
 
@@ -30,10 +32,14 @@ CutflowMaker::GetCutflow(UInt_t index)
       tempFormula->SetQuickLoad(true);
       formulae.push_back(tempFormula);
       fYields.push_back(0);
+      AddNecessaryBranches(needed, inTree, fCuts[iCut]);
 
     }
 
     Int_t numEntries = inTree->GetEntriesFast();
+    inTree->SetBranchStatus("*", 0);
+    for (auto need : needed)
+      inTree->SetBranchStatus(need, 1);
 
     for (Int_t iEntry = 0; iEntry != numEntries; ++iEntry) {
 
@@ -68,7 +74,7 @@ CutflowMaker::PrintCutflow(TableType table)
 
     if (table != kNumbers) {
 
-      std::cout << std::setw(20);
+      std::cout << std::setw(40);
       std::cout << fCutNames[iCut];
 
         if (table == kLatex)
