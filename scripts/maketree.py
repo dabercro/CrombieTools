@@ -150,8 +150,12 @@ class Reader:
 class Function:
     def __init__(self, signature, prefixes):
         self.enum_name = re.match(r'(.*)\(.*\)', signature).group(1)
-        self.signature = 'set_' + signature.replace('(', '(const %s base, ' % self.enum_name).replace(', ', ', const ').replace(', const )', ')')
         self.prefixes = prefixes
+        if prefixes:
+            signature = signature.replace('(', '(const %s base, ' % self.enum_name)
+        else:
+            signature = signature.replace('(', '(const ')
+        self.signature = 'set_' + signature.replace(', ', ', const ').replace(', const )', ')')
         self.variables = []
 
     def add_var(self, variable, value):
@@ -187,20 +191,23 @@ class Function:
         return'    %s%s = %s;' % (pref, var, val.replace(PREF_HOLDER, pref))
 
     def implement(self, classname):
-        return """void %s::%s {
-  switch(base) {
+        if self.prefixes:
+            middle = """  switch(base) {
 %s
     break;
   default:
     throw;
-  }
-}
-""" % (classname, self.signature,
-       '\n    break;\n'.join(
-           ['\n'.join(['  case %s::%s::%s:' % (classname, self.enum_name, pref)] +
-                      [self.var_line(var, val, pref) for var, val in self.variables])
-            for pref in self.prefixes]))
+  }""" % ('\n    break;\n'.join(
+                    ['\n'.join(['  case %s::%s::%s:' % (classname, self.enum_name, pref)] +
+                               [self.var_line(var, val, pref) for var, val in self.variables])
+                     for pref in self.prefixes]))
+        else:
+            middle = '\n'.join([self.var_line(var.lstrip('_'), val, '') for var, val in self.variables])
 
+        return """void %s::%s {
+%s
+}
+""" % (classname, self.signature, middle)
 
 if __name__ == '__main__':
     classname = os.path.basename(sys.argv[1]).split('.')[0]
@@ -424,7 +431,7 @@ void %s::%s {
 
         prev_func = None
         for func in functions:
-            if prev_func and func.prefixes != prev_func.prefixes:
+            if prev_func and func.prefixes != prev_func.prefixes and prev_func.prefixes:
                 if False not in [prev in func.prefixes for prev in prev_func.prefixes]:
                     write_convert(prev_func, func)
                     write_convert(func, prev_func)
