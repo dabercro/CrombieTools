@@ -65,6 +65,7 @@ class Parser:
         start = ''
         while input_line != start:
             start = input_line
+            input_line = input_line.replace('->', '^^^')
             for matches in list(re.finditer(r'<([^<>{}]*){(.*?)}([^<>]*)>', input_line)) + list(re.finditer(r'<([^<>{}]*)\|([^\|]*?)\|([^<>\|]*)>', input_line)):
                 beg, end = ('<', '>') if '|' in matches.group(1) or '{' in matches.group(3) and '}' in matches.group(3) else ('', '')
                 input_line = input_line.replace(
@@ -73,6 +74,8 @@ class Parser:
                     ('%s%s, %s%s' % (matches.group(3), end, beg, matches.group(1))).join([suff.strip() for suff in matches.group(2).split(',')]) +
                     matches.group(3) + end
                 )
+            input_line = input_line.replace('^^^', '->')
+
 
         match = re.match(r'(.*)\|([^\s])?\s+(.*)', input_line)  # Search for substitution
         if match:
@@ -152,7 +155,8 @@ class Function:
         self.variables = []
 
     def add_var(self, variable, value):
-        self.variables.append((('_%s' % variable).rstrip('_'), value))
+        new_var = (variable, value) if value == '~~' else (('_%s' % variable).rstrip('_'), value)
+        self.variables.append(new_var)
 
     def declare(self, functions):
         output = '{0}void %s;' % (self.signature)
@@ -174,8 +178,15 @@ class Function:
   };
   """ % (self.enum_name, ',\n    '.join(self.prefixes)))
 
-    def implement(self, classname):
+    def var_line(self, var, val, pref):
         incr = ['++', '--']
+        if val in incr:
+            return '    %s%s%s;' % (val, pref, var)
+        elif val == '~~':
+            return '    if (!(%s))\n      return;' % (var)
+        return'    %s%s = %s;' % (pref, var, val.replace(PREF_HOLDER, pref))
+
+    def implement(self, classname):
         return """void %s::%s {
   switch(base) {
 %s
@@ -187,10 +198,7 @@ class Function:
 """ % (classname, self.signature,
        '\n    break;\n'.join(
            ['\n'.join(['  case %s::%s::%s:' % (classname, self.enum_name, pref)] +
-                      ['    %s%s%s;' % (val, pref, var)
-                       for var, val in self.variables if val in incr] +
-                      ['    %s%s = %s;' % (pref, var, val.replace(PREF_HOLDER, pref))
-                       for var, val in self.variables if val not in incr])
+                      [self.var_line(var, val, pref) for var, val in self.variables])
             for pref in self.prefixes]))
 
 
@@ -297,6 +305,14 @@ if __name__ == '__main__':
                     FILTER[match.group(1)] = ['if (!(%s))' % match.group(2).strip(),       # Filter at front (--) or back (++) of fill
                                               '  return;']
                     continue
+
+                # A cut inside a function
+                match = re.match(r'~~\s*(.*?)\s*~~', line)
+                if match:
+                    # Only valid if in a function
+                    in_function.add_var(match.group(1), '~~')
+                    continue
+
 
                 # Add branch names individually
                 match = re.match(r'(\#\s*)?(\w*)(/(\w))?(\s?=\s?([\w\.\(\)]+))?(\s?->\s?(.*?))?(\s?<-\s?(.*?))?$', line)

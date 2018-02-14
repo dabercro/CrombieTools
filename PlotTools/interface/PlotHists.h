@@ -210,6 +210,9 @@ PlotHists::MakeHists(Int_t NumXBins, Double_t *XBins)
   for (UInt_t iUncert = 0; iUncert != fSysUncIndices.size(); ++iUncert)
     ApplyUncertainty(theHists[fSysUncIndices[iUncert]], &(fUncerts[iUncert]));
 
+  for (auto* hist : theHists)
+    Message(eInfo, "Mean: %f, StdDev: %f", hist->GetMean(), hist->GetStdDev());
+
   return theHists;
 }
 

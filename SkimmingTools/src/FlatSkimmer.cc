@@ -108,6 +108,7 @@ void FlatSkimmer::Skim(TString fileName)
           if (eventsRecorded.find(testString) == eventsRecorded.end())
             eventsRecorded.insert(testString);
           else {
+            std::cerr << "Duplicate: " << testString << std::endl;
             duplicates++;
             continue;
           }

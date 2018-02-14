@@ -35,6 +35,9 @@ QuickPlot::MakeCanvas(TString FileBase, Int_t NumXBins, Double_t *XBins,
     hists.push_back(tempHist);
   }
 
+  for (auto* hist: hists)
+    Message(eInfo, "Mean: %f, StdDev: %f", hist->GetMean(), hist->GetStdDev());
+
   BaseCanvas(FileBase, hists, XLabel, "A.U.", logY);
 
   for (UInt_t i0 = 0; i0 != hists.size(); ++i0)

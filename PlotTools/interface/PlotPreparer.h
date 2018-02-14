@@ -18,6 +18,8 @@
 #include "ParallelRunner.h"
 #include "PlotUtils.h"
 
+TMutex root_lock;  // For doing sketchy ROOT things
+
 /**
    @ingroup plotgroup
    @class PlotInfo
@@ -197,14 +199,10 @@ PlotPreparer::RunFile(FileInfo& info) {
   auto filename = info.fFileName;
   output_lock.Lock();
   std::cout << "About to run over file " << filename.Data() << std::endl;
-  output_lock.UnLock();
 
   auto* inputfile = TFile::Open(filename);
-  TTree* inputtree;
-  if (fTreeName.Contains("/"))
-    inputtree = static_cast<TTree*>(inputfile->Get(fTreeName));
-  else
-    inputtree = static_cast<TTree*>(inputfile->FindObjectAny(fTreeName));
+  TTree* inputtree = fTreeName.Contains("/") ? static_cast<TTree*>(inputfile->Get(fTreeName)) : static_cast<TTree*>(inputfile->FindObjectAny(fTreeName));
+  output_lock.UnLock();
 
   std::set<TString> needed;
 
@@ -230,21 +228,29 @@ PlotPreparer::RunFile(FileInfo& info) {
     }
     inputtree->GetEntry(i_entry);
 
+    root_lock.Lock();
     for (auto& formula : formulas)
-      if (formula.second.first)
+      if (formula.second.first) {
         formula.second.second = formula.second.first->EvalInstance();
+      }
+    root_lock.UnLock();
 
     for (auto plot : plots)
-      if (plot->cut)
+      if (plot->cut) {
         plot->hist->Fill(plot->expr, plot->weight);
+      }
   }
 
+  root_lock.Lock();
   inputfile->Close();
+  root_lock.UnLock();
 
   for (auto plot : plots) {
     auto* hist = plot->hist;
     auto tempname = TempHistName();
+    root_lock.Lock();
     TH1D* tempHist = static_cast<TH1D*>(hist->Clone(TempHistName()));
+    root_lock.UnLock();
 
     for (Int_t iBin = 1; iBin != tempHist->GetNbinsX() + 1; ++iBin)
       tempHist->SetBinContent(iBin, tempHist->GetBinWidth(iBin)/plot->eventsper);

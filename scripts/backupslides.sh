@@ -35,7 +35,7 @@ do
     echo "\begin{frame}" >> $destination
     echo "   \frametitle{\small ${title//_/\\_}}" >> $destination
     echo "   \centering" >> $destination
-    echo "   \includegraphics[width=0.7\linewidth]{$f}" >> $destination
+    echo "   \includegraphics[width=0.6\linewidth]{$f}" >> $destination
     echo "\end{frame}" >> $destination
     echo "" >> $destination
 done

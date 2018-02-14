@@ -326,7 +326,9 @@ PlotStack::MakeCanvas(TString FileBase, std::vector<TH1D*> DataHists, std::vecto
   if (not DataHist->Integral()) {
     auto* match = AllHists[0];
     for (int i_bin = 1; i_bin <= NumXBins; ++i_bin) {
-      DataHist->SetBinContent(i_bin, match->GetBinContent(i_bin));
+      auto content = match->GetBinContent(i_bin);
+      DataHist->SetBinContent(i_bin, content);
+      DataHist->SetBinError(i_bin, sqrt(content));
     }
   }
 

@@ -330,6 +330,8 @@ if __name__ == '__main__':
         # Check job output, which also resubmits jobs
         jobs = check_jobs()
         LOG.info('Jobs remaining: %i', jobs)
+        LOG.info('Ended submit cycle %s',
+                 datetime.datetime.fromtimestamp(int(time.time())).strftime('%B %d, %Y %H:%M:%S'))
 
         if jobs:
             time.sleep(300)

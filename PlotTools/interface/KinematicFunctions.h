@@ -12,9 +12,11 @@
 #include "TVector2.h"
 #include "TLorentzVector.h"
 
-namespace {
+namespace crombie {
   const double pi = 3.14159265358979323846;
 }
+
+using crombie::pi;
 
 /// Make phi that are from [0, 2pi) to [-pi, pi)
 double make_pm(double phi) {

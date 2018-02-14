@@ -614,6 +614,8 @@ FileConfigReader::GetHistList(Int_t NumXBins, Double_t *XBins, std::vector<TStri
         continue;
 
       theHists[iFileName]->Scale((*theFileInfo)[iFile]->fXSecWeight);
+      Message(eDebug, "Scaling hist %i by %f, now integral %f",
+              iFileName, (*theFileInfo)[iFile]->fXSecWeight, theHists[iFileName]->Integral("width"));
 
       auto scale = fFitResult.find((*theFileInfo)[iFile]->fTreeName);
       if (scale != fFitResult.end()) {

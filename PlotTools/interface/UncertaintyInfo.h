@@ -26,14 +26,14 @@
 struct UncertaintyInfo
 {
   /// The constructor fills all of the entries
-  UncertaintyInfo ( TString UncVariable, TString FileName, TString HistName,
-                    Int_t StartBin = 1, Int_t EndBin = 0 ) {
-    fUncVariable = UncVariable;
-    fFileName = FileName;
-    fHistName = HistName;
-    fStartBin = StartBin;
-    fEndBin = EndBin;
-  }
+  UncertaintyInfo ( TString UncVariable = "", TString FileName = "", TString HistName = "",
+                    Int_t StartBin = 1, Int_t EndBin = 0 )
+  : fUncVariable{UncVariable},
+    fFileName{FileName},
+    fHistName{HistName},
+    fStartBin{StartBin},
+    fEndBin{EndBin}
+  {}
   virtual ~UncertaintyInfo()  {}
 
   TString fUncVariable;  ///< The variable that the uncertainty is a function of
