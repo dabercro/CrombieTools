@@ -298,7 +298,9 @@ if __name__ == '__main__':
                     branches = create_branches(var, 'F', default, is_saved)
                     if os.path.exists(weights) and is_saved:
                         xml_vars, xml_specs = ElementTree.parse(weights, ElementTree.XMLParser(target=MyXMLParser('Variable', 'Spectator', 'Expression'))).getroot()
-                        rep_pref = lambda x: [(v, v.replace(trained_with or Branch.branches[v].prefix or PREF_HOLDER, PREF_HOLDER)) for v in x]
+                        rep_pref = lambda x: [(v, v.replace(trained_with or (Branch.branches[v].prefix if Branch.branches[v].prefix in prefixes
+                                                                             else PREF_HOLDER), PREF_HOLDER))
+                                              for v in x]
                         inputs = rep_pref(xml_vars)
                         specs = rep_pref(xml_specs)
                         for reader in [Reader(weights, b.prefix, var, inputs, specs, subs) for b in branches]:

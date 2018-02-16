@@ -112,6 +112,8 @@ do
                 test -f $NEW_INPUT_DIR/$IN_FILE || xrdcp root://xrootd.cmsaf.mit.edu//$INPUT_DIR/$IN_FILE $NEW_INPUT_DIR/$IN_FILE
                 ln -s $NEW_INPUT_DIR/$IN_FILE $IN_FILE
 
+                sleep 20
+
                 if ! findtree.py $IN_FILE
                 then
                     rm $NEW_INPUT_DIR/$IN_FILE

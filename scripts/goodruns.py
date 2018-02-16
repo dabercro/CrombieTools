@@ -32,6 +32,7 @@ if __name__ == '__main__':
         output.write("""#ifndef CROMBIE_GOODRUN_H
 #define CROMBIE_GOODRUN_H 1
 
+#include <limits.h>
 #include <unordered_set>
 
 template <typename T>
@@ -45,7 +46,7 @@ bool checkrun(T run, T lumi) {
   static key_t last_key = 0;
   static bool last_result = false;
 
-  key_t key = (run << sizeof(T)) + lumi;
+  key_t key = (static_cast<key_t>(run) << (sizeof(T) * CHAR_BIT)) + lumi;
   if (key == last_key)
     return last_result;
   last_key = key;
@@ -54,7 +55,7 @@ bool checkrun(T run, T lumi) {
 """)
 
         output.write('    ' + ',\n    '.join(
-            sum([['(%s << sizeof(T)) + %s' % (run, lumi) for lumi in goodlumis[run]] for run in goodlumis], [])
+            sum([['(%sl << (sizeof(T) * CHAR_BIT)) + %s' % (run, lumi) for lumi in goodlumis[run]] for run in goodlumis], [])
         ))
 
         output.write("""
