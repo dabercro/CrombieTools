@@ -80,10 +80,10 @@ do
 
             ln -s $FULL_IN $IN_FILE
 
-            if [ -f $NEW_INPUT_DIR/$IN_FILE ]
-            then
-                rm $NEW_INPUT_DIR/$IN_FILE    # Clear up downloaded files no longer needed
-            fi
+#            if [ -f $NEW_INPUT_DIR/$IN_FILE ]
+#            then
+#                rm $NEW_INPUT_DIR/$IN_FILE    # Clear up downloaded files no longer needed
+#            fi
 
         else
 
@@ -112,11 +112,11 @@ do
                 test -f $NEW_INPUT_DIR/$IN_FILE || xrdcp root://xrootd.cmsaf.mit.edu//$INPUT_DIR/$IN_FILE $NEW_INPUT_DIR/$IN_FILE
                 ln -s $NEW_INPUT_DIR/$IN_FILE $IN_FILE
 
-                sleep 20
+                sleep 60
 
                 if ! findtree.py $IN_FILE
                 then
-                    rm $NEW_INPUT_DIR/$IN_FILE
+#                    rm $NEW_INPUT_DIR/$IN_FILE
                     STATUS="not_downloading"
                 fi
 

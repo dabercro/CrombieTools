@@ -68,12 +68,17 @@ class Parser:
             input_line = input_line.replace('->', '^^^')
             for matches in list(re.finditer(r'<([^<>{}]*){(.*?)}([^<>]*)>', input_line)) + list(re.finditer(r'<([^<>{}]*)\|([^\|]*?)\|([^<>\|]*)>', input_line)):
                 beg, end = ('<', '>') if '|' in matches.group(1) or '{' in matches.group(3) and '}' in matches.group(3) else ('', '')
-                input_line = input_line.replace(
-                    matches.group(0),
-                    beg + matches.group(1) +
-                    ('%s%s, %s%s' % (matches.group(3), end, beg, matches.group(1))).join([suff.strip() for suff in matches.group(2).split(',')]) +
-                    matches.group(3) + end
-                )
+                for splitter in [', ', ' + ', ' - ', ' * ', ' / ']:
+                    if splitter.strip() in matches.group(2):
+                        input_line = input_line.replace(
+                            matches.group(0),
+                            beg + matches.group(1) +
+                            ('%s%s%s%s%s' % (matches.group(3), end, splitter, beg, matches.group(1))).join(
+                                [suff.strip() for suff in matches.group(2).split(splitter.strip())]) +
+                            matches.group(3) + end
+                            )
+                        break
+
             input_line = input_line.replace('^^^', '->')
 
 
