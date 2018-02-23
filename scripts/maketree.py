@@ -29,6 +29,8 @@ RESET_SIGNATURE = 'reset()'
 FILL_SIGNATURE = 'fill()'
 FILTER = {'--': [], '++': []}
 
+DEFINITIONS = {}
+
 PREF_HOLDER = '[]'
 
 class MyXMLParser:
@@ -62,6 +64,9 @@ class Parser:
         # Skip empty lines or comments (!)
         if not input_line:
             return []
+
+        for word, meaning in DEFINITIONS.iteritems():
+            input_line = input_line.replace(word, meaning)
 
         start = ''
         while input_line != start:
@@ -250,6 +255,12 @@ if __name__ == '__main__':
                 match = re.match(r'COMPRESSION\s+(\d)', line)
                 if match:
                     COMPRESSION_LEVEL = match.group(1)
+                    continue
+
+                # Define a "macro" for the config file
+                match = re.match(r'DEFINE\s+(\w+)\s+(.*)', line)
+                if match:
+                    DEFINITIONS[match.group(1)] = match.group(2)
                     continue
 
                 # Check for default values or reset function signature
