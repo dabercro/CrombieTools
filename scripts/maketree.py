@@ -162,15 +162,12 @@ class Function:
         else:
             signature = signature.replace('(', '(const ')
         self.signature = 'set_' + signature.replace(', ', ', const ').replace(', const )', ')')
-        self.template = ''
         template_args = []
         for match in re.finditer(r'<(.)>', self.signature):
             template_args.append(match.group(1))
             self.signature = self.signature.replace(match.group(0), match.group(1))
 
-        if template_args:
-            self.template = 'template <typename %s> ' % ', typename '.join(template_args)
-
+        self.template = 'template <typename %s> ' % ', typename '.join(template_args) if template_args else ''
         self.variables = []
 
     def add_var(self, variable, value):
