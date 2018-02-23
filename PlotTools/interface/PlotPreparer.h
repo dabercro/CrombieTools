@@ -228,12 +228,10 @@ PlotPreparer::RunFile(FileInfo& info) {
     }
     inputtree->GetEntry(i_entry);
 
-    root_lock.Lock();
     for (auto& formula : formulas)
       if (formula.second.first) {
         formula.second.second = formula.second.first->EvalInstance();
       }
-    root_lock.UnLock();
 
     for (auto plot : plots)
       if (plot->cut) {
@@ -258,7 +256,9 @@ PlotPreparer::RunFile(FileInfo& info) {
 
     Division(hist, tempHist);
 
+    root_lock.Lock();
     delete tempHist;
+    root_lock.UnLock();
 
     if (info.fXSec > 0)
       hist->Scale(info.fXSecWeight);
