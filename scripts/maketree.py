@@ -22,6 +22,7 @@ TYPES = {
     'O': 'Bool_t'
 }
 
+COMPRESSION_LEVEL = '1'
 DEFAULT_TYPE = 'F'
 DEFAULT_VAL = '0'
 RESET_SIGNATURE = 'reset()'
@@ -161,6 +162,15 @@ class Function:
         else:
             signature = signature.replace('(', '(const ')
         self.signature = 'set_' + signature.replace(', ', ', const ').replace(', const )', ')')
+        self.template = ''
+        template_args = []
+        for match in re.finditer(r'<(.)>', self.signature):
+            template_args.append(match.group(1))
+            self.signature = self.signature.replace(match.group(0), match.group(1))
+
+        if template_args:
+            self.template = 'template <typename %s> ' % ', typename '.join(template_args)
+
         self.variables = []
 
     def add_var(self, variable, value):
@@ -168,7 +178,7 @@ class Function:
         self.variables.append(new_var)
 
     def declare(self, functions):
-        output = '{0}void %s;' % (self.signature)
+        output = '{0}%svoid %s;' % (self.template, self.signature)
 
         for func in functions:
             # Just use the first occurance of an identical enum class
@@ -209,10 +219,10 @@ class Function:
         else:
             middle = '\n'.join([self.var_line(var.lstrip('_'), val, '') for var, val in self.variables])
 
-        return """void %s::%s {
+        return """%svoid %s::%s {
 %s
 }
-""" % (classname, self.signature, middle)
+""" % (self.template, classname, self.signature, middle)
 
 if __name__ == '__main__':
     classname = os.path.basename(sys.argv[1]).split('.')[0]
@@ -237,6 +247,12 @@ if __name__ == '__main__':
                 match = re.match(r'^([<"].*[">])$', line)
                 if match:
                     includes.append(match.group(1))
+                    continue
+
+                # Compression level
+                match = re.match(r'COMPRESSION\s+(\d)', line)
+                if match:
+                    COMPRESSION_LEVEL = match.group(1)
                     continue
 
                 # Check for default values or reset function signature
@@ -396,11 +412,12 @@ if __name__ == '__main__':
 
         # Initialize the class
         write("""%s::%s(const char* outfile_name, const char* name)
-: f {new TFile(outfile_name, "CREATE")},
+: f {new TFile(outfile_name, "CREATE", "", %s)},
   t {new TTree(name, name)}
 {
   %s
-%s%s%s}""" % (classname, classname, '\n  '.join(['t->Branch("{0}", &{0}, "{0}/{1}");'.format(b.name, b.data_type) for b in all_branches if b.is_saved]),
+%s%s%s}""" % (classname, classname, COMPRESSION_LEVEL,
+              '\n  '.join(['t->Branch("{0}", &{0}, "{0}/{1}");'.format(b.name, b.data_type) for b in all_branches if b.is_saved]),
               ''.join(['  %s.AddVariable("%s", &%s);\n' % (reader.name, label, var) for reader in Reader.readers for label, var in reader.inputs]),
               ''.join(['  %s.AddSpectator("%s", &%s);\n' % (reader.name, label, var) for reader in Reader.readers for label, var in reader.specs]),
               ''.join(['  %s = %s.BookMVA("%s", "%s");\n' % (reader.method, reader.name, reader.output, reader.weights) for reader in Reader.readers])))
