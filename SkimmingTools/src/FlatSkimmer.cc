@@ -74,8 +74,8 @@ void FlatSkimmer::Skim(TString fileName)
 
   TTreeFormula *cutter = new TTreeFormula("cutter",fCut,inTree);
 
-  Int_t runNum  = 0;
-  Int_t lumiNum = 0;
+  UInt_t runNum  = 0;
+  UInt_t lumiNum = 0;
   ULong64_t eventNum = 0;
   inTree->SetBranchAddress(fRunExpr,&runNum);
   inTree->SetBranchAddress(fLumiExpr,&lumiNum);

@@ -57,9 +57,19 @@ class Parser:
     def __init__(self, comment='!'):
         self.defs = {}
         self.comment = comment
+        self.prev_line = ''           # Holds line continuations
 
     def parse(self, raw_line):
         input_line = raw_line.split(self.comment)[0].strip()
+
+        if self.prev_line:
+            input_line = self.prev_line + input_line
+
+        if input_line and input_line[-1] == '\\':    # line continuation
+            self.prev_line = input_line[:-1]
+            return []
+        else:
+            self.prev_line = ''
 
         # Skip empty lines or comments (!)
         if not input_line:

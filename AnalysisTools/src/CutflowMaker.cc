@@ -1,3 +1,4 @@
+#include <algorithm>
 #include <iostream>
 #include <iomanip>
 
@@ -26,20 +27,24 @@ CutflowMaker::GetCutflow(UInt_t index)
     TTreeFormula *tempFormula;
     std::set<TString> needed;
 
-    for (UInt_t iCut = 0; iCut != fCuts.size(); ++iCut) {
+    for (auto& cut : fCuts) {
+      AddNecessaryBranches(needed, inTree, cut);
+    }
 
+    inTree->SetBranchStatus("*", 0);
+    for (auto need : needed) {
+      Message(eDebug, "Enabling %s", need.Data());
+      inTree->SetBranchStatus(need, 1);
+    }
+
+    for (UInt_t iCut = 0; iCut != fCuts.size(); ++iCut) {
       tempFormula = new TTreeFormula(fCutNames[iCut], fCuts[iCut], inTree);
       tempFormula->SetQuickLoad(true);
       formulae.push_back(tempFormula);
       fYields.push_back(0);
-      AddNecessaryBranches(needed, inTree, fCuts[iCut]);
-
     }
 
     Int_t numEntries = inTree->GetEntriesFast();
-    inTree->SetBranchStatus("*", 0);
-    for (auto need : needed)
-      inTree->SetBranchStatus(need, 1);
 
     for (Int_t iEntry = 0; iEntry != numEntries; ++iEntry) {
 
@@ -70,11 +75,15 @@ CutflowMaker::PrintCutflow(TableType table)
   GetCutflow(0);
   std::cout << std::endl;
 
+  auto max_length = std::max_element(fCuts.begin(), fCuts.end(),
+                                     [] (const TString& str1, const TString& str2)
+                                     {return str1.Length() < str2.Length();})->Length();
+
   for (UInt_t iCut = 0; iCut != fCuts.size(); ++iCut) {
 
     if (table != kNumbers) {
 
-      std::cout << std::setw(40);
+      std::cout << std::setw(max_length + 2);
       std::cout << fCutNames[iCut];
 
         if (table == kLatex)

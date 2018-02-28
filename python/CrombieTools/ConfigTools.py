@@ -15,7 +15,7 @@ def TreeList(*args):
     @param args are the file locations of the Configuration file to read the tree lists from
     """
 
-    output = []
+    output = set()
 
     for config in args:
         if not os.path.exists(config):
@@ -28,8 +28,11 @@ def TreeList(*args):
                 split_line = in_line.split()
 
                 if split_line:
-                    treename = split_line[0].lstrip('#')
+                    raw = split_line[0]
+                    treename = raw.lstrip('#')
                     if treename != '.':
-                        output.append(treename)
+                        lastname = treename
+                    if raw[0] != '#':
+                        output.add(lastname)
 
     return output
