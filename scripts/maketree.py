@@ -335,7 +335,7 @@ if __name__ == '__main__':
 
                     default = match.group(7) or DEFAULT_VAL
                     branches = create_branches(var, 'F', default, is_saved)
-                    if os.path.exists(weights) and is_saved:
+                    if is_saved:
                         xml_vars, xml_specs = ElementTree.parse(weights, ElementTree.XMLParser(target=MyXMLParser('Variable', 'Spectator', 'Expression'))).getroot()
                         rep_pref = lambda x: [(v, v.replace(trained_with or (Branch.branches[v].prefix if Branch.branches[v].prefix in prefixes
                                                                              else PREF_HOLDER), PREF_HOLDER))
