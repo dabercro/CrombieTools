@@ -1,18 +1,22 @@
 #! /usr/bin/env python
 
-import ROOT
-
 import sys
+argv = sys.argv
+sys.argv = [sys.argv[0]]
+
+import ROOT
+import CrombieTools  # Needed for KinematicFunctions.h
+
 import logging
 
 logging.basicConfig(level=logging.INFO)
 
 if __name__ == '__main__':
-    in_file = sys.argv[1]
-    out_file = sys.argv[2]
-    cut = sys.argv[3]
+    in_file = argv[1]
+    out_file = argv[2]
+    cut = argv[3]
 
-    dump = sys.argv[4:] if len(sys.argv) > 4 else ['runNumber', 'lumiNumber', 'eventNumber']
+    dump = argv[4:] if len(argv) > 4 else ['runNumber', 'lumiNumber', 'eventNumber']
     to_scan = ':'.join(dump)
 
     logging.info('Input file %s', in_file)

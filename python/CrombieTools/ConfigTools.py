@@ -8,6 +8,9 @@ These are quick parsers for the FileConfigs for minor things that might be neede
 """
 
 import os
+from collections import defaultdict
+
+FileLists = defaultdict(lambda: [])
 
 def TreeList(*args):
     """Get list of tree names from a config file
@@ -34,5 +37,6 @@ def TreeList(*args):
                         lastname = treename
                     if raw[0] != '#':
                         output.add(lastname)
+                        FileLists[lastname].append(split_line[1])
 
     return output

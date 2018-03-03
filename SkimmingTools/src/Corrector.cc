@@ -4,7 +4,9 @@
   @author Daniel Abercrombie <dabercro@mit.edu>
 */
 
+#include <cassert>
 #include <regex>
+#include <utility>
 
 #include "TAxis.h"
 #include "Corrector.h"
@@ -79,15 +81,20 @@ Double_t Corrector::GetFormulaResult(Int_t index, Bool_t use_mins)
   if (not use_mins)
     return eval;
 
-  if (eval < fMins[index])
+  auto minmax = bin_num ?
+    make_pair(bin_min, bin_max) :
+    make_pair(fMins[index], fMaxs[index]);
+
+  if (eval < minmax.first)
     eval = fMins[index];
-  else if (eval > fMaxs[index])
+  else if (eval > minmax.second)
     eval = fMaxs[index];
   return eval;
 }
 
 //--------------------------------------------------------------------
 Float_t Corrector::DoEval() {
+
   Double_t evalX = GetFormulaResult(0);
   if (fNumDims > 1) {
     Double_t evalY = GetFormulaResult(1);
@@ -96,6 +103,10 @@ Float_t Corrector::DoEval() {
       return fCorrectionHist->GetBinContent(fCorrectionHist->FindBin(evalX, evalY, evalZ));
     }
     return fCorrectionHist->GetBinContent(fCorrectionHist->FindBin(evalX, evalY));
+  }
+  if (bin_num) {
+    assert(bin_num == fCorrectionHist->GetNbinsX());
+    return fCorrectionHist->GetBinContent((evalX - bin_min)/(bin_max - bin_max) * bin_num + 1);
   }
   return fCorrectionHist->GetBinContent(fCorrectionHist->FindBin(evalX));
 }

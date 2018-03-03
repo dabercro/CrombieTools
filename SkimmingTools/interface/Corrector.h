@@ -91,6 +91,9 @@ class Corrector : virtual public Debug
 
   bool                  Merge = true;     ///< Flag determining whether or not to merge into the CorrectorApplicator branch
 
+  /// Set the binning when the histograms do not store the correct x values
+  void                  SetBinning                  ( UInt_t num, Double_t min, Double_t max ) { bin_num = num; bin_min = num; bin_max = max; }
+
  protected:
 
   TString               fName;                        ///< Name of branch to write to
@@ -119,6 +122,10 @@ class Corrector : virtual public Debug
   std::vector<Double_t>       fMins;                  ///< Minimum possible values of each axis
   std::vector<Double_t>       fMaxs;                  ///< Maximum possible values of each axis
   HistReader                  fHistReader = eValue;   ///< The method to reading histograms
+
+  UInt_t bin_num = 0;                                 ///< Used if the binning of the histograms is off
+  Double_t bin_min = 0;
+  Double_t bin_max = 0;
 
   TString               fMatchFileName = "";
 
