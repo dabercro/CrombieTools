@@ -189,7 +189,9 @@ def submit(jobs):
     # Check that the configuration file exists first.
     if os.path.exists(config_file):
         report_submission(jobs)
-        return os.system('condor_submit %s' % config_file)
+        os.system('condor_submit %s' % config_file)
+        print 'Submitted jobs, sleeping'
+        time.sleep(1200)
 
 
 def check_jobs():
@@ -255,15 +257,15 @@ def check_jobs():
     for job in finished_job:
         jobs.pop(jobs.index(job))
 
-    # Remove the held jobs
-    submit(resub)
 
     conn.commit()
     conn.close()
 
     LOG.info('Total jobs to finish: %i', len(jobs))
     LOG.info('Already running: %i', len(running_jobs))
-    LOG.info('Resubmitted: %i', len(resub))
+    LOG.info('To resubmit: %i', len(resub))
+
+    submit(resub)
 
     if len(jobs) > (len(running_jobs) + len(resub)):
         return check_jobs()
