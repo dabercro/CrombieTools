@@ -55,7 +55,10 @@ class ObjectStore {
       num_filled++;
     // Insertion sort: find location
     for (;it != store.begin(); --it) {
-      if ((result < (it - 1)->result) == (which_order == order::eDesc))
+      // Keep this stable
+      if ((result == (it - 1)->result) ||
+          ((result < (it - 1)->result) == (which_order == order::eDesc))
+          )
         break;
     }
     // Insertion sort: move elements down

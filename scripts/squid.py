@@ -219,6 +219,7 @@ def check_jobs():
         resub.append(job)
         curs.execute("UPDATE queue SET status = 'failed' WHERE id = %s", job[0])
         
+    finished_job = []
 
     for job in jobs:
         # If running, do nothing
@@ -241,7 +242,7 @@ def check_jobs():
 
                 curs.execute("UPDATE queue SET status = 'finished' WHERE id = %s", job[0])
                 LOG.info('Job %s finished', job[0])
-                jobs.pop(jobs.index(job))
+                finished_job.append(job)
 
             except subprocess.CalledProcessError:
                 LOG.warning('Bad file %s', output_file)
@@ -251,6 +252,8 @@ def check_jobs():
             LOG.warning('File %s does not exist!', output_file)
             add_resub(job)
 
+    for job in finished_job:
+        jobs.pop(jobs.index(job))
 
     # Remove the held jobs
     submit(resub)
@@ -322,6 +325,8 @@ if __name__ == '__main__':
 
     # Submit new jobs
     if len(sys.argv) > 1:
+        # Make sure newest executable is installed
+        os.system('make install')
         submit(add_samples_to_database(sys.argv[1]))
 
     while jobs:
