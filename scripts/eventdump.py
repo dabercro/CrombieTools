@@ -12,6 +12,10 @@ import logging
 logging.basicConfig(level=logging.INFO)
 
 if __name__ == '__main__':
+    if len(argv) == 1:
+        print 'USAGE %s INFILE OUTFILE CUT [BRANCH [BRANCH ...]]' % argv[0]
+        exit(0)
+
     in_file = argv[1]
     out_file = argv[2]
     cut = argv[3]
