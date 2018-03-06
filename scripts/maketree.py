@@ -79,9 +79,10 @@ class Parser:
             input_line = input_line.replace(word, meaning)
 
         start = ''
+        pointer_holder = '^&^&^'
         while input_line != start:
             start = input_line
-            input_line = input_line.replace('->', '^^^')
+            input_line = input_line.replace('->', pointer_holder)
             for matches in list(re.finditer(r'<([^<>{}]*){(.*?)}([^<>]*)>', input_line)) + list(re.finditer(r'<([^<>{}]*)\|([^\|]*?)\|([^<>\|]*)>', input_line)):
                 beg, end = ('<', '>') if '|' in matches.group(1) or '{' in matches.group(3) and '}' in matches.group(3) else ('', '')
                 for splitter in [', ', ' + ', ' - ', ' * ', ' / ']:
@@ -95,7 +96,7 @@ class Parser:
                             )
                         break
 
-            input_line = input_line.replace('^^^', '->')
+            input_line = input_line.replace(pointer_holder, '->')
 
 
         match = re.match(r'(.*)\|([^\s])?\s+(.*)', input_line)  # Search for substitution
@@ -144,7 +145,8 @@ class Branch:
 
 class Reader:
     readers = []
-    def __init__(self, weights, prefix, output, inputs, specs, subs):
+    holders = set()
+    def __init__(self, weights, prefix, output, inputs, specs, subs, systematics):
         self.weights = weights
         self.output = ('%s_%s' % (prefix, output)).strip('_')
         sub_pref = lambda x: [(label, subs.get(inp, inp).replace(PREF_HOLDER, prefix) if prefix else label)
@@ -155,6 +157,7 @@ class Reader:
         self.method = 'method_%s' % self.output
         self.floats = []
         self.readers.append(self)
+        self.systematics = systematics.strip('{}').replace(PREF_HOLDER, prefix) if systematics else None
 
     def float_inputs(self, mod_fill):
         for index, inp in enumerate(self.inputs):
@@ -167,8 +170,58 @@ class Reader:
                     mod_fill.insert(0, '%s = %s;' % (newaddress, address))
                     self.floats.append(newaddress)
 
+    def implement_systematics(self):
+        output = []
+        if self.systematics:
+            original_branch = Branch.branches[self.output]
+
+            for sys in self.systematics.split(';'):
+                settings = sys.split(',')
+                to_vary = settings[0].strip().split()
+                sys = to_vary[-1].split(original_branch.prefix)[1]
+                following = [var.strip() for var in settings[1:]]
+                for moved in to_vary[:1] + following:
+                    declare = 'decltype({moved}) '.format(moved=moved)
+                    tmpname = '_syshold_{moved}{sys}'.format(moved=moved, sys=sys)
+                    if tmpname in self.holders:
+                        declare = ''
+                    self.holders.add(tmpname)
+                    output.append(
+                        (declare + tmpname + ' = {moved};').format(
+                            moved=moved))
+                for direction in ['Up', 'Down']:
+                    for follower in following:
+                        output.append(
+                            '{follow} *= {mover}{direction}/{moved};'.format(
+                                moved=to_vary[0], mover=to_vary[-1], direction=direction,
+                                follow=follower))
+
+                    output.append(
+                        '{moved} = {mover}{direction};'.format(
+                            moved=to_vary[0], mover=to_vary[-1], direction=direction))
+
+                    # Save to branch
+                    outputname = '{base}{sys}{direction}'.format(
+                        base=self.output, sys=sys, direction=direction)
+
+                    # Call to create branch
+                    new_branch = Branch(original_branch.prefix, outputname, original_branch.data_type,
+                                        original_branch.default_val, original_branch.is_saved)
+
+                    # Set systematic branch
+                    output.append('{output} = {method}->GetMvaValue();'.format(output=outputname, method=self.method))
+
+                    # Put everything back
+                    for moved in to_vary[:1] + following:
+                        output.append(
+                            '{moved} = _syshold_{moved}{sys};'.format(
+                                moved=moved, sys=sys))
+
+        return output
+
 
 class Function:
+    local_tag = 'LOCAL_VAR'
     def __init__(self, signature, prefixes):
         self.enum_name = re.match(r'(.*)\(.*\)', signature).group(1)
         self.prefixes = prefixes
@@ -184,10 +237,15 @@ class Function:
 
         self.template = 'template <typename %s> ' % ', typename '.join(template_args) if template_args else ''
         self.variables = []
+        self.tmp_vars = []
 
     def add_var(self, variable, value):
-        new_var = (variable, value) if value == '~~' else (('_%s' % variable).rstrip('_'), value)
+        new_var = (variable, value) if '~' in value else (('_%s' % variable).rstrip('_'), value)
         self.variables.append(new_var)
+
+    def add_tmp_var(self, line):
+#        self.variables.append(line, self.local_tag)
+        self.tmp_vars.append(line)
 
     def declare(self, functions):
         output = '{0}%svoid %s;' % (self.template, self.signature)
@@ -213,8 +271,11 @@ class Function:
         incr = ['++', '--']
         if val in incr:
             return '    %s%s%s;' % (val, pref, var)
-        elif val == '~~':
-            return '    if (!(%s))\n      return;' % (var)
+        elif '~' in val:
+            return '    if (!(%s))\n      %s;' % (var.replace(PREF_HOLDER, pref),
+                                                  'return' if len(val) == 2 else 'throw')
+        elif val == self.local_tag:
+            return '    %s;' % var.pref()
         return'    %s%s = %s;' % (pref, var, val.replace(PREF_HOLDER, pref))
 
     def implement(self, classname):
@@ -232,9 +293,11 @@ class Function:
             middle = '\n'.join([self.var_line(var.lstrip('_'), val, '') for var, val in self.variables])
 
         return """%svoid %s::%s {
-%s
+%s%s
 }
-""" % (self.template, classname, self.signature, middle)
+""" % (self.template, classname, self.signature,
+       '\n'.join(['    %s;' % var for var in self.tmp_vars]),
+       middle)
 
 if __name__ == '__main__':
     classname = os.path.basename(sys.argv[1]).split('.')[0]
@@ -305,7 +368,7 @@ if __name__ == '__main__':
                     continue
 
                 # Get functions for setting values
-                match = re.match('^(\w+\(.+\))$', line)
+                match = re.match('^(\w+\(.*\))$', line)
                 if match:
                     # Pass off previous function as quickly as possible to prevent prefix changing
                     if in_function:
@@ -316,7 +379,7 @@ if __name__ == '__main__':
                     continue
 
                 # Get TMVA information to evaluate
-                match = re.match(r'^(\#\s*)?\[([^;]*);\s*([^;]*)(;\s*(.*))?\](\s?=\s?(.*))?$', line)
+                match = re.match(r'^(\#\s*)?\[([^;]*);\s*([^;]*)(;\s*(.*))?\](\s?=\s?([^{}]*))?\s?({[^}]*})?$', line)
                 if match:
                     if '"TMVA/Reader.h"' not in includes:
                         includes.append('"TMVA/Reader.h"')
@@ -333,6 +396,8 @@ if __name__ == '__main__':
                                 info = line.split()
                                 subs[info[0]] = info[1]
 
+                    systematics = match.group(8)
+
                     default = match.group(7) or DEFAULT_VAL
                     branches = create_branches(var, 'F', default, is_saved)
                     if is_saved:
@@ -342,7 +407,8 @@ if __name__ == '__main__':
                                               for v in x]
                         inputs = rep_pref(xml_vars)
                         specs = rep_pref(xml_specs)
-                        for reader in [Reader(weights, b.prefix, var, inputs, specs, subs) for b in branches]:
+                        for reader in [Reader(weights, b.prefix, var, inputs, specs, subs, systematics) for b in branches]:
+                            mod_fill.extend(reader.implement_systematics())
                             mod_fill.append('%s = %s->GetMvaValue();' % (reader.output, reader.method))
 
                     continue
@@ -355,12 +421,18 @@ if __name__ == '__main__':
                     continue
 
                 # A cut inside a function
-                match = re.match(r'~~\s*(.*?)\s*~~', line)
+                match = re.match(r'(~{2,3})\s*(.*?)\s*(~{2,})', line)
                 if match:
                     # Only valid if in a function
-                    in_function.add_var(match.group(1), '~~')
+                    in_function.add_var(match.group(2), match.group(1))
                     continue
 
+                # Add variable for beginning of function
+                match = re.match(r'^\((.*)\)$', line)
+                if match:
+                    if in_function is not None:
+                        in_function.add_tmp_var(match.group(1))
+                    continue
 
                 # Add branch names individually
                 match = re.match(r'(\#\s*)?(\w*)(/(\w))?(\s?=\s?([\w\.\(\)]+))?(\s?->\s?(.*?))?(\s?<-\s?(.*?))?$', line)

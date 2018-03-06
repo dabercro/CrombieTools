@@ -76,31 +76,28 @@ double vectorSum3Pt(double pt1, double phi1, double pt2, double phi2,double pt3,
 	       pow(pt1*sin(phi1) + pt2*sin(phi2) + pt3*sin(phi3),2) );
 }
 
-/// Mass of a mother of two massive particles
-double vectorSumMass(double pt1, double eta1, double phi1, double mass1, double pt2, double eta2, double phi2, double mass2) {
+/// TLorentz Vector of two particles
+TLorentzVector vectorSum(double pt1, double eta1, double phi1, double mass1, double pt2, double eta2, double phi2, double mass2) {
   TLorentzVector vec1;
   TLorentzVector vec2;
-  TLorentzVector vec3;
   vec1.SetPtEtaPhiM(pt1,eta1,phi1,mass1);
   vec2.SetPtEtaPhiM(pt2,eta2,phi2,mass2);
-  vec3 = vec1 + vec2;
-  return vec3.M();
+  return vec1 + vec2;
+}
+
+/// Mass of a mother of two massive particles
+double vectorSumMass(double pt1, double eta1, double phi1, double mass1, double pt2, double eta2, double phi2, double mass2) {
+  return vectorSum(pt1, eta1, phi1, mass1, pt2, eta2, phi2, mass2).M();
 }
 
 /// Mass of a mother of two massless particles
 double vectorSumMass(double pt1, double eta1, double phi1, double pt2, double eta2, double phi2) {
-  return vectorSumMass(pt1,eta1,phi1,0.0,pt2,eta2,phi2,0.0);
+  return vectorSumMass(pt1, eta1, phi1, 0.0, pt2, eta2, phi2, 0.0);
 }
 
 /// Eta of a mother of two particles
-double vectorSumEta(double pt1, double eta1, double phi1, double pt2, double eta2, double phi2) {
-  TLorentzVector vec1;
-  TLorentzVector vec2;
-  TLorentzVector vec3;
-  vec1.SetPtEtaPhiM(pt1,eta1,phi1,0);
-  vec2.SetPtEtaPhiM(pt2,eta2,phi2,0);
-  vec3 = vec1 + vec2;
-  return vec3.Eta();
+double vectorSumEta(double pt1, double eta1, double phi1, double mass1, double pt2, double eta2, double phi2, double mass2) {
+  return vectorSum(pt1, eta1, phi1, mass1, pt2, eta2, phi2, mass2).Eta();
 }
 
 /// Calculate uPerp given reconstructed recoil and boson phi
