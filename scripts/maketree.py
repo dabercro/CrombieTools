@@ -33,6 +33,29 @@ DEFINITIONS = {}
 
 PREF_HOLDER = '[]'
 
+class Prefix:
+    prefs = {}
+    def __init__(self, pref, parent):
+        self.val = '%s%s' % (parent or '', pref)
+        self.parent = parent
+        self.prefs[self.val] = self
+
+    @staticmethod
+    def get(prefix):
+        try:
+            return Prefix.prefs[prefix]
+        except KeyError:
+            return Prefix(prefix, None)
+
+    def replace(self, string):
+        return string.replace('[]', self.val).replace('[^]', self.parent or '')
+
+    def go_back(self, line):
+        line = re.sub(r'\b' + re.escape(self.val), '[]', line)
+        if self.parent:
+            line = re.sub(r'(.+?)\b' + re.escape(self.parent) + r'(\w)', r'\1[^]\2', line)
+        return line
+
 
 prefixes = []   # Unfortunately, I wrote a lot of code with this global name already, so let's use it
 class Prefixes:
@@ -42,6 +65,12 @@ class Prefixes:
         self.parent = copy.deepcopy(self.current)
         inputs = [comp.strip() for comp in components.split(',')]
         self.prefs = ['%s%s' % (pref, comp) for pref in prefixes for comp in inputs] or inputs if not addition else prefixes + inputs
+        if not addition:
+            loop = prefixes or [None]
+            for parent in loop:
+                for comp in inputs:
+                    Prefix(comp, parent)
+
         prefixes = self.prefs
         Prefixes.current = self
 
@@ -85,18 +114,18 @@ def check_uncertainties(input_line):
 
     # This shit is messy
     if prefixes:
-        pref = prefixes[0]
+        pref = Prefix.get(prefixes[0])
         for unc, val in Uncertainty.uncs.items():
             beginning = re.match(r'(^\w*)', input_line.lstrip('#')).group(1)
 
-            if '%s_%s' % (pref, beginning) in val.branches:
+            if beginning.endswith('Up') or beginning.endswith('Down') or '%s_%s' % (pref.val, beginning) in val.branches:
                 continue
 
-            check_line = input_line.replace(PREF_HOLDER, pref)
+            check_line = pref.replace(input_line)
             for branch in val.branches:
                 check_line = re.sub(r'\b' + re.escape(branch) + r'\b', '%s_%sUp' % (branch, unc), check_line)
 
-            check_line = re.sub(r'\b' + re.escape(pref), PREF_HOLDER, check_line)
+            check_line = pref.go_back(check_line)
 
             if check_line != input_line:
                 val.update(['%s_%s_%s' % (p, beginning, unc) for p in prefixes])
@@ -181,17 +210,19 @@ class Parser:
             unc_name = match.group(2)
             if unc_name not in Uncertainty.uncs:
                 Uncertainty(unc_name)
-            branches = [match.group(1)] + [branch.strip() for branch in match.group(4).split(',') if branch]
+
+            followers = match.group(4) or ''
+            branches = [match.group(1)] + [branch.strip() for branch in followers.split(',') if branch]
             new_lines = []
             if len(branches) > 1:
                 new_lines.append('~~~ []_%s ~~~' % match.group(1))
 
-            for direction in 'Up', 'Down':
-                new_master = '%s_%s%s' % (match.group(1), unc_name, direction)
-                new_lines.append(new_master + match.group(5).rstrip() + direction)
-                for branch in branches[1:]:
-                    new_lines.append('%s_%s%s' % (branch, unc_name, direction) + match.group(6) +
-                                     '[]_%s * []_%s/[]_%s' % (branch, new_master, match.group(1)))
+            new_master = '%s_%s##' % (match.group(1), unc_name)
+            ending = ' |# up, down'
+            new_lines.append(new_master + match.group(5).rstrip() + ending)
+            for branch in branches[1:]:
+                new_lines.append('%s_%s##' % (branch, unc_name) + match.group(6) +
+                                 '[]_%s * []_%s/[]_%s' % (branch, new_master, match.group(1)) + ending)
 
             return [line for l in new_lines for line in self.parse(l)]
             
@@ -224,7 +255,7 @@ class Reader:
     def __init__(self, weights, prefix, output, inputs, specs, subs, systematics):
         self.weights = weights
         self.output = ('%s_%s' % (prefix, output)).strip('_')
-        sub_pref = lambda x: [(label, subs.get(inp, inp).replace(PREF_HOLDER, prefix) if prefix else label)
+        sub_pref = lambda x: [(label, Prefix.get(prefix).replace(subs.get(inp, inp)) if prefix else label)
                               for label, inp in x]
         self.inputs = sub_pref(inputs)
         self.specs = sub_pref(specs)
@@ -333,22 +364,29 @@ class Function:
 
                 return output.format('')
 
-        return output.format("""
+        if self.prefixes:
+            return output.format("""
   enum class %s {
     %s
   };
   """ % (self.enum_name, ',\n    '.join(self.prefixes)))
+        return output.format('')
 
     def var_line(self, var, val, pref):
         incr = ['++', '--']
         if val in incr:
             return '    %s%s%s;' % (val, pref, var)
         elif '~' in val:
-            return '    if (!(%s))\n      %s;' % (var.replace(PREF_HOLDER, pref),
+            return '    if (!(%s))\n      %s;' % (Prefix.get(pref).replace(var),
                                                   'return' if len(val) == 2 else 'throw')
         elif val == self.local_tag:
             return '    %s;' % var.pref()
-        return'    %s%s = %s;' % (pref, var, val.replace(PREF_HOLDER, pref))
+
+        op = '='
+        if val[0] in '+-*/':
+            op = val[0] + '='
+            val = val[1:]
+        return'    %s%s %s %s;' % (pref, var, op, Prefix.get(pref).replace(val))
 
     def implement(self, classname):
         if self.prefixes:
@@ -512,7 +550,7 @@ if __name__ == '__main__':
 
                         if match.group(9):
                             for b in branches:
-                                mod_fill.append('%s = %s;' % (b.name, match.group(10).replace(PREF_HOLDER, b.prefix)))
+                                mod_fill.append('%s = %s;' % (b.name, Prefix.get(b.prefix).replace(match.group(10))))
 
     ## Finished parsing the configuration file
 
