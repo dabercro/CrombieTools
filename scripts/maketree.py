@@ -33,24 +33,90 @@ DEFINITIONS = {}
 
 PREF_HOLDER = '[]'
 
-class MyXMLParser:
-    def __init__(self, tag, spec_tag, member):
-        self.tag = tag
-        self.spec_tag = spec_tag
-        self.member = member
-        self.output = []
-        self.spectators = []
-    def start(self, tag, attr):
-        if tag == self.tag:
-            self.output.append(attr[self.member])
-        elif tag == self.spec_tag:
-            self.spectators.append(attr[self.member])
-    def end(self, _):
-        pass
-    def data(self, _):
-        pass
-    def close(self):
-        return self.output, self.spectators
+
+prefixes = []   # Unfortunately, I wrote a lot of code with this global name already, so let's use it
+class Prefixes:
+    current = None
+    def __init__(self, addition, components):
+        global prefixes
+        self.parent = copy.deepcopy(self.current)
+        inputs = [comp.strip() for comp in components.split(',')]
+        self.prefs = ['%s%s' % (pref, comp) for pref in prefixes for comp in inputs] or inputs if not addition else prefixes + inputs
+        prefixes = self.prefs
+        Prefixes.current = self
+
+    def get_parent(self):
+        global prefixes
+        Prefixes.current = self.parent
+        prefixes = self.parent.prefs if self.parent else []
+        
+
+class Branch:
+    branches = {}
+    floats = set()
+    def __init__(self, pref, name, data_type, default_val, is_saved):
+        self.prefix = pref
+        self.name = name
+        self.data_type = data_type
+        self.default_val = default_val
+        self.is_saved = is_saved
+        self.branches[self.name] = self
+
+
+class Uncertainty:
+    uncs = {}
+    def __init__(self, name):
+        if name in self.uncs:
+            raise RuntimeError(name + ' uncertainty already defined once, use update instead')
+        self.branches = []
+        self.name = name
+        Uncertainty.uncs[name] = self
+
+    def update(self, branch):
+        if isinstance(branch, list):
+            for b in branch:
+                self.update(b)
+        else:
+            self.branches.append(branch.split('_%s' % self.name)[0])
+
+
+def check_uncertainties(input_line):
+    output = [input_line]
+
+    # This shit is messy
+    if prefixes:
+        pref = prefixes[0]
+        for unc, val in Uncertainty.uncs.items():
+            beginning = re.match(r'(^\w*)', input_line.lstrip('#')).group(1)
+
+            if '%s_%s' % (pref, beginning) in val.branches:
+                continue
+
+            check_line = input_line.replace(PREF_HOLDER, pref)
+            for branch in val.branches:
+                check_line = re.sub(r'\b' + re.escape(branch) + r'\b', '%s_%sUp' % (branch, unc), check_line)
+
+            check_line = re.sub(r'\b' + re.escape(pref), PREF_HOLDER, check_line)
+
+            if check_line != input_line:
+                val.update(['%s_%s_%s' % (p, beginning, unc) for p in prefixes])
+                new_line = check_line.replace(beginning, '%s_%s%s' % (beginning, unc, 'Up'), 1)
+                output.append(new_line)
+                output.append(new_line.replace('Up', 'Down'))
+
+    return output
+
+def create_branches(var, data_type, val, is_saved):
+    branches = [Branch(pref, ('%s_%s' % (pref, var)).rstrip('_'), data_type, val, is_saved) for pref in prefixes] or [Branch('', var, data_type, val, is_saved)]
+    # Add uncertainties as we come to them
+    for b in branches:
+        match = re.match(r'(\w*Up$)', b.name)
+        if match:
+            for unc in Uncertainty.uncs:
+                if match.group(1).endswith('_%sUp' % unc):
+                    Uncertainty.uncs[unc].update(b.name)
+
+    return branches
 
 
 class Parser:
@@ -109,38 +175,47 @@ class Parser:
         match = re.match(r'.*(\`(.*)\`).*', input_line)   # Search for shell commands
         if match:
             input_line = input_line.replace(match.group(1), subprocess.check_output(match.group(2).split()).strip())
+
+        match = re.match(r'\?\s*(\w*)\s*;\s*(\w*)\s*(;\s*([\w\s,]*?)\s*)?\?((\s*(<-|->|=)\s*).*)', input_line) # Parse uncertainties
+        if match:
+            unc_name = match.group(2)
+            if unc_name not in Uncertainty.uncs:
+                Uncertainty(unc_name)
+            branches = [match.group(1)] + [branch.strip() for branch in match.group(4).split(',') if branch]
+            new_lines = []
+            if len(branches) > 1:
+                new_lines.append('~~~ []_%s ~~~' % match.group(1))
+
+            for direction in 'Up', 'Down':
+                new_master = '%s_%s%s' % (match.group(1), unc_name, direction)
+                new_lines.append(new_master + match.group(5).rstrip() + direction)
+                for branch in branches[1:]:
+                    new_lines.append('%s_%s%s' % (branch, unc_name, direction) + match.group(6) +
+                                     '[]_%s * []_%s/[]_%s' % (branch, new_master, match.group(1)))
+
+            return [line for l in new_lines for line in self.parse(l)]
             
         return [input_line]
-        
 
 
-prefixes = []   # Unfortunately, I wrote a lot of code with this global name already, so let's use it
-class Prefixes:
-    current = None
-    def __init__(self, addition, components):
-        global prefixes
-        self.parent = copy.deepcopy(self.current)
-        inputs = [comp.strip() for comp in components.split(',')]
-        self.prefs = ['%s%s' % (pref, comp) for pref in prefixes for comp in inputs] or inputs if not addition else prefixes + inputs
-        prefixes = self.prefs
-        Prefixes.current = self
-
-    def get_parent(self):
-        global prefixes
-        Prefixes.current = self.parent
-        prefixes = self.parent.prefs if self.parent else []
-        
-
-class Branch:
-    branches = {}
-    floats = set()
-    def __init__(self, pref, name, data_type, default_val, is_saved):
-        self.prefix = pref
-        self.name = name
-        self.data_type = data_type
-        self.default_val = default_val
-        self.is_saved = is_saved
-        self.branches[self.name] = self
+class MyXMLParser:
+    def __init__(self, tag, spec_tag, member):
+        self.tag = tag
+        self.spec_tag = spec_tag
+        self.member = member
+        self.output = []
+        self.spectators = []
+    def start(self, tag, attr):
+        if tag == self.tag:
+            self.output.append(attr[self.member])
+        elif tag == self.spec_tag:
+            self.spectators.append(attr[self.member])
+    def end(self, _):
+        pass
+    def data(self, _):
+        pass
+    def close(self):
+        return self.output, self.spectators
 
 
 class Reader:
@@ -157,7 +232,6 @@ class Reader:
         self.method = 'method_%s' % self.output
         self.floats = []
         self.readers.append(self)
-        self.systematics = systematics.strip('{}').replace(PREF_HOLDER, prefix) if systematics else None
 
     def float_inputs(self, mod_fill):
         for index, inp in enumerate(self.inputs):
@@ -172,50 +246,52 @@ class Reader:
 
     def implement_systematics(self):
         output = []
-        if self.systematics:
+        original_branch = Branch.branches[self.output]
+
+        for sys, val in Uncertainty.uncs.iteritems():
+            varying = []
+            for inp in self.inputs:
+                if inp[1] in val.branches:
+                    varying.append(inp[1])
+
+            if not varying:
+                continue
+
+            val.update('%s_%s' % (self.output, sys))
             original_branch = Branch.branches[self.output]
 
-            for sys in self.systematics.split(';'):
-                settings = sys.split(',')
-                to_vary = settings[0].strip().split()
-                sys = to_vary[-1].split(original_branch.prefix)[1]
-                following = [var.strip() for var in settings[1:]]
-                for moved in to_vary[:1] + following:
-                    declare = 'decltype({moved}) '.format(moved=moved)
-                    tmpname = '_syshold_{moved}{sys}'.format(moved=moved, sys=sys)
-                    if tmpname in self.holders:
-                        declare = ''
-                    self.holders.add(tmpname)
+            for moved in varying:
+                declare = 'decltype({moved}) '.format(moved=moved)
+                tmpname = '_syshold_{moved}_{sys}'.format(moved=moved, sys=sys)
+                if tmpname in self.holders:
+                    declare = ''
+                self.holders.add(tmpname)
+                output.append(
+                    (declare + tmpname + ' = {moved};').format(
+                        moved=moved))
+
+            for direction in ['Up', 'Down']:
+                for moved in varying:
                     output.append(
-                        (declare + tmpname + ' = {moved};').format(
-                            moved=moved))
-                for direction in ['Up', 'Down']:
-                    for follower in following:
-                        output.append(
-                            '{follow} *= {mover}{direction}/{moved};'.format(
-                                moved=to_vary[0], mover=to_vary[-1], direction=direction,
-                                follow=follower))
+                        '{moved} = {moved}_{sys}{direction};'.format(
+                            moved=moved, sys=sys, direction=direction))
 
-                    output.append(
-                        '{moved} = {mover}{direction};'.format(
-                            moved=to_vary[0], mover=to_vary[-1], direction=direction))
+                # Save to branch
+                outputname = '{base}_{sys}{direction}'.format(
+                    base=self.output, sys=sys, direction=direction)
 
-                    # Save to branch
-                    outputname = '{base}{sys}{direction}'.format(
-                        base=self.output, sys=sys, direction=direction)
+                # Call to create branch
+                new_branch = Branch(original_branch.prefix, outputname, original_branch.data_type,
+                                    original_branch.default_val, original_branch.is_saved)
 
-                    # Call to create branch
-                    new_branch = Branch(original_branch.prefix, outputname, original_branch.data_type,
-                                        original_branch.default_val, original_branch.is_saved)
+                # Set systematic branch
+                output.append('{output} = {method}->GetMvaValue();'.format(output=outputname, method=self.method))
 
-                    # Set systematic branch
-                    output.append('{output} = {method}->GetMvaValue();'.format(output=outputname, method=self.method))
-
-                    # Put everything back
-                    for moved in to_vary[:1] + following:
-                        output.append(
-                            '{moved} = _syshold_{moved}{sys};'.format(
-                                moved=moved, sys=sys))
+                # Put everything back
+            for moved in varying:
+                output.append(
+                    '{moved} = _syshold_{moved}_{sys};'.format(
+                        moved=moved, sys=sys))
 
         return output
 
@@ -242,10 +318,6 @@ class Function:
     def add_var(self, variable, value):
         new_var = (variable, value) if '~' in value else (('_%s' % variable).rstrip('_'), value)
         self.variables.append(new_var)
-
-    def add_tmp_var(self, line):
-#        self.variables.append(line, self.local_tag)
-        self.tmp_vars.append(line)
 
     def declare(self, functions):
         output = '{0}%svoid %s;' % (self.template, self.signature)
@@ -296,7 +368,7 @@ class Function:
 %s%s
 }
 """ % (self.template, classname, self.signature,
-       '\n'.join(['    %s;' % var for var in self.tmp_vars]),
+       ''.join(['  %s;\n' % var for var in self.tmp_vars]),
        middle)
 
 if __name__ == '__main__':
@@ -306,10 +378,6 @@ if __name__ == '__main__':
     functions = []
     mod_fill = []
     in_function = None
-
-    def create_branches(var, data_type, val, is_saved):
-        branches = [Branch(pref, ('%s_%s' % (pref, var)).rstrip('_'), data_type, val, is_saved) for pref in prefixes] or [Branch('', var, data_type, val, is_saved)]
-        return branches
 
     parser = Parser()
 
@@ -427,40 +495,33 @@ if __name__ == '__main__':
                     in_function.add_var(match.group(2), match.group(1))
                     continue
 
-                # Add variable for beginning of function
-                match = re.match(r'^\((.*)\)$', line)
-                if match:
-                    if in_function is not None:
-                        in_function.add_tmp_var(match.group(1))
-                    continue
+                # Probably a branch line
+                for branch_line in check_uncertainties(line):
 
-                # Add branch names individually
-                match = re.match(r'(\#\s*)?(\w*)(/(\w))?(\s?=\s?([\w\.\(\)]+))?(\s?->\s?(.*?))?(\s?<-\s?(.*?))?$', line)
-                if match:
-                    var = match.group(2)
-                    data_type = match.group(4) or DEFAULT_TYPE
-                    val = match.group(6) or DEFAULT_VAL
-                    is_saved = not bool(match.group(1))
-                    create_branches(var, data_type, val, is_saved)
-
-                    if in_function is not None and match.group(7):
-                        in_function.add_var(var, match.group(8))
-
-                    if match.group(9):
-                        # create_branches returns a list of prefixes and the new branch names
+                    # Add branch names individually
+                    match = re.match(r'(\#\s*)?(\w*)(/(\w*))?(\s?=\s?([\w\.\(\)]+))?(\s?->\s?(.*?))?(\s?<-\s?(.*?))?$', branch_line)
+                    if match:
+                        var = match.group(2)
+                        data_type = match.group(4) or DEFAULT_TYPE
+                        val = match.group(6) or DEFAULT_VAL
+                        is_saved = not bool(match.group(1))
                         branches = create_branches(var, data_type, val, is_saved)
-                        for b in branches:
-                            mod_fill.append('%s = %s;' % (b.name, match.group(10).replace(PREF_HOLDER, b.prefix)))
-                    continue
+
+                        if in_function is not None and match.group(7):
+                            in_function.add_var(var, match.group(8))
+
+                        if match.group(9):
+                            for b in branches:
+                                mod_fill.append('%s = %s;' % (b.name, match.group(10).replace(PREF_HOLDER, b.prefix)))
 
     ## Finished parsing the configuration file
-
-    # Let's put the branches in some sort of order
-    all_branches = [Branch.branches[key] for key in sorted(Branch.branches)]
 
     # Check that all of the TMVA inputs are floats
     for reader in Reader.readers:
         reader.float_inputs(mod_fill)
+
+    # Let's put the branches in some sort of order
+    all_branches = [Branch.branches[key] for key in sorted(Branch.branches)]
 
     with open('%s.h' % classname, 'w') as output:
         write = lambda x: output.write('%s\n' % x)
@@ -482,7 +543,7 @@ if __name__ == '__main__':
 
         # Write the elements for the memory of each branch
         for branch in all_branches:
-            write('  %s %s;' % (TYPES[branch.data_type], branch.name))
+            write('  %s %s;' % (TYPES.get(branch.data_type, branch.data_type), branch.name))
 
         # Some functions, and define the private members
         write("""
