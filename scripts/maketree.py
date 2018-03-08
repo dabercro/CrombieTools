@@ -53,7 +53,7 @@ class Prefix:
     def go_back(self, line):
         line = re.sub(r'\b' + re.escape(self.val), '[]', line)
         if self.parent:
-            line = re.sub(r'(.+?)\b' + re.escape(self.parent) + r'(\w)', r'\1[^]\2', line)
+            line = re.sub(r'(.+?)(?!\.)\b' + re.escape(self.parent) + r'(\w)', r'\1[^]\2', line)
         return line
 
 
