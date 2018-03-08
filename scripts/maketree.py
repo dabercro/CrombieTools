@@ -356,7 +356,7 @@ class Reader:
 
 class Function:
     local_tag = 'LOCAL_VAR'
-    def __init__(self, signature, prefixes, fill_array):
+    def __init__(self, signature, prefixes, count_type):
         self.enum_name = re.match(r'(.*)\(.*\)', signature).group(1)
         self.prefixes = prefixes
         if prefixes:
@@ -371,10 +371,10 @@ class Function:
 
         self.template = 'template <typename %s> ' % ', typename '.join(template_args) if template_args else ''
         self.variables = []
-        self.fill_array = fill_array
+        self.fill_array = bool(count_type)
         if self.fill_array:
-            branch = 'count'
-            create_branches(branch, 'I', 0, True)
+            branch = '%s_count' % self.enum_name
+            create_branches(branch, count_type, 0, True)
             self.add_var(branch, '++')
 
     def add_var(self, variable, value):
@@ -504,14 +504,15 @@ if __name__ == '__main__':
                     continue
 
                 # Get functions for setting values
-                match = re.match('^(\w+\(.*\))\s*(\[\])?$', line)
+                match = re.match('^(\w+\(.*\))\s*(\[(\w?)\])?$', line)
                 if match:
                     # Pass off previous function as quickly as possible to prevent prefix changing
                     if IN_FUNCTION:
                         functions.append(copy.deepcopy(IN_FUNCTION))
                         IN_FUNCTION = None
 
-                    IN_FUNCTION = Function(match.group(1), prefixes, match.group(2))
+                    count_type = match.group(3) or 'i' if match.group(2) else None
+                    IN_FUNCTION = Function(match.group(1), prefixes, count_type)
                     continue
 
                 # Get TMVA information to evaluate
@@ -572,9 +573,14 @@ if __name__ == '__main__':
                         val = match.group(6) or DEFAULT_VAL
                         is_saved = not bool(match.group(1))
 
+                        in_func = IN_FUNCTION is not None and match.group(7)
+
+                        if in_func and IN_FUNCTION.fill_array:
+                            var = '%s_%s' % (IN_FUNCTION.enum_name, var)
+
                         branches = create_branches(var, data_type, val, is_saved)
 
-                        if IN_FUNCTION is not None and match.group(7):
+                        if in_func:
                             IN_FUNCTION.add_var(var, match.group(8))
 
                         if match.group(9):
@@ -582,6 +588,9 @@ if __name__ == '__main__':
                                 mod_fill.append('%s = %s;' % (b.name, Prefix.get(b.prefix).replace(match.group(10))))
 
     ## Finished parsing the configuration file
+    if IN_FUNCTION:
+        functions.append(IN_FUNCTION)
+        IN_FUNCTION = None
 
     # Check that all of the TMVA inputs are floats
     for reader in Reader.readers:
