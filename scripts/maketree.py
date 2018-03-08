@@ -33,6 +33,8 @@ DEFINITIONS = {}
 
 PREF_HOLDER = '[]'
 
+IN_FUNCTION = None
+
 class Prefix:
     prefs = {}
     def __init__(self, pref, parent):
@@ -93,7 +95,23 @@ class Branch:
         self.default_val = default_val
         self.is_saved = is_saved
         self.branches[self.name] = self
+        self.is_vector = bool(IN_FUNCTION and IN_FUNCTION.fill_array)
 
+    def declare(self):
+        store_type = TYPES.get(self.data_type, self.data_type)
+        if self.is_vector:
+            store_type = 'std::vector<%s>' % store_type
+        return '  %s %s;' % (store_type, self.name)
+
+    def book(self):
+        if self.is_vector:
+            return 't->Branch("{0}", &{0});'.format(self.name, self.data_type, self.prefix)
+        return 't->Branch("{0}", &{0}, "{0}/{1}");'.format(self.name, self.data_type)
+
+    def reset(self):
+        if self.is_vector:
+            return '{0}.clear();'.format(b.name)
+        return '{0} = {1};'.format(b.name, b.default_val)
 
 class Uncertainty:
     uncs = {}
@@ -151,10 +169,12 @@ def create_branches(var, data_type, val, is_saved):
 
 
 class Parser:
-    def __init__(self, comment='!'):
+    def __init__(self, comment='!', block='*'):
         self.defs = {}
         self.comment = comment
+        self.block = block
         self.prev_line = ''           # Holds line continuations
+        self.in_comment = False
 
     def parse(self, raw_line):
         input_line = raw_line.split(self.comment)[0].strip()
@@ -168,8 +188,13 @@ class Parser:
         else:
             self.prev_line = ''
 
-        # Skip empty lines or comments (!)
-        if not input_line:
+        if input_line == self.comment + self.block:
+            self.in_comment = True
+        elif input_line == self.block + self.comment:
+            self.in_comment = False
+
+        # Skip empty lines, comments (!), or block comment contents
+        if not input_line or self.in_comment:
             return []
 
         for word, meaning in DEFINITIONS.iteritems():
@@ -331,7 +356,7 @@ class Reader:
 
 class Function:
     local_tag = 'LOCAL_VAR'
-    def __init__(self, signature, prefixes):
+    def __init__(self, signature, prefixes, fill_array):
         self.enum_name = re.match(r'(.*)\(.*\)', signature).group(1)
         self.prefixes = prefixes
         if prefixes:
@@ -346,7 +371,11 @@ class Function:
 
         self.template = 'template <typename %s> ' % ', typename '.join(template_args) if template_args else ''
         self.variables = []
-        self.tmp_vars = []
+        self.fill_array = fill_array
+        if self.fill_array:
+            branch = 'count'
+            create_branches(branch, 'I', 0, True)
+            self.add_var(branch, '++')
 
     def add_var(self, variable, value):
         new_var = (variable, value) if '~' in value else (('_%s' % variable).rstrip('_'), value)
@@ -381,8 +410,9 @@ class Function:
         elif '~' in val:
             return '    if (!(%s))\n      %s;' % (Prefix.get(pref).replace(var),
                                                   'return' if len(val) == 2 else 'throw')
-        elif val == self.local_tag:
-            return '    %s;' % var.pref()
+        elif self.fill_array:
+            return '    {pref}{var}.push_back({val});'.format(
+                pref=pref, var=var, val=Prefix.get(pref).replace(val))
 
         op = '='
         if val[0] in '+-*/':
@@ -405,10 +435,9 @@ class Function:
             middle = '\n'.join([self.var_line(var.lstrip('_'), val, '') for var, val in self.variables])
 
         return """%svoid %s::%s {
-%s%s
+%s
 }
 """ % (self.template, classname, self.signature,
-       ''.join(['  %s;\n' % var for var in self.tmp_vars]),
        middle)
 
 if __name__ == '__main__':
@@ -417,7 +446,6 @@ if __name__ == '__main__':
     includes = ['<string>', '<vector>', '"TObject.h"', '"TFile.h"', '"TTree.h"']
     functions = []
     mod_fill = []
-    in_function = None
 
     parser = Parser()
 
@@ -468,22 +496,22 @@ if __name__ == '__main__':
                 # End previous enum scope
                 match = re.match(r'}', line)
                 if match:
-                    if in_function:
-                        functions.append(in_function)
-                    in_function = None
+                    if IN_FUNCTION:
+                        functions.append(IN_FUNCTION)
+                    IN_FUNCTION = None
                     Prefixes.current.get_parent()
 
                     continue
 
                 # Get functions for setting values
-                match = re.match('^(\w+\(.*\))$', line)
+                match = re.match('^(\w+\(.*\))\s*(\[\])?$', line)
                 if match:
                     # Pass off previous function as quickly as possible to prevent prefix changing
-                    if in_function:
-                        functions.append(copy.deepcopy(in_function))
-                        in_function = None
+                    if IN_FUNCTION:
+                        functions.append(copy.deepcopy(IN_FUNCTION))
+                        IN_FUNCTION = None
 
-                    in_function = Function(match.group(1), prefixes)
+                    IN_FUNCTION = Function(match.group(1), prefixes, match.group(2))
                     continue
 
                 # Get TMVA information to evaluate
@@ -530,7 +558,7 @@ if __name__ == '__main__':
                 match = re.match(r'(~{2,3})\s*(.*?)\s*(~{2,})', line)
                 if match:
                     # Only valid if in a function
-                    in_function.add_var(match.group(2), match.group(1))
+                    IN_FUNCTION.add_var(match.group(2), match.group(1))
                     continue
 
                 # Probably a branch line
@@ -543,10 +571,11 @@ if __name__ == '__main__':
                         data_type = match.group(4) or DEFAULT_TYPE
                         val = match.group(6) or DEFAULT_VAL
                         is_saved = not bool(match.group(1))
+
                         branches = create_branches(var, data_type, val, is_saved)
 
-                        if in_function is not None and match.group(7):
-                            in_function.add_var(var, match.group(8))
+                        if IN_FUNCTION is not None and match.group(7):
+                            IN_FUNCTION.add_var(var, match.group(8))
 
                         if match.group(9):
                             for b in branches:
@@ -581,7 +610,7 @@ if __name__ == '__main__':
 
         # Write the elements for the memory of each branch
         for branch in all_branches:
-            write('  %s %s;' % (TYPES.get(branch.data_type, branch.data_type), branch.name))
+            write(branch.declare())
 
         # Some functions, and define the private members
         write("""
@@ -606,7 +635,7 @@ if __name__ == '__main__':
 {
   %s
 %s%s%s}""" % (classname, classname, COMPRESSION_LEVEL,
-              '\n  '.join(['t->Branch("{0}", &{0}, "{0}/{1}");'.format(b.name, b.data_type) for b in all_branches if b.is_saved]),
+              '\n  '.join([b.book() for b in all_branches if b.is_saved]),
               ''.join(['  %s.AddVariable("%s", &%s);\n' % (reader.name, label, var) for reader in Reader.readers for label, var in reader.inputs]),
               ''.join(['  %s.AddSpectator("%s", &%s);\n' % (reader.name, label, var) for reader in Reader.readers for label, var in reader.specs]),
               ''.join(['  %s = %s.BookMVA("%s", "%s");\n' % (reader.method, reader.name, reader.output, reader.weights) for reader in Reader.readers])))
@@ -615,7 +644,7 @@ if __name__ == '__main__':
         write("""
 void %s::%s {
   %s
-}""" % (classname, RESET_SIGNATURE, '\n  '.join(['{0} = {1};'.format(b.name, b.default_val) for b in all_branches])))
+}""" % (classname, RESET_SIGNATURE, '\n  '.join([b.reset() for b in all_branches])))
 
         # fill function
         mod_fill = FILTER['--'] + mod_fill + FILTER['++']
