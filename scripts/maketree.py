@@ -51,9 +51,12 @@ class Prefix:
         return string.replace('[]', self.val).replace('[^]', self.parent or '')
 
     def go_back(self, line):
-        line = re.sub(r'\b' + re.escape(self.val), '[]', line)
+        fix = lambda pref, l, ins: re.sub(r'(.+?)(?!\.)\b' + re.escape(pref) + r'(\w)',
+                                          r'\1' + ins + r'\2', l)
+
+        line = fix(self.val, line, '[]')
         if self.parent:
-            line = re.sub(r'(.+?)(?!\.)\b' + re.escape(self.parent) + r'(\w)', r'\1[^]\2', line)
+            line = fix(self.parent, line, '[^]')
         return line
 
 
@@ -112,7 +115,6 @@ class Uncertainty:
 def check_uncertainties(input_line):
     output = [input_line]
 
-    # This shit is messy
     if prefixes:
         pref = Prefix.get(prefixes[0])
         for unc, val in Uncertainty.uncs.items():
@@ -252,7 +254,7 @@ class MyXMLParser:
 class Reader:
     readers = []
     holders = set()
-    def __init__(self, weights, prefix, output, inputs, specs, subs, systematics):
+    def __init__(self, weights, prefix, output, inputs, specs, subs):
         self.weights = weights
         self.output = ('%s_%s' % (prefix, output)).strip('_')
         sub_pref = lambda x: [(label, Prefix.get(prefix).replace(subs.get(inp, inp)) if prefix else label)
@@ -312,8 +314,8 @@ class Reader:
                     base=self.output, sys=sys, direction=direction)
 
                 # Call to create branch
-                new_branch = Branch(original_branch.prefix, outputname, original_branch.data_type,
-                                    original_branch.default_val, original_branch.is_saved)
+                Branch(original_branch.prefix, outputname, original_branch.data_type,
+                       original_branch.default_val, original_branch.is_saved)
 
                 # Set systematic branch
                 output.append('{output} = {method}->GetMvaValue();'.format(output=outputname, method=self.method))
@@ -485,7 +487,7 @@ if __name__ == '__main__':
                     continue
 
                 # Get TMVA information to evaluate
-                match = re.match(r'^(\#\s*)?\[([^;]*);\s*([^;]*)(;\s*(.*))?\](\s?=\s?([^{}]*))?\s?({[^}]*})?$', line)
+                match = re.match(r'^(\#\s*)?\[([^;]*);\s*([^;]*)(;\s*(.*))?\](\s?=\s?(.*))?', line)
                 if match:
                     if '"TMVA/Reader.h"' not in includes:
                         includes.append('"TMVA/Reader.h"')
@@ -502,8 +504,6 @@ if __name__ == '__main__':
                                 info = line.split()
                                 subs[info[0]] = info[1]
 
-                    systematics = match.group(8)
-
                     default = match.group(7) or DEFAULT_VAL
                     branches = create_branches(var, 'F', default, is_saved)
                     if is_saved:
@@ -513,7 +513,7 @@ if __name__ == '__main__':
                                               for v in x]
                         inputs = rep_pref(xml_vars)
                         specs = rep_pref(xml_specs)
-                        for reader in [Reader(weights, b.prefix, var, inputs, specs, subs, systematics) for b in branches]:
+                        for reader in [Reader(weights, b.prefix, var, inputs, specs, subs) for b in branches]:
                             mod_fill.extend(reader.implement_systematics())
                             mod_fill.append('%s = %s->GetMvaValue();' % (reader.output, reader.method))
 
