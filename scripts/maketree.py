@@ -50,9 +50,14 @@ class Prefix:
             return Prefix(prefix, None)
 
     def replace(self, string):
-        return string.replace('[]', self.val).replace('[^]', self.parent or '')
+        if not self.val:
+            return string
+        string = re.sub(r'([^\w]|^)\[\]', r'\1' + self.val, string)
+        return re.sub(r'\[\^\]', self.parent or '', string)
 
     def go_back(self, line):
+        if not self.val:
+            return line
         fix = lambda pref, l, ins: re.sub(r'(.+?)(?!\.)\b' + re.escape(pref) + r'(\w)',
                                           r'\1' + ins + r'\2', l)
 
@@ -89,13 +94,16 @@ class Branch:
     branches = {}
     floats = set()
     def __init__(self, pref, name, data_type, default_val, is_saved):
+        self.is_vector = name.endswith('[]')
         self.prefix = pref
-        self.name = name
+        self.name = name.rstrip('[]')
         self.data_type = data_type
         self.default_val = default_val
         self.is_saved = is_saved
         self.branches[self.name] = self
-        self.is_vector = bool(IN_FUNCTION and IN_FUNCTION.fill_array)
+
+    def name(self):
+        return self.name + ('[]'*self.is_vector)
 
     def declare(self):
         store_type = TYPES.get(self.data_type, self.data_type)
@@ -133,27 +141,30 @@ class Uncertainty:
 def check_uncertainties(input_line):
     output = [input_line]
 
-    if prefixes:
-        pref = Prefix.get(prefixes[0])
-        for unc, val in Uncertainty.uncs.items():
-            beginning = re.match(r'(^\w*)', input_line.lstrip('#')).group(1)
+    pref = Prefix.get(prefixes[0] if prefixes else '')
+    for unc, val in Uncertainty.uncs.items():
+        beginning = re.match(r'(^\w*)', input_line.lstrip('#')).group(1)
 
-            if beginning.endswith('Up') or beginning.endswith('Down') or '%s_%s' % (pref.val, beginning) in val.branches:
-                continue
+        if beginning.endswith('Up') or beginning.endswith('Down') or '%s_%s' % (pref.val, beginning) in val.branches:
+            continue
 
-            check_line = pref.replace(input_line)
-            for branch in val.branches:
-                check_line = re.sub(r'\b' + re.escape(branch) + r'\b', '%s_%sUp' % (branch, unc), check_line)
+        check_line = pref.replace(input_line)
+        for branch in val.branches:
+            check_line = re.sub(r'\b' + re.escape(branch) + r'\b', '%s_%sUp' % (branch, unc), check_line)
 
-            check_line = pref.go_back(check_line)
+        check_line = pref.go_back(check_line)
 
-            if check_line != input_line:
+        if check_line != input_line:
+            if prefixes:
                 val.update(['%s_%s_%s' % (p, beginning, unc) for p in prefixes])
-                new_line = check_line.replace(beginning, '%s_%s%s' % (beginning, unc, 'Up'), 1)
-                output.append(new_line)
-                output.append(new_line.replace('Up', 'Down'))
+            else:
+                val.update('%s_%s' % (beginning, unc))
+            new_line = check_line.replace(beginning, '%s_%s%s' % (beginning, unc, 'Up'), 1)
+            output.append(new_line)
+            output.append(new_line.replace('Up', 'Down'))
 
     return output
+
 
 def create_branches(var, data_type, val, is_saved):
     branches = [Branch(pref, ('%s_%s' % (pref, var)).rstrip('_'), data_type, val, is_saved) for pref in prefixes] or [Branch('', var, data_type, val, is_saved)]
@@ -232,7 +243,7 @@ class Parser:
         if match:
             input_line = input_line.replace(match.group(1), subprocess.check_output(match.group(2).split()).strip())
 
-        match = re.match(r'\?\s*(\w*)\s*;\s*(\w*)\s*(;\s*([\w\s,]*?)\s*)?\?((\s*(<-|->|=)\s*).*)', input_line) # Parse uncertainties
+        match = re.match(r'\?\s*([\w\[\]]*)\s*;\s*(\w*)\s*(;\s*([\w\s,]*?)\s*)?\?(((.*(<-|->|=))\s*).*)', input_line) # Parse uncertainties
         if match:
             unc_name = match.group(2)
             if unc_name not in Uncertainty.uncs:
@@ -244,15 +255,22 @@ class Parser:
             if len(branches) > 1:
                 new_lines.append('~~~ []_%s ~~~' % match.group(1))
 
-            new_master = '%s_%s##' % (match.group(1), unc_name)
+            base = match.group(1).rstrip('[]')
+            arr_end = '[]' if match.group(1).endswith('[]') else ''
+
+            new_master = '%s_%s##%s' % (base, unc_name, arr_end)
             ending = ' |# up, down'
             new_lines.append(new_master + match.group(5).rstrip() + ending)
             for branch in branches[1:]:
-                new_lines.append('%s_%s##' % (branch, unc_name) + match.group(6) +
-                                 '[]_%s * []_%s/[]_%s' % (branch, new_master, match.group(1)) + ending)
+                new_lines.append('%s_%s##%s' % (branch + arr_end, unc_name, arr_end) + match.group(6) +
+                                 '[]_%s%s * []_%s/[]_%s' % (branch, arr_end,
+                                                            new_master,
+                                                            match.group(1)) + ending)
 
             return [line for l in new_lines for line in self.parse(l)]
             
+        input_line = re.sub(r'(->.*\w)\[\](?!\w)', r'\1.back()', input_line)
+
         return [input_line]
 
 
@@ -356,7 +374,7 @@ class Reader:
 
 class Function:
     local_tag = 'LOCAL_VAR'
-    def __init__(self, signature, prefixes, count_type):
+    def __init__(self, signature, prefixes):
         self.enum_name = re.match(r'(.*)\(.*\)', signature).group(1)
         self.prefixes = prefixes
         if prefixes:
@@ -371,11 +389,6 @@ class Function:
 
         self.template = 'template <typename %s> ' % ', typename '.join(template_args) if template_args else ''
         self.variables = []
-        self.fill_array = bool(count_type)
-        if self.fill_array:
-            branch = '%s_count' % self.enum_name
-            create_branches(branch, count_type, 0, True)
-            self.add_var(branch, '++')
 
     def add_var(self, variable, value):
         new_var = (variable, value) if '~' in value else (('_%s' % variable).rstrip('_'), value)
@@ -405,20 +418,21 @@ class Function:
 
     def var_line(self, var, val, pref):
         incr = ['++', '--']
+        indent = ' ' * (4 if self.prefixes else 2)
         if val in incr:
-            return '    %s%s%s;' % (val, pref, var)
+            return '%s%s%s%s;' % (indent,val, pref, var)
         elif '~' in val:
-            return '    if (!(%s))\n      %s;' % (Prefix.get(pref).replace(var),
-                                                  'return' if len(val) == 2 else 'throw')
-        elif self.fill_array:
-            return '    {pref}{var}.push_back({val});'.format(
-                pref=pref, var=var, val=Prefix.get(pref).replace(val))
+            return '%sif (!(%s))\n  %s%s;' % (indent, Prefix.get(pref).replace(var),
+                                              indent, 'return' if len(val) == 2 else 'throw')
+        elif var.endswith('[]'):
+            return '{indent}{pref}{var}.push_back({val});'.format(
+                indent=indent, pref=pref, var=var.rstrip('[]'), val=Prefix.get(pref).replace(val))
 
         op = '='
         if val[0] in '+-*/':
             op = val[0] + '='
             val = val[1:]
-        return'    %s%s %s %s;' % (pref, var, op, Prefix.get(pref).replace(val))
+        return'%s%s%s %s %s;' % (indent, pref, var, op, Prefix.get(pref).replace(val))
 
     def implement(self, classname):
         if self.prefixes:
@@ -437,8 +451,10 @@ class Function:
         return """%svoid %s::%s {
 %s
 }
-""" % (self.template, classname, self.signature,
+""" % (self.template, classname,
+       self.signature,
        middle)
+
 
 if __name__ == '__main__':
     classname = os.path.basename(sys.argv[1]).split('.')[0]
@@ -504,15 +520,14 @@ if __name__ == '__main__':
                     continue
 
                 # Get functions for setting values
-                match = re.match('^(\w+\(.*\))\s*(\[(\w?)\])?$', line)
+                match = re.match('^(\w+\(.*\))$', line)
                 if match:
                     # Pass off previous function as quickly as possible to prevent prefix changing
                     if IN_FUNCTION:
                         functions.append(copy.deepcopy(IN_FUNCTION))
                         IN_FUNCTION = None
 
-                    count_type = match.group(3) or 'i' if match.group(2) else None
-                    IN_FUNCTION = Function(match.group(1), prefixes, count_type)
+                    IN_FUNCTION = Function(match.group(1), prefixes)
                     continue
 
                 # Get TMVA information to evaluate
@@ -566,7 +581,7 @@ if __name__ == '__main__':
                 for branch_line in check_uncertainties(line):
 
                     # Add branch names individually
-                    match = re.match(r'(\#\s*)?(\w*)(/(\w*))?(\s?=\s?([\w\.\(\)]+))?(\s?->\s?(.*?))?(\s?<-\s?(.*?))?$', branch_line)
+                    match = re.match(r'(\#\s*)?([\w\[\]]*)(/(\w*))?(\s?=\s?([\w\.\(\)]+))?(\s?->\s?(.*?))?(\s?<-\s?(.*?))?$', branch_line)
                     if match:
                         var = match.group(2)
                         data_type = match.group(4) or DEFAULT_TYPE
@@ -574,9 +589,6 @@ if __name__ == '__main__':
                         is_saved = not bool(match.group(1))
 
                         in_func = IN_FUNCTION is not None and match.group(7)
-
-                        if in_func and IN_FUNCTION.fill_array:
-                            var = '%s_%s' % (IN_FUNCTION.enum_name, var)
 
                         branches = create_branches(var, data_type, val, is_saved)
 

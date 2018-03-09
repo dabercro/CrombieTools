@@ -55,11 +55,12 @@ class ParallelStackContainer:
     Makes the N minus 1 cuts on the object before calling PlotStack::MakeCanvas()
     """
 
-    def __init__(self, plotter, overwrite, showCutLines, limitHistsDir):
+    def __init__(self, plotter, overwrite, showCutLines, limitHistsDir, systematics):
         self.Plotter = plotter
         self.Overwrite = overwrite
         self.ShowCutLines = showCutLines
         self.LimitHistsDir = limitHistsDir
+        self.Systematics = systematics
 
     def Copy(self):
         return ParallelStackContainer(plotter.Copy(), self.Overwrite, self.ShowCutLines, self.LimitHistsDir)
@@ -97,7 +98,14 @@ class ParallelStackContainer:
 
             self.Plotter.SetDefaultWeight(Nminus1Cut(holdCut, expr[0]))
 
-        self.Plotter.SetDefaultExpr(expr[0])
+        d_expr = expr[0]
+        if '__' in region:
+            syst = region.split('__')[1]
+            syst = syst[:-2] if syst.endswith('Up') else syst[:-4]
+            if d_expr in self.Systematics.get(syst, []):
+                d_expr = '%s_%s' % (d_expr, region.split('__')[1])
+
+        self.Plotter.SetDefaultExpr(d_expr)
 
         if self.LimitHistsDir:
             self.Plotter.SetDumpFileName(os.path.join(self.LimitHistsDir, '%s_%s.root' % (region, expr[0])))
@@ -115,7 +123,7 @@ class ParallelStackContainer:
         self.Plotter.ResetCutLines()
 
 
-def MakePlots(categories, regions, exprArgs, overwrite=True, parallel=True, showCutLines=True, limitHistsDir='', aPlotter=plotter):
+def MakePlots(categories, regions, exprArgs, overwrite=True, parallel=True, showCutLines=True, limitHistsDir='', aPlotter=plotter, systematics=None):
     """ Shortcut to make plots for multiple categories and regions with the same setup.
 
     @param categories is a list of categories to plot.
@@ -137,6 +145,7 @@ def MakePlots(categories, regions, exprArgs, overwrite=True, parallel=True, show
                         any N - 1 plots generated.
     @param limitHistsDir is the directory to place files with the histograms for the limits fit.
     @param aPlotter is the plotter to use to plot. The default is the plotter defined in this module.
+    @param systematics is a dictionary pointing to a list of affected branches for each systematic
     """
 
     if not type(categories) == list:
@@ -155,7 +164,7 @@ def MakePlots(categories, regions, exprArgs, overwrite=True, parallel=True, show
         if limitHistsDir and not os.path.exists(limitHistsDir):
             os.makedirs(limitHistsDir)
 
-        bPlotter = ParallelStackContainer(aPlotter, overwrite, showCutLines, limitHistsDir)
+        bPlotter = ParallelStackContainer(aPlotter, overwrite, showCutLines, limitHistsDir, systematics)
 
         if parallel:
             from ..Parallelization import RunParallel
@@ -166,12 +175,13 @@ def MakePlots(categories, regions, exprArgs, overwrite=True, parallel=True, show
                 bPlotter.MakePlot(*args)
 
 
-def PreparePlots(categories, regions, exprArgs):
+def PreparePlots(categories, regions, exprArgs, systematics=None):
     """
     Prepares plotter with plots to make
     @param categories list of categories
     @param regions list of regions to plot
     @param exprArgs list of tuples containing (expr, nbins, xbins) or (expr, nbins, min, max)
+    @param systematics is a dictionary pointing to a list of affected branches for each systematic
     """
 
     from ..LoadConfig import cuts
@@ -186,9 +196,18 @@ def PreparePlots(categories, regions, exprArgs):
     for cat in categories:
         for region in regions:
             for expr in exprArgs:
+                d_expr = expr[0]
+
+                if '__' in region:
+                    syst = region.split('__')[1]
+                    syst = syst[:-2] if syst.endswith('Up') else syst[:-4]
+                    if d_expr in systematics.get(syst, []):
+                        d_expr = '%s_%s' % (d_expr, region.split('__')[1])
+
+
                 cut = Nminus1Cut(cuts.cut(cat, region), expr[0])
                 args = ['_'.join([cat, region,
-                                  expr[0].replace(',', '__').replace(')', '__').replace('(', '__')])] + expr[1:] + [expr[0], expr[0], cut,
-                                                                                                                      cuts.dataMCCuts(region, True),
-                                                                                                                      cuts.dataMCCuts(region, False)]
+                                  expr[0].replace(',', '__').replace(')', '__').replace('(', '__')])] + expr[1:] + [d_expr, d_expr, cut,
+                                                                                                                    cuts.dataMCCuts(region, True),
+                                                                                                                    cuts.dataMCCuts(region, False)]
                 plotter.AddHist(*args)
