@@ -92,7 +92,7 @@ class Corrector : virtual public Debug
   bool                  Merge = true;     ///< Flag determining whether or not to merge into the CorrectorApplicator branch
 
   /// Set the binning when the histograms do not store the correct x values
-  void                  SetBinning                  ( UInt_t num, Double_t min, Double_t max ) { bin_num = num; bin_min = num; bin_max = max; }
+  void                  SetBinning                  ( UInt_t num, Double_t min, Double_t max ) { bin_num = num; bin_min = min; bin_max = max; }
 
  protected:
 

@@ -9,6 +9,7 @@
 #ifndef CROMBIE_PLOTTOOLS_PLOTPREPARER_H
 #define CROMBIE_PLOTTOOLS_PLOTPREPARER_H 1
 
+#include <sstream>
 #include <map>
 #include <vector>
 #include <utility>
@@ -138,16 +139,16 @@ PlotPreparer::AddHist(TString FileBase, Int_t NumXBins, Double_t* XBins, TString
 
   auto& hists = fHistograms[FileBase];
 
-  const std::vector<TString> exprs {dataExpr, mcExpr, cut, dataWeight, mcWeight};
-
   for (auto type : gFileTypes) {
     if (hists.find(type) == hists.end())
       hists[type] = {};
 
     auto& hist_list = hists[type];
 
-    auto& expr = (type == FileType::kData) ? dataExpr : mcExpr;
-    auto& weight = (type == FileType::kData) ? dataWeight : mcWeight;
+    const auto exprs = (type == FileType::kData) ?
+      std::vector<TString>{dataExpr, cut, dataWeight} : std::vector<TString>{mcExpr, cut, mcWeight};
+    auto expr = exprs[0];
+    auto weight = exprs[2];
 
     const auto& infos = *(GetFileInfo(type));
     for (auto info : infos) {
@@ -163,7 +164,7 @@ PlotPreparer::AddHist(TString FileBase, Int_t NumXBins, Double_t* XBins, TString
 
       for (auto& expr : exprs) {
         if (formulas.find(expr) == formulas.end()) {
-          Message(eDebug, "Adding formula expression: %s", expr.Data());
+          Message(eDebug, "For %s\nAdding formula expression: %s", inputname.Data(), expr.Data());
           formulas[expr] = std::make_pair<TTreeFormula*, Double_t>(nullptr, {});
         }
       }
@@ -178,9 +179,7 @@ PlotPreparer::AddHist(TString FileBase, Int_t NumXBins, Double_t* XBins, TString
 
 std::vector<TH1D*>
 PlotPreparer::GetHistList (TString FileBase, FileType type) {
-  if (not fPrepared)
-    PreparePlots();
-
+  PreparePlots();
   Message(eDebug, "Getting hists for FileName %s and type %i", FileBase.Data(), type);
   return fHistograms.at(FileBase).at(type);
 }
@@ -221,7 +220,7 @@ PlotPreparer::RunFile(FileInfo& info) {
   auto& plots = fPlots[filename];
 
   for (decltype(nentries) i_entry = 0; i_entry < nentries; ++i_entry) {
-    if (i_entry % 100000 == 0) {
+    if (i_entry % 1000000 == 0) {
       output_lock.Lock();
       std::cout << filename.Data() << " " << double(i_entry)/double(nentries)*100 << "%" << std::endl;
       output_lock.UnLock();
@@ -231,12 +230,12 @@ PlotPreparer::RunFile(FileInfo& info) {
     for (auto& formula : formulas)
       if (formula.second.first) {
         formula.second.second = formula.second.first->EvalInstance();
-      }
+    }
 
-    for (auto plot : plots)
-      if (plot->cut) {
+    for (auto plot : plots) {
+      if (plot->cut)
         plot->hist->Fill(plot->expr, plot->weight);
-      }
+    }
   }
 
   root_lock.Lock();

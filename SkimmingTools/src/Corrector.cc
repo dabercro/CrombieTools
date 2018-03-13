@@ -71,6 +71,7 @@ void Corrector::SetCorrectionHist(TString hist1, TString hist2)
   }
 
   fCorrectionHist->Divide(divisorHist);
+
   SetMinMax();
 }
 
@@ -86,9 +87,9 @@ Double_t Corrector::GetFormulaResult(Int_t index, Bool_t use_mins)
     make_pair(fMins[index], fMaxs[index]);
 
   if (eval < minmax.first)
-    eval = fMins[index];
+    eval = minmax.first;
   else if (eval > minmax.second)
-    eval = fMaxs[index];
+    eval = minmax.second;
   return eval;
 }
 
@@ -96,6 +97,7 @@ Double_t Corrector::GetFormulaResult(Int_t index, Bool_t use_mins)
 Float_t Corrector::DoEval() {
 
   Double_t evalX = GetFormulaResult(0);
+
   if (fNumDims > 1) {
     Double_t evalY = GetFormulaResult(1);
     if (fNumDims > 2) {
@@ -106,7 +108,8 @@ Float_t Corrector::DoEval() {
   }
   if (bin_num) {
     assert(bin_num == fCorrectionHist->GetNbinsX());
-    return fCorrectionHist->GetBinContent((evalX - bin_min)/(bin_max - bin_max) * bin_num + 1);
+    Int_t which_bin = (evalX - bin_min)/(bin_max - bin_min) * bin_num + 1;
+    return fCorrectionHist->GetBinContent(which_bin);
   }
   return fCorrectionHist->GetBinContent(fCorrectionHist->FindBin(evalX));
 }

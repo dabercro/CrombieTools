@@ -235,8 +235,14 @@ class Parser:
         match = re.match(r'(.*)\|([^\s])?\s+(.*)', input_line)  # Search for substitution
         if match:
             char = match.group(2) or '$'
+            subs = match.group(3).split(',')
             lines = [match.group(1).replace(char * 3, var.strip().upper()).replace(char * 2, var.strip().title()).replace(char, var.strip())
-                     for var in match.group(3).split(',')]
+                     for var in subs]
+
+            if len(lines) == 2 and char == '#':
+                lines[0] = lines[0].replace('+-', '+')
+                lines[1] = lines[1].replace('+-', '-')
+
             return [line for l in lines for line in self.parse(l)]  # Recursively parse lines in case multiple expansions are present
 
         match = re.match(r'.*(\`(.*)\`).*', input_line)   # Search for shell commands
@@ -581,7 +587,7 @@ if __name__ == '__main__':
                 for branch_line in check_uncertainties(line):
 
                     # Add branch names individually
-                    match = re.match(r'(\#\s*)?([\w\[\]]*)(/(\w*))?(\s?=\s?([\w\.\(\)]+))?(\s?->\s?(.*?))?(\s?<-\s?(.*?))?$', branch_line)
+                    match = re.match(r'(\#\s*)?([\w\[\]]*)(/(\w*))?(\s?=\s?([\w\.\(\)\s\+\-\*\/\:]+))?(\s?->\s?(.*?))?(\s?<-\s?(.*?))?$', branch_line)
                     if match:
                         var = match.group(2)
                         data_type = match.group(4) or DEFAULT_TYPE

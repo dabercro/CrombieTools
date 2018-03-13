@@ -6,6 +6,7 @@
    @author Daniel Abercrombie <dabercro@mit.edu>
 */
 
+#include <cstdlib>
 #include <fstream>
 #include <algorithm>
 #include <sqlite3.h>
@@ -407,7 +408,8 @@ WHERE region = ? AND bin = ? AND signal = ?
 
   SetRatioIndex(0);
 
-  BaseCanvas(AddOutDir(FileBase), AllHists, XLabel, YLabel, logY);
+  if (not std::getenv("blind"))
+    BaseCanvas(AddOutDir(FileBase), AllHists, XLabel, YLabel, logY);
 
   if (not fPrepared) { // If Prepared, stored and owned properly by PlotPreparer base
     for (UInt_t iHist = 0; iHist != AllHists.size(); ++iHist) {

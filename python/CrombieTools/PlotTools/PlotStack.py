@@ -205,9 +205,11 @@ def PreparePlots(categories, regions, exprArgs, systematics=None):
                         d_expr = '%s_%s' % (d_expr, region.split('__')[1])
 
 
-                cut = Nminus1Cut(cuts.cut(cat, region), expr[0])
+                cut = cuts.cut(cat, region)
+                if not os.environ.get('blind'):   # Don't do this with blinded plots (for limits)
+                    cut = Nminus1Cut(cut, d_expr)
+
                 args = ['_'.join([cat, region,
-                                  expr[0].replace(',', '__').replace(')', '__').replace('(', '__')])] + expr[1:] + [d_expr, d_expr, cut,
-                                                                                                                    cuts.dataMCCuts(region, True),
-                                                                                                                    cuts.dataMCCuts(region, False)]
+                                  expr[0].replace(',', '__').replace(')', '__').replace('(', '__')])] + \
+                                  expr[1:] + [d_expr, d_expr, cut, cuts.dataMCCuts(region, True), cuts.dataMCCuts(region, False)]
                 plotter.AddHist(*args)
