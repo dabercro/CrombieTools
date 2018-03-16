@@ -277,6 +277,10 @@ class Parser:
             
         input_line = re.sub(r'(->.*\w)\[\](?!\w)', r'\1.back()', input_line)
 
+        # Multi-line for expansion
+        if '\\' in input_line:
+            return [line for l in input_line.split('\\') for line in self.parse(l)]
+
         return [input_line]
 
 
@@ -379,7 +383,6 @@ class Reader:
 
 
 class Function:
-    local_tag = 'LOCAL_VAR'
     def __init__(self, signature, prefixes):
         self.enum_name = re.match(r'(.*)\(.*\)', signature).group(1)
         self.prefixes = prefixes
@@ -395,10 +398,14 @@ class Function:
 
         self.template = 'template <typename %s> ' % ', typename '.join(template_args) if template_args else ''
         self.variables = []
+        self.tmp_vars = []
 
     def add_var(self, variable, value):
         new_var = (variable, value) if '~' in value else (('_%s' % variable).rstrip('_'), value)
         self.variables.append(new_var)
+
+    def add_tmp_var(self, line):
+        self.tmp_vars.append(line)
 
     def declare(self, functions):
         output = '{0}%svoid %s;' % (self.template, self.signature)
@@ -455,10 +462,11 @@ class Function:
             middle = '\n'.join([self.var_line(var.lstrip('_'), val, '') for var, val in self.variables])
 
         return """%svoid %s::%s {
-%s
+%s%s
 }
 """ % (self.template, classname,
        self.signature,
+       ''.join(['  auto %s;\n' % tmp for tmp in self.tmp_vars]),
        middle)
 
 
@@ -583,11 +591,18 @@ if __name__ == '__main__':
                     IN_FUNCTION.add_var(match.group(2), match.group(1))
                     continue
 
+                # Add variable for beginning of function
+                match = re.match(r'^\((.*)\)$', line)
+                if match:
+                    if IN_FUNCTION is not None:
+                        IN_FUNCTION.add_tmp_var(match.group(1))
+                    continue
+
                 # Probably a branch line
                 for branch_line in check_uncertainties(line):
 
                     # Add branch names individually
-                    match = re.match(r'(\#\s*)?([\w\[\]]*)(/(\w*))?(\s?=\s?([\w\.\(\)\s\+\-\*\/\:]+))?(\s?->\s?(.*?))?(\s?<-\s?(.*?))?$', branch_line)
+                    match = re.match(r'(\#\s*)?([\w\[\]]*)(/([\w\:]*))?(\s?=\s?([\w\.\(\)\s\+\-\*\/\:]+))?(\s?->\s?(.*?))?(\s?<-\s?(.*?))?$', branch_line)
                     if match:
                         var = match.group(2)
                         data_type = match.group(4) or DEFAULT_TYPE

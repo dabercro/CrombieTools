@@ -175,24 +175,28 @@ def MakePlots(categories, regions, exprArgs, overwrite=True, parallel=True, show
                 bPlotter.MakePlot(*args)
 
 
-def PreparePlots(categories, regions, exprArgs, systematics=None):
+def PreparePlots(categories, regions, exprArgs, systematics=None, envelope=None):
     """
     Prepares plotter with plots to make
     @param categories list of categories
     @param regions list of regions to plot
     @param exprArgs list of tuples containing (expr, nbins, xbins) or (expr, nbins, min, max)
     @param systematics is a dictionary pointing to a list of affected branches for each systematic
+    @param envelope is a dictionary that points to lists of weight branches to generate an envelope
     """
 
     from ..LoadConfig import cuts
     from . import AddOutDir
 
     if type(categories) != list:
-        PreparePlots([categories], regions, exprArgs)
+        return PreparePlots([categories], regions, exprArgs, systematics, envelope)
 
     elif type(regions) != list:
-        PreparePlots(categories, [regions], exprArgs)
-    
+        return PreparePlots(categories, [regions], exprArgs, systematics, envelope)
+
+    systematics = systematics or {}
+    envelope = envelope or {}
+
     for cat in categories:
         for region in regions:
             for expr in exprArgs:
@@ -203,7 +207,10 @@ def PreparePlots(categories, regions, exprArgs, systematics=None):
                     syst = syst[:-2] if syst.endswith('Up') else syst[:-4]
                     if d_expr in systematics.get(syst, []):
                         d_expr = '%s_%s' % (d_expr, region.split('__')[1])
-
+                    elif syst in envelope:
+                        plotter.StartEnvelope(region.endswith('Up'))
+                        for env in envelope[syst]:
+                            plotter.AddEnvelopeWeight(env)
 
                 cut = cuts.cut(cat, region)
                 if not os.environ.get('blind'):   # Don't do this with blinded plots (for limits)

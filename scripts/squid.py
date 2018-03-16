@@ -329,6 +329,8 @@ if __name__ == '__main__':
     if len(sys.argv) > 1:
         # Make sure newest executable is installed
         os.system('make install')
+        # Proxy in case we need to copy files
+        os.system('voms-proxy-init -voms cms --valid 140:00')
         submit(add_samples_to_database(sys.argv[1]))
 
     while jobs:

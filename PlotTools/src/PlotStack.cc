@@ -14,6 +14,7 @@
 #include "TFile.h"
 #include "TLegend.h"
 #include "TProfile.h"
+#include "TRegexp.h"
 
 #include "PlotStack.h"
 
@@ -225,6 +226,10 @@ PlotStack::MakeCanvas(TString FileBase, std::vector<TH1D*> DataHists, std::vecto
 
     // Background Histograms
 
+    auto variable = fDefaultExpr;
+    if (variable.EndsWith("Up") or variable.EndsWith("Down"))
+      variable = variable(0, variable.Index(TRegexp("_[^_]+$")));
+
     for (UInt_t iHist = 0; iHist != HistHolders.size(); ++iHist) {
 
       tempHist = (TH1D*) HistHolders[iHist]->fHist->Clone();
@@ -233,7 +238,7 @@ PlotStack::MakeCanvas(TString FileBase, std::vector<TH1D*> DataHists, std::vecto
               tempHist->Integral(0, NumXBins + 1, "width")/fEventsPer);
 
       dumpFile->WriteTObject(tempHist, TString::Format("%s__%s__%s",
-                                                       fDefaultExpr.Data(),
+                                                       variable.Data(),
                                                        HistHolders[iHist]->fTree.Data(),
                                                        fHistSuff.Data()
                                                        )
@@ -250,7 +255,7 @@ PlotStack::MakeCanvas(TString FileBase, std::vector<TH1D*> DataHists, std::vecto
               tempHist->Integral(0, NumXBins + 1, "width")/fEventsPer);
 
       dumpFile->WriteTObject(tempHist, TString::Format("%s__%s__%s",
-                                                       fDefaultExpr.Data(),
+                                                       variable.Data(),
                                                        (*iHist)->fTree.Data(),
                                                        fHistSuff.Data()
                                                        )
@@ -263,7 +268,7 @@ PlotStack::MakeCanvas(TString FileBase, std::vector<TH1D*> DataHists, std::vecto
     tempHist = (TH1D*) DataHist->Clone();
     Message(eInfo, "Data     :  %f", tempHist->Integral(0, NumXBins + 1, "width")/fEventsPer);
     dumpFile->WriteTObject(tempHist, TString::Format("%s__data_obs__%s",
-                                                     fDefaultExpr.Data(),
+                                                     variable.Data(),
                                                      fHistSuff.Data()
                                                      )
                            );

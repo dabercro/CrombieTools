@@ -14,12 +14,28 @@
 #include <vector>
 #include <utility>
 
+#include "TProfile.h"
 #include "TTreeFormula.h"
 
 #include "ParallelRunner.h"
 #include "PlotUtils.h"
 
 TMutex root_lock;  // For doing sketchy ROOT things
+
+/**
+   @ingroup plotgroup
+   @class EnvelopeInfo
+   Similar to PlotInfo, but slightly different information for envelopes
+*/
+
+class EnvelopeInfo {
+ public:
+  EnvelopeInfo(TProfile* hist, Double_t& env_expr)
+    : hist{hist}, env_expr{env_expr} {}
+
+  TProfile*       hist;
+  Double_t&       env_expr;
+};
 
 /**
    @ingroup plotgroup
@@ -32,12 +48,14 @@ class PlotInfo {
   PlotInfo(TH1D* hist, Double_t& expr, Double_t& cut, Double_t& weight, Double_t eventsper)
     : hist{hist}, expr{expr}, cut{cut}, weight{weight}, eventsper{eventsper} {}
   /* ~PlotInfo() { delete hist; } // ??? Causes crash, and I really don't know why */
+  ~PlotInfo() { for (auto* p : envs) delete p; envs.clear(); }
 
   TH1D*           hist;   ///< The histogram that everything else is filling
   Double_t&       expr;   ///< Reference to the expression filling the plot
   Double_t&       cut;    ///< Reference to the cut
   Double_t&       weight; ///< Reference to the weight
-  Double_t        eventsper;   ///< Holds the desired normalization of the bin for this plot
+  Double_t        eventsper;       ///< Holds the desired normalization of the bin for this plot
+  std::vector<EnvelopeInfo*> envs; ///< Holds the different possible envelopes for this plot
 };
 
 /**
@@ -57,6 +75,10 @@ class PlotPreparer : public ParallelRunner {
   /// Add a histogram to plot
   void AddHist ( TString FileBase, Int_t NumXBins, Double_t MinX, Double_t MaxX, TString dataExpr, TString mcExpr, TString cut, TString dataWeight, TString mcWeight );
 
+  /// Start tracking branches for a given envelope
+  void StartEnvelope ( Bool_t is_up )               { env_up = is_up; }
+  void AddEnvelopeWeight ( TString weight )         { env_branches.push_back(weight); }
+
  protected:
   // Don't mask the FileConfigReader functions of the same name
   using FileConfigReader::GetHistList;
@@ -67,13 +89,16 @@ class PlotPreparer : public ParallelRunner {
   bool fPrepared {false};
 
  private:
-  /// A map containing pointers to all the histograms on the free store
+  /// A map containing pointers to all the histograms on the free store, mapped by output file and filetype
   std::map<TString, std::map<FileType, std::vector<TH1D*>>>   fHistograms;
   /// A map from filename to map containing all the formulas and results of expressions
   std::map<TString, std::map<TString, std::pair<TTreeFormula*, Double_t>>>   fFormulas;
 
   /// A vector of all the plots that are being made, mapped by input file names
   std::map<TString, std::vector<PlotInfo*>> fPlots;
+
+  /// A vector of all the plots that are being made, mapped by output file names and process name
+  std::map<TString, std::map<TString, std::vector<PlotInfo*>>> fOutPlots;
 
   /// A function to clear the histograms map
   void ClearHists   ();
@@ -83,6 +108,12 @@ class PlotPreparer : public ParallelRunner {
 
   /// Runs all plots over a single file
   void RunFile (FileInfo& info) override;
+
+  /// Says is envelope goes up or down for a given output file
+  std::map<TString, Bool_t> output_is_up;
+
+  Bool_t env_up;                      ///< Tells whether envelope is up or down for upcoming plot
+  std::vector<TString> env_branches;  ///< Vector to temporarily hold branch names
 };
 
 PlotPreparer::~PlotPreparer() {
@@ -99,6 +130,8 @@ PlotPreparer::ClearHists() {
     file.second.resize(0);
   }
   fPlots.clear();
+  // fOutPlots doesn't own anything
+  fOutPlots.clear();
 
   for (auto formulas : fFormulas)
     for (auto form : formulas.second)
@@ -139,27 +172,30 @@ PlotPreparer::AddHist(TString FileBase, Int_t NumXBins, Double_t* XBins, TString
 
   auto& hists = fHistograms[FileBase];
 
+  // Track if this is an up or down envelope
+  if (env_branches.size())
+    output_is_up[FileBase] = env_up;
+
   for (auto type : gFileTypes) {
     if (hists.find(type) == hists.end())
       hists[type] = {};
 
     auto& hist_list = hists[type];
 
-    const auto exprs = (type == FileType::kData) ?
+    auto exprs = (type == FileType::kData) ?
       std::vector<TString>{dataExpr, cut, dataWeight} : std::vector<TString>{mcExpr, cut, mcWeight};
     auto expr = exprs[0];
     auto weight = exprs[2];
 
+    // Include the branches for the envelope calculation
+    exprs.insert(exprs.end(), env_branches.begin(), env_branches.end());
+
     const auto& infos = *(GetFileInfo(type));
     for (auto info : infos) {
 
+      auto& outplots = fOutPlots[FileBase][info->fTreeName];
       auto& inputname = info->fFileName;
-      if (fPlots.find(inputname) == fPlots.end())
-        fPlots[inputname] = {};
       auto& plots = fPlots[inputname];
-
-      if (fFormulas.find(inputname) == fFormulas.end())
-        fFormulas[inputname] = {};
       auto& formulas = fFormulas[inputname];
 
       for (auto& expr : exprs) {
@@ -171,10 +207,17 @@ PlotPreparer::AddHist(TString FileBase, Int_t NumXBins, Double_t* XBins, TString
 
       auto tempname = TempHistName();
       PlotInfo* tempinfo = new PlotInfo(new TH1D(tempname, tempname, NumXBins, XBins), formulas[expr].second, formulas[cut].second, formulas[weight].second, fEventsPer);
+      for (auto env : env_branches) {
+        auto tempname = TempHistName();
+        tempinfo->envs.push_back(new EnvelopeInfo(new TProfile(tempname, tempname, NumXBins, XBins), formulas[env].second));
+      }
+
       plots.push_back(tempinfo);
       hist_list.push_back(tempinfo->hist);
+      outplots.push_back(tempinfo);
     }
   }
+  env_branches.clear();
 }
 
 std::vector<TH1D*>
@@ -191,6 +234,48 @@ PlotPreparer::PreparePlots() {
   fPrepared = true;
 
   RunThreads();
+
+  // Do envelope calculations
+  for (auto& env : output_is_up) {
+    // env.first holds the output file name
+    // env.second holds the bool of whether this is up
+
+    for (auto& procs : fOutPlots[env.first]) {
+      // procs.first holds the process name
+      // procs.second holds the list of PlotInfo for this process
+
+      // Build a map of processes to up and down envelopes
+      std::vector<TProfile*> profiles;
+      for (auto *prof_info : fOutPlots[env.first][procs.first][0]->envs) {
+        TProfile* temp_scale = static_cast<TProfile*>(prof_info->hist->Clone(TempHistName()));
+        temp_scale->Reset("M");
+        profiles.push_back(temp_scale);
+      }
+      for (auto* hist : procs.second) {
+        for (unsigned i_prof = 0; i_prof < hist->envs.size(); ++i_prof)
+          profiles[i_prof]->Add(hist->envs[i_prof]->hist);
+      }
+      // Get the max or minimum for each bin
+      for (int i_bin = 1; i_bin <= profiles[0]->GetNbinsX(); ++i_bin) {
+        double scale = 1.0;
+        for (auto* prof : profiles) {
+          auto check = prof->GetBinContent(i_bin);
+          if ((check > scale) == env.second)
+            scale = check;
+        }
+        // Scale each bin in these histograms for processes
+        for (auto* hist : procs.second) {
+          auto content = hist->hist->GetBinContent(i_bin);
+          auto error = hist->hist->GetBinError(i_bin);
+          hist->hist->SetBinContent(i_bin, content * scale);
+          hist->hist->SetBinError(i_bin, error * scale);
+        }
+      }
+      for (auto* prof : profiles)
+        delete prof;
+      profiles.clear();
+    }    
+  }
 }
 
 void
@@ -207,8 +292,10 @@ PlotPreparer::RunFile(FileInfo& info) {
 
   auto& formulas = fFormulas[filename];
   for (auto& formula : formulas) {
+    root_lock.Lock();
     delete formula.second.first;
     formula.second.first = new TTreeFormula(formula.first, formula.first, inputtree);
+    root_lock.UnLock();
     AddNecessaryBranches(needed, inputtree, formula.first);
   }
 
@@ -233,8 +320,11 @@ PlotPreparer::RunFile(FileInfo& info) {
     }
 
     for (auto plot : plots) {
-      if (plot->cut)
+      if (plot->cut) {
         plot->hist->Fill(plot->expr, plot->weight);
+        for (auto* env : plot->envs)
+          env->hist->Fill(plot->expr, env->env_expr, plot->weight);
+      }
     }
   }
 
