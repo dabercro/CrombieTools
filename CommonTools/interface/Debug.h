@@ -10,10 +10,7 @@
 #define CROMBIETOOLS_COMMONTOOLS_DEBUG_H
 
 #include <map>
-#include <stdio.h>
-#include <stdarg.h>
-
-FILE* debug_output;
+#include <iostream>
 
 /**
    @ingroup commongroup
@@ -42,7 +39,9 @@ class Debug
   DebugLevel GetDebugLevel ()                                     { return fDebugLevel;   }
 
   /// Sends a message if the verbosity level is appropriate
-  void       Message       ( DebugLevel level, const char* format, ...);
+  template<typename T, typename... V>
+    void       Message       ( DebugLevel level, T message, V... more);
+  void       Message         ( DebugLevel level );
 
  protected:
   /// Sends the name of the function during debuggin
@@ -54,7 +53,11 @@ class Debug
     {eError, "[ERROR]"}, {eInfo, "[INFO]"}, {eDebug, "[DEBUG]"}
   };
 
+  template<typename T>
+    void       OneMessage       ( DebugLevel level, T message);
+
   DebugLevel fDebugLevel = eError;     ///< The verbosity for a class.
+  bool _printed = false;               ///< Track if the label has bee printed
 };
 
 //--------------------------------------------------------------------
@@ -63,31 +66,37 @@ Debug::DisplayFunc (const char* func)
 {
 
   Message(eDebug, "-------------------------------------------------------");
-  Message(eDebug, "                    %s", func);
+  Message(eDebug, "                    ", func);
   Message(eDebug, "-------------------------------------------------------");
 
 }
 
-//--------------------------------------------------------------------
-void
-Debug::Message (DebugLevel level, const char* format, ...)
+template<typename T> void Debug::OneMessage (DebugLevel level, T message)
 {
 
   if (fDebugLevel >= level) {
+    auto& debug_output = (level > eError) ? std::cout : std::cerr;
+    if (not _printed) {
+      debug_output << mLabels[level] << " ";
+      _printed = true;
+    }
 
-    debug_output = (level > eError) ? stdout : stderr;
-
-    va_list args;
-    va_start (args, format);
-
-    fprintf(debug_output, "%s ", mLabels[level]);
-    vfprintf(debug_output, format, args);
-    fprintf(debug_output, "\n");
-
-    va_end(args);
-
+    debug_output << message << " ";
   }
 
+}
+
+template<typename T, typename... V> void Debug::Message(DebugLevel level, T message, V... more) {
+  OneMessage(level, message);
+  Message(level, more...);
+}
+
+void Debug::Message(DebugLevel level) {
+  _printed = false;
+  if (fDebugLevel >= level) {
+    auto& debug_output = (level > eError) ? std::cout : std::cerr;
+    debug_output << std::endl;
+  }
 }
 
 #endif

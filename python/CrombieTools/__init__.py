@@ -127,4 +127,4 @@ def Nminus1Cut(inCut, varToRemove, returnCuts=False):
     if returnCuts:
         return cutList
     else:
-        return holdCut
+        return holdCut.replace(' && (1)', '')

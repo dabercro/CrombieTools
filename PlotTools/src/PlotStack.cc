@@ -51,9 +51,8 @@ PlotStack::MergeHistograms(FileType type, std::vector<TH1D*> hists) {
 
   for (UInt_t iHist = 0; iHist != hists.size(); ++iHist) {
 
-    Message(eDebug, "About to process Histogram %i out of %i", iHist, hists.size()); 
-    Message(eDebug, "Entry is \"%s\". Previous entry is \"%s\"",
-            (*fileInfo)[iHist]->fEntry.Data(), previousEntry.Data());
+    Message(eDebug, "About to process Histogram", iHist, "out of", hists.size());
+    Message(eDebug, "Entry is ", (*fileInfo)[iHist]->fEntry, ". Previous entry is ",previousEntry, "");
 
     if ((*fileInfo)[iHist]->fEntry != previousEntry) {
 
@@ -61,7 +60,7 @@ PlotStack::MergeHistograms(FileType type, std::vector<TH1D*> hists) {
 
       previousEntry = (*fileInfo)[iHist]->fEntry;
       TString tempName;
-      tempName.Format("StackedHist_%d",iHist);
+      tempName.Format("StackedHist_%d", iHist);
       tempMCHist = (TH1D*) hists[iHist]->Clone(tempName);
       tempHistHolder = new HistHolder(tempMCHist, (*fileInfo)[iHist]->fEntry,
                                       (*fileInfo)[iHist]->fColorStyle,
@@ -77,7 +76,7 @@ PlotStack::MergeHistograms(FileType type, std::vector<TH1D*> hists) {
 
     }
 
-    Message(eDebug, "Number of unique entries so far: %i", HistHolders.size());
+    Message(eDebug, "Number of unique entries so far:", HistHolders.size());
 
   }
 
@@ -107,14 +106,14 @@ PlotStack::MakeCanvas(TString FileBase, Int_t NumXBins, Double_t *XBins,
                       TString XLabel, TString YLabel, Bool_t logY) {
   SetIncludeErrorBars(true);
   std::vector<TH1D*> DataHists = GetHistList(NumXBins, XBins, kData);
-  Message(eDebug, "Number of Data Histograms: %i", DataHists.size());
+  Message(eDebug, "Number of Data Histograms:", DataHists.size());
   SetIncludeErrorBars(false);
   std::vector<TH1D*> MCHists = GetHistList(NumXBins, XBins, kBackground);
-  Message(eDebug, "Number of MC Histograms: %i", MCHists.size());
+  Message(eDebug, "Number of MC Histograms:", MCHists.size());
   std::vector<TH1D*> SignalHists;
   if (fSignalFileInfo.size() != 0)
     SignalHists = GetHistList(NumXBins, XBins, kSignal);
-  Message(eDebug, "Number of Signal Histograms: %i", SignalHists.size());
+  Message(eDebug, "Number of Signal Histograms:", SignalHists.size());
 
   MakeCanvas(FileBase, DataHists, MCHists, SignalHists, XLabel, YLabel, logY);
 }
@@ -125,19 +124,19 @@ PlotStack::MakeCanvas(TString FileBase, TString XLabel, TString YLabel, Bool_t l
   try {
     SetIncludeErrorBars(true);
     std::vector<TH1D*> DataHists = GetHistList(FileBase, kData);
-    Message(eDebug, "Number of Data Histograms: %i", DataHists.size());
+    Message(eDebug, "Number of Data Histograms:", DataHists.size());
     SetIncludeErrorBars(false);
     std::vector<TH1D*> MCHists = GetHistList(FileBase, kBackground);
-    Message(eDebug, "Number of MC Histograms: %i", MCHists.size());
+    Message(eDebug, "Number of MC Histograms:", MCHists.size());
     std::vector<TH1D*> SignalHists;
     if (fSignalFileInfo.size() != 0)
       SignalHists = GetHistList(FileBase, kSignal);
-    Message(eDebug, "Number of Signal Histograms: %i", SignalHists.size());
+    Message(eDebug, "Number of Signal Histograms:", SignalHists.size());
 
     MakeCanvas(FileBase, DataHists, MCHists, SignalHists, XLabel, YLabel, logY);
   }
   catch(out_of_range e) {
-    Message(eError, "Didn't get %s from histograms...", FileBase.Data());
+    Message(eError, "Didn't get", FileBase, "from histograms...");
   }
 }
 
@@ -146,10 +145,10 @@ void
 PlotStack::MakeCanvas(TString FileBase, std::vector<TH1D*> DataHists, std::vector<TH1D*> MCHists, std::vector<TH1D*> SignalHists,
                       TString XLabel, TString YLabel, Bool_t logY) {
   DisplayFunc(__func__);
-  Message(eInfo, "Making File :   %s", FileBase.Data());
-  Message(eInfo, "Plotting    :   %s", fDefaultExpr.Data());
-  Message(eInfo, "Labeled     :   %s", XLabel.Data());
-  Message(eInfo, "With cut    :   %s", fDefaultCut.GetTitle());
+  Message(eInfo, "Making File :", FileBase);
+  Message(eInfo, "Plotting    :", fDefaultExpr);
+  Message(eInfo, "Labeled     :", XLabel);
+  Message(eInfo, "With cut    :", fDefaultCut.GetTitle());
 
   if (YLabel == "") {
     if (fEventsPer == 0)
@@ -175,23 +174,23 @@ PlotStack::MakeCanvas(TString FileBase, std::vector<TH1D*> DataHists, std::vecto
   std::vector<TFile*> TemplateFiles;
   TFile *templateFile = NULL;
 
-  Message(eDebug, "Number of Templates: %i", fTemplateEntries.size());
+  Message(eDebug, "Number of Templates:", fTemplateEntries.size());
 
   for (UInt_t iTemp = 0; iTemp != fTemplateEntries.size(); ++iTemp) {
-    Message(eDebug, "Getting template: %i", iTemp);
+    Message(eDebug, "Getting template:", iTemp);
     templateFile = TFile::Open(fTemplateFiles[iTemp]);
     TemplateFiles.push_back(templateFile);
   }
 
   SetLegendFill(true);
   TH1D *DataHist = (TH1D*) DataHists[0]->Clone("DataHist");
-  Message(eDebug, "Final Data Histogram created at %p", DataHist);
+  Message(eDebug, "Final Data Histogram created at", DataHist);
   DataHist->Reset("M");
 
   for (UInt_t iHist = 0; iHist < DataHists.size(); iHist++)
     DataHist->Add(DataHists[iHist]);
 
-  Message(eInfo, "Number of data events: %i, integral: %f", (Int_t) DataHist->GetEntries(), DataHist->Integral("width")/fEventsPer);
+  Message(eInfo, "Number of data events: ", (Int_t) DataHist->GetEntries(), ", integral:", DataHist->Integral("width")/(fEventsPer ? fEventsPer : 1.0));
 
   std::vector<HistHolder*> HistHolders = MergeHistograms(kBackground, MCHists);
 
@@ -219,7 +218,7 @@ PlotStack::MakeCanvas(TString FileBase, std::vector<TH1D*> DataHists, std::vecto
 
   if (fDumpRootName != "") {
 
-    Message(eInfo, "Dumping histograms into %s", fDumpRootName.Data());
+    Message(eInfo, "Dumping histograms into", fDumpRootName);
 
     TH1D* tempHist;
     TFile* dumpFile = new TFile(fDumpRootName,"RECREATE");
@@ -234,8 +233,8 @@ PlotStack::MakeCanvas(TString FileBase, std::vector<TH1D*> DataHists, std::vecto
 
       tempHist = (TH1D*) HistHolders[iHist]->fHist->Clone();
 
-      Message(eInfo, "%s  :  %f", HistHolders[iHist]->fEntry.Data(),
-              tempHist->Integral(0, NumXBins + 1, "width")/fEventsPer);
+      Message(eInfo, HistHolders[iHist]->fEntry, " : ",
+              tempHist->Integral(0, NumXBins + 1, "width")/(fEventsPer ? fEventsPer : 1.0));
 
       dumpFile->WriteTObject(tempHist, TString::Format("%s__%s__%s",
                                                        variable.Data(),
@@ -251,8 +250,8 @@ PlotStack::MakeCanvas(TString FileBase, std::vector<TH1D*> DataHists, std::vecto
 
       tempHist = (TH1D*) (*iHist)->fHist->Clone();
 
-      Message(eInfo, "%s  :  %f", (*iHist)->fTree.Data(),
-              tempHist->Integral(0, NumXBins + 1, "width")/fEventsPer);
+      Message(eInfo, (*iHist)->fTree, " : ",
+              tempHist->Integral(0, NumXBins + 1, "width")/(fEventsPer ? fEventsPer : 1.0));
 
       dumpFile->WriteTObject(tempHist, TString::Format("%s__%s__%s",
                                                        variable.Data(),
@@ -266,7 +265,7 @@ PlotStack::MakeCanvas(TString FileBase, std::vector<TH1D*> DataHists, std::vecto
     // Data Histogram
 
     tempHist = (TH1D*) DataHist->Clone();
-    Message(eInfo, "Data     :  %f", tempHist->Integral(0, NumXBins + 1, "width")/fEventsPer);
+    Message(eInfo, "Data     : ", tempHist->Integral(0, NumXBins + 1, "width")/(fEventsPer ? fEventsPer : 1.0));
     dumpFile->WriteTObject(tempHist, TString::Format("%s__data_obs__%s",
                                                      variable.Data(),
                                                      fHistSuff.Data()
@@ -286,17 +285,16 @@ PlotStack::MakeCanvas(TString FileBase, std::vector<TH1D*> DataHists, std::vecto
   std::vector<TH1D*> AllHists;
   for (UInt_t iLarger = 0; iLarger != HistHolders.size(); ++iLarger) {
 
-    Message(eDebug, "Stacking up histogram: %i", iLarger);
-    Message(eInfo, "Entry %s has total integral %f",
-            HistHolders[iLarger]->fEntry.Data(),
-            HistHolders[iLarger]->fHist->Integral("width")/fEventsPer);
+    Message(eDebug, "Stacking up histogram:", iLarger);
+    Message(eInfo, "Entry", HistHolders[iLarger]->fEntry, "has total integral",
+            HistHolders[iLarger]->fHist->Integral("width")/(fEventsPer ? fEventsPer : 1.0));
 
     for (UInt_t iSmaller = iLarger + 1; iSmaller != HistHolders.size(); ++iSmaller) {
-      Message(eDebug, "Adding %i to %i", iSmaller, iLarger);
+      Message(eDebug, "Adding", iSmaller, "to", iLarger);
       HistHolders[iLarger]->fHist->Add(HistHolders[iSmaller]->fHist);
     }
 
-    Message(eDebug, "Histogram %i has integral %f", iLarger, HistHolders[iLarger]->fHist->Integral());
+    Message(eDebug, "Histogram", iLarger, "has integral", HistHolders[iLarger]->fHist->Integral());
 
     if (HistHolders[iLarger]->fHist->Integral() > 0 || iLarger == 0) {
 
@@ -323,11 +321,11 @@ PlotStack::MakeCanvas(TString FileBase, std::vector<TH1D*> DataHists, std::vecto
       }
     }
 
-    Message(eDebug, "There are now %i total histograms to plot.", AllHists.size());
+    Message(eDebug, "There are now", AllHists.size() ,"total histograms to plot.");
 
   }
 
-  Message(eInfo, "Total background contribution: %f", HistHolders[0]->fHist->Integral("width")/fEventsPer);
+  Message(eInfo, "Total background contribution:", HistHolders[0]->fHist->Integral("width")/(fEventsPer ? fEventsPer : 1.0));
 
   if (not DataHist->Integral()) {
     auto* match = AllHists[0];
@@ -360,7 +358,7 @@ PlotStack::MakeCanvas(TString FileBase, std::vector<TH1D*> DataHists, std::vecto
 
     AllHists.push_back(SignalHolders[iHist]->fHist);
     AddLegendEntry(SignalHolders[iHist]->fEntry, 1, 2, SignalHolders[iHist]->fColor);
-    Message(eDebug, "There are now %i total histograms to plot.", AllHists.size());
+    Message(eDebug, "There are now", AllHists.size(), "total histograms to plot.");
   }
 
   if (fPostFitFile != "") {
@@ -371,7 +369,7 @@ PlotStack::MakeCanvas(TString FileBase, std::vector<TH1D*> DataHists, std::vecto
 
     sqlite3 *conn;
     if(sqlite3_open(fPostFitFile.Data(), &conn) != SQLITE_OK) {
-      Message(eError, "Can't open database in %s", fPostFitFile.Data());
+      Message(eError, "Can't open database in", fPostFitFile);
       sqlite3_close(conn);
       exit(50);
     }
@@ -406,7 +404,7 @@ WHERE region = ? AND bin = ? AND signal = ?
 
   }
 
-  Message(eDebug, "There are now %i total histograms to plot.", AllHists.size());
+  Message(eDebug, "There are now", AllHists.size() ,"total histograms to plot.");
 
   if (fMakeRatio)
     AddRatioLine(fDataIndex);

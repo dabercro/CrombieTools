@@ -29,7 +29,9 @@ def SetupFromEnv(plotter):
 
     SetupConfigFromEnv(plotter)
 
-    DirFromEnv('CrombieOutPlotDir')
+    if not os.environ.get('blind'):
+        DirFromEnv('CrombieOutPlotDir')
+
     SetFunctionFromEnv([
             (plotter.SetOutDirectory, 'CrombieOutPlotDir'),
             ])

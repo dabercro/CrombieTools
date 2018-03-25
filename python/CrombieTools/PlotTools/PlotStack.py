@@ -108,8 +108,8 @@ class ParallelStackContainer:
         self.Plotter.SetDefaultExpr(d_expr)
 
         if self.LimitHistsDir:
-            self.Plotter.SetDumpFileName(os.path.join(self.LimitHistsDir, '%s_%s.root' % (region, expr[0])))
-            self.Plotter.SetHistSuff('__' + region)
+            self.Plotter.SetDumpFileName(os.path.join(self.LimitHistsDir, '%s_%s_%s.root' % (category, region, expr[0])))
+            self.Plotter.SetHistSuff('__%s__%s' % (category, region))
 
         expr[0] = '_'.join([category, region, kwargs.get('var_name', expr[0]).replace(',', '__').replace(')', '__').replace('(', '__')])
 

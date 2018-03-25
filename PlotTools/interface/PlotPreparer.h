@@ -13,6 +13,7 @@
 #include <map>
 #include <vector>
 #include <utility>
+#include <cmath>
 
 #include "TProfile.h"
 #include "TTreeFormula.h"
@@ -160,12 +161,12 @@ void
 PlotPreparer::AddHist(TString FileBase, Int_t NumXBins, Double_t* XBins, TString dataExpr, TString mcExpr, TString cut, TString dataWeight, TString mcWeight)
 {
   DisplayFunc(__func__);
-  Message(eDebug, "File Name: %s", FileBase.Data());
-  Message(eDebug, "Data expr: %s", dataExpr.Data());
-  Message(eDebug, "MC expr: %s", mcExpr.Data());
-  Message(eDebug, "Cut: %s", cut.Data());
-  Message(eDebug, "Data cut: %s", dataWeight.Data());
-  Message(eDebug, "MC cut: %s", mcWeight.Data());
+  Message(eDebug, "File Name:", FileBase);
+  Message(eDebug, "Data expr:", dataExpr);
+  Message(eDebug, "MC expr:", mcExpr);
+  Message(eDebug, "Cut:", cut);
+  Message(eDebug, "Data cut:", dataWeight);
+  Message(eDebug, "MC cut:", mcWeight);
 
   if (fHistograms.find(FileBase) == fHistograms.end())
     fHistograms[FileBase] = {};
@@ -200,7 +201,7 @@ PlotPreparer::AddHist(TString FileBase, Int_t NumXBins, Double_t* XBins, TString
 
       for (auto& expr : exprs) {
         if (formulas.find(expr) == formulas.end()) {
-          Message(eDebug, "For %s\nAdding formula expression: %s", inputname.Data(), expr.Data());
+          Message(eDebug, inputname, "Adding formula expression:", expr);
           formulas[expr] = std::make_pair<TTreeFormula*, Double_t>(nullptr, {});
         }
       }
@@ -223,7 +224,7 @@ PlotPreparer::AddHist(TString FileBase, Int_t NumXBins, Double_t* XBins, TString
 std::vector<TH1D*>
 PlotPreparer::GetHistList (TString FileBase, FileType type) {
   PreparePlots();
-  Message(eDebug, "Getting hists for FileName %s and type %i", FileBase.Data(), type);
+  Message(eDebug, "Getting hists for FileName", FileBase, "and type", type);
   return fHistograms.at(FileBase).at(type);
 }
 
@@ -276,13 +277,26 @@ PlotPreparer::PreparePlots() {
       profiles.clear();
     }    
   }
+
+  // For each output file and process, dump bin contents
+  for (auto& output : fOutPlots) {
+    Message(eDebug, "Output File:", output.first);
+    for (auto& process : output.second) {
+      Message(eDebug, "Process:", process.first);
+      for (auto* plot : process.second) {
+        auto* hist = plot->hist;
+        for (Int_t bin = 1; bin <= hist->GetNbinsX(); bin++)
+          Message(eDebug, "Plot", plot, "bin", bin, "content", hist->GetBinContent(bin));
+      }
+    }
+  }
 }
 
 void
 PlotPreparer::RunFile(FileInfo& info) {
   auto filename = info.fFileName;
   output_lock.Lock();
-  std::cout << "About to run over file " << filename.Data() << std::endl;
+  std::cout << "About to run over file " << filename << std::endl;
 
   auto* inputfile = TFile::Open(filename);
   TTree* inputtree = fTreeName.Contains("/") ? static_cast<TTree*>(inputfile->Get(fTreeName)) : static_cast<TTree*>(inputfile->FindObjectAny(fTreeName));
@@ -309,7 +323,7 @@ PlotPreparer::RunFile(FileInfo& info) {
   for (decltype(nentries) i_entry = 0; i_entry < nentries; ++i_entry) {
     if (i_entry % 1000000 == 0) {
       output_lock.Lock();
-      std::cout << filename.Data() << " " << double(i_entry)/double(nentries)*100 << "%" << std::endl;
+      std::cout << filename << " " << double(i_entry)/double(nentries)*100 << "%" << std::endl;
       output_lock.UnLock();
     }
     inputtree->GetEntry(i_entry);
@@ -321,6 +335,11 @@ PlotPreparer::RunFile(FileInfo& info) {
 
     for (auto plot : plots) {
       if (plot->cut) {
+        if (std::isnan(plot->weight)) {
+          output_lock.Lock();
+          Message(eError, "For file", filename, "row", i_entry, "NaN weight", plot->weight, "and expr", plot->expr);
+          output_lock.UnLock();
+        }
         plot->hist->Fill(plot->expr, plot->weight);
         for (auto* env : plot->envs)
           env->hist->Fill(plot->expr, env->env_expr, plot->weight);
@@ -353,7 +372,7 @@ PlotPreparer::RunFile(FileInfo& info) {
       hist->Scale(info.fXSecWeight);
   }
   output_lock.Lock();
-  std::cout << "Finished file " << filename.Data() << std::endl;
+  std::cout << "Finished file " << filename << std::endl;
   output_lock.UnLock();
 }
 

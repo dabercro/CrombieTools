@@ -186,6 +186,7 @@ class Parser:
         self.block = block
         self.prev_line = ''           # Holds line continuations
         self.in_comment = False
+        self.updown_char = '%'
 
     def parse(self, raw_line):
         input_line = raw_line.split(self.comment)[0].strip()
@@ -239,7 +240,7 @@ class Parser:
             lines = [match.group(1).replace(char * 3, var.strip().upper()).replace(char * 2, var.strip().title()).replace(char, var.strip())
                      for var in subs]
 
-            if len(lines) == 2 and char == '#':
+            if len(lines) == 2 and char == self.updown_char:
                 lines[0] = lines[0].replace('+-', '+')
                 lines[1] = lines[1].replace('+-', '-')
 
@@ -249,33 +250,36 @@ class Parser:
         if match:
             input_line = input_line.replace(match.group(1), subprocess.check_output(match.group(2).split()).strip())
 
-        match = re.match(r'\?\s*([\w\[\]]*)\s*;\s*(\w*)\s*(;\s*([\w\s,]*?)\s*)?\?(((.*(<-|->|=))\s*).*)', input_line) # Parse uncertainties
+        match = re.match(r'(\#?)\?\s*([\w\[\]]*)\s*;\s*(\w*)\s*(;\s*([\w\s,]*?)\s*)?\?(((.*(<-|->|=))\s*).*)', input_line) # Parse uncertainties
         if match:
-            unc_name = match.group(2)
+            unc_name = match.group(3)
             if unc_name not in Uncertainty.uncs:
                 Uncertainty(unc_name)
 
-            followers = match.group(4) or ''
-            branches = [match.group(1)] + [branch.strip() for branch in followers.split(',') if branch]
+            followers = match.group(5) or ''
+            branches = [match.group(2)] + [branch.strip() for branch in followers.split(',') if branch]
             new_lines = []
             if len(branches) > 1:
-                new_lines.append('~~~ []_%s ~~~' % match.group(1))
+                new_lines.append('~~~ []_%s ~~~' % match.group(2))
 
-            base = match.group(1).rstrip('[]')
-            arr_end = '[]' if match.group(1).endswith('[]') else ''
+            base = match.group(2).rstrip('[]')
+            arr_end = '[]' if match.group(2).endswith('[]') else ''
 
-            new_master = '%s_%s##%s' % (base, unc_name, arr_end)
-            ending = ' |# up, down'
-            new_lines.append(new_master + match.group(5).rstrip() + ending)
+            new_master = '%s_%s%s%s' % (base, unc_name, self.updown_char * 2, arr_end)
+            ending = ' |%s up, down' % self.updown_char
+            new_lines.append(new_master + match.group(6).rstrip() + ending)
             for branch in branches[1:]:
-                new_lines.append('%s_%s##%s' % (branch + arr_end, unc_name, arr_end) + match.group(6) +
+                new_lines.append(match.group(1) +
+                                 '%s_%s%s%s' % (branch + arr_end, unc_name, self.updown_char * 2, arr_end) +
+                                 match.group(7) +
                                  '[]_%s%s * []_%s/[]_%s' % (branch, arr_end,
                                                             new_master,
-                                                            match.group(1)) + ending)
+                                                            match.group(2)) + ending)
 
             return [line for l in new_lines for line in self.parse(l)]
             
-        input_line = re.sub(r'(->.*\w)\[\](?!\w)', r'\1.back()', input_line)
+        while re.match(r'.*->.*\w\[\](?!\w).*', input_line):
+            input_line = re.sub(r'(->.*\w)\[\](?!\w)', r'\1.back()', input_line)
 
         # Multi-line for expansion
         if '\\' in input_line:
@@ -391,9 +395,9 @@ class Function:
         else:
             signature = signature.replace('(', '(const ')
         self.signature = 'set_' + signature.replace(', ', ', const ').replace(', const )', ')')
-        template_args = []
+        template_args = set()
         for match in re.finditer(r'<(.)>', self.signature):
-            template_args.append(match.group(1))
+            template_args.add(match.group(1))
             self.signature = self.signature.replace(match.group(0), match.group(1))
 
         self.template = 'template <typename %s> ' % ', typename '.join(template_args) if template_args else ''

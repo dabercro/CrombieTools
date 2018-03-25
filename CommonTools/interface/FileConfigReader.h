@@ -278,25 +278,25 @@ FileConfigReader::ReturnFileNames(FileType type, TString matchName, SearchBy sea
 {
   DisplayFunc(__func__);
 
-  Message(eDebug, "Searching for files that match %s", matchName.Data());
+  Message(eDebug, "Searching for files that match", matchName);
   std::vector<TString> output;
   std::vector<FileInfo*> *fileInfo = GetFileInfo(type);
 
   for (std::vector<FileInfo*>::iterator iInfo = fileInfo->begin(); iInfo != fileInfo->end(); ++iInfo) {
 
     if (search == kLimitName) {
-      Message(eDebug, "Comparing to Limit Tree %s", (*iInfo)->fTreeName.Data());
+      Message(eDebug, "Comparing to Limit Tree", (*iInfo)->fTreeName);
       if (matchName != "" && (((*iInfo)->fTreeName != matchName && match) || ((*iInfo)->fTreeName == matchName && !match)))
         continue;
 
     } else if (search == kLegendEntry) {
-      Message(eDebug, "Comparing to Legend Entry %s", (*iInfo)->fEntry.Data());
+      Message(eDebug, "Comparing to Legend Entry", (*iInfo)->fEntry);
       if (matchName != "" && (((*iInfo)->fEntry != matchName && match) || ((*iInfo)->fEntry == matchName && !match)))
         continue;
 
     }
 
-    Message(eDebug, "Found a match! Adding file %s", (*iInfo)->fFileName.Data());
+    Message(eDebug, "Found a match! Adding file", (*iInfo)->fFileName);
 
     output.push_back((*iInfo)->fFileName);
 
@@ -369,12 +369,12 @@ void FileConfigReader::ReadMCConfig(TString config, TString fileDir)
 {
   DisplayFunc(__func__);
 
-  Message(eInfo, "Reading MC Config file %s", config.Data());
+  Message(eInfo, "Reading MC Config file", config);
 
   if (fileDir != "")
     SetInDirectory(fileDir);
 
-  Message(eInfo, "Input directory is %s", GetInDirectory().Data());
+  Message(eInfo, "Input directory is", GetInDirectory());
 
   std::ifstream configFile {config.Data()};
   TString LimitTreeName;
@@ -397,14 +397,14 @@ void FileConfigReader::ReadMCConfig(TString config, TString fileDir)
   while (!configFile.eof()) {
 
     Message(eDebug, "About to read line.");
-    Message(eDebug, "currTreeName:    %s", currTreeName.Data());
-    Message(eDebug, "currLegend:      %s", currLegend.Data());
-    Message(eDebug, "currColorStyle:  %s", currColorStyle.Data());
+    Message(eDebug, "currTreeName:   ", currTreeName);
+    Message(eDebug, "currLegend:     ", currLegend);
+    Message(eDebug, "currColorStyle: ", currColorStyle);
     Message(eDebug, "Now reading...");
 
     configFile >> LimitTreeName;
 
-    Message(eDebug, "LimitTreeName:   %s", LimitTreeName.Data());
+    Message(eDebug, "LimitTreeName:  ", LimitTreeName);
 
     if (LimitTreeName == ".")
       LimitTreeName = currTreeName;
@@ -419,7 +419,7 @@ void FileConfigReader::ReadMCConfig(TString config, TString fileDir)
 
     }
 
-    Message(eDebug, "Processed tree name, now: %s", LimitTreeName.Data());
+    Message(eDebug, "Processed tree name, now:", LimitTreeName);
 
     // Do the checking here for merging groups
     if (LimitTreeName == "INGROUP") {
@@ -478,7 +478,7 @@ void FileConfigReader::ReadMCConfig(TString config, TString fileDir)
     } else {
 
       configFile >> FileName;
-      Message(eDebug, "FileName:        %s", FileName.Data());
+      Message(eDebug, "FileName:       ", FileName);
 
       if (LimitTreeName == "skip") {
 
@@ -488,12 +488,12 @@ void FileConfigReader::ReadMCConfig(TString config, TString fileDir)
 
           for (UInt_t iFile = 0; iFile != (*FileInfo).size(); ++iFile) {
 
-            Message(eDebug, "File: %i/%i comparing %s to %s", iFile, (*FileInfo).size(),
-                    ((*FileInfo)[iFile]->fFileName).Data(), (AddInDir(FileName)).Data());
+            Message(eDebug, "File:", iFile, "/", (*FileInfo).size(), "comparing",
+                    ((*FileInfo)[iFile]->fFileName), "to", (AddInDir(FileName)));
 
             if ((*FileInfo)[iFile]->fFileName == AddInDir(FileName)) {
 
-              Message(eInfo, "Removing file %s", (*FileInfo)[iFile]->fFileName.Data());
+              Message(eInfo, "Removing file", (*FileInfo)[iFile]->fFileName);
               delete (*FileInfo)[iFile];
               (*FileInfo).erase((*FileInfo).begin() + iFile);
               break;
@@ -529,9 +529,9 @@ void FileConfigReader::ReadMCConfig(TString config, TString fileDir)
 
           currColorStyle = ColorStyleEntry;
 
-        Message(eDebug, "XSec:            %s", XSec.Data());
-        Message(eDebug, "LegendEntry:     %s", LegendEntry.Data());
-        Message(eDebug, "ColorStyleEntry: %s", ColorStyleEntry.Data());
+        Message(eDebug, "XSec:           ", XSec);
+        Message(eDebug, "LegendEntry:    ", LegendEntry);
+        Message(eDebug, "ColorStyleEntry:", ColorStyleEntry);
 
         if (ColorStyleEntry != "" && (fKeepAllFiles || !LimitTreeName.BeginsWith('#')))
           // Replace _ with spaces, but put the escaped ones back
@@ -693,7 +693,7 @@ FileConfigReader::OpenFiles(std::vector<TString> fileNames)
   fFiles.resize(0);
   fInTrees.resize(0);
 
-  Message(eDebug, "Looking for tree named: %s", fTreeName.Data());
+  Message(eDebug, "Looking for tree named:", fTreeName);
 
   for (std::vector<TString>::iterator iFile = fileNames.begin(); iFile != fileNames.end(); ++iFile) {
 
@@ -731,7 +731,7 @@ FileConfigReader::CloseFiles()
   DisplayFunc(__func__);
   for (UInt_t iFiles = 0; iFiles != fAllFiles.size(); ++iFiles) {
     for (UInt_t iFile = 0; iFile != fAllFiles[iFiles].size(); ++iFile) {
-      Message(eDebug, "About to close: %s", fAllFiles[iFiles][iFile]->GetName());
+      Message(eDebug, "About to close:", fAllFiles[iFiles][iFile]->GetName());
       fAllFiles[iFiles][iFile]->Close();
     }
     fAllFiles[iFiles].clear();
@@ -770,7 +770,7 @@ FileConfigReader::ScaleBackgrounds(TString entry, Double_t scale, SearchBy searc
 
   DisplayFunc(__func__);
 
-  Message(eDebug, "Scaling %s by %f", entry.Data(), scale);
+  Message(eDebug, "Scaling %s by %f", entry, scale);
 
   std::vector<FileInfo*>* fileInfo = GetFileInfo(type);
   for (std::vector<FileInfo*>::iterator iInfo = fileInfo->begin(); iInfo != fileInfo->end(); ++iInfo) {
