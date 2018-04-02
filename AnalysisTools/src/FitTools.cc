@@ -78,10 +78,9 @@ FitTools::FitCategories(Double_t Shape_Min, Double_t Shape_Max, const char* Shap
 
     TString datasetname = TString::Format("Dataset_%s_%i", "Floating", iTree);
     TTree *copiedTree = fInTrees[iTree]->CopyTree(fBaseCut.GetTitle());
-    RooDataSet *tempData = new RooDataSet(datasetname, datasetname, copiedTree,
-                                          argset, 0, fMCWeight);
+    RooDataSet tempData {datasetname, datasetname, copiedTree, argset, 0, fMCWeight};
 
-    dataset.append(*tempData);
+    dataset.append(tempData);
     Message(eDebug, "Dataset now has %i entries", dataset.numEntries());
   }
 
@@ -104,16 +103,15 @@ FitTools::FitCategories(Double_t Shape_Min, Double_t Shape_Max, const char* Shap
 
     TString pdfNameTemp = TString::Format("pdf_%s_%i", "Floating", iBin);
     Message(eDebug, "The pdf name will be %s", pdfNameTemp.Data());
-    RooKeysPdf *tempPdf = new RooKeysPdf(pdfNameTemp, pdfNameTemp, variable,
-                                         *(static_cast<RooDataSet*>(dataList->At(iBin))));
+    RooKeysPdf tempPdf {pdfNameTemp, pdfNameTemp, variable, *(static_cast<RooDataSet*>(dataList->At(iBin)))};
     Message(eDebug, "Keys pdf created at %p", &tempPdf);
-    pdfSet.add(*tempPdf);
+    pdfSet.add(tempPdf);
 
     if (iBin != fCategoryNames.size() - 1) {
       TString coeffName = TString::Format("coeff_%s_%i", "Floating", iBin);
       Message(eDebug, "Added coefficient named %s", coeffName.Data());
-      RooRealVar *tempVar = new RooRealVar(coeffName, coeffName, 0.0, 1.0);
-      coeffSet.add(*tempVar);
+      RooRealVar tempVar {coeffName, coeffName, 0.0, 1.0};
+      coeffSet.add(tempVar);
     }
   }
 
@@ -140,10 +138,9 @@ FitTools::FitCategories(Double_t Shape_Min, Double_t Shape_Max, const char* Shap
 
     TString datasetname = TString::Format("Dataset_%s_%i", "Static", iTree);
     TTree *copiedTree = fInTrees[iTree]->CopyTree(fBaseCut.GetTitle());
-    RooDataSet *tempData = new RooDataSet(datasetname, datasetname, copiedTree,
-                                          argset, 0, fMCWeight);
+    RooDataSet tempData {datasetname, datasetname, copiedTree, argset, 0, fMCWeight};
 
-    static_dataset.append(*tempData);
+    static_dataset.append(tempData);
     Message(eDebug, "Dataset now has %i entries", static_dataset.numEntries());
   }
 

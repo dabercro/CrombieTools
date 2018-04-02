@@ -190,7 +190,7 @@ def submit(jobs):
     if os.path.exists(config_file):
         report_submission(jobs)
         os.system('condor_submit %s' % config_file)
-        print 'Submitted jobs, sleeping'
+        LOG.info('Submitted jobs, sleeping')
         time.sleep(1200)
 
 

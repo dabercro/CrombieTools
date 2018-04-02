@@ -46,7 +46,7 @@ Double_t GetXSecWeight(TString fileName, Double_t XSec, TString allHistName)
   if (allHist)
     weight = XSec/allHist->GetBinContent(1);
   else
-    std::cout << "Just so you know, I can't find " << allHistName << std::endl;
+    std::cout << "Just so you know, I can't find " << allHistName << " in " << fileName << std::endl;
 
   theFile->Close();
   return weight;
@@ -58,7 +58,7 @@ Double_t GetXSecWeight(TString fileName, Double_t XSec, TString allHistName)
    Structure holding all the information desired from each file.
 */
 
-struct FileInfo
+struct FileInfo : public Debug
 {
   FileInfo () {}
   /// The constructor fills all of the entries
@@ -76,6 +76,12 @@ struct FileInfo
     struct stat file_stat;
     stat(fFileName.Data(), &file_stat);
     fSize = file_stat.st_size;
+
+    TFile inFile {fileName};
+    auto* _allHist = (TH1D*) inFile.Get(allHist);
+    Message(eDebug, "AllHist at", _allHist);
+    if (_allHist)
+      fRenormHistogram = *_allHist;
   }
 
   ~FileInfo () {
@@ -91,6 +97,7 @@ struct FileInfo
   Double_t fXSecWeight;              ///< Weight determined by GetXSecWeight()
   UncertaintyInfo *fUncertaintyInfo; ///< Structure to supply uncertainty weight to a file
   unsigned long    fSize;            ///< Size of the file
+  TH1D     fRenormHistogram;         ///< Histogram to hold the sum of weights for this file
 };
 
 inline Bool_t operator<(const FileInfo& a, const FileInfo& b) { return a.fSize < b.fSize; }

@@ -31,11 +31,12 @@ TMutex root_lock;  // For doing sketchy ROOT things
 
 class EnvelopeInfo {
  public:
-  EnvelopeInfo(TProfile* hist, Double_t& env_expr)
-    : hist{hist}, env_expr{env_expr} {}
+  EnvelopeInfo(TProfile* hist, Double_t& env_expr, Int_t renorm_idx)
+    : hist{hist}, env_expr{env_expr}, renorm_idx{renorm_idx} {}
 
   TProfile*       hist;
   Double_t&       env_expr;
+  Int_t           renorm_idx;
 };
 
 /**
@@ -77,8 +78,8 @@ class PlotPreparer : public ParallelRunner {
   void AddHist ( TString FileBase, Int_t NumXBins, Double_t MinX, Double_t MaxX, TString dataExpr, TString mcExpr, TString cut, TString dataWeight, TString mcWeight );
 
   /// Start tracking branches for a given envelope
-  void StartEnvelope ( Bool_t is_up )               { env_up = is_up; }
-  void AddEnvelopeWeight ( TString weight )         { env_branches.push_back(weight); }
+  void StartEnvelope ( Bool_t is_up )                            { env_up = is_up; }
+  void AddEnvelopeWeight ( TString weight, Int_t index = 1 )     { env_branches.push_back(make_pair(weight, index)); }
 
  protected:
   // Don't mask the FileConfigReader functions of the same name
@@ -110,11 +111,14 @@ class PlotPreparer : public ParallelRunner {
   /// Runs all plots over a single file
   void RunFile (FileInfo& info) override;
 
+  /// Scales the plots according to the stored file infos
+  void ScalePlots ();
+
   /// Says is envelope goes up or down for a given output file
   std::map<TString, Bool_t> output_is_up;
 
   Bool_t env_up;                      ///< Tells whether envelope is up or down for upcoming plot
-  std::vector<TString> env_branches;  ///< Vector to temporarily hold branch names
+  std::vector<std::pair<TString, Int_t>> env_branches;    ///< Vector to temporarily hold branch names and renormalization indices
 };
 
 PlotPreparer::~PlotPreparer() {
@@ -189,7 +193,8 @@ PlotPreparer::AddHist(TString FileBase, Int_t NumXBins, Double_t* XBins, TString
     auto weight = exprs[2];
 
     // Include the branches for the envelope calculation
-    exprs.insert(exprs.end(), env_branches.begin(), env_branches.end());
+    for (auto env : env_branches)
+      exprs.push_back(env.first);
 
     const auto& infos = *(GetFileInfo(type));
     for (auto info : infos) {
@@ -210,7 +215,7 @@ PlotPreparer::AddHist(TString FileBase, Int_t NumXBins, Double_t* XBins, TString
       PlotInfo* tempinfo = new PlotInfo(new TH1D(tempname, tempname, NumXBins, XBins), formulas[expr].second, formulas[cut].second, formulas[weight].second, fEventsPer);
       for (auto env : env_branches) {
         auto tempname = TempHistName();
-        tempinfo->envs.push_back(new EnvelopeInfo(new TProfile(tempname, tempname, NumXBins, XBins), formulas[env].second));
+        tempinfo->envs.push_back(new EnvelopeInfo(new TProfile(tempname, tempname, NumXBins, XBins), formulas[env.first].second, env.second));
       }
 
       plots.push_back(tempinfo);
@@ -235,6 +240,7 @@ PlotPreparer::PreparePlots() {
   fPrepared = true;
 
   RunThreads();
+  ScalePlots();
 
   // Do envelope calculations
   for (auto& env : output_is_up) {
@@ -277,30 +283,20 @@ PlotPreparer::PreparePlots() {
       profiles.clear();
     }    
   }
-
-  // For each output file and process, dump bin contents
-  for (auto& output : fOutPlots) {
-    Message(eDebug, "Output File:", output.first);
-    for (auto& process : output.second) {
-      Message(eDebug, "Process:", process.first);
-      for (auto* plot : process.second) {
-        auto* hist = plot->hist;
-        for (Int_t bin = 1; bin <= hist->GetNbinsX(); bin++)
-          Message(eDebug, "Plot", plot, "bin", bin, "content", hist->GetBinContent(bin));
-      }
-    }
-  }
 }
 
 void
 PlotPreparer::RunFile(FileInfo& info) {
   auto filename = info.fFileName;
+
   output_lock.Lock();
   std::cout << "About to run over file " << filename << std::endl;
+  output_lock.UnLock();
 
+  root_lock.Lock();
   auto* inputfile = TFile::Open(filename);
   TTree* inputtree = fTreeName.Contains("/") ? static_cast<TTree*>(inputfile->Get(fTreeName)) : static_cast<TTree*>(inputfile->FindObjectAny(fTreeName));
-  output_lock.UnLock();
+  root_lock.UnLock();
 
   std::set<TString> needed;
 
@@ -351,29 +347,43 @@ PlotPreparer::RunFile(FileInfo& info) {
   inputfile->Close();
   root_lock.UnLock();
 
-  for (auto plot : plots) {
-    auto* hist = plot->hist;
-    auto tempname = TempHistName();
-    root_lock.Lock();
-    TH1D* tempHist = static_cast<TH1D*>(hist->Clone(TempHistName()));
-    root_lock.UnLock();
-
-    for (Int_t iBin = 1; iBin != tempHist->GetNbinsX() + 1; ++iBin)
-      tempHist->SetBinContent(iBin, tempHist->GetBinWidth(iBin)/plot->eventsper);
-    SetZeroError(tempHist);
-
-    Division(hist, tempHist);
-
-    root_lock.Lock();
-    delete tempHist;
-    root_lock.UnLock();
-
-    if (info.fXSec > 0)
-      hist->Scale(info.fXSecWeight);
-  }
   output_lock.Lock();
   std::cout << "Finished file " << filename << std::endl;
   output_lock.UnLock();
+}
+
+void PlotPreparer::ScalePlots() {
+  for (auto type : gFileTypes) {
+    const auto& infos = *(GetFileInfo(type));
+    for (auto* info : infos) {
+
+      auto& plots = fPlots[info->fFileName];
+
+      for (auto plot : plots) {
+        auto* hist = plot->hist;
+        auto tempname = TempHistName();
+        TH1D* tempHist = static_cast<TH1D*>(hist->Clone(TempHistName()));
+
+        for (Int_t iBin = 1; iBin != tempHist->GetNbinsX() + 1; ++iBin)
+          tempHist->SetBinContent(iBin, tempHist->GetBinWidth(iBin)/plot->eventsper);
+        SetZeroError(tempHist);
+
+        Division(hist, tempHist);
+
+        delete tempHist;
+
+        if (info->fXSec > 0) {
+          hist->Scale(info->fXSecWeight);
+          for (auto* env : plot->envs) {
+            auto denom = info->fRenormHistogram.GetBinContent(std::min(env->renorm_idx,
+                                                                       info->fRenormHistogram.GetNbinsX()));
+            if (denom)
+              env->hist->Scale(info->fRenormHistogram.GetBinContent(1)/denom);
+          }
+        }
+      }
+    }
+  }
 }
 
 #endif

@@ -210,7 +210,10 @@ def PreparePlots(categories, regions, exprArgs, systematics=None, envelope=None)
                     elif syst in envelope:
                         plotter.StartEnvelope(region.endswith('Up'))
                         for env in envelope[syst]:
-                            plotter.AddEnvelopeWeight(env)
+                            if isinstance(env, str):
+                                plotter.AddEnvelopeWeight(env)
+                            else:
+                                plotter.AddEnvelopeWeight(*env)
 
                 cut = cuts.cut(cat, region)
                 if not os.environ.get('blind'):   # Don't do this with blinded plots (for limits)

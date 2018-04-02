@@ -267,7 +267,7 @@ class Parser:
 
             new_master = '%s_%s%s%s' % (base, unc_name, self.updown_char * 2, arr_end)
             ending = ' |%s up, down' % self.updown_char
-            new_lines.append(new_master + match.group(6).rstrip() + ending)
+            new_lines.append(match.group(1) + new_master + match.group(6).rstrip() + ending)
             for branch in branches[1:]:
                 new_lines.append(match.group(1) +
                                  '%s_%s%s%s' % (branch + arr_end, unc_name, self.updown_char * 2, arr_end) +
@@ -314,7 +314,7 @@ class Reader:
     def __init__(self, weights, prefix, output, inputs, specs, subs):
         self.weights = weights
         self.output = ('%s_%s' % (prefix, output)).strip('_')
-        sub_pref = lambda x: [(label, Prefix.get(prefix).replace(subs.get(inp, inp)) if prefix else label)
+        sub_pref = lambda x: [(label, Prefix.get(prefix).replace(subs.get(inp, inp)) if prefix else subs.get(label, label))
                               for label, inp in x]
         self.inputs = sub_pref(inputs)
         self.specs = sub_pref(specs)

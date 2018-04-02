@@ -52,7 +52,13 @@ PlotStack::MergeHistograms(FileType type, std::vector<TH1D*> hists) {
   for (UInt_t iHist = 0; iHist != hists.size(); ++iHist) {
 
     Message(eDebug, "About to process Histogram", iHist, "out of", hists.size());
-    Message(eDebug, "Entry is ", (*fileInfo)[iHist]->fEntry, ". Previous entry is ",previousEntry, "");
+    Message(eDebug, "Entry is", (*fileInfo)[iHist]->fEntry, "Previous entry is",previousEntry, "");
+    Message(eDebug, "Integral is", hists[iHist]->Integral());
+
+    if (hists[iHist]->Integral() < 0) {
+      Message(eError, "Histogram for", (*fileInfo)[iHist]->fFileName, "has negate integral", hists[iHist]->Integral());
+      continue;
+    }
 
     if ((*fileInfo)[iHist]->fEntry != previousEntry) {
 

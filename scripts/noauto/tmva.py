@@ -10,6 +10,7 @@ sys.argv = sys.argv[:1]
 from ROOT import TMVA, TFile, TCut
 sys.argv = argv
 
+import CrombieTools
 
 logging.basicConfig(level=logging.DEBUG,
                     format='%(asctime)s:%(levelname)s: %(message)s')
