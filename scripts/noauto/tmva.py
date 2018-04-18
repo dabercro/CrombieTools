@@ -25,7 +25,8 @@ class Trainer(object):
         self.back_file = TFile(back_file) if back_file else None
         self.input_file = TFile(regression_file) if regression_file else None
         self.output_file = TFile(output_file, 'RECREATE')
-        self.trainer = TMVA.Factory(name, self.output_file, options)
+        self.loader = TMVA.DataLoader(name)
+        self.factory = TMVA.Factory(name, self.output_file, options)
         self.weight = None
         self.cut = None
         self.variables = None   # Flag that variables have been set
@@ -49,9 +50,9 @@ class Trainer(object):
                 if not inputs:
                     continue
 
-                target_func = self.trainer.AddVariable
+                target_func = self.loader.AddVariable
                 if inputs[0] == 'SPEC':
-                    target_func = self.trainer.AddSpectator
+                    target_func = self.loader.AddSpectator
                     inputs = inputs[1:]
 
                 if len(inputs) == 1:
@@ -67,7 +68,7 @@ class Trainer(object):
 
     def set_target(self, name, expr):
         self.target = True
-        self.trainer.AddTarget('%s:=%s' % (name, expr))
+        self.loader.AddTarget('%s:=%s' % (name, expr))
 
     def prepare(self, opts):
         if None in [self.cut, self.weight]:
@@ -77,38 +78,61 @@ class Trainer(object):
         self.prepared = True
 
         if self.input_file:
-            self.trainer.AddRegressionTree(self.input_file.Get('events'), 1.0)
-            self.trainer.SetWeightExpression(self.weight, 'Regression');
-            self.trainer.PrepareTrainingAndTestTree(self.cut, opts)
+            self.loader.AddRegressionTree(self.input_file.Get('events'), 1.0)
+            self.loader.SetWeightExpression(self.weight, 'Regression');
+            self.loader.PrepareTrainingAndTestTree(self.cut, opts)
         else:
-            self.trainer.AddSignalTree(self.signal_file.Get('events'), 1.0)
-            self.trainer.AddBackgroundTree(self.back_file.Get('events'), 1.0)
-            self.trainer.SetSignalWeightExpression(self.weight)
-            self.trainer.SetBackgroundWeightExpression(self.weight)
-            self.trainer.PrepareTrainingAndTestTree(self.cut, self.cut, opts)
+            self.loader.AddSignalTree(self.signal_file.Get('events'), 1.0)
+            self.loader.AddBackgroundTree(self.back_file.Get('events'), 1.0)
+            self.loader.SetSignalWeightExpression(self.weight)
+            self.loader.SetBackgroundWeightExpression(self.weight)
+            self.loader.PrepareTrainingAndTestTree(self.cut, self.cut, opts)
 
     # Static member
     methods = {
+        'Variable': TMVA.Types.kVariable,
+        'Cuts': TMVA.Types.kCuts,
+        'Likelihood': TMVA.Types.kLikelihood,
         'PDERS': TMVA.Types.kPDERS,
-        'PDEFoam': TMVA.Types.kPDEFoam,
+        'HMatrix': TMVA.Types.kHMatrix,
+        'Fisher': TMVA.Types.kFisher,
         'KNN': TMVA.Types.kKNN,
-        'LD': TMVA.Types.kLD,
-        'FDA': TMVA.Types.kFDA,
-        'MLP': TMVA.Types.kMLP,
+        'CFMlpANN': TMVA.Types.kCFMlpANN,
+        'TMlpANN': TMVA.Types.kTMlpANN,
+        'BDT': TMVA.Types.kBDT,
+        'DT': TMVA.Types.kDT,
+        'RuleFit': TMVA.Types.kRuleFit,
         'SVM': TMVA.Types.kSVM,
-        'BDT': TMVA.Types.kBDT
+        'MLP': TMVA.Types.kMLP,
+        'BayesClassifier': TMVA.Types.kBayesClassifier,
+        'FDA': TMVA.Types.kFDA,
+        'Boost': TMVA.Types.kBoost,
+        'PDEFoam': TMVA.Types.kPDEFoam,
+        'LD': TMVA.Types.kLD,
+        'Plugins': TMVA.Types.kPlugins,
+        'Category': TMVA.Types.kCategory,
+        'DNN': TMVA.Types.kDNN,
+        'PyRandomForest': TMVA.Types.kPyRandomForest,
+        'PyAdaBoost': TMVA.Types.kPyAdaBoost,
+        'PyGTB': TMVA.Types.kPyGTB,
+        'PyKeras': TMVA.Types.kPyKeras,
+        'C50': TMVA.Types.kC50,
+        'RSNNS': TMVA.Types.kRSNNS,
+        'RSVM': TMVA.Types.kRSVM,
+        'RXGB': TMVA.Types.kRXGB,
+        'MaxMethod': TMVA.Types.kMaxMethod
         }
 
     def add_method(self, method, name, opts):
         if not name:
             name = method
 
-        self.trainer.BookMethod(self.methods[method], name, opts)
+        self.factory.BookMethod(self.loader, self.methods[method], name, opts)
 
     def train(self):
-        self.trainer.TrainAllMethods()
-        self.trainer.TestAllMethods()
-        self.trainer.EvaluateAllMethods()
+        self.factory.TrainAllMethods()
+        self.factory.TestAllMethods()
+        self.factory.EvaluateAllMethods()
 
 
 if __name__ == '__main__':
