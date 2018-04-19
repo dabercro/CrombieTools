@@ -50,7 +50,8 @@ elseif (isset($_GET['report'])) {
   echo 'Reported ' . $status . ' file to check: ' . $_GET['report'];
 }
 else {
-  echo '<h3><a href="?">Home</a> <a href="http://t3serv007.mit.edu/condormon/">Condormon</a> <a href="logs">All Logs</a></h3>';
+  echo '<!DOCTYPE html><head><style>table {border-collapse: collapse;} td, th {padding: 5px;}</style></head>';
+  echo '<body><center><h3><a href="?">Home</a> <a href="http://t3serv007.mit.edu/condormon/">Condormon</a> <a href="logs">All Logs</a></h3></center>';
 
   if (isset($_GET['file']) and isset($_GET['dir'])) {
     $path = join('/', array_slice(explode('/', $_GET['dir']), -2, 2));
@@ -61,34 +62,34 @@ else {
     }
   }
   else {
-    $first_head = ' In progress: ';
-    $second_head = ' Finished: ';
+    $first_head = ' In progress';
+    $second_head = ' Finished';
     if (isset($_GET['dir'])) {
       $match = $_GET['dir'] . '%';
       if (isset($_GET['logs'])) {
         $stmt = $conn->prepare('SELECT output_file, status, attempts FROM queue WHERE output_dir LIKE ?');
-        $link = '<a href="?dir=' . $_GET['dir'] . '&file=';
-        $first_head = ' Status: ';
-        $second_head = ' Attempts: ';
+        $link = 'dir=' . $_GET['dir'] . '&file=';
+        $first_head = ' Status';
+        $second_head = ' Attempts';
       }
       else {
         $stmt = $conn->prepare('SELECT output_dir, SUM(status != "finished") AS not_fin, SUM(status = "finished") AS finished FROM queue WHERE output_dir LIKE ? GROUP BY output_dir');
-        $link = '<a href="?logs=yep&dir=';
+        $link = 'logs=yep&dir=';
       }
       $stmt->bind_param('s', $match);
     }
     else {
       $stmt = $conn->prepare('SELECT SUBSTRING(output_dir, 1, LOCATE(SUBSTRING_INDEX(output_dir, "/", -1), output_dir) - 1) AS out_dir, SUM(status != "finished") AS not_fin, SUM(status = "finished") AS finished FROM queue GROUP BY out_dir;');
-      $link = '<a href="?dir=';
+      $link = 'dir=';
     }
     $stmt->execute();
     $stmt->bind_result($output, $first, $second);
+    printf('<center><table border="2px"><tr><th>Output</th><th>%s</th><th>%s</th></tr>', $first_head, $second_head);
     while ($stmt->fetch()) {
-      if ($first == 'finished') {
-        $first = '<font color="#00ff00">finished</font>';
-      }
-      echo $link . $output . '">' . $output . '</a>' . $first_head . $first . $second_head . $second . ' <br>';
+      printf('<tr><td><a href="?%s">%s</a></td><td><font color="%s">%s</font></td><td>%s</td></tr>', $link . $output, $output,
+             (($first == '0' or $first == 'finished') ? '#00ff00' : '#ff0000'), $first, $second);
     }
+    echo '</table></center></body>';
     $stmt->close();
   }
 }
