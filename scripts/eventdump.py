@@ -1,5 +1,6 @@
 #! /usr/bin/env python
 
+import os
 import sys
 argv = sys.argv
 sys.argv = [sys.argv[0]]
@@ -11,16 +12,8 @@ import logging
 
 logging.basicConfig(level=logging.INFO)
 
-if __name__ == '__main__':
-    if len(argv) == 1:
-        print 'USAGE %s INFILE OUTFILE CUT [BRANCH [BRANCH ...]]' % argv[0]
-        exit(0)
-
-    in_file = argv[1]
-    out_file = argv[2]
-    cut = argv[3]
-
-    dump = argv[4:] if len(argv) > 4 else ['runNumber', 'lumiNumber', 'eventNumber']
+def main(in_file, out_file, cut, *args, **kwargs):
+    dump = args or ['runNumber', 'lumiNumber', 'eventNumber']
     to_scan = ':'.join(dump)
 
     logging.info('Input file %s', in_file)
@@ -29,7 +22,7 @@ if __name__ == '__main__':
     logging.info('Scanning %s', to_scan)
 
     fh = ROOT.TFile(in_file)
-    in_tree = fh.Get('events')
+    in_tree = fh.Get(kwargs.get('tree', 'events'))
 
     in_tree.GetPlayer().SetScanRedirect(True)
     in_tree.GetPlayer().SetScanFileName(out_file)
@@ -37,3 +30,11 @@ if __name__ == '__main__':
     in_tree.Scan(to_scan, cut, 'colsize=20')
 
     fh.Close()
+
+
+if __name__ == '__main__':
+    if len(argv) == 1:
+        print 'USAGE %s INFILE OUTFILE CUT [BRANCH [BRANCH ...]]' % argv[0]
+        exit(0)
+
+    main(argv[1:], tree=os.environ.get('tree', 'events'))

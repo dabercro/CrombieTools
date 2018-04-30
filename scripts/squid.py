@@ -210,7 +210,7 @@ def check_jobs():
 
     stdout, _ = proc.communicate()
     running_jobs = [int(id.strip()) for id in stdout.split('\n') \
-                        if id.strip()]
+                        if id.strip().isdigit()]
 
     LOG.info('Checking %i jobs', len(jobs))
 

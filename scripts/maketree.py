@@ -610,7 +610,7 @@ if __name__ == '__main__':
                     if match:
                         var = match.group(2)
                         data_type = match.group(4) or DEFAULT_TYPE
-                        val = match.group(6) or DEFAULT_VAL
+                        val = (match.group(6) or DEFAULT_VAL).strip()
                         is_saved = not bool(match.group(1))
 
                         in_func = IN_FUNCTION is not None and match.group(7)

@@ -56,7 +56,7 @@ PlotStack::MergeHistograms(FileType type, std::vector<TH1D*> hists) {
     Message(eDebug, "Integral is", hists[iHist]->Integral());
 
     if (hists[iHist]->Integral() < 0) {
-      Message(eError, "Histogram for", (*fileInfo)[iHist]->fFileName, "has negate integral", hists[iHist]->Integral());
+      Message(eError, "Histogram for", (*fileInfo)[iHist]->fFileName, "has negative integral", hists[iHist]->Integral());
       continue;
     }
 
