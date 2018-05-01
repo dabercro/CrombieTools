@@ -1,5 +1,5 @@
 #ifndef CROMBIE_ETAPHIMAP_H
-#defind CROMBIE_ETAPHIMAP_H 1
+#define CROMBIE_ETAPHIMAP_H 1
 
 #include <vector>
 #include <cmath>
@@ -7,17 +7,21 @@
 #include "TMath.h"
 #include "TVector2.h"
 
-#include "PlotTools/include/KinematicFunctions.h"
+#include "PlotTools/interface/KinematicFunctions.h"
 
 template<typename T>
 class EtaPhiMap {
  public:
   EtaPhiMap (double spacing, double maxeta = 5.0,
-             std::function<double(const T*)> eta = [](const T* p){ return p.eta(); },
-             std::function<double(const T*)> phi = [](const T* p){ return p.phi(); });
+             std::function<double(const T*)> eta = [](const T* p){ return p->eta(); },
+             std::function<double(const T*)> phi = [](const T* p){ return p->phi(); })
+    : _spacing{spacing}, _maxeta{maxeta},
+      n_etabins{2 * (static_cast<unsigned>(std::ceil(_maxeta/_spacing)) + 1)}, // Add one for over/underflow and times two for positive and negative
+      n_phibins{static_cast<unsigned>(std::ceil(TMath::TwoPi()/_spacing))},    // Always transform phi into [0, 2pi) in bin
+      particles(n_etabins * n_phibins), geteta{eta}, getphi{phi} {}
 
   /// Add a collection of particles to the grid. Call once per event, because this gets cleared
-  template<C> AddParticles (C& collection);
+  template<typename C> void AddParticles (C& collection);
 
   /// Get particles within dr of a given eta, phi
   std::vector<const T*> GetParticles(double eta, double phi, double dr);
@@ -25,7 +29,7 @@ class EtaPhiMap {
  private:
 
   /// Stores all of the particles
-  std::vector<std::vector<const T*>> _particles;
+  std::vector<std::vector<const T*>> particles;
   /// Spacing of each grid
   double _spacing;
   /// Max eta of grid (has overflow and underflow bins)
@@ -53,14 +57,9 @@ class EtaPhiMap {
 };
 
 
-EtaPhiMap::EtaPhiMap(double spacing, double maxeta)
-: _spacing{spacing}, _maxeta{maxeta},
-  n_etabins{2 * (std::ceil(_maxeta/_spacing) + 1)}, // Add one for over/underflow and times two for positive and negative
-  n_phibins{std::ceil(TMath::TwoPi()/_spacing)},    // Always transform phi into [0, 2pi) in bin
-  particles(n_etabins * n_phibins) { }
-
-
-template<C> void EtaPhiMap::AddParticles (C& collection) {
+template<typename T>
+template<typename C>
+void EtaPhiMap<T>::AddParticles (C& collection) {
 
   // Only call this function when adding a full collection
   clear();
@@ -73,10 +72,11 @@ template<C> void EtaPhiMap::AddParticles (C& collection) {
 }
 
 
-std::vector<T*> EtaPhiMap::GetParticles(double eta, double phi, double dr) {
+template<typename T>
+std::vector<const T*> EtaPhiMap<T>::GetParticles(double eta, double phi, double dr) {
   double dr2 = std::pow(dr, 2);
 
-  std::vector<T*> output;
+  std::vector<const T*> output;
 
   auto max_eta = eta + dr;
   auto max_phi = phi + dr;
@@ -84,12 +84,14 @@ std::vector<T*> EtaPhiMap::GetParticles(double eta, double phi, double dr) {
   auto running_eta = eta - dr;
   while (running_eta <= max_eta) {
     auto running_phi = phi - dr;
-    while (running_phi <= max_phi) {
+    while (running_phi <= max_phi) {  // This is the easiest way to not worry about phi wrapping
       for (auto* particle : particles[bin(running_eta, running_phi)]) {
         if (deltaR2(eta, phi, geteta(particle), getphi(particle)) < dr2)
           output.push_back(particle);
       }
+      running_phi += _spacing;
     }
+    running_eta += _spacing;
   }
 
   return output;
@@ -97,27 +99,32 @@ std::vector<T*> EtaPhiMap::GetParticles(double eta, double phi, double dr) {
 }
 
 
-unsigned EtaPhiMap::bin(double eta, double phi) {
+template<typename T>
+unsigned EtaPhiMap<T>::bin(double eta, double phi) {
   return bin(etabin(eta), phibin(phi));
 }
 
 
-unsigned EtaPhiMap::bin(unsigned etab, unsigned phib) {
+template<typename T>
+unsigned EtaPhiMap<T>::bin(unsigned etab, unsigned phib) {
   return n_etabins * phib + etab;
 }
 
 
-unsigned EtaPhiMap::etabin(double eta) {
+template<typename T>
+unsigned EtaPhiMap<T>::etabin(double eta) {
   return std::max(0u, std::min(n_etabins - 1, n_etabins/2 + static_cast<unsigned>(eta/_spacing)));
 }
 
 
-unsigned EtaPhiMap::phibin(double phi) {
+template<typename T>
+unsigned EtaPhiMap<T>::phibin(double phi) {
   return TVector2::Phi_0_2pi(phi)/_spacing;
 }
 
 
-void EtaPhiMap::clear() {
+template<typename T>
+void EtaPhiMap<T>::clear() {
   for (auto& grid : particles)
     grid.clear();
 }
