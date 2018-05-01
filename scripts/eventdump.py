@@ -37,4 +37,4 @@ if __name__ == '__main__':
         print 'USAGE %s INFILE OUTFILE CUT [BRANCH [BRANCH ...]]' % argv[0]
         exit(0)
 
-    main(argv[1:], tree=os.environ.get('tree', 'events'))
+    main(*argv[1:], tree=os.environ.get('tree', 'events'))
