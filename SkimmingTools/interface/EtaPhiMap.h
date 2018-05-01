@@ -18,7 +18,11 @@ class EtaPhiMap {
     : _spacing{spacing}, _maxeta{maxeta},
       n_etabins{2 * (static_cast<unsigned>(std::ceil(_maxeta/_spacing)) + 1)}, // Add one for over/underflow and times two for positive and negative
       n_phibins{static_cast<unsigned>(std::ceil(TMath::TwoPi()/_spacing))},    // Always transform phi into [0, 2pi) in bin
-      particles(n_etabins * n_phibins), geteta{eta}, getphi{phi} {}
+      geteta{eta}, getphi{phi} {
+
+        particles.resize(n_etabins * n_phibins);
+
+      }
 
   /// Add a collection of particles to the grid. Call once per event, because this gets cleared
   template<typename C> void AddParticles (C& collection);
@@ -47,8 +51,6 @@ class EtaPhiMap {
   void clear();
   /// Get the bin number
   unsigned bin(double eta, double phi);
-  /// Get the bin number
-  unsigned bin(unsigned etab, unsigned phib);
   /// Get eta bin
   unsigned etabin(double eta);
   /// Get phi bin
@@ -101,21 +103,13 @@ std::vector<const T*> EtaPhiMap<T>::GetParticles(double eta, double phi, double 
 
 template<typename T>
 unsigned EtaPhiMap<T>::bin(double eta, double phi) {
-  return bin(etabin(eta), phibin(phi));
+  return n_etabins * phibin(phi) + etabin(eta);
 }
-
-
-template<typename T>
-unsigned EtaPhiMap<T>::bin(unsigned etab, unsigned phib) {
-  return n_etabins * phib + etab;
-}
-
 
 template<typename T>
 unsigned EtaPhiMap<T>::etabin(double eta) {
   return std::max(0u, std::min(n_etabins - 1, n_etabins/2 + static_cast<unsigned>(eta/_spacing)));
 }
-
 
 template<typename T>
 unsigned EtaPhiMap<T>::phibin(double phi) {
