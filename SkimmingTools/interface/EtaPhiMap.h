@@ -84,9 +84,9 @@ std::vector<const T*> EtaPhiMap<T>::GetParticles(double eta, double phi, double 
   auto max_phi = phi + dr;
 
   auto running_eta = eta - dr;
-  while (running_eta <= max_eta) {
+  while (running_eta < max_eta + _spacing) {
     auto running_phi = phi - dr;
-    while (running_phi <= max_phi) {  // This is the easiest way to not worry about phi wrapping
+    while (running_phi < max_phi + _spacing) {  // This is the easiest way to not worry about phi wrapping
       for (auto* particle : particles[bin(running_eta, running_phi)]) {
         if (deltaR2(eta, phi, geteta(particle), getphi(particle)) < dr2)
           output.push_back(particle);
