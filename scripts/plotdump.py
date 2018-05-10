@@ -6,6 +6,7 @@ import sys
 sys.argv.append('-b')
 
 import ROOT
+import CrombieTools
 
 if __name__ == '__main__':
 
@@ -15,6 +16,9 @@ if __name__ == '__main__':
         print 'in plots that show up in directory OUTPUT.'
         print '\nCan be viewed with various PHP scripts floating around like in'
         print '/home/dabercro/public_html/plotviewer'
+        print '\nAdditional settings are given in environment variables'
+        print '   quick - If set, only specified plots are made (all branches are plotted otherwise)'
+        print '   cut   - The cut that is applied to all plots'
 
         exit(1)
 
@@ -42,12 +46,12 @@ if __name__ == '__main__':
         plots = branch.split(';')
         cut = default_cut if len(plots) == 1 else plots[1].strip()
         opt = ''
-        file_name = branch.replace('/', '_').replace('(', '_').replace(')', '_').replace(',', '_').replace('|', '__').replace(' ', '_').replace(';', '__').replace('!', '_').replace('<', '_').replace('&', '_')
+        file_name = branch.replace('/', '_').replace('(', '_').replace(')', '_').replace(',', '_').replace('|', '__').replace(' ', '_').replace(';', '__').replace('!', '_').replace('<', '_').replace('&', '_')[:100]
         index = 1
         for plot in plots[0].split('|'):
             for x in cut.split('|'):
                 input_tree.SetLineColor(index)
-                input_tree.Draw(plot.strip(), x, opt)
+                input_tree.Draw(plot.strip(), x, opt if ':' not in plot else 'COLZ')
                 opt = 'same'
                 index += 1
 

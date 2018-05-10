@@ -107,8 +107,9 @@ PlotHists::MakeHists(Int_t NumXBins, Double_t *XBins)
     NumPlots = fInExpr.size();
 
   if(NumPlots == 0){
-    Message(eError, "Number of trees: %i, cuts: %i, expressions: %i",
-            fInTrees.size(), fInCuts.size(), fInExpr.size());
+    Message(eError, "Number of trees:", fInTrees.size(),
+            "cuts:",fInCuts.size(),
+            "expressions:", fInExpr.size());
     Message(eError, "Nothing has been initialized in hists plot.");
     exit(1);
   }
@@ -129,8 +130,8 @@ PlotHists::MakeHists(Int_t NumXBins, Double_t *XBins)
       inExpr = fInExpr[iPlot];
 
     if (!inTree || inExpr == "" || inCut == "") {
-      Message(eError, "There is a problem with one of these in plot %i", iPlot);
-      Message(eError, "Tree: %p, Expression: %s, Cut: %s", inTree, inExpr.Data(), inCut.GetTitle());
+      Message(eError, "There is a problem with one of these in plot", iPlot);
+      Message(eError, "Tree:", inTree, "Expression:", inExpr.Data(),  "Cut:", inCut.GetTitle());
       exit(12);
     }
 

@@ -103,20 +103,24 @@ do
             then
 
                 echo ""
-                echo "test -d $NEW_INPUT_DIR || mkdir -p $NEW_INPUT_DIR"
-                echo "test -f $NEW_INPUT_DIR/$IN_FILE || xrdcp root://xrootd.cmsaf.mit.edu//$INPUT_DIR/$IN_FILE $NEW_INPUT_DIR"
+                echo "xrdcp root://xrootd.cmsaf.mit.edu//$INPUT_DIR/$IN_FILE $NEW_INPUT_DIR/$IN_FILE"
                 echo "ln -s $NEW_INPUT_DIR/$IN_FILE $IN_FILE"
                 echo ""
 
                 test -d $NEW_INPUT_DIR || mkdir -p $NEW_INPUT_DIR
-                test -f $NEW_INPUT_DIR/$IN_FILE || xrdcp root://xrootd.cmsaf.mit.edu//$INPUT_DIR/$IN_FILE $NEW_INPUT_DIR/$IN_FILE
+
+                if ! findtree.py $NEW_INPUT_DIR/$IN_FILE
+                then
+                    test ! -f $NEW_INPUT_DIR/$IN_FILE || rm $NEW_INPUT_DIR/$IN_FILE
+                    xrdcp root://xrootd.cmsaf.mit.edu//$INPUT_DIR/$IN_FILE $NEW_INPUT_DIR/$IN_FILE
+                fi
+
                 ln -s $NEW_INPUT_DIR/$IN_FILE $IN_FILE
 
                 sleep 60
 
                 if ! findtree.py $IN_FILE
                 then
-#                    rm $NEW_INPUT_DIR/$IN_FILE
                     STATUS="not_downloading"
                 fi
 

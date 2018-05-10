@@ -212,6 +212,12 @@ class Parser:
         for word, meaning in DEFINITIONS.iteritems():
             input_line = input_line.replace(word, meaning)
 
+        # Expand range operators '..'
+        expand = re.search(r'(\d+)\.\.(\d+)', input_line)
+        while expand:
+            input_line = input_line.replace(expand.group(), ', '.join([str(n) for n in range(int(expand.group(1)), int(expand.group(2)))]))
+            expand = re.search(r'(\d+)\.\.(\d+)', input_line)
+
         start = ''
         pointer_holder = '^&^&^'
         while input_line != start:
@@ -606,7 +612,7 @@ if __name__ == '__main__':
                 for branch_line in check_uncertainties(line):
 
                     # Add branch names individually
-                    match = re.match(r'(\#\s*)?([\w\[\]]*)(/([\w\:]*))?(\s?=\s?([\w\.\(\)\s\+\-\*\/\:]+))?(\s?->\s?(.*?))?(\s?<-\s?(.*?))?$', branch_line)
+                    match = re.match(r'(\#\s*)?([\w\[\]]*)(/([\w\:]*))?(\s?=\s?([\w\.\(\)\s\+\-\*\/\:\[\]]+))?(\s?->\s?(.*?))?(\s?<-\s?(.*?))?$', branch_line)
                     if match:
                         var = match.group(2)
                         data_type = match.group(4) or DEFAULT_TYPE

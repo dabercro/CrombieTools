@@ -68,7 +68,8 @@ class Trainer(object):
 
     def set_target(self, name, expr):
         self.target = True
-        self.loader.AddTarget('%s:=%s' % (name, expr))
+        for n, e in zip(name.split('|'), expr.split('|')):
+            self.loader.AddTarget('%s:=%s' % (n, e))
 
     def prepare(self, opts):
         if None in [self.cut, self.weight]:
@@ -148,7 +149,7 @@ if __name__ == '__main__':
     parser.add_argument('-b', '--background', dest='background', metavar='FILE', help='The name of the input file for background tree', default='')
     parser.add_argument('-w', '--weight', dest='weight', metavar='EXPR', help='The weight of the events')
     parser.add_argument('-x', '--cut', dest='cut', metavar='EXPR', help='The cut that events must pass to be trained on')
-    parser.add_argument('-t', '--target', dest='target', metavar='EXPR', help='The expression we want the regression for', default='')
+    parser.add_argument('-t', '--target', dest='target', metavar='EXPR', help='The expression we want the regression for. Separate multiple targets with "|"', default='')
     parser.add_argument('-m', '--method', dest='method', metavar='NAME', help='Method to use in training')
     parser.add_argument('-o', '--methodopt', dest='method_opts', metavar='OPTS', help='Options for method')
 
