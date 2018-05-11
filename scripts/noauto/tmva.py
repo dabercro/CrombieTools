@@ -38,6 +38,7 @@ class Trainer(object):
             if f:
                 f.Close()
         self.output_file.Close()
+        del self.factory
 
     def read_var_config(self, config):
         self.variables = True
@@ -174,3 +175,5 @@ if __name__ == '__main__':
     trainer.prepare(args.prepare)
     trainer.add_method(args.method, args.method_name, args.method_opts)
     trainer.train()
+
+    del trainer
