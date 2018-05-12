@@ -392,6 +392,15 @@ class Reader:
         return output
 
 
+class TFReader(object):
+    def __init__(self):
+        pass
+    def create(self):
+        pass
+    def eval(self):
+        pass
+
+
 class Function:
     def __init__(self, signature, prefixes):
         self.enum_name = re.match(r'(.*)\(.*\)', signature).group(1)
@@ -552,6 +561,15 @@ if __name__ == '__main__':
                         IN_FUNCTION = None
 
                     IN_FUNCTION = Function(match.group(1), prefixes)
+                    continue
+
+                # TensorFlow applicator
+                match = re.match(r'^(\#\s*)?\[{2}([^;]*);\s*([^;]*)(;\s*(.*))?\]{2}(\s?=\s?(.*))?', line)
+                if match:
+                    if '"tensorflow/core/public/session.h"' not in includes:
+                        includes.append('"tensorflow/core/public/session.h"')
+
+                    print 'Tensorflow!', line
                     continue
 
                 # Get TMVA information to evaluate

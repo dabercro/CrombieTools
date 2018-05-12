@@ -14,21 +14,31 @@ sys.argv = argv
 import numpy
 import keras
 
+from tensorflow.python.framework import graph_util
+from tensorflow.python.framework import graph_io
+
+logging.basicConfig(level=logging.DEBUG,
+                    format='%(asctime)s:%(levelname)s: %(message)s')
+
 class Trainer(object):
     def __init__(self, config, target):
         self.vars = [line.strip() for line in open(config, 'r') if not line.startswith('#')]
-
         self.targets = target.split('|')
 
+        logging.info('Using %i variables', len(self.vars))
+        logging.info('Training for %i targets', len(self.targets))
+
+        nodes_in_layer = 2 * len(self.vars)
+
         self.model = keras.models.Sequential(
-            [keras.layers.Dense(32, input_shape=(len(self.vars), ))] +
-            [keras.layers.Dense(32) for _ in xrange(3)] +
+            [keras.layers.Dense(nodes_in_layer, input_shape=(len(self.vars), ))] +
+            [keras.layers.Dense(nodes_in_layer) for _ in xrange(10)] +
             [keras.layers.Dense(len(self.targets))]
             )
         self.model.compile('rmsprop', 'mean_squared_error')
 
 
-    def fit(self, input_file, cut, num_events):
+    def fit(self, input_file, cut, num_events, output):
         """
         Do the fit
         """
@@ -54,7 +64,7 @@ class Trainer(object):
                 continue
 
             if event % 10000 == 0:
-                print 'Filling', str(float(event)/num_events * 100) + '%'
+                print 'Filling', str(float(event * 100)/num_events) + '%'
 
             for jndex, val in enumerate(val_forms):
                 inputs[event][jndex] = val.EvalInstance()
@@ -62,7 +72,12 @@ class Trainer(object):
             for jndex, target in enumerate(target_forms):
                 targets[event][jndex] = target.EvalInstance()
 
-        self.model.fit(inputs, targets, validation_split=0.5)
+        self.model.fit(inputs, targets, validation_split=0.25, epochs=50)
+
+        sess = keras.backend.get_session()
+        graph = graph_util.convert_variables_to_constants(sess, sess.graph.as_graph_def(), [n.op.name for n in self.model.outputs])
+
+        graph_io.write_graph(graph, 'weights', output, as_text=False)
 
 
 if __name__ == '__main__':
@@ -82,4 +97,4 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     model = Trainer(args.config, args.target)
-    model.fit(args.input, args.cut, args.numevents)
+    model.fit(args.input, args.cut, args.numevents, args.output)
