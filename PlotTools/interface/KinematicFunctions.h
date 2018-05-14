@@ -9,6 +9,7 @@
 #ifndef KINEMATICFUNCTIONS_H
 #define KINEMATICFUNCTIONS_H
 
+#include <cmath>
 #include "TVector2.h"
 #include "TLorentzVector.h"
 
@@ -35,7 +36,7 @@ double make_2pi(double phi) {
 /// Calculate deltaPhi between two particles
 double deltaPhi(double phi1, double phi2) {
   // Make phi between +- pi, if -pi < phi < 3*pi
-  return fabs(make_pm(fabs(make_pm(phi1) - make_pm(phi2))));
+  return std::abs(TVector2::Phi_mpi_pi(phi1 - phi2));
 }
 
 /// Calculate deltaR2 between two particles

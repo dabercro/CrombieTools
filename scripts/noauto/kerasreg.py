@@ -21,24 +21,29 @@ logging.basicConfig(level=logging.DEBUG,
                     format='%(asctime)s:%(levelname)s: %(message)s')
 
 class Trainer(object):
-    def __init__(self, config, target):
+    def __init__(self, config, target, layers):
         self.vars = [line.strip() for line in open(config, 'r') if not line.startswith('#')]
         self.targets = target.split('|')
 
         logging.info('Using %i variables', len(self.vars))
         logging.info('Training for %i targets', len(self.targets))
 
-        nodes_in_layer = 2 * len(self.vars)
+        nodes_in_layer = int(len(self.vars)/2)
 
-        self.model = keras.models.Sequential(
-            [keras.layers.Dense(nodes_in_layer, input_shape=(len(self.vars), ))] +
-            [keras.layers.Dense(nodes_in_layer) for _ in xrange(10)] +
-            [keras.layers.Dense(len(self.targets))]
-            )
-        self.model.compile('rmsprop', 'mean_squared_error')
+        input_layer = keras.layers.Input(shape=(len(self.vars), ), name='inputs')
+        layer = input_layer
+        for _ in xrange(layers):
+            layer = keras.layers.Dense(nodes_in_layer)(layer)
+
+        outputs = [keras.layers.Activation(
+                activation='linear', name='out/%i' % index)(keras.layers.Dense(1)(layer)) \
+                       for index in range(len(self.targets))]
+        self.model = keras.models.Model(inputs=input_layer, output=outputs)
+        self.model.compile('adam', 'mae',
+                           loss_weights=[int(w) for w in weights.split('|')] if weights else None)
 
 
-    def fit(self, input_file, cut, num_events, output):
+    def fit(self, input_file, cut, num_events, output, epochs, batch):
         """
         Do the fit
         """
@@ -51,7 +56,7 @@ class Trainer(object):
         reserve = num_events if num_events > 0 else tree.GetEntries()
 
         inputs = numpy.zeros((reserve, len(self.vars)))
-        targets = numpy.zeros((reserve, len(self.targets)))
+        targets = [numpy.zeros((reserve, 1)) for _ in self.targets]
 
         # Set up the inputs
         numcut = 0
@@ -70,12 +75,14 @@ class Trainer(object):
                 inputs[event][jndex] = val.EvalInstance()
 
             for jndex, target in enumerate(target_forms):
-                targets[event][jndex] = target.EvalInstance()
+                targets[jndex][event][0] = target.EvalInstance()
 
-        self.model.fit(inputs, targets, validation_split=0.25, epochs=50)
+        self.model.fit(inputs, targets, validation_split=0.5, epochs=epochs, batch_size=batch)
 
         sess = keras.backend.get_session()
-        graph = graph_util.convert_variables_to_constants(sess, sess.graph.as_graph_def(), [n.op.name for n in self.model.outputs])
+        output_node = [n.op.name for n in self.model.outputs]
+        print 'Output node', output_node
+        graph = graph_util.convert_variables_to_constants(sess, sess.graph.as_graph_def(), output_node)
 
         graph_io.write_graph(graph, 'weights', output, as_text=False)
 
@@ -83,7 +90,7 @@ class Trainer(object):
 if __name__ == '__main__':
 
     parser = ArgumentParser(
-        prog='crombie keras',
+        prog='crombie kerasreg',
         description = 'Reads some configuration file, takes some arguments and does Keras stuff'
         )
 
@@ -93,8 +100,12 @@ if __name__ == '__main__':
     parser.add_argument('-t', '--target', dest='target', metavar='EXPR', help='The expression we want the regression for. Separate multiple targets with "|"')
     parser.add_argument('-o', '--output', dest='output', metavar='FILE', help='The name of the output file, which will be overwritten by training')
     parser.add_argument('-n', '--numevents', dest='numevents', metavar='NUM', type=int, help='The maximum number of events to train on (default all)', default=-1)
+    parser.add_argument('-e', '--epochs', dest='epochs', metavar='NUM', type=int, help='Number of epochs', default=10)
+    parser.add_argument('-b', '--batch', dest='batch', metavar='NUM', type=int, help='Batch size', default=1000)
+    parser.add_argument('-l', '--layers', dest='layers', metavar='NUM', type=int, help='Number of hidden layers', default=5)
+    parser.add_argument('-w', '--weights', dest='weights', metavar='STR', type=int, help='Weights for each target ("|" separated)', default='')
 
     args = parser.parse_args()
 
-    model = Trainer(args.config, args.target)
-    model.fit(args.input, args.cut, args.numevents, args.output)
+    model = Trainer(args.config, args.target, args.layers, args.weights)
+    model.fit(args.input, args.cut, args.numevents, args.output, args.epochs, args.batch)

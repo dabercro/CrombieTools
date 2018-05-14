@@ -393,12 +393,53 @@ class Reader:
 
 
 class TFReader(object):
-    def __init__(self):
-        pass
+    readers = []
+    def __init__(self, targets, weights, inputs, input_node, output_node, is_saved, mod_fill):
+        self.targets = targets
+        self.weights = weights
+
+        pref = lambda l: Branch.branches[l.strip()].prefix
+        self.inputs = [(line.replace(pref(line), PREF_HOLDER) if pref(line) in prefixes else line).strip() \
+                           for line in open(inputs, 'r')]
+
+        self.input_node = input_node
+        self.output_node = output_node
+        self.is_saved = is_saved
+
+        for branch in targets:
+            create_branches(branch, 'F', 0, is_saved)
+
+        # Grab a reference to the current prefixes
+        self.prefixes = prefixes or ['']
+
+        self.session = '%s_session' % os.path.basename(weights).split('.')[0]
+        TFReader.readers.append(self)
+        self.eval(mod_fill)
+
     def create(self):
-        pass
-    def eval(self):
-        pass
+        # Just load the graph when the object is created. Simple.
+        return """  tensorflow::GraphDef {session}_graph_def;
+  check_tf(tensorflow::ReadBinaryProto(tensorflow::Env::Default(), "{weights}", &{session}_graph_def));
+  check_tf({session}->Create({session}_graph_def));
+""".format(session=self.session, weights=self.weights)
+
+    def eval(self, mod_fill):
+        # Initialize input tensors
+        mod_fill.append('std::vector<std::pair<std::string, tensorflow::Tensor>> {session}_inputs {init};'.format(
+                session=self.session, b='{', e='}',
+                init='{{"%s", {tensorflow::DT_FLOAT, {1, %i}}}}' % (self.input_node, len(self.inputs))))
+
+        # Set up the different prefixes
+        for pref in self.prefixes:
+            mod_fill.extend(['{session}_inputs[0].second.matrix<float>()(0, {i}) = static_cast<float>({val});'.format(
+                        session=self.session, pref=pref, i=i, val=in_branch.replace(PREF_HOLDER, pref)) for i, in_branch in enumerate(self.inputs)])
+
+            mod_fill.extend(['std::vector<tensorflow::Tensor> {session}_outputs_{pref};'.format(session=self.session, pref=pref),
+                             'check_tf({session}->Run({session}_inputs, {out_layer}, {target}, &{session}_outputs_{pref}));'.format(
+                        session=self.session, out_layer='{"%s"}' % self.output_node, target='{}', pref=pref)] + 
+                            ['{pref}_{target} = {session}_outputs_{pref}[0].matrix<float>()(0, {target_index});'.format(
+                        session=self.session, pref=pref, target_index=target_index, target=target
+                        ) for target_index, target in enumerate(self.targets)])
 
 
 class Function:
@@ -564,20 +605,22 @@ if __name__ == '__main__':
                     continue
 
                 # TensorFlow applicator
-                match = re.match(r'^(\#\s*)?\[{2}([^;]*);\s*([^;]*)(;\s*(.*))?\]{2}(\s?=\s?(.*))?', line)
+                match = re.match(r'^(\#\s*)?\[{2}([^;]*);\s*([^;]*);\s*([^;]*);\s*([^;]*);\s*([^;]*)\]{2}', line)
                 if match:
-                    if '"tensorflow/core/public/session.h"' not in includes:
-                        includes.append('"tensorflow/core/public/session.h"')
+                    includes.extend(['"tensorflow/core/public/session.h"',
+                                     '<memory>'])
 
-                    print 'Tensorflow!', line
+                    if not match.group(1):
+                        TFReader(targets=[target.strip() for target in match.group(2).split(',')],
+                                 weights=match.group(3), inputs=match.group(4),
+                                 input_node=match.group(5), output_node=match.group(6),
+                                 is_saved=(not match.group(1)), mod_fill=mod_fill)
                     continue
 
                 # Get TMVA information to evaluate
                 match = re.match(r'^(\#\s*)?\[([^;]*);\s*([^;]*)(;\s*(.*))?\](\s?=\s?(.*))?', line)
                 if match:
-                    if '"TMVA/Reader.h"' not in includes:
-                        includes.append('"TMVA/Reader.h"')
-                        includes.append('"TMVA/IMethod.h"')
+                    includes.extend(['"TMVA/Reader.h"', '"TMVA/IMethod.h"'])
 
                     is_saved = not bool(match.group(1))
                     var = match.group(2)
@@ -667,8 +710,18 @@ if __name__ == '__main__':
         write("""#ifndef CROMBIE_{0}_H
 #define CROMBIE_{0}_H
 """.format(classname.upper()))
-        for inc in includes:
+        for inc in set(includes):
             write('#include %s' % inc)
+
+        # If using Tensorflow, write this error handling function
+        if TFReader.readers:
+            write("""
+void check_tf (const tensorflow::Status& status) {
+  if (not status.ok()) {
+    std::cerr << status.error_message() << std::endl;
+    throw;
+  }
+}""")
 
         # Start the class definition
         write('\nclass %s {' % classname)
@@ -692,11 +745,12 @@ if __name__ == '__main__':
  private:
   TFile* f;
   TTree* t;
-%s%s
+%s%s%s
 };
 """ % (RESET_SIGNATURE, FILL_SIGNATURE, '\n  '.join([f.declare(functions) for f in functions]),
        ''.join(['\n  Float_t %s;' % address for reader in Reader.readers for address in reader.floats]),
-       ''.join(['\n  TMVA::Reader %s {"Silent"};\n  TMVA::IMethod* %s {};' % (reader.name, reader.method) for reader in Reader.readers])))
+       ''.join(['\n  TMVA::Reader %s {"Silent"};\n  TMVA::IMethod* %s {};' % (reader.name, reader.method) for reader in Reader.readers]),
+       ''.join(['\n  std::unique_ptr<tensorflow::Session> %s {tensorflow::NewSession({})};' % reader.session for reader in TFReader.readers])))
 
         # Initialize the class
         write("""%s::%s(const char* outfile_name, const char* name)
@@ -704,11 +758,12 @@ if __name__ == '__main__':
   t {new TTree(name, name)}
 {
   %s
-%s%s%s}""" % (classname, classname, COMPRESSION_LEVEL,
+%s%s%s%s}""" % (classname, classname, COMPRESSION_LEVEL,
               '\n  '.join([b.book() for b in all_branches if b.is_saved]),
               ''.join(['  %s.AddVariable("%s", &%s);\n' % (reader.name, label, var) for reader in Reader.readers for label, var in reader.inputs]),
               ''.join(['  %s.AddSpectator("%s", &%s);\n' % (reader.name, label, var) for reader in Reader.readers for label, var in reader.specs]),
-              ''.join(['  %s = %s.BookMVA("%s", "%s");\n' % (reader.method, reader.name, reader.output, reader.weights) for reader in Reader.readers])))
+              ''.join(['  %s = %s.BookMVA("%s", "%s");\n' % (reader.method, reader.name, reader.output, reader.weights) for reader in Reader.readers]),
+              ''.join([reader.create() for reader in TFReader.readers])))
 
         # reset function
         write("""
