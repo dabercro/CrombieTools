@@ -21,7 +21,7 @@ logging.basicConfig(level=logging.DEBUG,
                     format='%(asctime)s:%(levelname)s: %(message)s')
 
 class Trainer(object):
-    def __init__(self, config, target, layers):
+    def __init__(self, config, target, layers, weights):
         self.vars = [line.strip() for line in open(config, 'r') if not line.startswith('#')]
         self.targets = target.split('|')
 
@@ -103,7 +103,7 @@ if __name__ == '__main__':
     parser.add_argument('-e', '--epochs', dest='epochs', metavar='NUM', type=int, help='Number of epochs', default=10)
     parser.add_argument('-b', '--batch', dest='batch', metavar='NUM', type=int, help='Batch size', default=1000)
     parser.add_argument('-l', '--layers', dest='layers', metavar='NUM', type=int, help='Number of hidden layers', default=5)
-    parser.add_argument('-w', '--weights', dest='weights', metavar='STR', type=int, help='Weights for each target ("|" separated)', default='')
+    parser.add_argument('-w', '--weights', dest='weights', metavar='STR', help='Weights for each target ("|" separated)', default='')
 
     args = parser.parse_args()
 

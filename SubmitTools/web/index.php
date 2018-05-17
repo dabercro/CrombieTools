@@ -57,6 +57,13 @@ else {
     $path = join('/', array_slice(explode('/', $_GET['dir']), -2, 2));
     $base = pathinfo($_GET['file']);
     $files = glob('logs/' . $path . '/' . $base['filename'] . '*');
+    $stmt = $conn->prepare('SELECT id FROM queue WHERE output_dir=? AND output_file=?');
+    $stmt->bind_param('ss', $_GET['dir'], $_GET['file']);
+    $stmt->execute();
+    $stmt->bind_result($id);
+    $stmt->fetch();
+    echo 'ID: ' . $id . ' <br>';
+    $stmt->close();
     foreach($files as $file) {
       echo '<a href="' . $file . '">' . $file . '</a> size: ' . filesize($file) . ' <br>';
     }

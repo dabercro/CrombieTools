@@ -403,7 +403,7 @@ class TFReader(object):
                            for line in open(inputs, 'r')]
 
         self.input_node = input_node
-        self.output_node = output_node
+        self.output_nodes = output_node
         self.is_saved = is_saved
 
         for branch in targets:
@@ -436,9 +436,11 @@ class TFReader(object):
 
             mod_fill.extend(['std::vector<tensorflow::Tensor> {session}_outputs_{pref};'.format(session=self.session, pref=pref),
                              'check_tf({session}->Run({session}_inputs, {out_layer}, {target}, &{session}_outputs_{pref}));'.format(
-                        session=self.session, out_layer='{"%s"}' % self.output_node, target='{}', pref=pref)] + 
-                            ['{pref}_{target} = {session}_outputs_{pref}[0].matrix<float>()(0, {target_index});'.format(
-                        session=self.session, pref=pref, target_index=target_index, target=target
+                        session=self.session, out_layer='{"%s"}' % '", "'.join(self.output_nodes), target='{}', pref=pref)] + 
+                            ['{pref}_{target} = {session}_outputs_{pref}[{node_index}].matrix<float>()(0, {target_index});'.format(
+                        session=self.session, pref=pref, target=target,
+                        node_index=min(len(self.output_nodes) - 1, target_index),
+                        target_index=target_index - min(len(self.output_nodes) - 1, target_index)
                         ) for target_index, target in enumerate(self.targets)])
 
 
@@ -613,7 +615,8 @@ if __name__ == '__main__':
                     if not match.group(1):
                         TFReader(targets=[target.strip() for target in match.group(2).split(',')],
                                  weights=match.group(3), inputs=match.group(4),
-                                 input_node=match.group(5), output_node=match.group(6),
+                                 input_node=match.group(5),
+                                 output_node=[out.strip() for out in match.group(6).split(',')],
                                  is_saved=(not match.group(1)), mod_fill=mod_fill)
                     continue
 

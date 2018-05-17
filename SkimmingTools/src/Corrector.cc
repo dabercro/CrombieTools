@@ -7,6 +7,7 @@
 #include <cassert>
 #include <regex>
 #include <utility>
+#include <exception>
 
 #include "TAxis.h"
 #include "Corrector.h"
@@ -36,7 +37,7 @@ void Corrector::SetCorrectionFile(TString fileName)
 {
   fCorrectionFile = new TFile(fileName);
   if (fCorrectionFile == NULL) {
-    Message(eError, "Could not open %s", fileName.Data());
+    Message(eError, "Could not open", fileName.Data());
     exit(1);
   }
 }
@@ -46,9 +47,9 @@ void Corrector::SetCorrectionHist(TString histName)
 {
   fCorrectionHist = (TH1*) fCorrectionFile->Get(histName);
   if (fCorrectionHist == NULL) {
-    Message(eError, "Could not load %s: Looking inside %s", 
-            histName.Data(), fCorrectionFile->GetName());
-    exit(1);
+    Message(eError, "Could not load", histName.Data(),
+            ": Looking inside", fCorrectionFile->GetName());
+    throw std::exception{};
   }
   SetMinMax();
 }
@@ -58,16 +59,16 @@ void Corrector::SetCorrectionHist(TString hist1, TString hist2)
 {
   fCorrectionHist  = (TH1*) fCorrectionFile->Get(hist1);
   if (fCorrectionHist == NULL) {
-    Message(eError, "Could not load %s: Looking inside %s", 
-            hist1.Data(), fCorrectionFile->GetName());
-    exit(1);
+    Message(eError, "Could not load", hist1.Data(),
+            ": Looking inside", fCorrectionFile->GetName());
+    throw std::exception{};
   }
 
   TH1* divisorHist = (TH1*) fCorrectionFile->Get(hist2);
   if (divisorHist == NULL) {
-    Message(eError, "Could not load %s: Looking inside %s", 
-            hist2.Data(), fCorrectionFile->GetName());
-    exit(1);
+    Message(eError, "Could not load", hist2.Data(),
+            ": Looking inside", fCorrectionFile->GetName());
+    throw std::exception{};
   }
 
   fCorrectionHist->Divide(divisorHist);
