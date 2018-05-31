@@ -19,6 +19,7 @@
 
 TMutex queue_lock;
 TMutex output_lock;
+TMutex root_lock;  // For doing sketchy ROOT things
 
 /**
    @ingroup commongroup
@@ -68,7 +69,9 @@ void ParallelRunner::RunThreads() {
 
   for (auto thread : threads) {
     thread->Join();
+    root_lock.Lock();
     delete thread;
+    root_lock.UnLock();
   }
 }
 

@@ -21,8 +21,6 @@
 #include "ParallelRunner.h"
 #include "PlotUtils.h"
 
-TMutex root_lock;  // For doing sketchy ROOT things
-
 /**
    @ingroup plotgroup
    @class EnvelopeInfo

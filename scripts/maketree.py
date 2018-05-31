@@ -6,6 +6,8 @@ import re
 import copy
 import subprocess
 
+from collections import defaultdict
+
 from xml.etree import ElementTree
 
 TYPES = {
@@ -180,7 +182,7 @@ def create_branches(var, data_type, val, is_saved):
 
 
 class Parser:
-    def __init__(self, comment='!', block='*'):
+    def __init__(self, comment='! ', block='*'):
         self.defs = {}
         self.comment = comment
         self.block = block
@@ -243,8 +245,8 @@ class Parser:
         if match:
             char = match.group(2) or '$'
             subs = match.group(3).split(',')
-            lines = [match.group(1).replace(char * 3, var.strip().upper()).replace(char * 2, var.strip().title()).replace(char, var.strip())
-                     for var in subs]
+            lines = [match.group(1).replace('=%s=' % char, str(i)).replace(char * 3, var.strip().upper()).replace(char * 2, var.strip().title()).replace(char, var.strip())
+                     for i, var in enumerate(subs)]
 
             if len(lines) == 2 and char == self.updown_char:
                 lines[0] = lines[0].replace('+-', '+')
@@ -390,6 +392,30 @@ class Reader:
                         moved=moved, sys=sys))
 
         return output
+
+
+class Corrector(object):
+    correctors = []
+    branchcount = defaultdict(lambda: 0)
+    def __init__(self, name, expr, infile, hists, cut, histtype):
+        self.name = name
+        self.expr = expr
+        self.cut = cut
+        self.corrector = 'corrector_{branch}_{num}'.format(branch=name, num=Corrector.branchcount[branch])
+        Corrector.branchcount[branch] += 1
+        # Use TH1F or TH2F depending on the number of expressions
+        self.init = 'Correction<%s> %s {"%s", "%s"};' % (
+            histtype or 'TH%iF' % len(expr.split(',')), self.corrector,
+            infile, '", "'.join([h.strip() for h in hists.split(',')]))
+        Corrector.correctors.append(self)
+
+    def eval(self, mod_fill):
+        if self.cut:
+            mod_fill.append('{branch} *= {cut} ? {corrector}.GetCorrection({args}) : 1.0;'.format(
+                    branch=self.name, cut=self.cut, corrector=self.corrector, args=self.expr))
+        else:
+            mod_fill.append('{branch} *= {corrector}.GetCorrection({args});'.format(
+                    branch=self.name, corrector=self.corrector, args=self.expr))
 
 
 class TFReader(object):
@@ -538,6 +564,7 @@ if __name__ == '__main__':
     includes = ['<string>', '<vector>', '"TObject.h"', '"TFile.h"', '"TTree.h"']
     functions = []
     mod_fill = []
+    correction = None
 
     parser = Parser()
 
@@ -658,6 +685,35 @@ if __name__ == '__main__':
                                               '  return;']
                     continue
 
+                # Master corrections branch
+                match = re.match(r'~\{((\w*).*)\}~', line)
+                if match:
+                    includes.append('"SkimmingTools/interface/Correction.h"')
+                    correction = match.group(2)
+                    # Continue to let the branch mechanism pick this up
+                    line = match.group(1)
+
+                # Corrector applicator
+                match = re.match(r'(#|\?)?~([^;]*);([^;]*);([^;]*);([^;]*)(;(.*?)(TH\d.)?)?~', line)
+                if match:
+                    includes.append('"SkimmingTools/interface/Correction.h"')
+                    branch = match.group(2).strip()
+                    Corrector(branch,                 # Branch name
+                              match.group(3).strip(), # Expression to evaluate histogram
+                              match.group(4).strip(), # File name
+                              match.group(5).strip(), # Histogram name(s)
+                              (match.group(7) or '').strip(), # Cut to pass
+                              match.group(8)          # Type of histogram to expect
+                              ).eval(mod_fill)
+
+                    if (branch not in Branch.branches):
+                        create_branches(branch, 'F', 1.0, not (match.group(1) == '#'))
+
+                    # If master branch defined, merge
+                    if correction and match.group(1) != '?':
+                        mod_fill.append('{corr} *= {branch};'.format(corr=correction, branch=branch))
+                    continue
+
                 # A cut inside a function
                 match = re.match(r'(~{2,3})\s*(.*?)\s*(~{2,})', line)
                 if match:
@@ -674,9 +730,8 @@ if __name__ == '__main__':
 
                 # Probably a branch line
                 for branch_line in check_uncertainties(line):
-
                     # Add branch names individually
-                    match = re.match(r'(\#\s*)?([\w\[\]]*)(/([\w\:]*))?(\s?=\s?([\w\.\(\)\s\+\-\*\/\:\[\]]+))?(\s?->\s?(.*?))?(\s?<-\s?(.*?))?$', branch_line)
+                    match = re.match(r'(\#\s*)?([\w\[\]]*)(/([\w\:]*))?(\s=\s(.*?))?(\s->\s(.*?))?(\s<-\s(.*?))?$', branch_line)
                     if match:
                         var = match.group(2)
                         data_type = match.group(4) or DEFAULT_TYPE
@@ -748,12 +803,14 @@ void check_tf (const tensorflow::Status& status) {
  private:
   TFile* f;
   TTree* t;
-%s%s%s
+%s%s%s%s
 };
 """ % (RESET_SIGNATURE, FILL_SIGNATURE, '\n  '.join([f.declare(functions) for f in functions]),
+       ''.join(['\n  %s' % corr.init for corr in Corrector.correctors]),
        ''.join(['\n  Float_t %s;' % address for reader in Reader.readers for address in reader.floats]),
        ''.join(['\n  TMVA::Reader %s {"Silent"};\n  TMVA::IMethod* %s {};' % (reader.name, reader.method) for reader in Reader.readers]),
-       ''.join(['\n  std::unique_ptr<tensorflow::Session> %s {tensorflow::NewSession({})};' % reader.session for reader in TFReader.readers])))
+       ''.join(['\n  std::unique_ptr<tensorflow::Session> %s {tensorflow::NewSession({})};' % reader.session for reader in TFReader.readers]),
+       ))
 
         # Initialize the class
         write("""%s::%s(const char* outfile_name, const char* name)

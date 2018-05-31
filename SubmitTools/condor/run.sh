@@ -27,25 +27,14 @@ BASE=$(./jq -r '.base' params.json)
 
 source /cvmfs/cms.cern.ch/cmsset_default.sh
 
-if [ -d $BASE ]
-then
+test -d $CMSSW_VERSION || scram project CMSSW $CMSSW_VERSION
+pushd $CMSSW_VERSION
+tar -xf ../condor.tgz
+cd src
 
-    pushd $BASE/src
-    eval `scram runtime -sh`
-    popd
+eval `scram runtime -sh`
 
-else
-
-    test -d $CMSSW_VERSION || scram project CMSSW $CMSSW_VERSION
-    pushd $CMSSW_VERSION
-    tar -xf ../condor.tgz
-    cd src
-
-    eval `scram runtime -sh`
-
-    popd
-
-fi
+popd
 
 if [ -d $CMSSW_BASE/data ]
 then

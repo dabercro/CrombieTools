@@ -6,6 +6,9 @@ import argparse
 
 import ROOT
 
+# This dumb hack makes ROOT abort when it has to recover keys for a TFile
+ROOT.gErrorAbortLevel = ROOT.kInfo
+
 def GetNumEntries(fileName, className, branches=[]):
     NumberOfEvents = 0
 
