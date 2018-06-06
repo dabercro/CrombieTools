@@ -287,10 +287,6 @@ void
 PlotPreparer::RunFile(FileInfo& info) {
   auto filename = info.fFileName;
 
-  output_lock.Lock();
-  std::cout << "About to run over file " << filename << std::endl;
-  output_lock.UnLock();
-
   root_lock.Lock();
   auto* inputfile = TFile::Open(filename);
   TTree* inputtree = fTreeName.Contains("/") ? static_cast<TTree*>(inputfile->Get(fTreeName)) : static_cast<TTree*>(inputfile->FindObjectAny(fTreeName));
@@ -315,11 +311,6 @@ PlotPreparer::RunFile(FileInfo& info) {
   auto& plots = fPlots[filename];
 
   for (decltype(nentries) i_entry = 0; i_entry < nentries; ++i_entry) {
-    if (i_entry % 1000000 == 0) {
-      output_lock.Lock();
-      std::cout << filename << " " << double(i_entry)/double(nentries)*100 << "%" << std::endl;
-      output_lock.UnLock();
-    }
     inputtree->GetEntry(i_entry);
 
     for (auto& formula : formulas)
@@ -344,31 +335,29 @@ PlotPreparer::RunFile(FileInfo& info) {
   root_lock.Lock();
   inputfile->Close();
   root_lock.UnLock();
-
-  output_lock.Lock();
-  std::cout << "Finished file " << filename << std::endl;
-  output_lock.UnLock();
 }
 
 void PlotPreparer::ScalePlots() {
+  DisplayFunc(__func__);
   for (auto type : gFileTypes) {
     const auto& infos = *(GetFileInfo(type));
     for (auto* info : infos) {
 
+      Message(eDebug, "Scaling plots from", info->fFileName);
       auto& plots = fPlots[info->fFileName];
 
       for (auto plot : plots) {
         auto* hist = plot->hist;
         auto tempname = TempHistName();
-        TH1D* tempHist = static_cast<TH1D*>(hist->Clone(TempHistName()));
+        /* TH1D* tempHist = static_cast<TH1D*>(hist->Clone(TempHistName())); */
 
-        for (Int_t iBin = 1; iBin != tempHist->GetNbinsX() + 1; ++iBin)
-          tempHist->SetBinContent(iBin, tempHist->GetBinWidth(iBin)/plot->eventsper);
-        SetZeroError(tempHist);
+        /* for (Int_t iBin = 1; iBin != tempHist->GetNbinsX() + 1; ++iBin) */
+        /*   tempHist->SetBinContent(iBin, tempHist->GetBinWidth(iBin)/plot->eventsper); */
+        /* SetZeroError(tempHist); */
 
-        Division(hist, tempHist);
+        /* Division(hist, tempHist); */
 
-        delete tempHist;
+        /* delete tempHist; */
 
         if (info->fXSec > 0) {
           hist->Scale(info->fXSecWeight);

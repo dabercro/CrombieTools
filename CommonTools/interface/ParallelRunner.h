@@ -48,14 +48,23 @@ class ParallelRunner : public FileConfigReader {
 
   /// Runs a single thread over files
   static void* RunThread (void* prep);
+
+  static unsigned numfiles;
+  static unsigned maxfiles;
 };
+
+unsigned ParallelRunner::numfiles = 0;
+unsigned ParallelRunner::maxfiles = 0;
 
 void ParallelRunner::RunThreads() {
   for (auto type : gFileTypes) {
     const auto& infos = *(GetFileInfo(type));
+    numfiles += infos.size();
     for (auto info : infos)
       file_queue.push(*info);
   }
+
+  maxfiles = numfiles;
 
   if (not fNumThreads)
     fNumThreads++;
@@ -92,6 +101,10 @@ void* ParallelRunner::RunThread(void* prep) {
       break;
 
     runner->RunFile(info);
+    output_lock.Lock();
+    std::cout << "Files remaining: " << --numfiles << "/" << maxfiles
+              << " Finished: " << info.fFileName << std::endl;
+    output_lock.UnLock();
   }
   return nullptr;
 }

@@ -12,6 +12,25 @@ from collections import defaultdict
 
 FileLists = defaultdict(lambda: [])
 
+class Line(object):
+    lasttree = ''
+    lastentry = ''
+    lastcolor = ''
+    def __init__(self, in_line):
+        split_line = in_line.lstrip('#').split()
+        self.saved = not in_line.startswith('#')
+        self.treename = split_line[0] if split_line[0] != '.' else Line.lasttree
+        self.file = split_line[1]
+        self.xs = split_line[2]
+        self.entry = split_line[3] if split_line[3] != '.' else Line.lastentry
+        self.color = ' '.join(split_line[4:]) if split_line[4] != '.' else Line.lastcolor
+        self.raw = in_line
+
+        Line.lasttree = self.treename
+        Line.lastentry = self.entry
+        Line.lastcolor = self.color
+
+
 def TreeList(*args):
     """Get list of tree names from a config file
 
