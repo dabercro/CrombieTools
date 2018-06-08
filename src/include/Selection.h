@@ -25,6 +25,17 @@ namespace Crombie {
        Returns the a cut with a variable taken out.
        The function only removes expressions where the variable name is to the left of an operator.
     */
+    std::string nminus1(const std::string& var, const std::string& cut);
+
+    /// Reads a configuration file that maps regions to selections
+    std::map<const std::string, const Selection> read(const char* config);
+
+
+
+    // IMPLEMENTATIONS BELOW HERE //
+
+
+
     std::string nminus1(const std::string& var, const std::string& cut) {
       std::regex expr{std::string("\\b") + var + "\\b\\s*[=<>]*\\s*-?[\\d\\.]+"};
       std::string output = cut;
@@ -35,7 +46,7 @@ namespace Crombie {
       return output;
     }
 
-    /// Reads a configuration file that maps regions to selections
+
     std::map<const std::string, const Selection> read(const char* config) {
       std::ifstream input {config};
 
@@ -43,11 +54,6 @@ namespace Crombie {
 
       using symbols = std::map<std::string, std::string>;
       symbols sym;
-      symbols::key_type current_symbol;
-      symbols::mapped_type joiner;
-
-      std::regex expr{"^([^\\s]*)\\s*([^\\s\\']*)\\s+(.+)$"};
-      std::smatch matches;
 
       auto parse_cut = [&sym] (const std::string& cut) {
         if (cut.find("env'") == 0) {
@@ -57,8 +63,20 @@ namespace Crombie {
         }
         if (cut[0] == '\'')
           return cut.substr(1, cut.size() - 2);
-        return sym[cut];
+        try {
+          return sym.at(cut);
+        }
+        catch(const std::out_of_range& e) {
+          std::cerr << "Exception locating " << cut << std::endl;
+          throw e;
+        }
       };
+
+      symbols::key_type current_symbol;
+      symbols::mapped_type joiner;
+
+      std::regex expr{"^([^\\s]*)\\s*([^\\s\\']*)\\s+(.+)$"};
+      std::smatch matches;
 
       for (std::string raw; std::getline(input, raw); ) {
         // Strip out comments

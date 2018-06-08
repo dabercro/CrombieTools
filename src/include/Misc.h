@@ -37,6 +37,7 @@ namespace Crombie {
       return output;
     }
 
+    /// Get the output of a shell command
     std::string shell(std::string cmd) {
       std::array<char, 128> buffer;
       std::string output;
@@ -50,11 +51,14 @@ namespace Crombie {
       return output;
     }
 
-    std::string env(std::string variable, std::string fallback) {
+    /// Get an environment variable by name, with an optional fallback value
+    std::string env(const std::string& variable, const std::string& fallback = "") {
       auto* output = getenv(variable.data());
       if (output)
         return std::string(output);
-      return fallback;
+      if (not fallback.size())
+        throw std::runtime_error(std::string("Requesting non-existent variable ") + variable + " with no fallback");
+      return std::string(fallback);
     }
 
   }
