@@ -1,6 +1,7 @@
 #include <iostream>
 
 #include "FileConfig.h"
+#include "Selection.h"
 
 using namespace Crombie;
 
@@ -29,7 +30,7 @@ int main(int argc, char* argv[]) {
                    return output;
                               }) << std::endl;
   // auto plots = ConfigReader::readplots(argv[4]);
-  // auto regions = ConfigReader::readplots(argv[5]);
+  auto regions = Selection::read(argv[5]);
 
   // Run threads
 

@@ -114,7 +114,7 @@ namespace Crombie {
     std::istream& operator>>(std::istream& is, FileConfig& config);
 
     /// Reads a configuration file for file info
-    FileConfig read (const char* indir, const char* config) {
+    FileConfig read(const char* indir, const char* config) {
       FileConfig output {indir};
       std::ifstream input {config};
       input >> output;
@@ -167,7 +167,7 @@ namespace Crombie {
                 current_type = DirectoryInfo::Type::Background;
             }
             // Read the line cuts
-            auto tokens = Misc::Tokenize(line);
+            auto tokens = Misc::tokenize(line);
             // Update these values if needed
             if (tokens.size() > 1) {
               entry = tokens[1];
