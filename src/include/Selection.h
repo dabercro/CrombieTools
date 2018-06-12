@@ -21,6 +21,23 @@ namespace Crombie {
       const std::string mc;     ///< The mc weight for plots
     };
 
+
+    class SelectionConfig {
+    public:
+    SelectionConfig(const std::string& mchistname, const double lumi)
+      : mchistname{mchistname}, lumi{lumi} {}
+
+      const std::string mchistname;  ///< The mchist to normalize the weight to
+      const double lumi;             ///< The luminosity in pb
+
+      using Selections = std::map<const std::string, const Selection>;
+      Selections selections;
+
+      friend std::istream& operator>>(std::istream& is, SelectionConfig& config);
+    };
+
+    std::istream& operator>>(std::istream& is, SelectionConfig& config);
+
     /**
        Returns the a cut with a variable taken out.
        The function only removes expressions where the variable name is to the left of an operator.
@@ -28,8 +45,13 @@ namespace Crombie {
     std::string nminus1(const std::string& var, const std::string& cut);
 
     /// Reads a configuration file that maps regions to selections
-    std::map<const std::string, const Selection> read(const char* config);
-
+    /// Reads a configuration file for file info
+    SelectionConfig read(const std::string& mchistname, const double lumi, const char* config) {
+      SelectionConfig output {mchistname, lumi};
+      std::ifstream input {config};
+      input >> output;
+      return output;
+    }
 
 
     // IMPLEMENTATIONS BELOW HERE //
@@ -47,11 +69,7 @@ namespace Crombie {
     }
 
 
-    std::map<const std::string, const Selection> read(const char* config) {
-      std::ifstream input {config};
-
-      std::map<const std::string, const Selection> output;
-
+    std::istream& operator>>(std::istream& is, SelectionConfig& config) {
       using symbols = std::map<std::string, std::string>;
       symbols sym;
 
@@ -78,7 +96,7 @@ namespace Crombie {
       std::regex expr{"^([^\\s]*)\\s*([^\\s\\']*)\\s+(.+)$"};
       std::smatch matches;
 
-      for (std::string raw; std::getline(input, raw); ) {
+      for (std::string raw; std::getline(is, raw); ) {
         // Strip out comments
         std::string line {raw.substr(0, raw.find("! "))};
         if (line.size()) {
@@ -90,11 +108,11 @@ namespace Crombie {
             if (tokens.size() != 5)
               throw std::runtime_error{"Problem with selection line " + line};
             // First token is ':'
-            output.emplace(std::make_pair(tokens[1],
-                                          Selection(parse_cut(tokens[2]),
-                                                    parse_cut(tokens[3]),
-                                                    parse_cut(tokens[4]))
-                                          ));
+            config.selections.emplace(std::make_pair(tokens[1],
+                                                     Selection(parse_cut(tokens[2]),
+                                                               parse_cut(tokens[3]),
+                                                               parse_cut(tokens[4]))
+                                                     ));
           }
           else if (std::regex_search(line, matches, expr)) {
             if (matches[1].length()) {
@@ -105,7 +123,7 @@ namespace Crombie {
           }
         }
       }
-      return output;
+      return is;
     }
 
   }

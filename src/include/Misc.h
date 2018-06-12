@@ -9,6 +9,9 @@
 #include <memory>
 #include <stdexcept>
 #include <array>
+#include <set>
+
+#include "TROOT.h"
 
 namespace Crombie {
   namespace Misc {
@@ -26,6 +29,7 @@ namespace Crombie {
           std::cout << ' ';
       }
       std::cout << "] " << progress * 100/max << '%';
+      std::flush(std::cout);
     }
 
     std::vector<std::string> tokenize(const std::string str) {
@@ -53,6 +57,9 @@ namespace Crombie {
 
     /// Get an environment variable by name, with an optional fallback value
     std::string env(const std::string& variable, const std::string& fallback = "") {
+      if (variable == "ncores")
+        ROOT::EnableThreadSafety();
+
       auto* output = getenv(variable.data());
       if (output)
         return std::string(output);

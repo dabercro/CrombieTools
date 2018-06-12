@@ -8,6 +8,8 @@
    Defines functions for reading configuration files
 */
 
+#include <unistd.h>
+
 #include <functional>
 #include <vector>
 #include <string>
@@ -23,8 +25,18 @@
 #include "Misc.h"
 #include "FileSystem.h"
 
+#include "TFile.h"
+
 namespace Crombie {
   namespace FileConfig {
+
+    namespace {
+      std::string dirclean (const std::string& dir) {
+        if (dir.size() and dir.back() != '/')
+          return dir + "/";
+        return dir;
+      }
+    }
 
     /**
        @class FileInfo
@@ -83,7 +95,7 @@ namespace Crombie {
     private:
       /// Helper function to extract directory name from config line and check for existence
       static std::string getname(const std::string line) {
-        return line.substr(0, line.find(' '));
+        return dirclean(line.substr(0, line.find(' ')));
       }
       /// Helper function to extract cross section
       static double getxs(const std::string line) {
@@ -98,15 +110,15 @@ namespace Crombie {
 
     class FileConfig {
     public:
-    FileConfig(std::string inputdir)
-      : inputdir{inputdir} {}
+    FileConfig(const std::string& inputdir)
+      : inputdir{dirclean(inputdir)} {}
 
       template <typename M, typename R>
-        auto runfiles (unsigned ncores, std::function<M(const FileInfo&)> map, R reduce);
+        auto runfiles (std::function<M(const FileInfo&)> map, R reduce);
 
     private:
       std::vector<DirectoryInfo> dirinfos;
-      std::string inputdir;   ///< The directory containing the files
+      const std::string inputdir;   ///< The directory containing the files
 
       friend std::istream& operator>>(std::istream& is, FileConfig& config);
     };
@@ -132,7 +144,7 @@ namespace Crombie {
           cuts.push_back(proc.cut);
 
         for (auto& file : FileSystem::list(name))
-          files.push_back({name, name + "/" + file, cuts});
+          files.push_back({name, name + file, cuts});
       }
       else {
         throw std::runtime_error{"Directory " + name + " does not exist"};
@@ -178,7 +190,7 @@ namespace Crombie {
           }
           else { // Otherwise add a DirectoryInfo
             in_dirs = true;
-            config.dirinfos.push_back({config.inputdir + "/" + line, current_type, current_procs});
+            config.dirinfos.push_back({config.inputdir + line, current_type, current_procs});
           }
         }
       }
@@ -191,8 +203,8 @@ namespace Crombie {
     }
 
     template <typename M, typename R>
-      auto FileConfig::runfiles (unsigned ncores, std::function<M(const FileInfo&)> map, R reduce) {
-
+      auto FileConfig::runfiles (std::function<M(const FileInfo&)> map, R reduce) {
+      unsigned ncores = std::stoi(Misc::env("ncores", "1"));
       std::map<std::string, std::vector<M>> outputs; // This is fed into reduce, in addition to the directory infos
       std::priority_queue<FileInfo> queue;
       for (const auto& dirinfo : dirinfos) {
@@ -206,7 +218,14 @@ namespace Crombie {
       std::mutex outlock;
 
       std::vector<std::thread> threads;
-      ncores = std::min(ncores, 1u);
+      ncores = std::max(ncores, 1u);
+
+      std::cout << "Using " << ncores << " threads" << std::endl;
+
+      auto total = queue.size();
+      auto divisor = total/100 + 1;
+      auto progress = total/divisor;
+      Misc::draw_progress(0, progress);
 
       for (unsigned i = 0; i < ncores; ++i) {
         threads.push_back(std::thread([&] () {
@@ -217,6 +236,10 @@ namespace Crombie {
                 running = !queue.empty();
                 if (running) {
                   info = queue.top();
+                  auto done = total - queue.size();
+                  if (done % divisor == 0) {
+                    Misc::draw_progress(done/divisor, progress);
+                  }
                   queue.pop();
                 }
                 inlock.unlock();
@@ -233,6 +256,9 @@ namespace Crombie {
 
       for (auto& thread : threads)
         thread.join();
+
+      Misc::draw_progress(progress, progress);
+      std::cout << std::endl; // Flush after progress bar
 
       return reduce(dirinfos, outputs);
     }
