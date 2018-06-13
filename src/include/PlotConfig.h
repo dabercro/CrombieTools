@@ -6,7 +6,7 @@
 #include <fstream>
 #include <regex>
 
-#include "TH1D.h"
+#include "Hist.h"
 
 namespace Crombie {
   namespace PlotConfig {
@@ -29,7 +29,7 @@ namespace Crombie {
       const std::string data_var;
       const std::string mc_var;
 
-      TH1D get_hist();   ///< Get a histogram that's properly formatted for this plot
+      Hist::Hist get_hist() const;   ///< Get a histogram that's properly formatted for this plot
     };
 
 
@@ -60,11 +60,8 @@ namespace Crombie {
       return output;
     }
 
-
-    TH1D Plot::get_hist() {
-      auto title = name + ";" + label + ";Events/Bin";
-      TH1D hist(title.data(), title.data(), nbins, low, max);
-      return hist;
+    Hist::Hist Plot::get_hist() const {
+      return Hist::Hist(label, nbins, low, max);
     }
 
   }

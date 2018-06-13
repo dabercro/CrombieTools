@@ -19,13 +19,12 @@
 #include <mutex>
 #include <algorithm>
 #include <thread>
+#include <chrono>
 
 #include <sys/stat.h>
 
 #include "Misc.h"
 #include "FileSystem.h"
-
-#include "TFile.h"
 
 namespace Crombie {
   namespace FileConfig {
@@ -38,14 +37,22 @@ namespace Crombie {
       }
     }
 
+    /// The kinds of processes
+    enum class Type {
+      Data,
+      Background,
+      Signal
+    };
+
     /**
        @class FileInfo
        Hold the necessary information for running over a single file.
      */
     struct FileInfo {
     FileInfo() {}
-    FileInfo(const std::string dirname, const std::string filename, const std::vector<std::string>& cuts = {})
-      : dirname{dirname}, name{filename}, size{FileSystem::get_size(name.data())}, cuts{cuts} {};
+    FileInfo(const Type type, const std::string dirname, const std::string filename, const std::vector<std::string>& cuts = {"1.0"})
+    : type{type}, dirname{dirname}, name{filename}, size{FileSystem::get_size(name.data())}, cuts{cuts} { }
+      Type type {};
       std::string dirname {};
       std::string name {};
       unsigned size {};
@@ -73,12 +80,6 @@ namespace Crombie {
      */
     class DirectoryInfo {
     public:
-      /// The kinds of processes
-      enum class Type {
-        Data,
-        Background,
-        Signal
-      };
 
       DirectoryInfo (const std::string line, const Type type, const std::vector<Process>& processes)
         : name{getname(line)}, xs{getxs(line)}, type{type}, processes{processes} {
@@ -144,7 +145,7 @@ namespace Crombie {
           cuts.push_back(proc.cut);
 
         for (auto& file : FileSystem::list(name))
-          files.push_back({name, name + file, cuts});
+          files.push_back({type, name, name + file, cuts});
       }
       else {
         throw std::runtime_error{"Directory " + name + " does not exist"};
@@ -152,8 +153,8 @@ namespace Crombie {
     }
 
     std::istream& operator>>(std::istream& is, FileConfig& config) {
-      DirectoryInfo::Type current_type = DirectoryInfo::Type::Data;
-      std::vector<Process> current_procs {{"data_obs", "Data", "", 0}};
+      Type current_type = Type::Data;
+      std::vector<Process> current_procs {{"data_obs", "Data", "1.0", 0}};
 
       std::string entry;  // Hold these things as
       std::string cut;    // we go along in case there's
@@ -167,7 +168,7 @@ namespace Crombie {
 
         if (line.size()) {
           if (line == "SIGNAL") {                                // If signal delimiter, then we set that
-            current_type = DirectoryInfo::Type::Signal;
+            current_type = Type::Signal;
             continue;
           }
 
@@ -175,15 +176,15 @@ namespace Crombie {
             if (in_dirs) {                                       // Time to reset processes if new
               in_dirs = false;
               current_procs.clear();
-              if (current_type == DirectoryInfo::Type::Data)
-                current_type = DirectoryInfo::Type::Background;
+              if (current_type == Type::Data)
+                current_type = Type::Background;
             }
             // Read the line cuts
             auto tokens = Misc::tokenize(line);
             // Update these values if needed
             if (tokens.size() > 1) {
               entry = tokens[1];
-              cut = tokens.size() == 4 ? tokens[2] : "";
+              cut = tokens.size() == 4 ? tokens[2] : "1.0";
               style = std::stoi(tokens.back());
             }
             current_procs.push_back({tokens[0], entry, cut, style});
@@ -204,7 +205,7 @@ namespace Crombie {
 
     template <typename M, typename R>
       auto FileConfig::runfiles (std::function<M(const FileInfo&)> map, R reduce) {
-      unsigned ncores = std::stoi(Misc::env("ncores", "1"));
+      unsigned nthreads = std::stoi(Misc::env("nthreads", "1"));
       std::map<std::string, std::vector<M>> outputs; // This is fed into reduce, in addition to the directory infos
       std::priority_queue<FileInfo> queue;
       for (const auto& dirinfo : dirinfos) {
@@ -218,16 +219,18 @@ namespace Crombie {
       std::mutex outlock;
 
       std::vector<std::thread> threads;
-      ncores = std::max(ncores, 1u);
+      nthreads = std::max(nthreads, 1u);
 
-      std::cout << "Using " << ncores << " threads" << std::endl;
+      std::cout << "Using " << nthreads << " threads" << std::endl;
 
       auto total = queue.size();
       auto divisor = total/100 + 1;
       auto progress = total/divisor;
       Misc::draw_progress(0, progress);
 
-      for (unsigned i = 0; i < ncores; ++i) {
+      std::chrono::steady_clock::time_point start = std::chrono::steady_clock::now();
+
+      for (unsigned i = 0; i < nthreads; ++i) {
         threads.push_back(std::thread([&] () {
               bool running = true;
               while(true) {
@@ -259,6 +262,12 @@ namespace Crombie {
 
       Misc::draw_progress(progress, progress);
       std::cout << std::endl; // Flush after progress bar
+
+      std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
+
+      std::cout << "Ran over " << total << " files in "
+                << std::chrono::duration_cast<std::chrono::seconds>(end - start).count()
+                << " seconds" << std::endl;
 
       return reduce(dirinfos, outputs);
     }

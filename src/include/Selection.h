@@ -1,6 +1,7 @@
 #ifndef CROMBIE_CUTCONFIG_H
 #define CROMBIE_CUTCONFIG_H
 
+#include <fstream>
 #include <map>
 #include <string>
 #include <regex>
@@ -13,7 +14,7 @@ namespace Crombie {
 
     class Selection {
     public:
-    Selection(const std::string cut, const std::string data, const std::string mc)
+    Selection(const std::string cut, const std::string mc, const std::string data)
       : cut{cut}, data{data}, mc{mc} {}
 
       const std::string cut;    ///< The cut that plots must pass
@@ -102,16 +103,16 @@ namespace Crombie {
         if (line.size()) {
           if (line[0] == ':') {
             auto tokens = Misc::tokenize(line);
-            if (tokens.size() == 4)
-              tokens.push_back("'1'");
+            if (tokens.size() == 3)
+              tokens.push_back("'1.0'");
 
-            if (tokens.size() != 5)
+            if (tokens.size() != 4)
               throw std::runtime_error{"Problem with selection line " + line};
             // First token is ':'
             config.selections.emplace(std::make_pair(tokens[1],
-                                                     Selection(parse_cut(tokens[2]),
-                                                               parse_cut(tokens[3]),
-                                                               parse_cut(tokens[4]))
+                                                     Selection(parse_cut(tokens[1]), // Cut
+                                                               parse_cut(tokens[2]), // MC weight
+                                                               parse_cut(tokens[3])) // Data weight
                                                      ));
           }
           else if (std::regex_search(line, matches, expr)) {

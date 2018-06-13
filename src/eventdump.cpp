@@ -1,4 +1,5 @@
 #include <iostream>
+#include <iomanip>
 #include <string>
 #include <sstream>
 #include <fstream>
@@ -6,8 +7,6 @@
 #include "LoadTree.h"
 #include "FileConfig.h"
 #include "EventDump.h"
-
-#include "TFile.h"
 
 using namespace Crombie;
 
@@ -40,12 +39,12 @@ int main(int argc, char* argv[]) {
   std::ofstream outfile {argv[2]};
 
   for (auto& var : vars)
-    outfile << " * " << '\t' << var;
+    outfile << " * " << std::setw(20) << var;
   outfile << " *\n";
 
   for (auto& line : output) {
     for (auto out : line)
-      outfile << " * " << '\t' << out;
+      outfile << " * " << std::setw(20) << out;
     outfile << " *\n";
   }
 

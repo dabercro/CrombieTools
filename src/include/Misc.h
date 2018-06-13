@@ -10,6 +10,7 @@
 #include <stdexcept>
 #include <array>
 #include <set>
+#include <functional>
 
 #include "TROOT.h"
 
@@ -57,7 +58,7 @@ namespace Crombie {
 
     /// Get an environment variable by name, with an optional fallback value
     std::string env(const std::string& variable, const std::string& fallback = "") {
-      if (variable == "ncores")
+      if (variable == "nthreads")
         ROOT::EnableThreadSafety();
 
       auto* output = getenv(variable.data());
@@ -66,6 +67,14 @@ namespace Crombie {
       if (not fallback.size())
         throw std::runtime_error(std::string("Requesting non-existent variable ") + variable + " with no fallback");
       return std::string(fallback);
+    }
+
+    template<typename O, typename C, typename F>
+      std::vector<O> comprehension (const C& container, const F& func) {
+      std::vector<O> output {};
+      for (auto& iter : container)
+        output.push_back(func(iter));
+      return output;
     }
 
   }
