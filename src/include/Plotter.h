@@ -71,15 +71,17 @@ namespace Crombie {
       public:
       CutReader(double& cut, double& expr, double& weight, double& sub, Hist::Hist& hist)
         : cut{cut}, expr{expr}, weight{weight}, sub{sub}, hist{hist} { }
+
+        void eval () {
+          if (cut and sub)
+            hist.fill(expr, weight);
+        }
+      private:
         double& cut;    // For the selection
         double& expr;
         double& weight;
         double& sub;    // For the subprocess
         Hist::Hist& hist;
-        void eval () {
-          if (cut and sub)
-            hist.fill(expr, weight);
-        }
       };
 
     }
