@@ -4,7 +4,7 @@ plotter = ${CROMBIEPATH}/bin/crombieplotter
 eventdump = ${CROMBIEPATH}/bin/crombieeventdump
 cut = ${CROMBIEPATH}/bin/crombiecut
 
-all: $(plotter) # $(eventdump) $(cut)
+all: $(plotter) $(eventdump) $(cut)
 
 $(plotter): ${CROMBIEPATH}/src/include/* ${CROMBIEPATH}/src/plotter.cpp
 	g++ $(LDFLAGS) $(CFLAGS) -I${CROMBIEPATH}/src/include ${CROMBIEPATH}/src/plotter.cpp -o $(plotter)

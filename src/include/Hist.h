@@ -28,7 +28,7 @@ namespace Crombie {
     };
 
     void Hist::fill(double val, double weight) {
-      unsigned bin = std::max(0u, std::min(nbins + 2, static_cast<unsigned>(std::ceil(((val - min)/(max - min)) * nbins))));
+      unsigned bin {std::min(nbins + 2, static_cast<unsigned>(std::ceil(((val - min)/(max - min)) * nbins)))};
       contents[bin] += weight;
       sumw2[bin] += std::pow(weight, 2);
     }
