@@ -15,6 +15,8 @@
 namespace Crombie {
   namespace LoadTree {
 
+    std::mutex rootlock;
+
     using strings = std::vector<std::string>;
 
     class Formulas {
@@ -97,7 +99,9 @@ namespace Crombie {
     /// Get a container of formulas
     template<typename... Args> Formulas get_formula(TTree* tree, Args... exprs) {
       Formulas output {};
+      rootlock.lock();
       add_formula(output, tree, exprs...);
+      rootlock.unlock();
       return output;
     }
 

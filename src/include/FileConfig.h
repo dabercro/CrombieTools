@@ -63,14 +63,16 @@ namespace Crombie {
     /// The processes that a directory can be divided between
     struct Process {
     Process(const std::string treename,
-            const std::string legendentry,
+            const std::string entry,
             const std::string cut,
-            const unsigned style)
-    : treename{treename}, legendentry{legendentry}, cut{cut}, style{style} {}
+            const short style)
+    : treename{treename}, legendentry{entry}, cut{cut}, style{style} {
+      std::replace(legendentry.begin(), legendentry.end(), '_', ' ');
+    }
       const std::string treename;
-      const std::string legendentry;
+      std::string legendentry;
       const std::string cut;
-      const unsigned style;
+      const short style;
     };
 
 
@@ -158,9 +160,9 @@ namespace Crombie {
 
       std::string entry;  // Hold these things as
       std::string cut;    // we go along in case there's
-      unsigned style;     // a less complete line
+      short style;        // a less complete line
 
-      bool in_dirs = false;
+      bool in_dirs = true;
 
       for (std::string raw; std::getline(is, raw); ) {
         // Strip out comments

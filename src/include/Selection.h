@@ -7,6 +7,7 @@
 #include <regex>
 #include <iterator>
 
+#include "Debug.h"
 #include "Misc.h"
 
 namespace Crombie {
@@ -15,7 +16,9 @@ namespace Crombie {
     class Selection {
     public:
     Selection(const std::string cut, const std::string mc, const std::string data)
-      : cut{cut}, data{data}, mc{mc} {}
+      : cut{cut}, data{data}, mc{mc} {
+        Debug::Debug("Selection:", cut, "---", mc, "---", data);
+      }
 
       const std::string cut;    ///< The cut that plots must pass
       const std::string data;   ///< The data weight for plots
@@ -25,11 +28,10 @@ namespace Crombie {
 
     class SelectionConfig {
     public:
-    SelectionConfig(const std::string& mchistname, const double lumi)
-      : mchistname{mchistname}, lumi{lumi} {}
+    SelectionConfig(const std::string& mchistname)
+      : mchistname{mchistname} {}
 
       const std::string mchistname;  ///< The mchist to normalize the weight to
-      const double lumi;             ///< The luminosity in pb
 
       using Selections = std::map<const std::string, const Selection>;
       Selections selections;
@@ -47,8 +49,8 @@ namespace Crombie {
 
     /// Reads a configuration file that maps regions to selections
     /// Reads a configuration file for file info
-    SelectionConfig read(const std::string& mchistname, const double lumi, const char* config) {
-      SelectionConfig output {mchistname, lumi};
+    SelectionConfig read(const std::string& mchistname, const char* config) {
+      SelectionConfig output {mchistname};
       std::ifstream input {config};
       input >> output;
       return output;
@@ -119,6 +121,8 @@ namespace Crombie {
             if (matches[1].length()) {
               current_symbol = matches[1];
               joiner = matches[2];
+              if (joiner.size())
+                joiner = std::string(" ") + joiner + " ";
             }
             sym[current_symbol] += (matches[2].length() ? "" : joiner) + parse_cut(matches[3]);
           }
