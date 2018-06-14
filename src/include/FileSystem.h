@@ -3,9 +3,9 @@
 
 #include <cstdlib>
 #include <cstring>
+#include <vector>
 #include <dirent.h>
 #include <sys/stat.h>
-
 
 namespace Crombie {
   namespace FileSystem {
@@ -33,7 +33,10 @@ namespace Crombie {
     void mkdirs(const std::string path) {
       char path_array[512];
       // Stick a slash on the end to trick our character flipping
-      auto addslash = path + "/";
+      auto addslash = path;
+      if (addslash.back() != '/')
+        addslash += '/';
+
       strncpy(path_array, addslash.data(), sizeof(path_array) - 1);
       auto num_chars = strlen(path_array);
 

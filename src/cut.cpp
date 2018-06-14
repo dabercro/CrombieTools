@@ -11,7 +11,7 @@ int main(int argc, char* argv[]) {
     return 1;
   }
 
-  auto regions = Selection::read("", 0.0, argv[1]);
+  auto regions = Selection::read("", argv[1]);
 
   std::cout << regions.selections.at(argv[2]).cut << std::endl;
 
