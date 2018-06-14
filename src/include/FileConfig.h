@@ -96,16 +96,19 @@ namespace Crombie {
       const std::vector<Process> processes;
 
     private:
-      /// Helper function to extract directory name from config line and check for existence
-      static std::string getname(const std::string line) {
-        return dirclean(line.substr(0, line.find(' ')));
-      }
+      /**
+         Helper function to extract directory name from config line.
+         If the config line is actually a file, then it returns the unchanged file name.
+      */
+      static std::string getname(const std::string line);
+
       /// Helper function to extract cross section
       static double getxs(const std::string line) {
         auto begin = line.find('{') + 1;
         auto val = line.substr(begin, line.find('}') - begin);
         return val.size() ? std::stod(val) : 0;
       }
+
       /// Fill the file info for this object
       void fillfiles();
     };
@@ -140,17 +143,29 @@ namespace Crombie {
     // IMPLEMENTATIONS BELOW HERE //
 
 
+    std::string DirectoryInfo::getname(const std::string line) {
+      std::string dir {line.substr(0, line.find(' '))};
+      // Just return the file name if a .root file.
+      return (dir.substr(dir.size() - 5, 5) == ".root") ? dir : dirclean(dir);
+    }
+
+
     void DirectoryInfo::fillfiles() {
       if (FileSystem::exists(name)) {
         std::vector<std::string> cuts;
         for (auto& proc : processes)
           cuts.push_back(proc.cut);
 
-        for (auto& file : FileSystem::list(name))
-          files.push_back({type, name, name + file, cuts});
+        if (name.back() != '/')  // If the directory info is actually a file, just push back one file
+          files.push_back({type, name, name, cuts});
+        else {                   // Otherwise, push back all of the files
+          for (auto& file : FileSystem::list(name))
+            files.push_back({type, name, name + file, cuts});
+        }
+
       }
       else {
-        throw std::runtime_error{"Directory " + name + " does not exist"};
+        throw std::runtime_error{"Path " + name + " does not exist"};
       }
     }
 
