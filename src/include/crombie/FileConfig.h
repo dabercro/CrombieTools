@@ -23,10 +23,10 @@
 
 #include <sys/stat.h>
 
-#include "Misc.h"
-#include "FileSystem.h"
+#include "crombie/Misc.h"
+#include "crombie/FileSystem.h"
 
-namespace Crombie {
+namespace crombie {
   namespace FileConfig {
 
     namespace {

@@ -7,7 +7,7 @@
 #include <dirent.h>
 #include <sys/stat.h>
 
-namespace Crombie {
+namespace crombie {
   namespace FileSystem {
 
     /// Check if path exists (either directory or file)

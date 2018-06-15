@@ -14,7 +14,7 @@
 
 #include "TROOT.h"
 
-namespace Crombie {
+namespace crombie {
   namespace Misc {
 
     void draw_progress(unsigned progress, unsigned max) {

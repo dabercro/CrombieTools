@@ -4,11 +4,11 @@
 #include <sstream>
 #include <fstream>
 
-#include "LoadTree.h"
-#include "FileConfig.h"
-#include "EventDump.h"
+#include "crombie/LoadTree.h"
+#include "crombie/FileConfig.h"
+#include "crombie/EventDump.h"
 
-using namespace Crombie;
+using namespace crombie;
 
 int main(int argc, char* argv[]) {
 

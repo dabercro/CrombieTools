@@ -9,11 +9,11 @@
 #include <vector>
 #include <list>
 
-#include "Debug.h"
+#include "crombie/Debug.h"
 
 #include "TH1D.h"
 
-namespace Crombie {
+namespace crombie {
   namespace Hist {
     class Hist {
     public:

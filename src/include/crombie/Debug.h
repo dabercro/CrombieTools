@@ -4,7 +4,7 @@
 #include <cstdlib>
 #include <iostream>
 
-namespace Crombie {
+namespace crombie {
   namespace Debug {
 
     namespace {

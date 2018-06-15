@@ -2,10 +2,10 @@
 #include <sstream>
 #include <fstream>
 
-#include "FileConfig.h"
-#include "Lumi.h"
+#include "crombie/FileConfig.h"
+#include "crombie/Lumi.h"
 
-using namespace Crombie;
+using namespace crombie;
 
 int main(int argc, char* argv[]) {
 

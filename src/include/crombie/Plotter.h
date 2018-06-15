@@ -7,11 +7,11 @@
 #include <list>
 #include <mutex>
 
-#include "Selection.h"
-#include "PlotConfig.h"
-#include "FileConfig.h"
-#include "LoadTree.h"
-#include "Hist.h"
+#include "crombie/Selection.h"
+#include "crombie/PlotConfig.h"
+#include "crombie/FileConfig.h"
+#include "crombie/LoadTree.h"
+#include "crombie/Hist.h"
 
 #include "TFile.h"
 #include "TH1.h"
@@ -19,7 +19,7 @@
 #include "TLegend.h"
 #include "TCanvas.h"
 
-namespace Crombie {
+namespace crombie {
   namespace Plotter {
 
     /**

@@ -7,10 +7,10 @@
 #include <regex>
 #include <iterator>
 
-#include "Debug.h"
-#include "Misc.h"
+#include "crombie/Debug.h"
+#include "crombie/Misc.h"
 
-namespace Crombie {
+namespace crombie {
   namespace Selection {
 
     class Selection {

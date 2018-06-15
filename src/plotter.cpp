@@ -1,13 +1,13 @@
 #include <iostream>
 
-#include "FileSystem.h"
-#include "FileConfig.h"
-#include "PlotConfig.h"
-#include "Selection.h"
-#include "Misc.h"
-#include "Plotter.h"
+#include "crombie/FileSystem.h"
+#include "crombie/FileConfig.h"
+#include "crombie/PlotConfig.h"
+#include "crombie/Selection.h"
+#include "crombie/Misc.h"
+#include "crombie/Plotter.h"
 
-using namespace Crombie;
+using namespace crombie;
 
 int main(int argc, char* argv[]) {
 

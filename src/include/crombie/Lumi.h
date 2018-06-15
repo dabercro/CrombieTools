@@ -7,12 +7,12 @@
 #include <list>
 #include <cmath>
 
-#include "Debug.h"
-#include "FileConfig.h"
-#include "LoadTree.h"
-#include "Misc.h"
+#include "crombie/Debug.h"
+#include "crombie/FileConfig.h"
+#include "crombie/LoadTree.h"
+#include "crombie/Misc.h"
 
-namespace Crombie {
+namespace crombie {
   namespace Lumi {
 
     /// Stores the lumi and run as a map to ranges

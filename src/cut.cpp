@@ -1,8 +1,8 @@
 #include <iostream>
 
-#include "Selection.h"
+#include "crombie/Selection.h"
 
-using namespace Crombie;
+using namespace crombie;
 
 int main(int argc, char* argv[]) {
 

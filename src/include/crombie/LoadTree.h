@@ -5,14 +5,14 @@
 #include <vector>
 #include <regex>
 
-#include "Misc.h"
+#include "crombie/Misc.h"
 
 #include "TFile.h"
 #include "TTree.h"
 #include "TBranch.h"
 #include "TTreeFormula.h"
 
-namespace Crombie {
+namespace crombie {
   namespace LoadTree {
 
     std::mutex rootlock;

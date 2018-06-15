@@ -6,9 +6,9 @@
 #include <fstream>
 #include <regex>
 
-#include "Hist.h"
+#include "crombie/Hist.h"
 
-namespace Crombie {
+namespace crombie {
   namespace PlotConfig {
 
     /// All of the information needed to make a plot

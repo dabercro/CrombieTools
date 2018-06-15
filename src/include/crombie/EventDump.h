@@ -1,12 +1,12 @@
 #ifndef CROMBIE_EVENTDUMP_H
 #define CROMBIE_EVENTDUMP_H
 
-#include "FileConfig.h"
-#include "LoadTree.h"
+#include "crombie/FileConfig.h"
+#include "crombie/LoadTree.h"
 
 #include "TFile.h"
 
-namespace Crombie {
+namespace crombie {
   namespace EventDump {
 
     using SingleOut = std::vector<std::vector<double>>;
