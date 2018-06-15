@@ -7,6 +7,8 @@
 #include "crombie/Misc.h"
 #include "crombie/Plotter.h"
 
+#include "TStyle.h"
+
 using namespace crombie;
 
 int main(int argc, char* argv[]) {
@@ -33,12 +35,13 @@ int main(int argc, char* argv[]) {
   // Write plots
   std::string outdir = argv[2];
   FileSystem::mkdirs(outdir);
-  auto lumi = std::stod(Misc::env("lumi"));
+
+  gStyle->SetOptStat(0);
 
   for (auto& sel : outputs) {
     for (unsigned iplot = 0; iplot < plots.size(); ++iplot) {
       auto filename = outdir + "/" + sel.first + "_" + plots[iplot].name;
-      sel.second[iplot].draw(filename, lumi);
+      sel.second[iplot].draw(filename);
     }
   }
 

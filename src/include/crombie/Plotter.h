@@ -37,7 +37,10 @@ namespace crombie {
     /// This class has everything needed to draw a plot
     class Plot {
     public:
-      void  draw  (const std::string& filebase, double lumi);
+      /**
+         Draws the output file asked for with a given lumi
+      */
+      void  draw  (const std::string& filebase);
       void  dumpdatacard (const std::string& filename);
       void  add (unsigned isub, const FileConfig::DirectoryInfo& info, const Hist::Hist& hist, double mcweight);
     private:
@@ -192,7 +195,6 @@ namespace crombie {
     }
 
     void Plot::add(unsigned isub, const FileConfig::DirectoryInfo& info, const Hist::Hist& hist, double mcweight) {
-      Debug::Debug("weight", mcweight);
       // Process name
       auto& proc = info.processes.at(isub);
       auto& dir = plotstore[info.name];
@@ -205,27 +207,74 @@ namespace crombie {
       }
     }
 
-    void Plot::draw(const std::string& filebase, double lumi) {
-      // Legend label
+    namespace {
+      // Stylize a histogram based on its type
+      void style(TH1* hist, FileConfig::Type type, short style) {
+        hist->SetLineColor(kBlack);
+        switch(type) {
+        case(FileConfig::Type::Data) :
+          Debug::Debug("New data hist");
+          hist->SetMarkerStyle(8);
+          return;
+        case(FileConfig::Type::Signal) :
+          hist->SetLineStyle(style);
+          break;
+        case(FileConfig::Type::Background) :
+          hist->SetFillStyle(1001);
+          hist->SetFillColor(style);
+          break;
+        default: // Don't know what you would want to do here
+          throw;
+        }
+        hist->SetLineWidth(2);
+      }
+
+      TLegend legend(const Hist::Hist& hist) {
+        auto bins = hist.get_maxbin_outof();
+        // The upper left corner of the legend;
+        double x_left = ((bins.first * 2)/bins.second) ? 0.15 : 0.65;
+
+        Debug::Debug("max bin", bins.first, bins.second, (bins.first * 2)/bins.second, x_left);
+
+        TLegend leg{x_left, 0.4, x_left + 0.25, 0.9};
+        leg.SetBorderSize(0);
+        leg.SetFillStyle(0);
+        return leg;
+      }
+
+    }
+
+    namespace {
+      // Want this for the different plotting things
+      double lumi = std::stod(Misc::env("lumi"));
+    }
+
+    void Plot::draw(const std::string& filebase) {
+
+      // Legend label is the key of the map
       std::map<FileConfig::Type, std::map<std::string, TH1D*>> hists;
+      // Use this to store sums
+      Hist::Hist bkg_hist {};
       for (auto& dir : plotstore) {
         for (auto& proc : dir.second) {
-          auto& histcol = hists[proc.second.type];
+          // Scale the histogram
+          if (proc.second.type != FileConfig::Type::Data)
+            proc.second.hist.scale(proc.second.xsec * lumi / proc.second.mcweight);
+
+          if (proc.second.type == FileConfig::Type::Background)
+            bkg_hist.add(proc.second.hist);
           auto* newhist = proc.second.hist.roothist();
-          Debug::Debug("New hist at", newhist, newhist->Integral());
-          Debug::Debug("Scale", proc.second.xsec, lumi, proc.second.mcweight);
-          newhist->Scale(proc.second.xsec * lumi / proc.second.mcweight);
+          auto& histcol = hists[proc.second.type];
           if (histcol.find(proc.second.entry) != histcol.end())
             histcol[proc.second.entry]->Add(newhist);
           else {
-            Debug::Debug("new");
-            newhist->SetFillColor(proc.second.style);
+            // Styling for each type
+            style(newhist, proc.second.type, proc.second.style);
             histcol[proc.second.entry] = newhist;
           }
-          auto* hist = histcol[proc.second.entry];
-          Debug::Debug("Master hist at", hist, hist->Integral());
         }
       }
+
       // Now stuff MC into a vector and sort
       auto sorted_vec = [] (auto& hists) {
         std::vector<std::pair<std::string, TH1D*>> sortvec;
@@ -241,17 +290,51 @@ namespace crombie {
       auto sigvec = sorted_vec(hists[FileConfig::Type::Signal]);
 
       THStack hs{"hs", ""};
-      TLegend leg{};
-      for (auto& mc : mcvec) {
-        leg.AddEntry(mc.second, mc.first.data());
-        hs.Add(mc.second);
-      }
+      // Get the maximum value
+      auto max = bkg_hist.max_w_unc();
+      // Check the data histogram(s)
+      for(auto& dat : hists[FileConfig::Type::Data])
+        max = std::max(dat.second->GetMaximum(), max); // Doesn't include the uncertainties
 
+      hs.SetMaximum(max);
+      // Need to add to stack in reverse order
+      auto mc = mcvec.end();
+      while(mc != mcvec.begin())
+        hs.Add((--mc)->second);
+
+      // Make the legend, determining location summed histograms
+      TLegend leg{legend(bkg_hist)};
+
+      // MC entries
+      for (auto& mc : mcvec)
+        leg.AddEntry(mc.second, mc.first.data(), "f");
+
+      // Draw everything
       TCanvas canv{"canv", "canv"};
       canv.cd();
-      hs.Draw();
+      if (mcvec.size()) {
+        hs.Draw("hist");
+        auto* bkg_sum = bkg_hist.roothist();
+        bkg_sum->SetFillStyle(3001);
+        bkg_sum->SetFillColor(kGray);
+        bkg_sum->Draw("e2,same");
+
+        for (auto& sig : sigvec) {
+          leg.AddEntry(sig.second, sig.first.data(), "lp");
+          sig.second->Add(bkg_sum);
+          sig.second->Draw("hist,same");
+        }
+      }
+
+      for (auto& data : hists[FileConfig::Type::Data]) {
+        Debug::Debug("Drawing data hist with", data.second->Integral(), "entries");
+        leg.AddEntry(data.second, data.first.data(), "lp");
+        data.second->Draw("PE,same");
+      }
+
       leg.Draw();
 
+      // Save everything
       for (auto& suff : {".pdf", ".png", ".C"}) {
         auto output = filebase + suff;
         canv.SaveAs(output.data());

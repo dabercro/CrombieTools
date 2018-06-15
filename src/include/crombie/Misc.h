@@ -12,12 +12,16 @@
 #include <set>
 #include <functional>
 
+#include "crombie/Debug.h"
+
 #include "TROOT.h"
 
 namespace crombie {
   namespace Misc {
 
     void draw_progress(unsigned progress, unsigned max) {
+
+      Debug::Debug("progress", progress, max);
 
       // Draw shitty progress bar
       std::cout << '\r' << '[';
