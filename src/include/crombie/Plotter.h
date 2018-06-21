@@ -1,6 +1,7 @@
 #ifndef CROMBIE_PLOTTER_H
 #define CROMBIE_PLOTTER_H
 
+#include <iomanip>
 #include <string>
 #include <vector>
 #include <map>
@@ -19,6 +20,7 @@
 #include "THStack.h"
 #include "TLegend.h"
 #include "TCanvas.h"
+#include "TLatex.h"
 
 namespace crombie {
   namespace Plotter {
@@ -81,11 +83,13 @@ namespace crombie {
       class CutReader {
       public:
       CutReader(double& cut, double& expr, double& weight, double& sub, Hist::Hist& hist)
-        : cut{cut}, expr{expr}, weight{weight}, sub{sub}, hist{hist} { }
+        : cut{cut}, expr{expr}, weight{weight}, sub{sub}, hist{hist} {
+          Debug::Debug(__PRETTY_FUNCTION__, "Reading for hist at", &hist);
+        }
 
         void eval () {
           if (cut and sub)
-            hist.fill(expr, weight);
+            hist.fill(expr, weight * sub);
         }
       private:
         double& cut;    // For the selection
@@ -111,7 +115,7 @@ namespace crombie {
             {}
           };
 
-          Debug::Debug(__func__, "MC hist contents:", output.first);
+          Debug::Debug(__PRETTY_FUNCTION__, "MC hist contents:", output.first);
 
           // Build the formulas and plots to use
           auto get_expr = (info.type == FileConfig::Type::Data) ?
@@ -129,9 +133,18 @@ namespace crombie {
           auto weights = Misc::comprehension<std::string>(selections.selections, get_weight);
           auto cuts = Misc::comprehension<std::string>(selections.selections, get_cut);
 
-          auto loaded = LoadTree::load_tree(input, exprs, weights, cuts, info.cuts);
+          // Cover bases here
+          std::vector<std::string> nminus1;
+          for (auto& expr : exprs) {
+            for (auto& cut : cuts) {
+              if (cut.find(expr) != std::string::npos)
+                nminus1.push_back(Selection::nminus1(expr, cut));
+            }
+          }
 
-          Debug::Debug(__func__, "Loaded tree at", loaded.first);
+          auto loaded = LoadTree::load_tree(input, exprs, weights, cuts, info.cuts, nminus1);
+
+          Debug::Debug(__PRETTY_FUNCTION__, "Loaded tree at", loaded.first);
 
           std::list<CutReader> readers {};
 
@@ -142,8 +155,10 @@ namespace crombie {
               plotvec.reserve(info.cuts.size());
               for (auto& sub : info.cuts) {
                 plotvec.push_back(plot.get_hist());
-                readers.emplace_back(loaded.second.result(get_cut(sel)),
-                                     loaded.second.result(get_expr(plot)),
+                auto cut = get_cut(sel);
+                auto expr = get_expr(plot);
+                readers.emplace_back(loaded.second.result(Selection::nminus1(expr, cut)),
+                                     loaded.second.result(expr),
                                      loaded.second.result(get_weight(sel)),
                                      loaded.second.result(sub),
                                      plotvec.back());
@@ -151,7 +166,7 @@ namespace crombie {
             }
           }
 
-          Debug::Debug(__func__, "Created readers");
+          Debug::Debug(__PRETTY_FUNCTION__, "Created readers");
 
           auto nentries = loaded.first->GetEntries();
           for (decltype(nentries) ientry = 0; ientry < nentries; ++ientry) {
@@ -161,9 +176,13 @@ namespace crombie {
               reader.eval();
           }
 
+          Debug::Debug(__PRETTY_FUNCTION__, "Evaled readers");
+
           LoadTree::rootlock.lock();
           input.Close();
           LoadTree::rootlock.unlock();
+
+          Debug::Debug(__PRETTY_FUNCTION__, "Closed files");
 
           return output;
         }
@@ -173,18 +192,9 @@ namespace crombie {
     std::function<MergeOut(const FileConfig::ToMerge<SingleOut>&)>
       Merge(const FileConfig::FileConfig& files) {
       // Put lumi search here so that the "missing lumi" error is thrown early
-      double lumi = std::stod(Misc::env("lumi"));
+      double lumi = files.has_mc() ? std::stod(Misc::env("lumi")) : 0.0;
       return std::function<MergeOut(const FileConfig::ToMerge<SingleOut>&)> {
         [&files, lumi] (const FileConfig::ToMerge<SingleOut>& outputs) {
-
-    /* /\** */
-    /*    This is the output running over a single file. */
-    /*    The first number is the number of events for cross section normalization. */
-    /*    The key corresponds to a "selection_plotname", and the different hists are different process cuts. */
-    /* *\/ */
-    /* using SingleOut = std::pair<double, std::map<std::string, std::vector<Hist::Hist>>>; */
-    /* /// The key is a combination of "selection_plotname" */
-    /* using MergeOut = std::map<std::string, Plot>; */
 
           MergeOut output {};
           for (auto& dir : files.get_dirs()) {
@@ -224,17 +234,17 @@ namespace crombie {
         hist->SetLineColor(kBlack);
         switch(type) {
         case(FileConfig::Type::Data) :
-          Debug::Debug(__func__, "New data hist");
+          Debug::Debug(__PRETTY_FUNCTION__, "New data hist");
           hist->SetMarkerStyle(8);
+          hist->SetMarkerColor(style);
+          hist->SetLineColor(style);
           break;
         case(FileConfig::Type::Signal) :
           hist->SetLineStyle(style);
-          hist->SetLineWidth(2);
           break;
         case(FileConfig::Type::Background) :
           hist->SetFillStyle(1001);
           hist->SetFillColor(style);
-          hist->SetLineWidth(2);
           break;
         default: // Don't know what you would want to do here
           throw;
@@ -247,10 +257,10 @@ namespace crombie {
         // The upper left corner of the legend;
         double x_left = ((bins.first * 2)/bins.second) ? 0.15 : 0.65;
 
-        Debug::Debug(__func__, "max bin", bins.first, bins.second, (bins.first * 2)/bins.second, x_left);
+        Debug::Debug(__PRETTY_FUNCTION__, "max bin", bins.first, bins.second, (bins.first * 2)/bins.second, x_left);
 
         // Height determined by number of anticipated legend entries
-        TLegend leg{x_left, 0.9 - std::min(0.5, 0.05 * numlabels), x_left + 0.25, 0.9};
+        TLegend leg{x_left, 0.875 - std::min(0.5, 0.075 * numlabels), x_left + 0.25, 0.875};
         leg.SetBorderSize(0);
         leg.SetFillStyle(0);
         return leg;
@@ -276,16 +286,18 @@ namespace crombie {
       // Legend label is the key of the map
       std::map<FileConfig::Type, std::map<std::string, TH1D*>> hists;
       // Use this to store sums for ratios
-      Hist::Hist data_hist {};
       Hist::Hist bkg_hist {};
       // Both final style and histogram
-      std::pair<short, Hist::Hist> signal_hist {};
+      using StyledHist = std::pair<short, Hist::Hist>;
+      StyledHist data_hist {};
+      StyledHist signal_hist {};
       for (auto& dir : plotstore) {
         for (auto& proc : dir.second) {
           // Scale the histogram
           switch(proc.second.type) {
           case(FileConfig::Type::Data):
-            data_hist.add(proc.second.hist);
+            data_hist.first = proc.second.style;
+            data_hist.second.add(proc.second.hist);
             break;
           case(FileConfig::Type::Background):
             bkg_hist.add(proc.second.hist);
@@ -311,7 +323,7 @@ namespace crombie {
         std::vector<std::pair<std::string, TH1D*>> sortvec;
         sortvec.insert(sortvec.end(), hists.begin(), hists.end());
         std::sort(sortvec.begin(), sortvec.end(), [] (auto& a, auto& b) {
-            Debug::Debug(__func__, a.second->Integral());
+            Debug::Debug(__PRETTY_FUNCTION__, a.second->Integral());
             return a.second->Integral() > b.second->Integral();
           });
         return sortvec;
@@ -351,13 +363,13 @@ namespace crombie {
       const double bottom = mcvec.size() ? 0.3 : 0.0;
 
       TPad pad1{"pad1", "pad1", 0.0, bottom, 1.0, 1.0};
-      Debug::Debug(__func__, "Pad number", pad1.GetNumber(), pad1.GetMother(), &canv);
-      pad1.SetBottomMargin(0.025);
+      Debug::Debug(__PRETTY_FUNCTION__, "Pad number", pad1.GetNumber(), pad1.GetMother(), &canv);
+      pad1.SetBottomMargin(bottom ? 0.025 : 0.1);
       pad1.Draw();
       pad1.cd();
 
-      constexpr double nomfont = 0.03;  // Target font size for plot labels
-      constexpr double titleoff = 1.25; // Title offset
+      const double nomfont = 0.03;          // Target font size for plot labels
+      const double titleoff = 1.25;         // Title offset
 
       if (mcvec.size()) {
         hs.Draw("hist");
@@ -383,23 +395,23 @@ namespace crombie {
       }
 
       for (auto& data : hists[FileConfig::Type::Data]) {
-        Debug::Debug(__func__, "Drawing data hist with", data.second->Integral(), "entries");
+        Debug::Debug(__PRETTY_FUNCTION__, "Drawing data hist with", data.second->Integral(), "entries");
         leg.AddEntry(data.second, data.first.data(), "lp");
         data.second->Draw("PE,same");
       }
 
       canv.cd();
       TPad pad2{"pad2", "pad2", 0.0, 0.0, 1.0, bottom};
-      Debug::Debug(__func__, "Pad number", pad2.GetNumber(), pad2.GetMother(), &canv);
+      Debug::Debug(__PRETTY_FUNCTION__, "Pad number", pad2.GetNumber(), pad2.GetMother(), &canv);
 
       if (bottom) {
-        Debug::Debug(__func__, "Making bottom pad");
+        Debug::Debug(__PRETTY_FUNCTION__, "Making bottom pad");
         pad2.SetTopMargin(0.025);
         pad2.SetBottomMargin(0.4);
         pad2.cd();
 
         auto bkg_ratio = bkg_hist.ratio(bkg_hist);
-        auto data_ratio = data_hist.ratio(bkg_hist);
+        auto data_ratio = data_hist.second.ratio(bkg_hist);
 
         auto set_yaxis = [bottom, titleoff] (auto* hist) {
           auto* axis = hist->GetYaxis();
@@ -424,7 +436,7 @@ namespace crombie {
         bhist->Draw("e2");
 
         style(signal_hist.second.ratio(bkg_hist).roothist(), FileConfig::Type::Signal, signal_hist.first)->Draw("hist,same");
-        style(data_ratio.roothist(), FileConfig::Type::Data, 0)->Draw("PE,same");
+        style(data_ratio.roothist(), FileConfig::Type::Data, data_hist.first)->Draw("PE,same");
 
         pad2.SetGridy(1);
 
@@ -434,6 +446,30 @@ namespace crombie {
 
       pad1.cd();
       leg.Draw();
+
+      canv.cd();
+      // Labels
+      TLatex latex{};
+      latex.SetTextSize(0.035);
+      if (currentlumi) {
+        latex.SetTextAlign(31);
+
+        std::stringstream lumistream;
+        lumistream << std::setprecision(3) << currentlumi/1000.0;
+        std::string lumilabel;
+        lumistream >> lumilabel;
+        lumilabel += " fb^{-1} (13 TeV)";
+
+        latex.DrawLatex(0.95, 0.96, lumilabel.data());
+      }
+      latex.SetTextFont(62);
+      latex.SetTextAlign(11);
+      latex.DrawLatex(0.12, 0.96, "CMS");
+      latex.SetTextSize(0.030);
+      latex.SetTextFont(52);
+      latex.SetTextAlign(11);
+
+      latex.DrawLatex(0.2, 0.96, "Preliminary");
 
       // Save everything
       for (auto& suff : {".pdf", ".png", ".C"}) {

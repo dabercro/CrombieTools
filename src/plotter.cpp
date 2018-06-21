@@ -36,7 +36,14 @@ int main(int argc, char* argv[]) {
   std::string outdir = argv[2];
   FileSystem::mkdirs(outdir);
 
+  // Some style stuff
   gStyle->SetOptStat(0);
+  gStyle->SetGridStyle(3);
+  gStyle->SetPadLeftMargin(0.12);
+  gStyle->SetPadRightMargin(0.05);
+  gStyle->SetPadTickX(1);
+  gStyle->SetPadTickY(1);
+  gStyle->SetHistLineWidth(2);
 
   for (auto& plot : outputs)
     plot.second.draw(outdir + "/" + plot.first);

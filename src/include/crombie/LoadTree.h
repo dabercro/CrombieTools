@@ -31,7 +31,7 @@ namespace crombie {
       /* } */
 
       void add (const std::string& expr) {
-        Debug::Debug(__func__, "Adding formula", expr);
+        Debug::Debug(__PRETTY_FUNCTION__, "Adding formula", expr);
         if (forms.find(expr) == forms.end()) {
           TTreeFormula* form = new TTreeFormula(expr.data(), expr.data(), tree);
           forms[expr] = std::make_pair(0.0, form);

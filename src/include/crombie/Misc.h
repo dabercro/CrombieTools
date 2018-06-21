@@ -21,7 +21,10 @@ namespace crombie {
 
     void draw_progress(unsigned progress, unsigned max) {
 
-      Debug::Debug(__func__, "progress", progress, max);
+      Debug::Debug(__PRETTY_FUNCTION__, "progress", progress, max);
+
+      if (not max)
+        throw std::runtime_error{"Nothing to run over."};
 
       // Draw shitty progress bar
       std::cout << '\r' << '[';
@@ -69,7 +72,7 @@ namespace crombie {
       if (output)
         return std::string(output);
       if (not fallback.size())
-        throw std::runtime_error(std::string("Requesting non-existent variable ") + variable + " with no fallback");
+        throw std::runtime_error(std::string("Requesting non-existent variable '") + variable + "' with no fallback");
       return std::string(fallback);
     }
 

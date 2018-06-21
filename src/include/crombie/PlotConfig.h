@@ -18,7 +18,7 @@ namespace crombie {
          const std::string label, const std::string data_var = "", const std::string mc_var = "")
       : name{name}, nbins{nbins}, low{low}, max{max}, label{label},
         data_var{data_var.size() ? data_var : name}, mc_var{mc_var.size() ? mc_var : name} {
-          Debug::Debug("New plot", name, nbins, low, max, label, data_var, mc_var);
+          Debug::Debug(__PRETTY_FUNCTION__, "New plot", name, nbins, low, max, label, data_var, mc_var);
         };
 
       const std::string name;
@@ -52,7 +52,7 @@ namespace crombie {
         // Strip out comments
         std::string line {raw.substr(0, raw.find("! "))};
         if (line.size()) {
-          Debug::Debug("Plot line", line);
+          Debug::Debug(__PRETTY_FUNCTION__, "Plot line", line);
           if (std::regex_match(line, matches, expr)) {
             output.push_back({matches[1], static_cast<unsigned>(std::stoi(matches[2])),
                               std::stod(matches[3]), std::stod(matches[4]),

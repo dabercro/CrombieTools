@@ -12,8 +12,12 @@ namespace crombie {
 
       template<typename T> void OneMessage (T message) {
         if (not _printed)
-          _printed = true;
-        std::cout << message << " ";
+          std::cout << "[";
+        std::cout << message;
+        if (not _printed)
+          std::cout << "]\n";
+        std::cout << " ";
+        _printed = true;
       }
 
       void Debug() {

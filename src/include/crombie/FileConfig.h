@@ -52,7 +52,9 @@ namespace crombie {
     struct FileInfo {
     FileInfo() {}
     FileInfo(const Type type, const std::string dirname, const std::string filename, const std::vector<std::string>& cuts = {"1.0"})
-    : type{type}, dirname{dirname}, name{filename}, size{FileSystem::get_size(name.data())}, cuts{cuts} { }
+    : type{type}, dirname{dirname}, name{filename}, size{FileSystem::get_size(name.data())}, cuts{cuts} {
+      Debug::Debug(__PRETTY_FUNCTION__, dirname, filename, size, cuts.size());
+    }
       Type type {};
       std::string dirname {};
       std::string name {};
@@ -86,6 +88,7 @@ namespace crombie {
 
       DirectoryInfo (const std::string line, const Type type, const std::vector<Process>& processes)
         : name{getname(line)}, xs{getxs(line)}, type{type}, processes{processes} {
+        Debug::Debug(__PRETTY_FUNCTION__, line, name, xs, processes.size());
         fillfiles();
       }
 
@@ -126,9 +129,15 @@ namespace crombie {
       /// Read the directory infos
       const std::vector<DirectoryInfo>& get_dirs () const { return dirinfos; }
 
+      const bool has_mc () const { return _has_mc; }
+      const bool has_data () const { return _has_data; }
+
     private:
       std::vector<DirectoryInfo> dirinfos;
       const std::string inputdir;   ///< The directory containing the files
+
+      bool _has_mc {false};
+      bool _has_data {false};
 
       friend std::istream& operator>>(std::istream& is, FileConfig& config);
     };
@@ -153,7 +162,6 @@ namespace crombie {
       return (dir.substr(dir.size() - 5, 5) == ".root") ? dir : dirclean(dir);
     }
 
-
     void DirectoryInfo::fillfiles() {
       if (FileSystem::exists(name)) {
         std::vector<std::string> cuts;
@@ -175,7 +183,7 @@ namespace crombie {
 
     std::istream& operator>>(std::istream& is, FileConfig& config) {
       Type current_type = Type::Data;
-      std::vector<Process> current_procs {{"data_obs", "Data", "1.0", 0}};
+      std::vector<Process> current_procs {{"data_obs", "Data", "1.0", 1}};
 
       // This is the type we change to when we see process lines
       Type default_type = Type::Background;
@@ -191,12 +199,15 @@ namespace crombie {
         std::string line {raw.substr(0, raw.find("! "))};
 
         if (line.size()) {
-          if (line == "SIGNAL") {                                // If signal delimiter, then we set that
-            default_type = Type::Signal;
-            continue;
-          }
-          else if (line == "DATA") {
-            default_type = Type::Data;
+          Debug::Debug(__PRETTY_FUNCTION__, line);
+          // Set the default type, if needed
+          const std::map<std::string, Type> default_lines {
+            {"DATA", Type::Data},
+            {"SIGNAL", Type::Signal},
+            {"MC", Type::Background}
+          };
+          if (default_lines.find(line) != default_lines.end()) {
+            default_type = default_lines.at(line);
             continue;
           }
 
@@ -217,6 +228,10 @@ namespace crombie {
             current_procs.push_back({tokens[0], entry, cut, style});
           }
           else { // Otherwise add a DirectoryInfo
+            if (current_type != Type::Data)
+              config._has_mc = true;
+            else
+              config._has_data = true;
             in_dirs = true;
             config.dirinfos.push_back({config.inputdir + line, current_type, current_procs});
           }
@@ -264,7 +279,7 @@ namespace crombie {
         threads.push_back(std::thread([&] () {
               bool running = true;
               while(true) {
-                Debug::Debug(__func__, "Start thread loop");
+                Debug::Debug(__PRETTY_FUNCTION__, "Start thread loop");
                 FileInfo info;
                 inlock.lock();
                 running = !queue.empty();

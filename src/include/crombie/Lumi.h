@@ -88,7 +88,7 @@ namespace crombie {
     }
 
     void LumiSelection::add(unsigned long run, std::pair<unsigned, unsigned> lumi) {
-      Debug::Debug(__func__, "Adding", run, lumi.first, lumi.second);
+      Debug::Debug(__PRETTY_FUNCTION__, "Adding", run, lumi.first, lumi.second);
 
       auto& to_insert = store[run];
 
