@@ -60,18 +60,10 @@ namespace crombie {
     // IMPLEMENTATIONS BELOW HERE //
 
 
-
     std::string nminus1(const std::string& var, const std::string& cut) {
       std::regex expr{std::string("\\b") + var + "\\b\\s*[=<>]*\\s*-?[\\d\\.]+"};
-      std::string output = cut;
-      auto begin = std::sregex_iterator(cut.cbegin(), cut.cend(), expr);
-      auto end = std::sregex_iterator();
-      for (auto iter = begin; iter != end; ++iter)
-        output.replace(iter->position(), iter->length(), "(1)");
-      Debug::Debug(__PRETTY_FUNCTION__, var, "---", cut, "---", output);
-      return output;
+      return std::regex_replace(cut, expr, "(1)");
     }
-
 
     std::istream& operator>>(std::istream& is, SelectionConfig& config) {
       using symbols = std::map<std::string, std::string>;
