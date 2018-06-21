@@ -69,7 +69,7 @@ namespace crombie {
     /**
        Gets a function that merges the output of the SingleFile functional
     */
-    std::function<MergeOut(const std::map<std::string, std::list<SingleOut>>&)>
+    std::function<MergeOut(const FileConfig::ToMerge<SingleOut>&)>
       Merge (const FileConfig::FileConfig& files);
 
 
@@ -170,12 +170,12 @@ namespace crombie {
       };
     }
 
-    std::function<MergeOut(const std::map<std::string, std::list<SingleOut>>&)>
+    std::function<MergeOut(const FileConfig::ToMerge<SingleOut>&)>
       Merge(const FileConfig::FileConfig& files) {
       // Put lumi search here so that the "missing lumi" error is thrown early
       double lumi = std::stod(Misc::env("lumi"));
-      return std::function<MergeOut(const std::map<std::string, std::list<SingleOut>>&)> {
-        [&files, lumi] (const std::map<std::string, std::list<SingleOut>>& outputs) {
+      return std::function<MergeOut(const FileConfig::ToMerge<SingleOut>&)> {
+        [&files, lumi] (const FileConfig::ToMerge<SingleOut>& outputs) {
 
     /* /\** */
     /*    This is the output running over a single file. */

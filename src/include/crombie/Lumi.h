@@ -39,7 +39,7 @@ namespace crombie {
     std::function<LumiSelection(const FileConfig::FileInfo&)> SingleFile {SingleRunner};
 
     /// Return the merged LumiSelection
-    LumiSelection Merge(const std::map<std::string, std::list<LumiSelection>>& outputs);
+    LumiSelection Merge(const FileConfig::ToMerge<LumiSelection>& outputs);
 
 
     // IMPLEMENTATIONS BELOW HERE //
@@ -76,7 +76,7 @@ namespace crombie {
       return output;
     }
 
-    LumiSelection Merge(const std::map<std::string, std::list<LumiSelection>>& outputs) {
+    LumiSelection Merge(const FileConfig::ToMerge<LumiSelection>& outputs) {
       LumiSelection output {};
       // For each possible directory
       for (auto& info : outputs) {

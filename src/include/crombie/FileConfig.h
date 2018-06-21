@@ -230,10 +230,14 @@ namespace crombie {
       return a.size < b.size;
     }
 
+    /// The parameter passed to the FileConfig::runfiles reduce function
+    template<typename M>
+      using ToMerge = std::map<std::string, std::list<M>>;
+
     template <typename M, typename R>
       auto FileConfig::runfiles (std::function<M(const FileInfo&)> map, R reduce) {
       unsigned nthreads = std::stoi(Misc::env("nthreads", "1"));
-      std::map<std::string, std::list<M>> outputs; // This is fed into reduce, in addition to the directory infos
+      ToMerge<M> outputs; // This is fed into reduce, in addition to the directory infos
       std::priority_queue<FileInfo> queue;
       for (const auto& dirinfo : dirinfos) {
         for (const auto& fileinfo : dirinfo.files)
