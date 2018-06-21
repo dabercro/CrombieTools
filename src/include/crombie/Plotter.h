@@ -38,9 +38,7 @@ namespace crombie {
     /// This class has everything needed to draw a plot
     class Plot {
     public:
-      /**
-         Draws the output file asked for with a given lumi
-      */
+      /// One of the messier functions which draws the plot at the desired location
       void  draw  (const std::string& filebase);
       void  dumpdatacard (const std::string& filename);
       /// Add a plot to the inner store. Processes are merged together
@@ -244,14 +242,15 @@ namespace crombie {
         return hist; // Return for chaining
       }
 
-      TLegend legend(const Hist::Hist& hist) {
+      TLegend legend(const Hist::Hist& hist, unsigned numlabels) {
         auto bins = hist.get_maxbin_outof();
         // The upper left corner of the legend;
         double x_left = ((bins.first * 2)/bins.second) ? 0.15 : 0.65;
 
         Debug::Debug(__func__, "max bin", bins.first, bins.second, (bins.first * 2)/bins.second, x_left);
 
-        TLegend leg{x_left, 0.4, x_left + 0.25, 0.9};
+        // Height determined by number of anticipated legend entries
+        TLegend leg{x_left, 0.9 - std::min(0.5, 0.05 * numlabels), x_left + 0.25, 0.9};
         leg.SetBorderSize(0);
         leg.SetFillStyle(0);
         return leg;
@@ -334,18 +333,22 @@ namespace crombie {
       while(mc != mcvec.begin())
         hs.Add((--mc)->second);
 
+      unsigned numlabels = 0;
+      for (auto& type : hists)
+        numlabels += type.second.size();
+
       // Make the legend, determining location summed histograms
-      TLegend leg{legend(bkg_hist)};
+      TLegend leg{legend(bkg_hist, numlabels)};
 
       // MC entries
       for (auto& mc : mcvec)
         leg.AddEntry(mc.second, mc.first.data(), "f");
 
       // Draw everything
-      TCanvas canv{"canv", "canv", 600, 700};
+      TCanvas canv{"canv", "canv", 700, 700};
       canv.cd();
       // Top pad
-      double bottom = mcvec.size() ? 0.3 : 0.0;
+      const double bottom = mcvec.size() ? 0.3 : 0.0;
 
       TPad pad1{"pad1", "pad1", 0.0, bottom, 1.0, 1.0};
       Debug::Debug(__func__, "Pad number", pad1.GetNumber(), pad1.GetMother(), &canv);
@@ -353,8 +356,20 @@ namespace crombie {
       pad1.Draw();
       pad1.cd();
 
+      constexpr double nomfont = 0.03;  // Target font size for plot labels
+      constexpr double titleoff = 1.25; // Title offset
+
       if (mcvec.size()) {
         hs.Draw("hist");
+
+        hs.GetYaxis()->SetLabelSize(nomfont/(1 - bottom));
+        hs.GetYaxis()->SetTitleSize(nomfont/(1 - bottom));
+        hs.GetYaxis()->SetTitleOffset(titleoff);
+        hs.GetYaxis()->SetTitle("Events/Bin");
+
+        hs.GetXaxis()->SetLabelSize(0);
+        hs.GetXaxis()->SetTitleSize(0);
+
         auto* bkg_sum = bkg_hist.roothist();
         bkg_sum->SetFillStyle(3001);
         bkg_sum->SetFillColor(kGray);
@@ -379,14 +394,29 @@ namespace crombie {
 
       if (bottom) {
         Debug::Debug(__func__, "Making bottom pad");
-        pad2.SetTopMargin(0.05);
+        pad2.SetTopMargin(0.025);
         pad2.SetBottomMargin(0.4);
         pad2.cd();
 
         auto bkg_ratio = bkg_hist.ratio(bkg_hist);
         auto data_ratio = data_hist.ratio(bkg_hist);
 
-        auto* bhist = bkg_ratio.roothist();
+        auto set_yaxis = [bottom, titleoff] (auto* hist) {
+          auto* axis = hist->GetYaxis();
+          axis->SetNdivisions(504, true);
+          axis->SetTitle("Data/Pred.");
+          axis->SetTitleOffset((bottom)/(1-bottom) * titleoff);
+          axis->CenterTitle();
+          return hist;
+        };
+
+        auto* bhist = set_yaxis(bkg_ratio.roothist());
+
+        for (auto* axis : {bhist->GetXaxis(), bhist->GetYaxis()}) {
+          axis->SetTitleSize(nomfont/bottom);
+          axis->SetLabelSize(nomfont/bottom);
+        }
+
         bhist->SetFillStyle(3001);
         bhist->SetFillColor(kGray);
         bhist->SetMinimum(std::min(bkg_ratio.min_w_unc(), data_ratio.min_w_unc()));
@@ -395,6 +425,8 @@ namespace crombie {
 
         style(signal_hist.second.ratio(bkg_hist).roothist(), FileConfig::Type::Signal, signal_hist.first)->Draw("hist,same");
         style(data_ratio.roothist(), FileConfig::Type::Data, 0)->Draw("PE,same");
+
+        pad2.SetGridy(1);
 
         canv.cd();
         pad2.Draw();

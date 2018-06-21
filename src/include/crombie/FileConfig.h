@@ -177,6 +177,9 @@ namespace crombie {
       Type current_type = Type::Data;
       std::vector<Process> current_procs {{"data_obs", "Data", "1.0", 0}};
 
+      // This is the type we change to when we see process lines
+      Type default_type = Type::Background;
+
       std::string entry;  // Hold these things as
       std::string cut;    // we go along in case there's
       short style;        // a less complete line
@@ -189,7 +192,11 @@ namespace crombie {
 
         if (line.size()) {
           if (line == "SIGNAL") {                                // If signal delimiter, then we set that
-            current_type = Type::Signal;
+            default_type = Type::Signal;
+            continue;
+          }
+          else if (line == "DATA") {
+            default_type = Type::Data;
             continue;
           }
 
@@ -197,8 +204,7 @@ namespace crombie {
             if (in_dirs) {                                       // Time to reset processes if new
               in_dirs = false;
               current_procs.clear();
-              if (current_type == Type::Data)
-                current_type = Type::Background;
+              current_type = default_type;
             }
             // Read the line cuts
             auto tokens = Misc::tokenize(line);
