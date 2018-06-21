@@ -39,12 +39,12 @@ int main(int argc, char* argv[]) {
   std::ofstream outfile {argv[2]};
 
   for (auto& var : vars)
-    outfile << " * " << std::setw(10) << var;
+    outfile << " * " << std::setw(15) << var;
   outfile << " *\n";
 
   for (auto& line : output) {
     for (auto out : line)
-      outfile << " * " << std::setw(10) << std::setprecision(10) << out;
+      outfile << " * " << std::setw(15) << std::setprecision(10) << out;
     outfile << " *\n";
   }
 

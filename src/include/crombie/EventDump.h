@@ -1,6 +1,8 @@
 #ifndef CROMBIE_EVENTDUMP_H
 #define CROMBIE_EVENTDUMP_H
 
+#include <list>
+
 #include "crombie/FileConfig.h"
 #include "crombie/LoadTree.h"
 
@@ -10,20 +12,19 @@ namespace crombie {
   namespace EventDump {
 
     using SingleOut = std::vector<std::vector<double>>;
+    using SingleFunc = std::function<SingleOut(const FileConfig::FileInfo&)>;
 
     std::function<SingleOut(const FileConfig::FileInfo&)>
       SingleFile(const std::string& cut,
                  const std::vector<std::string>& exprs);
 
-    SingleOut Merge (const std::vector<FileConfig::DirectoryInfo>& dirinfos,
-                     const std::map<std::string, std::vector<SingleOut>>& outputs);
+    SingleOut Merge (const std::map<std::string, std::list<SingleOut>>& outputs);
 
     // IMPLEMENTATIONS BELOW HERE //
 
-    std::function<SingleOut(const FileConfig::FileInfo&)>
-      SingleFile(const std::string& cut,
-                 const std::vector<std::string>& exprs) {
-      return std::function<SingleOut(const FileConfig::FileInfo&)> {
+    SingleFunc SingleFile(const std::string& cut,
+                          const std::vector<std::string>& exprs) {
+      return SingleFunc {
         [&cut, &exprs] (const FileConfig::FileInfo& info) {
           TFile infile {info.name.data()};
           auto loaded = LoadTree::load_tree(infile, cut, exprs);
@@ -52,14 +53,25 @@ namespace crombie {
       };
     }
 
-    SingleOut Merge (const std::vector<FileConfig::DirectoryInfo>& dirinfos,
-                     const std::map<std::string, std::vector<SingleOut>>& outputs) {
+    SingleOut Merge (const std::map<std::string, std::list<SingleOut>>& outputs) {
       SingleOut output {};
-      for (auto& dirinfo : dirinfos) {
-        auto& outs = outputs.at(dirinfo.name);
-        for (auto& single : outs)
+      for (auto& outs : outputs) {
+        // We don't care about the key
+        for (auto& single : outs.second)
           output.insert(output.end(), single.begin(), single.end());
       }
+
+      // Sort vector of vectors recursively
+      sort(output.begin(), output.end(),
+           [] (auto& a, auto& b) {
+             for (unsigned i = 0; i < a.size(); ++i) {
+               if (a[i] == b[i])
+                 continue;
+               return a[i] < b[i];
+             }
+             return false;
+           });
+
       return output;
     }
   }

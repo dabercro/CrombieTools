@@ -17,7 +17,7 @@ namespace crombie {
     public:
     Selection(const std::string cut, const std::string mc, const std::string data)
       : cut{cut}, data{data}, mc{mc} {
-        Debug::Debug("Selection:", cut, "---", mc, "---", data);
+        Debug::Debug(__func__, "Selection:", cut, "---", mc, "---", data);
       }
 
       const std::string cut;    ///< The cut that plots must pass

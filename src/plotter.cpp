@@ -30,7 +30,7 @@ int main(int argc, char* argv[]) {
   // The map key is the selection, vector is parallel to the ``plots`` variable above
   // Plot objects can make each plot
   auto outputs = files.runfiles(Plotter::SingleFile(plots, regions),
-                                Plotter::Merge);
+                                Plotter::Merge(files));
 
   // Write plots
   std::string outdir = argv[2];
@@ -38,12 +38,8 @@ int main(int argc, char* argv[]) {
 
   gStyle->SetOptStat(0);
 
-  for (auto& sel : outputs) {
-    for (unsigned iplot = 0; iplot < plots.size(); ++iplot) {
-      auto filename = outdir + "/" + sel.first + "_" + plots[iplot].name;
-      sel.second[iplot].draw(filename);
-    }
-  }
+  for (auto& plot : outputs)
+    plot.second.draw(outdir + "/" + plot.first);
 
   return 0;
 }

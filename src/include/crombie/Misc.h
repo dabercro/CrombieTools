@@ -21,7 +21,7 @@ namespace crombie {
 
     void draw_progress(unsigned progress, unsigned max) {
 
-      Debug::Debug("progress", progress, max);
+      Debug::Debug(__func__, "progress", progress, max);
 
       // Draw shitty progress bar
       std::cout << '\r' << '[';

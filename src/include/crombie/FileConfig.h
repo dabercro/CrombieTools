@@ -20,6 +20,7 @@
 #include <algorithm>
 #include <thread>
 #include <chrono>
+#include <list>
 
 #include <sys/stat.h>
 
@@ -122,6 +123,9 @@ namespace crombie {
       template <typename M, typename R>
         auto runfiles (std::function<M(const FileInfo&)> map, R reduce);
 
+      /// Read the directory infos
+      const std::vector<DirectoryInfo>& get_dirs () const { return dirinfos; }
+
     private:
       std::vector<DirectoryInfo> dirinfos;
       const std::string inputdir;   ///< The directory containing the files
@@ -223,10 +227,9 @@ namespace crombie {
     template <typename M, typename R>
       auto FileConfig::runfiles (std::function<M(const FileInfo&)> map, R reduce) {
       unsigned nthreads = std::stoi(Misc::env("nthreads", "1"));
-      std::map<std::string, std::vector<M>> outputs; // This is fed into reduce, in addition to the directory infos
+      std::map<std::string, std::list<M>> outputs; // This is fed into reduce, in addition to the directory infos
       std::priority_queue<FileInfo> queue;
       for (const auto& dirinfo : dirinfos) {
-        outputs[dirinfo.name].reserve(dirinfo.files.size());
         for (const auto& fileinfo : dirinfo.files)
           queue.push(fileinfo);
       }
@@ -251,6 +254,7 @@ namespace crombie {
         threads.push_back(std::thread([&] () {
               bool running = true;
               while(true) {
+                Debug::Debug(__func__, "Start thread loop");
                 FileInfo info;
                 inlock.lock();
                 running = !queue.empty();
@@ -267,7 +271,7 @@ namespace crombie {
                   break;
                 auto fileoutput = map(info);
                 outlock.lock();
-                outputs.at(info.dirname).push_back(fileoutput);
+                outputs[info.dirname].push_back(std::move(fileoutput));
                 outlock.unlock();
               }
             })
@@ -278,7 +282,7 @@ namespace crombie {
         thread.join();
 
       Misc::draw_progress(progress, progress);
-      std::cout << std::endl; // Flush after progress bar
+      std::cout << std::endl; // New line after progress bar
 
       std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
 
@@ -286,7 +290,7 @@ namespace crombie {
                 << std::chrono::duration_cast<std::chrono::seconds>(end - start).count()
                 << " seconds" << std::endl;
 
-      return reduce(dirinfos, outputs);
+      return reduce(outputs);
     }
 
   }

@@ -39,8 +39,7 @@ namespace crombie {
     std::function<LumiSelection(const FileConfig::FileInfo&)> SingleFile {SingleRunner};
 
     /// Return the merged LumiSelection
-    LumiSelection Merge(const std::vector<FileConfig::DirectoryInfo>& dirinfos,
-                        const std::map<std::string, std::vector<LumiSelection>>& outputs);
+    LumiSelection Merge(const std::map<std::string, std::list<LumiSelection>>& outputs);
 
 
     // IMPLEMENTATIONS BELOW HERE //
@@ -77,19 +76,19 @@ namespace crombie {
       return output;
     }
 
-    LumiSelection Merge(const std::vector<FileConfig::DirectoryInfo>& dirinfos,
-                        const std::map<std::string, std::vector<LumiSelection>>& outputs) {
-      LumiSelection output;
-      for (auto& info : dirinfos) {
-        const auto& selections = outputs.at(info.name);
-        for (auto& sel : selections)
+    LumiSelection Merge(const std::map<std::string, std::list<LumiSelection>>& outputs) {
+      LumiSelection output {};
+      // For each possible directory
+      for (auto& info : outputs) {
+        // Add the LumiSelections in the vector
+        for (auto& sel : info.second)
           output.add(sel);
       }
       return output;
     }
 
     void LumiSelection::add(unsigned long run, std::pair<unsigned, unsigned> lumi) {
-      Debug::Debug("Adding", run, lumi.first, lumi.second);
+      Debug::Debug(__func__, "Adding", run, lumi.first, lumi.second);
 
       auto& to_insert = store[run];
 

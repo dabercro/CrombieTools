@@ -4,6 +4,7 @@
 #include <string>
 #include <vector>
 #include <regex>
+#include <exception>
 
 #include "crombie/Misc.h"
 
@@ -30,6 +31,7 @@ namespace crombie {
       /* } */
 
       void add (const std::string& expr) {
+        Debug::Debug(__func__, "Adding formula", expr);
         if (forms.find(expr) == forms.end()) {
           TTreeFormula* form = new TTreeFormula(expr.data(), expr.data(), tree);
           forms[expr] = std::make_pair(0.0, form);
@@ -111,6 +113,8 @@ namespace crombie {
     template<typename... Args> std::pair<TTree*, Formulas> load_tree(TFile& infile, Args... args) {
       auto treename = Misc::env("tree", "events");
       auto* tree = static_cast<TTree*>(infile.Get(treename.data()));
+      if (not tree)
+        throw std::runtime_error(std::string("Could not find tree '") + treename + "' in " + infile.GetName());
       tree->SetBranchStatus("*", 0);
       auto needed = needed_branches(*tree, args...);
       for (auto need : needed)
