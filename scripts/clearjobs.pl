@@ -5,8 +5,11 @@ use strict;
 
 my $database = 'mysql -N -ht3serv015.mit.edu -usubmit -psubmitter -Dsubmit_queue';
 
-for (`echo 'select file_name, queue.id, total_events, input_files from check_these left join queue on queue.id = check_these.id;' | $database`) {
-    my ($pandav, $dataset, $filename, $id, $total_evts, $infiles) = m{/paus/([^/]+/\d{3})/([^/]+)/(\S+)\s+(\d+)\s+(\d+)\s+(\S+)};
+for (`echo 'select file_name, id from check_these;' | $database`) {
+    my ($pandav, $dataset, $filename, $id) = m{/paus/([^/]+/\d{3})/([^/]+)/(\S+)\s+(\d+)};
+
+    my $thisjob = `echo 'select total_events, input_files from queue where id = $id;' | $database`;
+    my ($total_evts, $infiles) = ($thisjob =~ /(\d+)\s+(\S+)/);
 
     $infiles =~ s/$filename// || next;             # pop out the bad file or run away if it's not there
     $infiles =~ s/^,|,$// || $infiles =~ s/,,/,/;  # Take extra commas or at beginning or end
@@ -16,8 +19,8 @@ for (`echo 'select file_name, queue.id, total_events, input_files from check_the
         if (/$filename\s+(\d+)/) {
             my $numevents = $1;
             my $newevents = $total_evts - $numevents;
-            say qq(update queue set input_files = '$infiles' and total_events = $newevents where id = $id);
-            `echo "update queue set input_files = '$infiles' and total_events = $newevents where id = $id;" | $database`;
+            say qq(update queue set input_files = '$infiles', total_events = $newevents where id = $id);
+            `echo "update queue set input_files = '$infiles', total_events = $newevents where id = $id;" | $database`;
         }
     }
 }
