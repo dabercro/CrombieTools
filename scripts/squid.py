@@ -106,6 +106,13 @@ def add_samples_to_database(sample_file_name):
     return jobs
 
 
+def get_log_dir(output_dir):
+    html_path = os.path.join(os.environ['HOME'], 'public_html/squid')
+    return os.path.join(html_path, 'logs', 
+                        output_dir.split('/')[-2],
+                        output_dir.split('/')[-1])    
+
+
 def prepare_for_submit(jobs):
 
     if not jobs:
@@ -119,7 +126,6 @@ def prepare_for_submit(jobs):
 
     # Get locations of condor config, and html path
     local_condor = os.path.join(os.environ['PWD'], 'condor')
-    html_path = os.path.join(os.environ['HOME'], 'public_html/squid')
     if not os.path.exists(local_condor):
         os.mkdir(local_condor)
 
@@ -149,9 +155,7 @@ def prepare_for_submit(jobs):
 
             LOG.debug('Appending %s to condor submission file', job)
 
-            log_dir = os.path.join(html_path, 'logs', 
-                                   output_dir.split('/')[-2],
-                                   output_dir.split('/')[-1])
+            log_dir = get_log_dir(output_dir)
 
             if not os.path.exists(log_dir):
                 os.makedirs(log_dir)
@@ -199,7 +203,8 @@ def check_jobs():
     # Pop out jobs that are finished
 
     conn, curs = connect()
-    
+
+    # Check if jobs finished
     curs.execute("SELECT id, output_dir, output_file FROM queue WHERE status != 'finished'")
     jobs = [(int(row[0]), row[1], row[2]) for row in curs.fetchall()]
 
@@ -265,7 +270,8 @@ def check_jobs():
     LOG.info('Already running: %i', len(running_jobs))
     LOG.info('To resubmit: %i', len(resub))
 
-    submit(resub)
+    if os.environ.get('noresub') is None:
+        submit(resub)
 
     if len(jobs) > (len(running_jobs) + len(resub)):
         return check_jobs()
@@ -316,7 +322,6 @@ def check_bad_files():
                 'echo "y" | /home/cmsprod/DynamicData/SmartCache/Client/requestSample.sh %s %s' % (book, dataset),
                 shell=True)
 
-    curs.execute('DELETE FROM check_these where status = "missing" or status = "corrupt"')
     conn.commit()
     conn.close()
 

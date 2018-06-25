@@ -85,7 +85,7 @@ namespace crombie {
     void Hist::scale(const double scale) {
       for (unsigned ibin = 0; ibin < contents.size(); ++ibin) {
         contents[ibin] *= scale;
-        sumw2[ibin] *= scale;
+        sumw2[ibin] *= std::pow(scale, 2);
       }
     }
 
