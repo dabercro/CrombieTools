@@ -7,6 +7,7 @@
 #include <regex>
 
 #include "crombie/Hist.h"
+#include "crombie/Parse.h"
 
 namespace crombie {
   namespace PlotConfig {
@@ -48,16 +49,11 @@ namespace crombie {
       std::smatch matches;
 
       std::ifstream input {config};
-      for (std::string raw; std::getline(input, raw); ) {
-        // Strip out comments
-        std::string line {raw.substr(0, raw.find("! "))};
-        if (line.size()) {
-          Debug::Debug(__PRETTY_FUNCTION__, "Plot line", line);
-          if (std::regex_match(line, matches, expr)) {
-            output.push_back({matches[1], static_cast<unsigned>(std::stoi(matches[2])),
-                              std::stod(matches[3]), std::stod(matches[4]),
-                              matches[5], matches[7], matches[8]});
-          }
+      for (auto& line : Parse::parse(input)) {
+        if (std::regex_match(line, matches, expr)) {
+          output.push_back({matches[1], static_cast<unsigned>(std::stoi(matches[2])),
+                            std::stod(matches[3]), std::stod(matches[4]),
+                            matches[5], matches[7], matches[8]});
         }
       }
       return output;

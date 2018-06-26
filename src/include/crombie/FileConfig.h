@@ -25,6 +25,7 @@
 #include <sys/stat.h>
 
 #include "crombie/Misc.h"
+#include "crombie/Parse.h"
 #include "crombie/FileSystem.h"
 
 namespace crombie {
@@ -194,47 +195,41 @@ namespace crombie {
 
       bool in_dirs = true;
 
-      for (std::string raw; std::getline(is, raw); ) {
-        // Strip out comments
-        std::string line {raw.substr(0, raw.find("! "))};
+      for (auto& line : Parse::parse(is)) {
+        // Set the default type, if needed
+        const std::map<std::string, Type> default_lines {
+          {"DATA", Type::Data},
+          {"SIGNAL", Type::Signal},
+          {"MC", Type::Background}
+        };
+        if (default_lines.find(line) != default_lines.end()) {
+          default_type = default_lines.at(line);
+          continue;
+        }
 
-        if (line.size()) {
-          Debug::Debug(__PRETTY_FUNCTION__, line);
-          // Set the default type, if needed
-          const std::map<std::string, Type> default_lines {
-            {"DATA", Type::Data},
-            {"SIGNAL", Type::Signal},
-            {"MC", Type::Background}
-          };
-          if (default_lines.find(line) != default_lines.end()) {
-            default_type = default_lines.at(line);
-            continue;
+        if (line.find('{') == std::string::npos) {             // If not a line about directory info
+          if (in_dirs) {                                       // Time to reset processes if new
+            in_dirs = false;
+            current_procs.clear();
+            current_type = default_type;
           }
-
-          if (line.find('{') == std::string::npos) {             // If not a line about directory info
-            if (in_dirs) {                                       // Time to reset processes if new
-              in_dirs = false;
-              current_procs.clear();
-              current_type = default_type;
-            }
-            // Read the line cuts
-            auto tokens = Misc::tokenize(line);
-            // Update these values if needed
-            if (tokens.size() > 1) {
-              entry = tokens[1];
-              cut = tokens.size() == 4 ? tokens[2] : "1.0";
-              style = std::stoi(tokens.back());
-            }
-            current_procs.push_back({tokens[0], entry, cut, style});
+          // Read the line cuts
+          auto tokens = Misc::tokenize(line);
+          // Update these values if needed
+          if (tokens.size() > 1) {
+            entry = tokens[1];
+            cut = tokens.size() == 4 ? tokens[2] : "1.0";
+            style = std::stoi(tokens.back());
           }
-          else { // Otherwise add a DirectoryInfo
-            if (current_type != Type::Data)
-              config._has_mc = true;
-            else
-              config._has_data = true;
-            in_dirs = true;
-            config.dirinfos.push_back({config.inputdir + line, current_type, current_procs});
-          }
+          current_procs.push_back({tokens[0], entry, cut, style});
+        }
+        else { // Otherwise add a DirectoryInfo
+          if (current_type != Type::Data)
+            config._has_mc = true;
+          else
+            config._has_data = true;
+          in_dirs = true;
+          config.dirinfos.push_back({config.inputdir + line, current_type, current_procs});
         }
       }
       return is;

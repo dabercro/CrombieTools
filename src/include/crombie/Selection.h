@@ -9,6 +9,7 @@
 
 #include "crombie/Debug.h"
 #include "crombie/Misc.h"
+#include "crombie/Parse.h"
 
 namespace crombie {
   namespace Selection {
@@ -92,33 +93,29 @@ namespace crombie {
       std::regex expr{"^([^\\s]*)\\s*([^\\s\\']*)\\s+(.+)$"};
       std::smatch matches;
 
-      for (std::string raw; std::getline(is, raw); ) {
-        // Strip out comments
-        std::string line {raw.substr(0, raw.find("! "))};
-        if (line.size()) {
-          if (line[0] == ':') {
-            auto tokens = Misc::tokenize(line);
-            if (tokens.size() == 3)
-              tokens.push_back("'1.0'");
+      for (auto& line : Parse::parse(is)) {
+        if (line[0] == ':') {
+          auto tokens = Misc::tokenize(line);
+          if (tokens.size() == 3)
+            tokens.push_back("'1.0'");
 
-            if (tokens.size() != 4)
-              throw std::runtime_error{"Problem with selection line " + line};
-            // First token is ':'
-            config.selections.emplace(std::make_pair(tokens[1],
-                                                     Selection(parse_cut(tokens[1]), // Cut
-                                                               parse_cut(tokens[2]), // MC weight
-                                                               parse_cut(tokens[3])) // Data weight
-                                                     ));
+          if (tokens.size() != 4)
+            throw std::runtime_error{"Problem with selection line " + line};
+          // First token is ':'
+          config.selections.emplace(std::make_pair(tokens[1],
+                                                   Selection(parse_cut(tokens[1]), // Cut
+                                                             parse_cut(tokens[2]), // MC weight
+                                                             parse_cut(tokens[3])) // Data weight
+                                                   ));
+        }
+        else if (std::regex_search(line, matches, expr)) {
+          if (matches[1].length()) {
+            current_symbol = matches[1];
+            joiner = matches[2];
+            if (joiner.size())
+              joiner = std::string(" ") + joiner + " ";
           }
-          else if (std::regex_search(line, matches, expr)) {
-            if (matches[1].length()) {
-              current_symbol = matches[1];
-              joiner = matches[2];
-              if (joiner.size())
-                joiner = std::string(" ") + joiner + " ";
-            }
-            sym[current_symbol] += (matches[2].length() ? "" : joiner) + parse_cut(matches[3]);
-          }
+          sym[current_symbol] += (matches[2].length() ? "" : joiner) + parse_cut(matches[3]);
         }
       }
       return is;

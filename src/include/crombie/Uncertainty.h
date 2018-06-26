@@ -11,6 +11,7 @@
 
 #include "crombie/Debug.h"
 #include "crombie/Misc.h"
+#include "crombie/Parse.h"
 
 namespace crombie {
   namespace Uncertainty {
@@ -18,11 +19,19 @@ namespace crombie {
     class UncertaintyInfo {
     public:
       /// Change an to match the desired uncertainty 
-      std::string expr (const std::string& key, const std::string& inexpr, const bool isup);
+      std::string expr (const std::string& key, const std::string& inexpr, const bool isup) const;
+
       /// Get all the needed expressions to cover the loaded uncertainties
-      template<typename A, typename... Args> std::vector<std::string> exprs (A arg, Args... args);
-      std::vector<std::string> exprs (const std::vector<std::string>& args);
-      std::vector<std::string> exprs (const std::string& arg);
+      template<typename A, typename... Args> std::vector<std::string> exprs (A arg, Args... args) const;
+      std::vector<std::string> exprs (const std::vector<std::string>& args) const;
+      std::vector<std::string> exprs (const std::string& arg) const;
+
+      /// Get a list of the uncertainty names
+      std::vector<std::string> systematics () const {
+        return Misc::comprehension<std::string>
+          (affected_branches, [] (auto& i) {return i.first;});
+      }
+
     private:
       /// Key is the name of the uncertainty, the first member of the pair is how the branches are named.
       std::map<std::string, std::pair<std::string, std::vector<std::string>>> affected_branches;
@@ -32,43 +41,27 @@ namespace crombie {
 
     std::istream& operator>>(std::istream& is, UncertaintyInfo& config) {
 
-      auto parse_for_shell = [] (const std::string& line) {
-        std::regex expr {"`([^`]+)`"};
-        std::smatch match;
-        std::string output = line;
-        while (std::regex_search(output, match, expr))
-          output = output.replace(match.position(), match.position() + match.length(), Misc::shell(match[1]));
+      for (auto& line : Parse::parse(is)) {
+        // Check for shell input and tokenize line
+        auto tokens = Misc::tokenize(line);
 
-        return output;
-      };
+        // Front token is the name
+        auto eq_pos = tokens.front().find('=');
+        auto sysname = eq_pos == std::string::npos ? tokens.front() : tokens.front().substr(0, eq_pos);
+        auto branchname = eq_pos == std::string::npos ? tokens.front() : tokens.front().substr(eq_pos, tokens.front().size() - eq_pos);
 
-      for (std::string raw; std::getline(is, raw); ) {
-        Debug::Debug(__PRETTY_FUNCTION__, raw);
-        // Strip out comments
-        std::string line {raw.substr(0, raw.find("! "))};
-        if (line.size()) {
-          // Check for shell input and tokenize line
-          auto tokens = Misc::tokenize(parse_for_shell(line));
+        // Create the list of branches
+        std::vector<std::string> branches{};
+        auto iter = tokens.begin();
+        for (++iter; iter != tokens.end(); ++iter)
+          branches.push_back(*iter);
 
-          // Front token is the name
-          auto eq_pos = tokens.front().find('=');
-          auto sysname = eq_pos == std::string::npos ? tokens.front() : tokens.front().substr(0, eq_pos);
-          auto branchname = eq_pos == std::string::npos ? tokens.front() : tokens.front().substr(eq_pos, tokens.front().size() - eq_pos);
-
-          // Create the list of branches
-          std::vector<std::string> branches{};
-          auto iter = tokens.begin();
-          for (++iter; iter != tokens.end(); ++iter)
-            branches.push_back(*iter);
-
-          config.affected_branches.insert({sysname, {branchname, std::move(branches)}});
-
-        }
+        config.affected_branches.insert({sysname, {branchname, std::move(branches)}});
       }
       return is;
     }
 
-    std::string UncertaintyInfo::expr(const std::string& key, const std::string& inexpr, const bool isup) {
+    std::string UncertaintyInfo::expr(const std::string& key, const std::string& inexpr, const bool isup) const {
       auto& info = affected_branches.at(key);
       auto& name = info.first;
       auto& branches = info.second;
@@ -83,7 +76,7 @@ namespace crombie {
       return output;
     }
 
-    std::vector<std::string> UncertaintyInfo::exprs(const std::string& arg) {
+    std::vector<std::string> UncertaintyInfo::exprs(const std::string& arg) const {
       std::vector<std::string> output{};
       for (auto& unc : affected_branches) {
         for (bool isup : {true, false}) {
@@ -97,7 +90,7 @@ namespace crombie {
       return output;
     }
 
-    std::vector<std::string> UncertaintyInfo::exprs(const std::vector<std::string>& args) {
+    std::vector<std::string> UncertaintyInfo::exprs(const std::vector<std::string>& args) const {
       std::vector<std::string> output {};
       for (auto& arg : args) {
         auto single = exprs(arg);
@@ -106,7 +99,7 @@ namespace crombie {
       return output;
     }
 
-    template<typename A, typename... Args> std::vector<std::string> UncertaintyInfo::exprs(A arg, Args... args) {
+    template<typename A, typename... Args> std::vector<std::string> UncertaintyInfo::exprs(A arg, Args... args) const {
       std::vector<std::string> output {};
 
       auto single = exprs(arg);
