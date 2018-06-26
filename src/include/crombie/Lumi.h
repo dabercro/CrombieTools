@@ -51,27 +51,15 @@ namespace crombie {
     }
 
     LumiSelection SingleRunner(const FileConfig::FileInfo& info) {
-      LoadTree::rootlock.lock();
-      TFile input {info.name.data()};
-      LoadTree::rootlock.unlock();
+      LoadTree::Tree loaded{info.name, runname, luminame};
 
-      auto loaded = LoadTree::load_tree(input, runname, luminame);
-
-      auto& run = loaded.second.result(runname);
-      auto& lumi = loaded.second.result(luminame);
+      auto& run = loaded.result(runname);
+      auto& lumi = loaded.result(luminame);
 
       LumiSelection output;
 
-      auto nentries = loaded.first->GetEntries();
-      for (decltype(nentries) ientry = 0; ientry < nentries; ++ientry) {
-        loaded.first->GetEntry(ientry);
-        loaded.second.eval();
+      while (loaded.next())
         output.add(run, lumi);
-      }
-
-      LoadTree::rootlock.lock();
-      input.Close();
-      LoadTree::rootlock.unlock();
 
       return output;
     }

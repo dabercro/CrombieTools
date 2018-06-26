@@ -56,8 +56,42 @@ namespace crombie {
       }
 
     private:
-      TTree* tree {};
+      TTree* tree;
       std::map<std::string, std::pair<double, TTreeFormula*>> forms {};
+    };
+
+    /**
+       Class that holds a loaded tree from a file.
+       The tree name is given in the environment variable `tree`, and defaults to `"events"`.
+     */
+    class Tree {
+    public:
+      /**
+         Constructor of a loaded tree. Note that copy and move constructors won't work because of the TFile member.
+         @param infile is the name of the input file to read
+         @param args is a variable number of arguments that can be of type ``std::string`` or ``std::vector<std::string>``.
+      */
+      template<typename... Args> Tree(const std::string& infile, Args... args);
+
+      /// Loads the next event into memory and evaluates all of the formulas
+      bool next();
+        
+      /// Get a reference to the result for a given formula
+      double& result (const std::string& expr) { return forms.result(expr); }
+
+      /**
+         Get a bare pointer to a TObject inside of this file.
+         @param C is the type of pointer you would like to get
+         @param name is the name of the object, searched for with TFile::Get
+      */
+      template<typename C> C* get(const std::string& name);
+
+    private:
+      TFile file;          ///< The TFile that is being read
+      TTree* tree;         ///< Holds the pointer to the tree
+      long long nentries;  ///< Total number of events in the tree
+      long long ientry{0}; ///< Which entry are we on
+      Formulas forms;      ///< Holds formulas initialized with
     };
 
     namespace {
@@ -85,42 +119,41 @@ namespace crombie {
         add_branches(needed, tree, expr);
         add_branches(needed, tree, args...);
       }
+
+      /// Get the branches needed from the TTree to satisfy args
+      template<typename... Args> std::set<std::string> needed_branches(TTree& tree, Args... args) {
+        std::set<std::string> needed;
+        add_branches(needed, tree, args...);
+        return needed;
+      }
+
     }
 
-    /// Get the branches needed from the TTree to satisfy args
-    template<typename... Args> std::set<std::string> needed_branches(TTree& tree, Args... args) {
-      std::set<std::string> needed;
-      add_branches(needed, tree, args...);
-      return needed;
-    }
-    
-    /// Get a container of formulas
-    template<typename... Args> Formulas get_formula(TTree* tree, Args... exprs) {
-      rootlock.lock();
-      Formulas output {tree};
-      output.add(exprs...);
-      rootlock.unlock();
-      return output;
-    }
-
-
-    /**
-       Returns a pointer to a tree which is owned by the file and a map of TTreeFormula initialized on the tree
-       @param infile is a reference to the input file that is holding the tree.
-                     The name of the tree is extracted from the environment variable ``tree``.
-       @param args is a varialbe number of arguments that can be of type ``std::string`` or ``std::vector<std::string>``.
-    */
-    template<typename... Args> std::pair<TTree*, Formulas> load_tree(TFile& infile, Args... args) {
-      auto treename = Misc::env("tree", "events");
-      auto* tree = static_cast<TTree*>(infile.Get(treename.data()));
-      if (not tree)
-        throw std::runtime_error(std::string("Could not find tree '") + treename + "' in " + infile.GetName());
+    template<typename... Args> Tree::Tree(const std::string& infile, Args... args)
+      : file{infile.data()}, tree{get<TTree>(Misc::env("tree", "events"))}, nentries{tree->GetEntries()}, forms{tree} {
       tree->SetBranchStatus("*", 0);
       auto needed = needed_branches(*tree, args...);
       for (auto need : needed)
         tree->SetBranchStatus(need.data(), 1);
 
-      return std::make_pair(tree, get_formula(tree, args...));
+      rootlock.lock();
+      forms.add(args...);
+      rootlock.unlock();
+    }
+
+    bool Tree::next() {
+      if (ientry == nentries)
+        return false;
+      tree->GetEntry(ientry++);
+      forms.eval();
+      return true;
+    }
+
+    template<typename C> C* Tree::get(const std::string& name) {
+      auto* obj = dynamic_cast<C*>(file.Get(name.data()));
+      if (not obj)
+        throw std::runtime_error(std::string("Could not find object '") + name + "' in " + file.GetName());
+      return obj;
     }
 
   }

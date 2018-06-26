@@ -1,0 +1,15 @@
+test_Data.root {}
+
+MC1   MC1   2
+test_MC1.root   {5.0}
+
+MC2   MC2   3
+test_MC2.root   {3.8}
+
+MC3   MC3   5
+test_MC3.root   {1.0}
+
+SIGNAL
+
+Signal  Signal  2
+test_Signal.root  {0.2}

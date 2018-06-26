@@ -4,9 +4,9 @@ plotter = ${CROMBIEPATH}/bin/crombieplotter
 eventdump = ${CROMBIEPATH}/bin/crombieeventdump
 cut = ${CROMBIEPATH}/bin/crombiecut
 json = ${CROMBIEPATH}/bin/crombiejson
+test = ${CROMBIEPATH}/bin/testing
 
-
-all: $(plotter) $(eventdump) $(cut) $(json)
+all: $(plotter) $(eventdump) $(cut) $(json) $(test)
 
 $(plotter): $(shell crombie depends ${CROMBIEPATH}/src/plotter.cpp)
 	g++ $(LDFLAGS) $(CFLAGS) -I${CROMBIEPATH}/src/include ${CROMBIEPATH}/src/plotter.cpp -o $(plotter)
@@ -19,3 +19,6 @@ $(cut): $(shell crombie depends ${CROMBIEPATH}/src/cut.cpp)
 
 $(json): $(shell crombie depends ${CROMBIEPATH}/src/json.cpp)
 	g++ $(LDFLAGS) $(CFLAGS) -I${CROMBIEPATH}/src/include ${CROMBIEPATH}/src/json.cpp -o $(json)
+
+$(test): $(shell crombie depends ${CROMBIEPATH}/src/test.cpp)
+	g++ $(LDFLAGS) $(CFLAGS) -I${CROMBIEPATH}/src/include ${CROMBIEPATH}/src/test.cpp -o $(test)

@@ -1,0 +1,10 @@
+signal       'exampleDisc1 > 0.5'
+unblinded    'exampleDisc1 > 0.5'
+uncorrected  'exampleDisc1 > 0.5'
+control  &&  'exampleDisc1 < 0.5'
+             'isSignal == 0'
+
+defaultMCWeight * 'allWeights'
+                  'reweight'
+
+: unblinded  defaultMCWeight  '1.0'

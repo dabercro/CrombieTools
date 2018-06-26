@@ -15,7 +15,6 @@
 #include "crombie/LoadTree.h"
 #include "crombie/Hist.h"
 
-#include "TFile.h"
 #include "TH1.h"
 #include "THStack.h"
 #include "TLegend.h"
@@ -106,17 +105,6 @@ namespace crombie {
                   const Selection::SelectionConfig& selections) {
       return std::function<SingleOut(const FileConfig::FileInfo&)> {
         [&plots, &selections] (const FileConfig::FileInfo& info) {
-          LoadTree::rootlock.lock();
-          TFile input {info.name.data()};
-          LoadTree::rootlock.unlock();
-
-          SingleOut output {
-            static_cast<TH1*>(input.Get(selections.mchistname.data()))->GetBinContent(1),
-            {}
-          };
-
-          Debug::Debug(__PRETTY_FUNCTION__, "MC hist contents:", output.first);
-
           // Build the formulas and plots to use
           auto get_expr = (info.type == FileConfig::Type::Data) ?
             [] (const PlotConfig::Plot& iter) { return iter.data_var; } :
@@ -142,9 +130,14 @@ namespace crombie {
             }
           }
 
-          auto loaded = LoadTree::load_tree(input, exprs, weights, cuts, info.cuts, nminus1);
+          LoadTree::Tree loaded{info.name, exprs, weights, cuts, info.cuts, nminus1};
 
-          Debug::Debug(__PRETTY_FUNCTION__, "Loaded tree at", loaded.first);
+          SingleOut output {
+            loaded.get<TH1>(selections.mchistname)->GetBinContent(1),
+            {}
+          };
+
+          Debug::Debug(__PRETTY_FUNCTION__, "MC hist contents:", output.first);
 
           std::list<CutReader> readers {};
 
@@ -157,32 +150,19 @@ namespace crombie {
                 plotvec.push_back(plot.get_hist());
                 auto cut = get_cut(sel);
                 auto expr = get_expr(plot);
-                readers.emplace_back(loaded.second.result(Selection::nminus1(expr, cut)),
-                                     loaded.second.result(expr),
-                                     loaded.second.result(get_weight(sel)),
-                                     loaded.second.result(sub),
+                readers.emplace_back(loaded.result(Selection::nminus1(expr, cut)),
+                                     loaded.result(expr),
+                                     loaded.result(get_weight(sel)),
+                                     loaded.result(sub),
                                      plotvec.back());
               }
             }
           }
 
-          Debug::Debug(__PRETTY_FUNCTION__, "Created readers");
-
-          auto nentries = loaded.first->GetEntries();
-          for (decltype(nentries) ientry = 0; ientry < nentries; ++ientry) {
-            loaded.first->GetEntry(ientry);
-            loaded.second.eval();
+          while (loaded.next()) {
             for (auto& reader : readers)
               reader.eval();
           }
-
-          Debug::Debug(__PRETTY_FUNCTION__, "Evaled readers");
-
-          LoadTree::rootlock.lock();
-          input.Close();
-          LoadTree::rootlock.unlock();
-
-          Debug::Debug(__PRETTY_FUNCTION__, "Closed files");
 
           return output;
         }
@@ -357,7 +337,7 @@ namespace crombie {
         leg.AddEntry(mc.second, mc.first.data(), "f");
 
       // Draw everything
-      TCanvas canv{"canv", "canv", 700, 700};
+      TCanvas canv{"canv", "canv", 600, 700};
       canv.cd();
       // Top pad
       const double bottom = mcvec.size() ? 0.3 : 0.0;
@@ -369,7 +349,7 @@ namespace crombie {
       pad1.cd();
 
       const double nomfont = 0.03;          // Target font size for plot labels
-      const double titleoff = 1.25;         // Title offset
+      const double titleoff = 1.55;         // Title offset
 
       if (mcvec.size()) {
         hs.Draw("hist");
@@ -450,6 +430,7 @@ namespace crombie {
       canv.cd();
       // Labels
       TLatex latex{};
+      constexpr double toplocation = 0.96;
       latex.SetTextSize(0.035);
       if (currentlumi) {
         latex.SetTextAlign(31);
@@ -460,22 +441,26 @@ namespace crombie {
         lumistream >> lumilabel;
         lumilabel += " fb^{-1} (13 TeV)";
 
-        latex.DrawLatex(0.95, 0.96, lumilabel.data());
+        latex.DrawLatex(0.95, toplocation, lumilabel.data());
       }
       latex.SetTextFont(62);
       latex.SetTextAlign(11);
-      latex.DrawLatex(0.12, 0.96, "CMS");
+      latex.DrawLatex(0.12, toplocation, "CMS");
       latex.SetTextSize(0.030);
       latex.SetTextFont(52);
       latex.SetTextAlign(11);
 
-      latex.DrawLatex(0.2, 0.96, "Preliminary");
+      latex.DrawLatex(0.2, toplocation, "Preliminary");
 
       // Save everything
       for (auto& suff : {".pdf", ".png", ".C"}) {
         auto output = filebase + suff;
         canv.SaveAs(output.data());
       }
+
+    }
+
+    void  Plot::dumpdatacard(const std::string& filename) {
 
     }
 

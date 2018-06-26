@@ -40,7 +40,7 @@ namespace crombie {
       std::flush(std::cout);
     }
 
-    std::vector<std::string> tokenize(const std::string str) {
+    std::vector<std::string> tokenize(const std::string& str) {
       std::istringstream ss {str};
       std::vector<std::string> output {
         std::istream_iterator<std::string>{ss},
@@ -50,7 +50,7 @@ namespace crombie {
     }
 
     /// Get the output of a shell command
-    std::string shell(std::string cmd) {
+    std::string shell(const std::string& cmd) {
       std::array<char, 128> buffer;
       std::string output;
       std::shared_ptr<FILE> pipe(popen(cmd.data(), "r"), pclose);
@@ -60,6 +60,7 @@ namespace crombie {
         if (fgets(buffer.data(), 128, pipe.get()))
           output += buffer.data();
       }
+      Debug::Debug(__PRETTY_FUNCTION__, cmd, "---", output);
       return output;
     }
 

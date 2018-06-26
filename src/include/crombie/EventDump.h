@@ -6,8 +6,6 @@
 #include "crombie/FileConfig.h"
 #include "crombie/LoadTree.h"
 
-#include "TFile.h"
-
 namespace crombie {
   namespace EventDump {
 
@@ -26,20 +24,16 @@ namespace crombie {
                           const std::vector<std::string>& exprs) {
       return SingleFunc {
         [&cut, &exprs] (const FileConfig::FileInfo& info) {
-          TFile infile {info.name.data()};
-          auto loaded = LoadTree::load_tree(infile, cut, exprs);
+          LoadTree::Tree loaded{info.name, cut, exprs};
           SingleOut output {};
-          auto nevents = loaded.first->GetEntries();
-          auto& track_cut = loaded.second.result(cut);
+          auto& track_cut = loaded.result(cut);
           std::vector<double*> results;
           for (auto& expr : exprs)
-            results.push_back(&(loaded.second.result(expr)));
+            results.push_back(&(loaded.result(expr)));
 
           std::vector<double> eventout;
 
-          for (decltype(nevents) ievent = 0; ievent < nevents; ++ievent) {
-            loaded.first->GetEntry(ievent);
-            loaded.second.eval();
+          while (loaded.next()) {
             if (track_cut) {
               eventout.clear();
               for (auto* val : results)

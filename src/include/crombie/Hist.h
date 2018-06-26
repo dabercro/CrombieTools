@@ -56,7 +56,6 @@ namespace crombie {
 
     void Hist::fill(double val, double weight) {
       unsigned bin {std::min(nbins + 1, static_cast<unsigned>(std::ceil(((val - min) * nbins/(max - min)))))};
-      Debug::Debug(__PRETTY_FUNCTION__, val, bin, nbins, min, max);
       if (bin >= contents.size() || bin >= sumw2.size()) {
         std::cerr << bin << " " << val << " " << nbins << " " << min << " " << max << std::endl;
         throw std::runtime_error{"bin too big"};

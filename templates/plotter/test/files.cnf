@@ -1,0 +1,15 @@
+Data {}
+
+MC1   MC1   2
+MC1   {5.0}
+
+MC2   MC2   3
+MC2   {3.8}
+
+MC3   MC3   5
+MC3   {1.0}
+
+SIGNAL
+
+Signal  Signal  2
+Signal  {0.2}
