@@ -33,7 +33,7 @@ namespace crombie {
     using SingleOut = std::pair<double, Types::map<std::vector<Hist::Hist>>>;
 
     /// Constructs a function that runs over a single file and produces all the necessary histograms
-    std::function<SingleOut(const FileConfig::FileInfo&)>
+    FileConfig::MapFunc<SingleOut>
       SingleFile (const std::vector<PlotConfig::Plot>& plots,
                   const Selection::SelectionConfig& selections);
 
@@ -67,12 +67,13 @@ namespace crombie {
 
     /// The key is a combination of "selection_plotname"
     using MergeOut = Types::map<Plot>;
+    /// The FileConfig::MergeFunc instantiation for this namespace
+    using MergeFunc = FileConfig::MergeFunc<MergeOut, SingleOut>;
 
     /**
        Gets a function that merges the output of the SingleFile functional
     */
-    std::function<MergeOut(const Types::ToMerge<SingleOut>&)>
-      Merge (const FileConfig::FileConfig& files);
+    MergeFunc Merge (const FileConfig::FileConfig& files);
 
 
     // IMPLEMENTATIONS BELOW HERE //
@@ -101,10 +102,10 @@ namespace crombie {
 
     }
 
-    std::function<SingleOut(const FileConfig::FileInfo&)>
+    FileConfig::MapFunc<SingleOut>
       SingleFile (const std::vector<PlotConfig::Plot>& plots,
                   const Selection::SelectionConfig& selections) {
-      return std::function<SingleOut(const FileConfig::FileInfo&)> {
+      return FileConfig::MapFunc<SingleOut> {
         [&plots, &selections] (const FileConfig::FileInfo& info) {
           // Build the formulas and plots to use
           auto get_expr = (info.type == FileConfig::Type::Data) ?
@@ -170,13 +171,10 @@ namespace crombie {
       };
     }
 
-    std::function<MergeOut(const Types::ToMerge<SingleOut>&)>
-      Merge(const FileConfig::FileConfig& files) {
+    MergeFunc Merge(const FileConfig::FileConfig& files) {
       // Put lumi search here so that the "missing lumi" error is thrown early
       double lumi = files.has_mc() ? std::stod(Misc::env("lumi")) : 0.0;
-      return std::function<MergeOut(const Types::ToMerge<SingleOut>&)> {
-        [&files, lumi] (const Types::ToMerge<SingleOut>& outputs) {
-
+      return MergeFunc { [&files, lumi] (auto& outputs) {
           MergeOut output {};
           for (auto& dir : files.get_dirs()) {
             // Each of plots is a SingleOut

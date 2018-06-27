@@ -11,13 +11,13 @@ namespace crombie {
   namespace EventDump {
 
     using SingleOut = std::vector<std::vector<double>>;
-    using SingleFunc = std::function<SingleOut(const FileConfig::FileInfo&)>;
+    using SingleFunc = FileConfig::MapFunc<SingleOut>;
 
-    std::function<SingleOut(const FileConfig::FileInfo&)>
+    FileConfig::MapFunc<SingleOut>
       SingleFile(const std::string& cut,
                  const Types::strings& exprs);
 
-    SingleOut Merge (const Types::ToMerge<SingleOut>& outputs);
+    SingleOut Merge (const FileConfig::ToMerge<SingleOut>& outputs);
 
     // IMPLEMENTATIONS BELOW HERE //
 
@@ -48,7 +48,7 @@ namespace crombie {
       };
     }
 
-    SingleOut Merge (const Types::ToMerge<SingleOut>& outputs) {
+    SingleOut Merge (const FileConfig::ToMerge<SingleOut>& outputs) {
       SingleOut output {};
       for (auto& outs : outputs) {
         // We don't care about the key

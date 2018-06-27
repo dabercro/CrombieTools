@@ -241,11 +241,30 @@ namespace crombie {
       return a.size < b.size;
     }
 
+    // These types are used for runfiles
+
+    /**
+       The type that is used for the mapping function
+    */
+    template<typename M> using MapFunc = std::function<M(const FileInfo&)>;
+
+    /**
+       The parameter passed to the FileConfig::runfiles reduce function
+       @param M is the type given by a SingleOut mapping function
+    */
+    template<typename M> using ToMerge = Types::map<std::list<M>>;
+
+    /**
+       A functional type that is not necessary, but might be a useful shortcut
+       @param R The output of the reduction formula
+       @param M The output of the map formula
+     */
+    template<typename R, typename M> using MergeFunc = std::function<R(const ToMerge<M>&)>;
 
     template <typename M, typename R>
-      auto FileConfig::runfiles (std::function<M(const FileInfo&)> map, R reduce) {
+      auto FileConfig::runfiles (MapFunc<M> map, R reduce) {
       unsigned nthreads = std::stoi(Misc::env("nthreads", "1"));
-      Types::ToMerge<M> outputs; // This is fed into reduce, in addition to the directory infos
+      ToMerge<M> outputs; // This is fed into reduce, in addition to the directory infos
       std::priority_queue<FileInfo> queue;
       for (const auto& dirinfo : dirinfos) {
         for (const auto& fileinfo : dirinfo.files)
