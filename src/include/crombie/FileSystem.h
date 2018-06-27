@@ -7,6 +7,8 @@
 #include <dirent.h>
 #include <sys/stat.h>
 
+#include "crombie/Types.h"
+
 namespace crombie {
   namespace FileSystem {
 
@@ -57,8 +59,8 @@ namespace crombie {
     }
 
     /// The name of files inside of the directory
-    std::vector<std::string> list(std::string directory) {
-      std::vector<std::string> output;
+    Types::strings list(std::string directory) {
+      Types::strings output;
 
       auto* indir = opendir(directory.data());
       while (auto* dir_ent = readdir(indir)) {

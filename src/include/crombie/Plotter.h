@@ -9,6 +9,7 @@
 #include <mutex>
 #include <functional>
 
+#include "crombie/Types.h"
 #include "crombie/Selection.h"
 #include "crombie/PlotConfig.h"
 #include "crombie/FileConfig.h"
@@ -122,7 +123,7 @@ namespace crombie {
           auto cuts = Misc::comprehension<std::string>(selections.selections, get_cut);
 
           // Cover bases here
-          std::vector<std::string> nminus1;
+          Types::strings nminus1;
           for (auto& expr : exprs) {
             for (auto& cut : cuts) {
               if (cut.find(expr) != std::string::npos)

@@ -6,6 +6,7 @@
 #include <regex>
 #include <exception>
 
+#include "crombie/Types.h"
 #include "crombie/Misc.h"
 
 #include "TFile.h"
@@ -17,8 +18,6 @@ namespace crombie {
   namespace LoadTree {
 
     std::mutex rootlock;
-
-    using strings = std::vector<std::string>;
 
     class Formulas {
     public:
@@ -37,7 +36,7 @@ namespace crombie {
           forms[expr] = std::make_pair(0.0, form);
         }
       }
-      void add (const strings& exprs) {
+      void add (const Types::strings& exprs) {
         for (auto expr : exprs)
           add(expr);
       }
@@ -69,7 +68,7 @@ namespace crombie {
       /**
          Constructor of a loaded tree. Note that copy and move constructors won't work because of the TFile member.
          @param infile is the name of the input file to read
-         @param args is a variable number of arguments that can be of type ``std::string`` or ``std::vector<std::string>``.
+         @param args is a variable number of arguments that can be of type ``std::string`` or ``crombie::Types::strings>``.
       */
       template<typename... Args> Tree(const std::string& infile, Args... args);
 
@@ -110,7 +109,7 @@ namespace crombie {
         }
       }
 
-      void add_branches(std::set<std::string>& needed, TTree& tree, const strings& exprs) {
+      void add_branches(std::set<std::string>& needed, TTree& tree, const Types::strings& exprs) {
         for (auto expr : exprs)
           add_branches(needed, tree, expr);
       }

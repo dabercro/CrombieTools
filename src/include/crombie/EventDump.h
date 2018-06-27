@@ -3,6 +3,7 @@
 
 #include <list>
 
+#include "crombie/Types.h"
 #include "crombie/FileConfig.h"
 #include "crombie/LoadTree.h"
 
@@ -14,14 +15,14 @@ namespace crombie {
 
     std::function<SingleOut(const FileConfig::FileInfo&)>
       SingleFile(const std::string& cut,
-                 const std::vector<std::string>& exprs);
+                 const Types::strings& exprs);
 
     SingleOut Merge (const FileConfig::ToMerge<SingleOut>& outputs);
 
     // IMPLEMENTATIONS BELOW HERE //
 
     SingleFunc SingleFile(const std::string& cut,
-                          const std::vector<std::string>& exprs) {
+                          const Types::strings& exprs) {
       return SingleFunc {
         [&cut, &exprs] (const FileConfig::FileInfo& info) {
           LoadTree::Tree loaded{info.name, cut, exprs};

@@ -13,6 +13,7 @@
 #include <functional>
 
 #include "crombie/Debug.h"
+#include "crombie/Types.h"
 
 #include "TROOT.h"
 
@@ -40,9 +41,9 @@ namespace crombie {
       std::flush(std::cout);
     }
 
-    std::vector<std::string> tokenize(const std::string& str) {
+    Types::strings tokenize(const std::string& str) {
       std::istringstream ss {str};
-      std::vector<std::string> output {
+      Types::strings output {
         std::istream_iterator<std::string>{ss},
         std::istream_iterator<std::string>{}
       };

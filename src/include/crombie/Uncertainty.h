@@ -9,6 +9,7 @@
 #include <algorithm>
 #include <iterator>
 
+#include "crombie/Types.h"
 #include "crombie/Debug.h"
 #include "crombie/Misc.h"
 #include "crombie/Parse.h"
@@ -22,19 +23,19 @@ namespace crombie {
       std::string expr (const std::string& key, const std::string& inexpr, const bool isup) const;
 
       /// Get all the needed expressions to cover the loaded uncertainties
-      template<typename A, typename... Args> std::vector<std::string> exprs (A arg, Args... args) const;
-      std::vector<std::string> exprs (const std::vector<std::string>& args) const;
-      std::vector<std::string> exprs (const std::string& arg) const;
+      template<typename A, typename... Args> Types::strings exprs (A arg, Args... args) const;
+      Types::strings exprs (const Types::strings& args) const;
+      Types::strings exprs (const std::string& arg) const;
 
       /// Get a list of the uncertainty names
-      std::vector<std::string> systematics () const {
+      Types::strings systematics () const {
         return Misc::comprehension<std::string>
           (affected_branches, [] (auto& i) {return i.first;});
       }
 
     private:
       /// Key is the name of the uncertainty, the first member of the pair is how the branches are named.
-      std::map<std::string, std::pair<std::string, std::vector<std::string>>> affected_branches;
+      std::map<std::string, std::pair<std::string, Types::strings>> affected_branches;
       friend std::istream& operator>>(std::istream& is, UncertaintyInfo& config);
     };
 
@@ -51,7 +52,7 @@ namespace crombie {
         auto branchname = eq_pos == std::string::npos ? tokens.front() : tokens.front().substr(eq_pos, tokens.front().size() - eq_pos);
 
         // Create the list of branches
-        std::vector<std::string> branches{};
+        Types::strings branches{};
         auto iter = tokens.begin();
         for (++iter; iter != tokens.end(); ++iter)
           branches.push_back(*iter);
@@ -76,8 +77,8 @@ namespace crombie {
       return output;
     }
 
-    std::vector<std::string> UncertaintyInfo::exprs(const std::string& arg) const {
-      std::vector<std::string> output{};
+    Types::strings UncertaintyInfo::exprs(const std::string& arg) const {
+      Types::strings output{};
       for (auto& unc : affected_branches) {
         for (bool isup : {true, false}) {
           // Just rvalue ref, because we'll either stick it in output, or drop
@@ -90,8 +91,8 @@ namespace crombie {
       return output;
     }
 
-    std::vector<std::string> UncertaintyInfo::exprs(const std::vector<std::string>& args) const {
-      std::vector<std::string> output {};
+    Types::strings UncertaintyInfo::exprs(const Types::strings& args) const {
+      Types::strings output {};
       for (auto& arg : args) {
         auto single = exprs(arg);
         output.insert(output.end(), std::make_move_iterator(single.begin()), std::make_move_iterator(single.end()));
@@ -99,8 +100,8 @@ namespace crombie {
       return output;
     }
 
-    template<typename A, typename... Args> std::vector<std::string> UncertaintyInfo::exprs(A arg, Args... args) const {
-      std::vector<std::string> output {};
+    template<typename A, typename... Args> Types::strings UncertaintyInfo::exprs(A arg, Args... args) const {
+      Types::strings output {};
 
       auto single = exprs(arg);
       output.insert(output.end(), std::make_move_iterator(single.begin()), std::make_move_iterator(single.end()));

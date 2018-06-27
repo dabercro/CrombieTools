@@ -9,6 +9,7 @@
 #include <regex>
 #include <string>
 
+#include "crombie/Types.h"
 #include "crombie/Debug.h"
 #include "crombie/Misc.h"
 
@@ -43,9 +44,9 @@ namespace crombie {
       }
     }
 
-    /// Parse an input stream and return a vector of parsed lines, with empty lines removed
-    std::vector<std::string> parse (std::istream& is) {
-      std::vector<std::string> output{};
+    /// Parse an input stream and return a list of parsed lines, with empty lines removed
+    Types::strings parse (std::istream& is) {
+      Types::strings output{};
       for (std::string raw; std::getline(is, raw); ) {
         auto&& line = parse(raw);
         if (line.size())

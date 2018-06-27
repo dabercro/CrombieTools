@@ -24,6 +24,7 @@
 
 #include <sys/stat.h>
 
+#include "crombie/Types.h"
 #include "crombie/Misc.h"
 #include "crombie/Parse.h"
 #include "crombie/FileSystem.h"
@@ -52,7 +53,7 @@ namespace crombie {
      */
     struct FileInfo {
     FileInfo() {}
-    FileInfo(const Type type, const std::string dirname, const std::string filename, const std::vector<std::string>& cuts = {"1.0"})
+    FileInfo(const Type type, const std::string dirname, const std::string filename, const Types::strings& cuts = {"1.0"})
     : type{type}, dirname{dirname}, name{filename}, size{FileSystem::get_size(name.data())}, cuts{cuts} {
       Debug::Debug(__PRETTY_FUNCTION__, dirname, filename, size, cuts.size());
     }
@@ -60,7 +61,7 @@ namespace crombie {
       std::string dirname {};
       std::string name {};
       unsigned size {};
-      std::vector<std::string> cuts {};
+      Types::strings cuts {};
     };
 
 
@@ -165,7 +166,7 @@ namespace crombie {
 
     void DirectoryInfo::fillfiles() {
       if (FileSystem::exists(name)) {
-        std::vector<std::string> cuts;
+        Types::strings cuts;
         for (auto& proc : processes)
           cuts.push_back(proc.cut);
 
