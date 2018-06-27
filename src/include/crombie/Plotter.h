@@ -177,15 +177,22 @@ namespace crombie {
                     auto uncexpr = [&unc, &sys, isup] (const auto& expr) {
                       return unc.expr(sys, expr, isup);
                     };
-                    add_reader(uncexpr(selection), uncexpr(expr),
-                               uncexpr(weight), uncexpr(sub),
-                               lastplot.get_unc_hist(sys + (isup ? "Up" : "Down")));
+                    auto sysexpr =  uncexpr(expr);
+                    auto sysselection = uncexpr(selection);
+                    auto sysweight = uncexpr(weight);
+                    // Only make a systematics reader if one of these does not agree
+                    if (sysexpr != expr or
+                        sysselection != selection or
+                        sysweight != weight)
+                      add_reader(sysselection, sysexpr, sysweight, sub,
+                                 lastplot.get_unc_hist(sys + (isup ? "Up" : "Down")));
                   }
                 }
               }
             }
           }
 
+          // Loop through the tree and fill the histograms
           while (loaded.next()) {
             for (auto& reader : readers)
               reader.eval();
