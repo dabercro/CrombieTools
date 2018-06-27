@@ -7,7 +7,6 @@
 #include <map>
 #include <list>
 #include <mutex>
-#include <functional>
 
 #include "crombie/Types.h"
 #include "crombie/Selection.h"

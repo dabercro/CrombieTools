@@ -236,7 +236,7 @@ namespace crombie {
       return is;
     }
 
-    // Use this to set priority for files
+    /// Compares FileInfo objects based on the size of the files; used for queue priority
     bool operator<(const FileInfo& a, const FileInfo& b) {
       return a.size < b.size;
     }

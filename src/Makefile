@@ -1,5 +1,5 @@
 LDFLAGS = `root-config --glibs`
-CFLAGS = `root-config --cflags` -std=c++14 -g
+CFLAGS = `root-config --cflags` -std=c++14
 plotter = ${CROMBIEPATH}/bin/crombieplotter
 eventdump = ${CROMBIEPATH}/bin/crombieeventdump
 cut = ${CROMBIEPATH}/bin/crombiecut

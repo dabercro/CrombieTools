@@ -9,8 +9,6 @@
 #include <memory>
 #include <stdexcept>
 #include <array>
-#include <set>
-#include <functional>
 
 #include "crombie/Debug.h"
 #include "crombie/Types.h"
@@ -41,6 +39,8 @@ namespace crombie {
       std::flush(std::cout);
     }
 
+
+    /// Split the contents of a string into multiple strings
     Types::strings tokenize(const std::string& str) {
       std::istringstream ss {str};
       Types::strings output {
