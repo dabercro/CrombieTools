@@ -43,6 +43,7 @@ namespace crombie {
       /// Do the expansion of tokens
       std::string expand(const std::string &line) {
         std::string output = line;
+        // Match the outer <> and the first {} pair you come to
         std::regex expand_op {"<(.*?)\\{([^\\}]*)\\}(.*?)>(?!>)"};
         std::smatch matches;
         while(std::regex_search(output, matches, expand_op)) {

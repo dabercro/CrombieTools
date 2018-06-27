@@ -14,6 +14,7 @@
 #include "crombie/FileConfig.h"
 #include "crombie/LoadTree.h"
 #include "crombie/Hist.h"
+#include "crombie/Uncertainty.h"
 
 #include "TH1.h"
 #include "THStack.h"
@@ -31,10 +32,13 @@ namespace crombie {
     */
     using SingleOut = std::pair<double, Types::map<std::vector<Hist::Hist>>>;
 
+
     /// Constructs a function that runs over a single file and produces all the necessary histograms
     FileConfig::MapFunc<SingleOut>
       SingleFile (const std::vector<PlotConfig::Plot>& plots,
-                  const Selection::SelectionConfig& selections);
+                  const Selection::SelectionConfig& selections,
+                  const Uncertainty::UncertaintyInfo& unc);
+
 
     /// This class has everything needed to draw a plot
     class Plot {
@@ -64,18 +68,19 @@ namespace crombie {
       double currentlumi {0.0};
     };
 
+
     /// The key is a combination of "selection_plotname"
     using MergeOut = Types::map<Plot>;
+
+
     /// The FileConfig::MergeFunc instantiation for this namespace
     using MergeFunc = FileConfig::MergeFunc<MergeOut, SingleOut>;
+
 
     /**
        Gets a function that merges the output of the SingleFile functional
     */
     MergeFunc Merge (const FileConfig::FileConfig& files);
-
-
-    // IMPLEMENTATIONS BELOW HERE //
 
 
     namespace {
@@ -101,11 +106,13 @@ namespace crombie {
 
     }
 
+
     FileConfig::MapFunc<SingleOut>
       SingleFile (const std::vector<PlotConfig::Plot>& plots,
-                  const Selection::SelectionConfig& selections) {
+                  const Selection::SelectionConfig& selections,
+                  const Uncertainty::UncertaintyInfo& unc) {
       return FileConfig::MapFunc<SingleOut> {
-        [&plots, &selections] (const FileConfig::FileInfo& info) {
+        [&plots, &selections, &unc] (const FileConfig::FileInfo& info) {
           // Build the formulas and plots to use
           auto get_expr = (info.type == FileConfig::Type::Data) ?
             [] (const PlotConfig::Plot& iter) { return iter.data_var; } :
@@ -131,7 +138,7 @@ namespace crombie {
             }
           }
 
-          LoadTree::Tree loaded{info.name, exprs, weights, cuts, info.cuts, nminus1};
+          LoadTree::Tree loaded{info.name, unc.exprs(exprs, weights, cuts, info.cuts, nminus1)};
 
           SingleOut output {
             loaded.get<TH1>(selections.mchistname)->GetBinContent(1),
@@ -142,6 +149,15 @@ namespace crombie {
 
           std::list<CutReader> readers {};
 
+          auto add_reader = [&readers, &loaded] (const auto& sel, const auto& expr, const auto& weight,
+                                                 const auto& sub, auto& hist) {
+            readers.emplace_back(loaded.result(sel), loaded.result(expr),
+                                 loaded.result(weight), loaded.result(sub),
+                                 hist);
+          };
+
+          auto systematics = unc.systematics();
+
           for (auto& sel : selections.selections) {
             for (auto& plot : plots) {
               auto& plotvec = output.second[sel.first + "_" + plot.name];
@@ -149,13 +165,23 @@ namespace crombie {
               plotvec.reserve(info.cuts.size());
               for (auto& sub : info.cuts) {
                 plotvec.push_back(plot.get_hist());
+                auto& lastplot = plotvec.back();
                 auto cut = get_cut(sel);
                 auto expr = get_expr(plot);
-                readers.emplace_back(loaded.result(Selection::nminus1(expr, cut)),
-                                     loaded.result(expr),
-                                     loaded.result(get_weight(sel)),
-                                     loaded.result(sub),
-                                     plotvec.back());
+                auto selection = Selection::nminus1(expr, cut);
+                auto weight = get_weight(sel);
+                add_reader(selection, expr, weight, sub, lastplot);
+                // Map all the systematics to the systematics container in the Hist
+                for (auto& sys : systematics) {
+                  for (bool isup : {true, false}) {
+                    auto uncexpr = [&unc, &sys, isup] (const auto& expr) {
+                      return unc.expr(sys, expr, isup);
+                    };
+                    add_reader(uncexpr(selection), uncexpr(expr),
+                               uncexpr(weight), uncexpr(sub),
+                               lastplot.get_unc_hist(sys + (isup ? "Up" : "Down")));
+                  }
+                }
               }
             }
           }
@@ -169,6 +195,7 @@ namespace crombie {
         }
       };
     }
+
 
     MergeFunc Merge(const FileConfig::FileConfig& files) {
       // Put lumi search here so that the "missing lumi" error is thrown early
@@ -193,6 +220,7 @@ namespace crombie {
       };
     }
 
+
     void Plot::add(unsigned isub, const FileConfig::DirectoryInfo& info, const Hist::Hist& hist, double mcweight) {
       // Process name
       auto& proc = info.processes.at(isub);
@@ -206,7 +234,9 @@ namespace crombie {
       }
     }
 
+
     namespace {
+
       // Stylize a histogram based on its type
       TH1* style(TH1* hist, FileConfig::Type type, short style) {
         hist->SetLineColor(kBlack);
@@ -246,6 +276,7 @@ namespace crombie {
 
     }
 
+
     void Plot::scale(double lumi) {
       for (auto& dir : plotstore) {
         for (auto& proc : dir.second) {
@@ -258,6 +289,7 @@ namespace crombie {
       }
       currentlumi = lumi;
     }
+
 
     void Plot::draw(const std::string& filebase) {
 
@@ -458,8 +490,8 @@ namespace crombie {
 
     }
 
-    void  Plot::dumpdatacard(const std::string& filename) {
 
+    void  Plot::dumpdatacard(const std::string& filename) {
     }
 
   }

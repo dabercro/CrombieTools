@@ -10,18 +10,33 @@
 #include <list>
 #include <limits>
 
+#include "crombie/Types.h"
 #include "crombie/Debug.h"
 
 #include "TH1D.h"
 
 namespace crombie {
   namespace Hist {
+
     class Hist {
     public:
-    Hist(const std::string label = "", unsigned nbins = 0, double min = 0, double max = 0)
-      : label{label}, nbins{nbins}, min{min}, max{max}, contents(nbins + 2), sumw2(nbins + 2) {}
+    /**
+       Constructor of custom Hist class
+       @param label Is the label to go on the x-axis
+       @param nbins The number of bins to show in the plot.
+              There is also one overflow and one underflow bin stored internally.
+       @param min The minimum value shown on the x-axis
+       @param max The maximum value on the x-axis
+       @param w2 If true, store the squared sum of weights, otherwise don't bother
+     */
+    Hist(const std::string label = "", unsigned nbins = 0, double min = 0, double max = 0, bool w2 = true)
+      : label{label}, nbins{nbins}, min{min}, max{max}, contents(nbins + 2), sumw2((nbins + 2) * w2) {}
 
+      /// Fills this histogram with some value and weight
       void fill (double val, double weight = 1.0);
+      /// Get a reference to a histogram representing an uncertainty
+      Hist& get_unc_hist(const std::string& sys);
+
       void add  (const Hist& other);
       void scale(const double scale);
 
@@ -47,22 +62,37 @@ namespace crombie {
 
       std::vector<double> contents {};
       std::vector<double> sumw2 {};
+
+      double get_unc (unsigned bin) const; /// Find the full uncertainty from uncs hists and sumw2
+
+      Types::map<Hist> uncs;               /// Store of alternate histograms for uncertainties
     };
+
 
     namespace {
       // Put this here so we don't have to move around with the Hist objects
       std::list<TH1D> histstore;
     }
 
+
     void Hist::fill(double val, double weight) {
       unsigned bin {std::min(nbins + 1, static_cast<unsigned>(std::ceil(((val - min) * nbins/(max - min)))))};
-      if (bin >= contents.size() || bin >= sumw2.size()) {
+      if (bin >= contents.size()) {
         std::cerr << bin << " " << val << " " << nbins << " " << min << " " << max << std::endl;
         throw std::runtime_error{"bin too big"};
       }
       contents[bin] += weight;
-      sumw2[bin] += std::pow(weight, 2);
+      if (sumw2.size())
+        sumw2[bin] += std::pow(weight, 2);
     }
+
+
+    Hist& Hist::get_unc_hist(const std::string& sys) {
+      if (uncs.find(sys) == uncs.end())
+        uncs.insert({sys, {label, nbins, min, max, false}});
+      return uncs[sys];
+    }
+
 
     void Hist::add(const Hist& other) {
       Debug::Debug(__PRETTY_FUNCTION__, "Start add", this, nbins);
@@ -75,18 +105,27 @@ namespace crombie {
         }
         for (unsigned ibin = 0; ibin < contents.size(); ++ibin) {
           contents[ibin] += other.contents[ibin];
-          sumw2[ibin] += other.sumw2[ibin];
+          if (sumw2.size())
+            sumw2[ibin] += other.sumw2[ibin];
         }
+        for (auto& unc : uncs)
+          unc.second.add(other.uncs.at(unc.first));
+        
       }
       Debug::Debug(__PRETTY_FUNCTION__, "End add", this, nbins);
     }
 
+
     void Hist::scale(const double scale) {
       for (unsigned ibin = 0; ibin < contents.size(); ++ibin) {
         contents[ibin] *= scale;
-        sumw2[ibin] *= std::pow(scale, 2);
+        if (sumw2.size())
+          sumw2[ibin] *= std::pow(scale, 2);
       }
+      for (auto& unc : uncs)
+        unc.second.scale(scale);
     }
+
 
     TH1D* Hist::roothist() const {
       static unsigned plot = 0;
@@ -97,11 +136,12 @@ namespace crombie {
       for (unsigned ibin = 0; ibin < contents.size(); ++ibin) {
         Debug::Debug(__PRETTY_FUNCTION__, "Bin:", ibin, "Content:", contents[ibin]);
         hist.SetBinContent(ibin, contents[ibin]);
-        hist.SetBinError(ibin, std::sqrt(sumw2[ibin]));
+        hist.SetBinError(ibin, get_unc(ibin));
       }
       Debug::Debug(__PRETTY_FUNCTION__, "hist with", hist.Integral());
       return &hist;
     }
+
 
     std::pair<unsigned, unsigned> Hist::get_maxbin_outof () const {
       double max = 0;
@@ -115,36 +155,59 @@ namespace crombie {
       return std::make_pair(maxbin, std::max(nbins, 1u));
     }
 
+
     double Hist::max_w_unc () const {
       double output = 0;
       for (unsigned ibin = 1; ibin <= nbins; ++ibin)
-        output = std::max(contents[ibin] + std::sqrt(sumw2[ibin]), output);
+        output = std::max(contents[ibin] + get_unc(ibin), output);
       return output;
     }
+
 
     double Hist::min_w_unc () const {
       double output = std::numeric_limits<double>::max();
       for (unsigned ibin = 1; ibin <= nbins; ++ibin)
-        output = std::min(contents[ibin] - std::sqrt(sumw2[ibin]), output);
+        output = std::min(contents[ibin] - get_unc(ibin), output);
       return std::max(output, 0.0);
     }
+
 
     Hist Hist::ratio(const Hist& other) const {
       Debug::Debug(__PRETTY_FUNCTION__, "ratio", nbins, min, max);
       Hist output{*this};
-      for (unsigned ibin = 0; ibin < contents.size(); ++ibin) {
-        auto bincontent = other.contents.at(ibin);
-        if (bincontent) {
-          output.contents[ibin] /= other.contents.at(ibin);
-          output.sumw2[ibin] /= std::pow(other.contents.at(ibin), 2);
+
+      auto change = [&other] (Hist& tochange) {
+        for (unsigned ibin = 0; ibin < other.contents.size(); ++ibin) {
+          auto bincontent = other.contents.at(ibin);
+          if (bincontent) {
+            tochange.contents[ibin] /= other.contents.at(ibin);
+            if (tochange.sumw2.size())
+              tochange.sumw2[ibin] /= std::pow(other.contents.at(ibin), 2);
+          }
+          else {
+            tochange.contents[ibin] = 1.0;
+            if (tochange.sumw2.size())
+              tochange.sumw2[ibin] = 0;
+          }
         }
-        else {
-          output.contents[ibin] = 1.0;
-          output.sumw2[ibin] = 0;
-        }
-      }
+      };
+
+      change(output);
+      for (auto& unc : output.uncs)
+        change(unc.second);
+
       Debug::Debug(__PRETTY_FUNCTION__, "output", output.nbins, output.min, output.max);
       return output;
+    }
+
+
+    double Hist::get_unc(unsigned bin) const {
+      double w2 = sumw2.size() ? sumw2.at(bin) : 0;
+      for (auto& unc : uncs) {
+        // Divide the uncertainty from each histogram by two to not double count Up and Down
+        w2 += std::pow(contents.at(bin) - unc.second.contents.at(bin), 2)/2;
+      }
+      return std::sqrt(w2);
     }
 
   }

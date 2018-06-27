@@ -22,7 +22,7 @@ namespace crombie {
       /// Change an to match the desired uncertainty 
       std::string expr (const std::string& key, const std::string& inexpr, const bool isup) const;
 
-      /// Get all the needed expressions to cover the loaded uncertainties
+      /// Get all the needed expressions to cover the loaded uncertainties, along with the original expressions
       template<typename A, typename... Args> Types::strings exprs (A arg, Args... args) const;
       Types::strings exprs (const Types::strings& args) const;
       Types::strings exprs (const std::string& arg) const;
@@ -62,6 +62,7 @@ namespace crombie {
       return is;
     }
 
+
     std::string UncertaintyInfo::expr(const std::string& key, const std::string& inexpr, const bool isup) const {
       auto& info = affected_branches.at(key);
       auto& name = info.first;
@@ -77,8 +78,9 @@ namespace crombie {
       return output;
     }
 
+
     Types::strings UncertaintyInfo::exprs(const std::string& arg) const {
-      Types::strings output{};
+      Types::strings output{arg};
       for (auto& unc : affected_branches) {
         for (bool isup : {true, false}) {
           // Just rvalue ref, because we'll either stick it in output, or drop
@@ -91,6 +93,7 @@ namespace crombie {
       return output;
     }
 
+
     Types::strings UncertaintyInfo::exprs(const Types::strings& args) const {
       Types::strings output {};
       for (auto& arg : args) {
@@ -99,6 +102,7 @@ namespace crombie {
       }
       return output;
     }
+
 
     template<typename A, typename... Args> Types::strings UncertaintyInfo::exprs(A arg, Args... args) const {
       Types::strings output {};
@@ -111,7 +115,6 @@ namespace crombie {
 
       return output;
     }
-
 
   }
 }
