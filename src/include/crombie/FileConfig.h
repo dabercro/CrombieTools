@@ -198,7 +198,7 @@ namespace crombie {
 
       for (auto& line : Parse::parse(is)) {
         // Set the default type, if needed
-        const std::map<std::string, Type> default_lines {
+        const Types::map<Type> default_lines {
           {"DATA", Type::Data},
           {"SIGNAL", Type::Signal},
           {"MC", Type::Background}
@@ -241,14 +241,11 @@ namespace crombie {
       return a.size < b.size;
     }
 
-    /// The parameter passed to the FileConfig::runfiles reduce function
-    template<typename M>
-      using ToMerge = std::map<std::string, std::list<M>>;
 
     template <typename M, typename R>
       auto FileConfig::runfiles (std::function<M(const FileInfo&)> map, R reduce) {
       unsigned nthreads = std::stoi(Misc::env("nthreads", "1"));
-      ToMerge<M> outputs; // This is fed into reduce, in addition to the directory infos
+      Types::ToMerge<M> outputs; // This is fed into reduce, in addition to the directory infos
       std::priority_queue<FileInfo> queue;
       for (const auto& dirinfo : dirinfos) {
         for (const auto& fileinfo : dirinfo.files)

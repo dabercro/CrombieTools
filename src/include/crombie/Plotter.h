@@ -30,7 +30,7 @@ namespace crombie {
        The first number is the number of events for cross section normalization.
        The key corresponds to a "selection_plotname", and the different hists are different process cuts.
     */
-    using SingleOut = std::pair<double, std::map<std::string, std::vector<Hist::Hist>>>;
+    using SingleOut = std::pair<double, Types::map<std::vector<Hist::Hist>>>;
 
     /// Constructs a function that runs over a single file and produces all the necessary histograms
     std::function<SingleOut(const FileConfig::FileInfo&)>
@@ -60,18 +60,18 @@ namespace crombie {
         short style;
       };
       /// First key is directory, then label
-      std::map<std::string, std::map<std::string, PlotInfo>> plotstore {};
+      Types::map<Types::map<PlotInfo>> plotstore {};
       /// The last luminosity scaled to. 0 if not set yet.
       double currentlumi {0.0};
     };
 
     /// The key is a combination of "selection_plotname"
-    using MergeOut = std::map<std::string, Plot>;
+    using MergeOut = Types::map<Plot>;
 
     /**
        Gets a function that merges the output of the SingleFile functional
     */
-    std::function<MergeOut(const FileConfig::ToMerge<SingleOut>&)>
+    std::function<MergeOut(const Types::ToMerge<SingleOut>&)>
       Merge (const FileConfig::FileConfig& files);
 
 
@@ -170,12 +170,12 @@ namespace crombie {
       };
     }
 
-    std::function<MergeOut(const FileConfig::ToMerge<SingleOut>&)>
+    std::function<MergeOut(const Types::ToMerge<SingleOut>&)>
       Merge(const FileConfig::FileConfig& files) {
       // Put lumi search here so that the "missing lumi" error is thrown early
       double lumi = files.has_mc() ? std::stod(Misc::env("lumi")) : 0.0;
-      return std::function<MergeOut(const FileConfig::ToMerge<SingleOut>&)> {
-        [&files, lumi] (const FileConfig::ToMerge<SingleOut>& outputs) {
+      return std::function<MergeOut(const Types::ToMerge<SingleOut>&)> {
+        [&files, lumi] (const Types::ToMerge<SingleOut>& outputs) {
 
           MergeOut output {};
           for (auto& dir : files.get_dirs()) {
@@ -265,7 +265,7 @@ namespace crombie {
     void Plot::draw(const std::string& filebase) {
 
       // Legend label is the key of the map
-      std::map<FileConfig::Type, std::map<std::string, TH1D*>> hists;
+      std::map<FileConfig::Type, Types::map<TH1D*>> hists;
       // Use this to store sums for ratios
       Hist::Hist bkg_hist {};
       // Both final style and histogram

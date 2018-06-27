@@ -56,7 +56,7 @@ namespace crombie {
 
     private:
       TTree* tree;
-      std::map<std::string, std::pair<double, TTreeFormula*>> forms {};
+      Types::map<std::pair<double, TTreeFormula*>> forms {}; /// Key to map is the full formula
     };
 
     /**

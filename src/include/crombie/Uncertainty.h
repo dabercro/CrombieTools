@@ -35,7 +35,7 @@ namespace crombie {
 
     private:
       /// Key is the name of the uncertainty, the first member of the pair is how the branches are named.
-      std::map<std::string, std::pair<std::string, Types::strings>> affected_branches;
+      Types::map<std::pair<std::string, Types::strings>> affected_branches;
       friend std::istream& operator>>(std::istream& is, UncertaintyInfo& config);
     };
 

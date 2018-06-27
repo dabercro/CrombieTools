@@ -4,6 +4,7 @@
 #include <sstream>
 #include <fstream>
 
+#include "crombie/Types.h"
 #include "crombie/LoadTree.h"
 #include "crombie/FileConfig.h"
 #include "crombie/EventDump.h"
@@ -18,12 +19,12 @@ int main(int argc, char* argv[]) {
   }
 
   // If variables not given, get a default list
-  const std::vector<std::string> vars = [=] () {
+  const Types::strings vars = [=] () {
     if (argc == 4) {
-      std::vector<std::string> output {"runNumber", "lumiNumber", "eventNumber"};
+      Types::strings output {"runNumber", "lumiNumber", "eventNumber"};
       return output;
     }
-    std::vector<std::string> output;
+    Types::strings output;
     for (int i = 4; i < argc; ++i)
       output.push_back(argv[i]);
     return output;

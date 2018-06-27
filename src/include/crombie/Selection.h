@@ -34,7 +34,7 @@ namespace crombie {
 
       const std::string mchistname;  ///< The mchist to normalize the weight to
 
-      using Selections = std::map<const std::string, const Selection>;
+      using Selections = Types::map<const Selection>;
       Selections selections;
 
       friend std::istream& operator>>(std::istream& is, SelectionConfig& config);
@@ -67,7 +67,7 @@ namespace crombie {
     }
 
     std::istream& operator>>(std::istream& is, SelectionConfig& config) {
-      using symbols = std::map<std::string, std::string>;
+      using symbols = Types::map<std::string>;
       symbols sym;
 
       auto parse_cut = [&sym] (const std::string& cut) {
@@ -87,8 +87,8 @@ namespace crombie {
         }
       };
 
-      symbols::key_type current_symbol;
-      symbols::mapped_type joiner;
+      auto current_symbol = symbols::key_type{};
+      auto joiner = symbols::mapped_type{};
 
       std::regex expr{"^([^\\s]*)\\s*([^\\s\\']*)\\s+(.+)$"};
       std::smatch matches;
@@ -113,7 +113,7 @@ namespace crombie {
             current_symbol = matches[1];
             joiner = matches[2];
             if (joiner.size())
-              joiner = std::string(" ") + joiner + " ";
+              joiner = decltype(joiner)(" ") + joiner + " ";
           }
           sym[current_symbol] += (matches[2].length() ? "" : joiner) + parse_cut(matches[3]);
         }

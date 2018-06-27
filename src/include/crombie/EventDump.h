@@ -17,7 +17,7 @@ namespace crombie {
       SingleFile(const std::string& cut,
                  const Types::strings& exprs);
 
-    SingleOut Merge (const FileConfig::ToMerge<SingleOut>& outputs);
+    SingleOut Merge (const Types::ToMerge<SingleOut>& outputs);
 
     // IMPLEMENTATIONS BELOW HERE //
 
@@ -48,7 +48,7 @@ namespace crombie {
       };
     }
 
-    SingleOut Merge (const FileConfig::ToMerge<SingleOut>& outputs) {
+    SingleOut Merge (const Types::ToMerge<SingleOut>& outputs) {
       SingleOut output {};
       for (auto& outs : outputs) {
         // We don't care about the key
