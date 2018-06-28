@@ -76,6 +76,7 @@ namespace crombie {
     std::istream& operator>>(std::istream& is, UncertaintyInfo& config) {
 
       for (auto& line : Parse::parse(is)) {
+        Debug::Debug(__PRETTY_FUNCTION__, line);
         // Check for shell input and tokenize line
         auto tokens = Misc::tokenize(line);
 
@@ -148,14 +149,11 @@ namespace crombie {
 
     Types::strings UncertaintyInfo::exprs(const std::string& arg) const {
       Types::strings output{arg};
-      for (auto& unc : updown_branches) {
-        for (bool isup : {true, false}) {
-          // Just rvalue ref, because we'll either stick it in output, or drop
-          auto&& check = expr(unc.first, arg, isup ? "Up" : "Down");
-          if (check == arg)
-            break;
-          output.push_back(check);
-        }
+      for (auto& sys : full_systematic_infos()) {
+        auto check = expr(sys.key, arg, sys.suff);
+        if (check == arg)
+          break;
+        output.push_back(std::move(check));
       }
       return output;
     }

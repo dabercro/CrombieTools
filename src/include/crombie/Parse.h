@@ -8,6 +8,7 @@
 #include <istream>
 #include <regex>
 #include <string>
+#include <list>
 #include <vector>
 
 #include "crombie/Types.h"
@@ -88,7 +89,7 @@ namespace crombie {
 
       /// Do the multi-line expansion
       std::vector<std::string> multiline(const std::string& line) {
-        std::vector<std::string> output;
+        std::list<std::string> output;
         output.push_back(line);
         bool need_checked = true;
         // 1st group is the main line to keep
@@ -111,6 +112,7 @@ namespace crombie {
                 std::string newline = matches[1];
                 for(auto pos = newline.find(toreplace); pos != std::string::npos; pos = newline.find(toreplace))
                   newline.replace(pos, 1, sub);
+
                 output.insert(remove, std::move(newline));
               }
 
