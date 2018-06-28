@@ -57,10 +57,11 @@ namespace crombie {
 
       class Envelope {
       public:
+      Envelope(const std::string& branch) : branch{branch} {}
         /// Name of the branch to change in expressions
         std::string branch;
         ///< First element is the bin that is normalized, then new branch name
-        std::vector<std::pair<unsigned, std::string>> otherbranches;
+        std::vector<std::pair<unsigned, std::string>> otherbranches {};
       };
 
       /// Key is the name of the uncertainty, the first member of the pair is which bin to use for total events.
@@ -86,13 +87,17 @@ namespace crombie {
           tokens.front().pop_back();
           auto branchname = tokens.back();
           // Go through rest of tokens
+          auto newenv = config.env_branches.insert({tokens.front(), {branchname}});
           auto iter = tokens.begin();
           for (auto splitpos = (++iter)->find(':');
                iter != tokens.end() and splitpos != std::string::npos;
                splitpos = (++iter)->find(':')) {
 
             unsigned bin = std::stoi(iter->substr(0, splitpos));
+            auto suff = iter->substr(splitpos+1);
+            newenv.first->second.otherbranches.emplace_back(bin, branchname + "_" + suff);
 
+            config.full_infos.emplace_back(newenv.first->first, suff, bin);
           }
           
         }

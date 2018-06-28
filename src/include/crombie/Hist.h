@@ -110,9 +110,15 @@ namespace crombie {
 
 
     Hist& Hist::get_unc_hist(const std::string& sys) {
-      if (uncs.find(sys) == uncs.end())
-        uncs.insert({sys, {label, nbins, min, max, false}});
+      uncs.insert({sys, {label, nbins, min, max, false}});
       return uncs[sys];
+    }
+
+
+    Hist& Hist::get_env_hist(const std::string& sys) {
+      auto& mysys = envs[sys];
+      mysys.push_back({label, nbins, min, max, false});
+      return mysys.back();
     }
 
 
