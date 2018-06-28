@@ -33,9 +33,30 @@ namespace crombie {
         return line.substr(0, line.find("! "));
       }
 
+      /// Substitute environment variables when needed
+      std::string envsubstitution(const std::string& line) {
+        auto startpos = line.find("env{");
+        if (startpos != std::string::npos) {
+          startpos += 4;         // Don't pick out "env{"
+          auto splitpos = line.find(':', startpos);
+          auto endpos = line.find('}', splitpos);
+          if (splitpos != std::string::npos and endpos != std::string::npos) {
+            auto envvar = line.substr(startpos, splitpos - startpos);
+            splitpos += 1;       // Skip over ':'
+            auto envdefault = line.substr(splitpos, endpos - splitpos);
+            Debug::Debug(__PRETTY_FUNCTION__, envvar, envdefault);
+            startpos -= 4;       // Now replace "env{"
+            endpos += 1;         // And '}'
+            auto output = line;
+            return output.replace(startpos, endpos - startpos, Misc::env(envvar, envdefault));
+          }
+        }
+        return line;
+      }
+
       /// Filter lines according to Parser expectations
       std::string parse (const std::string& line) {
-        auto output = do_shell(line);
+        auto output = do_shell(envsubstitution(line));
         Debug::Debug(__PRETTY_FUNCTION__, "IN:", line, "\nOUT:", output);
         return output;
       }

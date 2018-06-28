@@ -27,17 +27,17 @@ namespace crombie {
 
     /**
        This is the output running over a single file.
-       The first number is the number of events for cross section normalization.
        The key corresponds to a "selection_plotname", and the different hists are different process cuts.
     */
-    using SingleOut = std::pair<double, Types::map<std::vector<Hist::Hist>>>;
+    using SingleOut = Types::map<std::vector<Hist::Hist>>;
 
 
     /// Constructs a function that runs over a single file and produces all the necessary histograms
     FileConfig::MapFunc<SingleOut>
       SingleFile (const std::vector<PlotConfig::Plot>& plots,
                   const Selection::SelectionConfig& selections,
-                  const Uncertainty::UncertaintyInfo& unc);
+                  const Uncertainty::UncertaintyInfo& unc,
+                  const bool unblind = true);
 
 
     /// This class has everything needed to draw a plot
@@ -47,16 +47,16 @@ namespace crombie {
       void  draw  (const std::string& filebase);
       void  dumpdatacard (const std::string& filename);
       /// Add a plot to the inner store. Processes are merged together
-      void  add (unsigned isub, const FileConfig::DirectoryInfo& info, const Hist::Hist& hist, double mcweight);
+      void  add (unsigned isub, const FileConfig::DirectoryInfo& info, const Hist::Hist& hist);
       /// Scale the MC plots to match the given luminosity
       void  scale (double lumi);
     private:
       struct PlotInfo {
-      PlotInfo(const Hist::Hist& hist = {}, double mcweight = {}, double xsec = {},
-               std::string entry = {}, FileConfig::Type type = {}, short style = {})
-      : hist{hist}, mcweight{mcweight}, xsec{xsec}, entry{entry}, type{type}, style{style} {}
+      PlotInfo(const Hist::Hist& hist = {}, double xsec = {},
+               std::string entry = {}, FileConfig::Type type = {},
+               short style = {})
+      : hist{hist}, xsec{xsec}, entry{entry}, type{type}, style{style} {}
         Hist::Hist hist;
-        double mcweight;
         double xsec;
         std::string entry;
         FileConfig::Type type;
@@ -110,9 +110,10 @@ namespace crombie {
     FileConfig::MapFunc<SingleOut>
       SingleFile (const std::vector<PlotConfig::Plot>& plots,
                   const Selection::SelectionConfig& selections,
-                  const Uncertainty::UncertaintyInfo& unc) {
+                  const Uncertainty::UncertaintyInfo& unc,
+                  const bool unblind) {
       return FileConfig::MapFunc<SingleOut> {
-        [&plots, &selections, &unc] (const FileConfig::FileInfo& info) {
+        [&plots, &selections, &unc, unblind] (const FileConfig::FileInfo& info) {
           // Build the formulas and plots to use
           auto get_expr = (info.type == FileConfig::Type::Data) ?
             [] (const PlotConfig::Plot& iter) { return iter.data_var; } :
@@ -124,7 +125,13 @@ namespace crombie {
           auto get_weight = (info.type == FileConfig::Type::Data) ?
             [] (const SelIter& iter) { return iter.second.data; } :
             [] (const SelIter& iter) { return iter.second.mc; };
-          auto get_cut =  [] (const SelIter& iter) { return iter.second.cut; };
+
+          auto get_cut = [&info, unblind] (const SelIter& iter) {
+            // If data, not unblinded, and selection calls for blinding, give "0" for the cut
+            return (info.type == FileConfig::Type::Data and
+                    not unblind and iter.second.blinded) ?
+                   std::string{"0"} : iter.second.cut;
+          };
 
           auto weights = Misc::comprehension<std::string>(selections.selections, get_weight);
           auto cuts = Misc::comprehension<std::string>(selections.selections, get_cut);
@@ -140,17 +147,15 @@ namespace crombie {
 
           LoadTree::Tree loaded{info.name, unc.exprs(exprs, weights, cuts, info.cuts, nminus1)};
 
-          SingleOut output {
-            loaded.get<TH1>(selections.mchistname)->GetBinContent(1),
-            {}
-          };
+          auto* weighthist = loaded.get<TH1>(selections.mchistname);
 
-          Debug::Debug(__PRETTY_FUNCTION__, "MC hist contents:", output.first);
+          SingleOut output {};
 
           std::list<CutReader> readers {};
 
-          auto add_reader = [&readers, &loaded] (const auto& sel, const auto& expr, const auto& weight,
-                                                 const auto& sub, auto& hist) {
+          auto add_reader = [&readers, &loaded, weighthist] (const auto& sel, const auto& expr, const auto& weight,
+                                                             const auto& sub, auto& hist, unsigned bin = 1) {
+            hist.set_total(weighthist->GetBinContent(bin));
             readers.emplace_back(loaded.result(sel), loaded.result(expr),
                                  loaded.result(weight), loaded.result(sub),
                                  hist);
@@ -160,7 +165,7 @@ namespace crombie {
 
           for (auto& sel : selections.selections) {
             for (auto& plot : plots) {
-              auto& plotvec = output.second[sel.first + "_" + plot.name];
+              auto& plotvec = output[sel.first + "_" + plot.name];
               // We want to reserve the location for the vector because we want the references to stay valid
               plotvec.reserve(info.cuts.size());
               for (auto& sub : info.cuts) {
@@ -213,10 +218,10 @@ namespace crombie {
             // Each of plots is a SingleOut
             for (auto& plots : outputs.at(dir.name)) {
               // Key of "plot" is key of "output", value of "plot" is list of histograms for processes
-              for (auto& plot : plots.second) {
+              for (auto& plot : plots) {
                 auto& outputplot = output[plot.first];
                 for (unsigned iproc = 0; iproc != plot.second.size(); ++iproc)
-                  outputplot.add(iproc, dir, plot.second.at(iproc), plots.first);
+                  outputplot.add(iproc, dir, plot.second.at(iproc));
               }
             }
           }
@@ -228,16 +233,15 @@ namespace crombie {
     }
 
 
-    void Plot::add(unsigned isub, const FileConfig::DirectoryInfo& info, const Hist::Hist& hist, double mcweight) {
+    void Plot::add(unsigned isub, const FileConfig::DirectoryInfo& info, const Hist::Hist& hist) {
       // Process name
       auto& proc = info.processes.at(isub);
       auto& dir = plotstore[info.name];
       if (dir.find(proc.treename) == dir.end())
-        dir[proc.treename] = PlotInfo(hist, mcweight, info.xs, proc.legendentry, info.type, proc.style);
+        dir[proc.treename] = PlotInfo(hist, info.xs, proc.legendentry, info.type, proc.style);
       else {
         auto& toadd = dir[proc.treename];
         toadd.hist.add(hist);
-        toadd.mcweight += mcweight;
       }
     }
 
@@ -289,8 +293,11 @@ namespace crombie {
         for (auto& proc : dir.second) {
           if (proc.second.type != FileConfig::Type::Data) {
             // Need to do a quick check that scale hasn't been called before
-            double scale = currentlumi ? lumi/currentlumi : proc.second.xsec*lumi/proc.second.mcweight;
-            proc.second.hist.scale(scale);
+            if (currentlumi)
+              proc.second.hist.scale(lumi/currentlumi);
+            else
+              proc.second.hist.scale(lumi, proc.second.xsec);
+            currentlumi = lumi;
           }
         }
       }
@@ -448,7 +455,7 @@ namespace crombie {
 
         bhist->SetFillStyle(3001);
         bhist->SetFillColor(kGray);
-        bhist->SetMinimum(std::min(bkg_ratio.min_w_unc(), data_ratio.min_w_unc()));
+        bhist->SetMinimum(std::min(bkg_ratio.min_w_unc(), data_ratio.min_w_unc(false)));
         bhist->SetMaximum(std::max(bkg_ratio.max_w_unc(), data_ratio.max_w_unc()));
         bhist->Draw("e2");
 

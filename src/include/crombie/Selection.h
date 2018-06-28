@@ -16,14 +16,15 @@ namespace crombie {
 
     class Selection {
     public:
-    Selection(const std::string cut, const std::string mc, const std::string data)
-      : cut{cut}, data{data}, mc{mc} {
+    Selection(const std::string cut, const std::string mc, const std::string data, const bool blinded)
+      : cut{cut}, data{data}, mc{mc}, blinded{blinded} {
         Debug::Debug(__PRETTY_FUNCTION__, "Selection:", cut, "---", mc, "---", data);
       }
 
-      const std::string cut;    ///< The cut that plots must pass
-      const std::string data;   ///< The data weight for plots
-      const std::string mc;     ///< The mc weight for plots
+      const std::string cut;     ///< The cut that plots must pass
+      const std::string data;    ///< The data weight for plots
+      const std::string mc;      ///< The mc weight for plots
+      const bool blinded;        ///< Whether data should be blinded or not
     };
 
 
@@ -71,11 +72,6 @@ namespace crombie {
       symbols sym;
 
       auto parse_cut = [&sym] (const std::string& cut) {
-        if (cut.find("env'") == 0) {
-          auto split_loc = cut.find(':');
-          return Misc::env(cut.substr(4, split_loc - 4),
-                           cut.substr(split_loc + 1, cut.size() - split_loc - 2));
-        }
         if (cut[0] == '\'')
           return cut.substr(1, cut.size() - 2);
         try {
@@ -105,7 +101,8 @@ namespace crombie {
           config.selections.emplace(std::make_pair(tokens[1],
                                                    Selection(parse_cut(tokens[1]), // Cut
                                                              parse_cut(tokens[2]), // MC weight
-                                                             parse_cut(tokens[3])) // Data weight
+                                                             parse_cut(tokens[3]), // Data weight
+                                                             line[1] == 'b')       // Should this be blind
                                                    ));
         }
         else if (std::regex_search(line, matches, expr)) {

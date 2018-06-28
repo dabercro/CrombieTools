@@ -1,3 +1,4 @@
+#include <cstdlib>
 #include <iostream>
 #include <fstream>
 
@@ -24,19 +25,22 @@ int main(int argc, char* argv[]) {
   // Read the configuration files
   auto files = FileConfig::read(argv[1], argv[3]);
   auto plots = PlotConfig::read(argv[4]);
-  auto regions = Selection::read(Misc::env("normhist", "htotal"),
+  auto regions = Selection::read(Misc::env("normhist", "hSumW"),
                                  argv[5]);
 
   Uncertainty::UncertaintyInfo unc {};
   if (argc > 6)
     std::ifstream{argv[6]} >> unc;
 
+  // Determine whether this should be unblinded or not
+  const bool unblind = getenv("unblind");
+
   // Run threads
 
   // Output is a map of vectors of Plot objects
   // The map key is the selection, vector is parallel to the ``plots`` variable above
   // Plot objects can make each plot
-  auto outputs = files.runfiles(Plotter::SingleFile(plots, regions, unc),
+  auto outputs = files.runfiles(Plotter::SingleFile(plots, regions, unc, unblind),
                                 Plotter::Merge(files));
 
   // Write plots

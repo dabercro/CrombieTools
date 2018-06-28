@@ -28,9 +28,14 @@ namespace crombie {
        @param min The minimum value shown on the x-axis
        @param max The maximum value on the x-axis
        @param w2 If true, store the squared sum of weights, otherwise don't bother
+       @param total_events Is the total weight of events in the file(s) filling this histogram
      */
-    Hist(const std::string label = "", unsigned nbins = 0, double min = 0, double max = 0, bool w2 = true)
-      : label{label}, nbins{nbins}, min{min}, max{max}, contents(nbins + 2), sumw2((nbins + 2) * w2) {}
+    Hist(const std::string label = "",
+         unsigned nbins = 0, double min = 0, double max = 0,
+         bool w2 = true, double total_events = 0)
+      : label{label}, nbins{nbins}, min{min}, max{max},
+        contents(nbins + 2), sumw2((nbins + 2) * w2),
+        total{total_events} {}
 
       /// Fills this histogram with some value and weight
       void fill (double val, double weight = 1.0);
@@ -38,7 +43,14 @@ namespace crombie {
       Hist& get_unc_hist(const std::string& sys);
 
       void add  (const Hist& other);
+      /// Scale this histogram by a direct scale factor
       void scale(const double scale);
+      /**
+         Scale this histogram to a luminosity and cross section. 
+         The result will be invalid if this scale function is called
+         after any other call to Hist::scale.
+      */
+      void scale(const double lumi, const double xs);
 
       /// Returns a Hist that is a ratio between this and another Hist
       Hist ratio(const Hist& other) const;
@@ -52,7 +64,10 @@ namespace crombie {
       /// Get the maximum value including uncertainties (for plotting)
       double max_w_unc () const;
       /// Get the minimum value including uncertainties, but not less than 0.0 (for plotting)
-      double min_w_unc () const;
+      double min_w_unc (const bool includezeros = true) const;
+
+      /// Sets the value of the total number of events, throws exception if total is already set.
+      void set_total (double newtotal);
 
     private:
       std::string label {};
@@ -63,9 +78,11 @@ namespace crombie {
       std::vector<double> contents {};
       std::vector<double> sumw2 {};
 
-      double get_unc (unsigned bin) const; /// Find the full uncertainty from uncs hists and sumw2
+      double total {};                     ///< Stores the total weights of files filling this
 
-      Types::map<Hist> uncs;               /// Store of alternate histograms for uncertainties
+      double get_unc (unsigned bin) const; ///< Find the full uncertainty from uncs hists and sumw2
+      void doscale(const double scale);    ///< Scales histogram without scaling uncertainties
+      Types::map<Hist> uncs;               ///< Store of alternate histograms for uncertainties
     };
 
 
@@ -99,6 +116,7 @@ namespace crombie {
       if (nbins == 0)
         *this = other;
       else {
+        total += other.total;
         if (other.nbins != nbins) {
           std::cerr << "Num bins other: " << other.nbins << " me: " << nbins << std::endl;
           throw std::runtime_error{"Hists don't have same number of bins"};
@@ -116,14 +134,26 @@ namespace crombie {
     }
 
 
-    void Hist::scale(const double scale) {
+    void Hist::doscale(const double scale) {
       for (unsigned ibin = 0; ibin < contents.size(); ++ibin) {
         contents[ibin] *= scale;
         if (sumw2.size())
           sumw2[ibin] *= std::pow(scale, 2);
       }
+    }
+
+
+    void Hist::scale(const double scale) {
+      doscale(scale);
       for (auto& unc : uncs)
         unc.second.scale(scale);
+    }
+
+
+    void Hist::scale(const double lumi, const double xs) {
+      doscale(lumi * xs / total);
+      for (auto& unc : uncs)
+        unc.second.scale(lumi, xs);
     }
 
 
@@ -164,10 +194,12 @@ namespace crombie {
     }
 
 
-    double Hist::min_w_unc () const {
+    double Hist::min_w_unc (const bool includezeros) const {
       double output = std::numeric_limits<double>::max();
-      for (unsigned ibin = 1; ibin <= nbins; ++ibin)
-        output = std::min(contents[ibin] - get_unc(ibin), output);
+      for (unsigned ibin = 1; ibin <= nbins; ++ibin) {
+        if (contents[ibin] or includezeros)
+          output = std::min(contents[ibin] - get_unc(ibin), output);
+      }
       return std::max(output, 0.0);
     }
 
@@ -198,6 +230,13 @@ namespace crombie {
 
       Debug::Debug(__PRETTY_FUNCTION__, "output", output.nbins, output.min, output.max);
       return output;
+    }
+
+
+    void Hist::set_total (double newtotal) {
+      if (total)
+        throw std::logic_error{"Attempted to set total value for histogram twice. Probably a bug."};
+      total = newtotal;
     }
 
 
