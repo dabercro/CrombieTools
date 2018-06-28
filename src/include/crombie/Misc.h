@@ -9,6 +9,7 @@
 #include <memory>
 #include <stdexcept>
 #include <array>
+#include <vector>
 
 #include "crombie/Debug.h"
 #include "crombie/Types.h"

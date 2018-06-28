@@ -41,6 +41,8 @@ namespace crombie {
       void fill (double val, double weight = 1.0);
       /// Get a reference to a histogram representing an uncertainty
       Hist& get_unc_hist(const std::string& sys);
+      /// Create and return a histogram inside an envelope
+      Hist& get_env_hist(const std::string& sys);
 
       void add  (const Hist& other);
       /// Scale this histogram by a direct scale factor
@@ -83,6 +85,9 @@ namespace crombie {
       double get_unc (unsigned bin) const; ///< Find the full uncertainty from uncs hists and sumw2
       void doscale(const double scale);    ///< Scales histogram without scaling uncertainties
       Types::map<Hist> uncs;               ///< Store of alternate histograms for uncertainties
+
+      using Envelope = std::list<Hist>;
+      Types::map<Envelope> envs;           ///< Envelope information
     };
 
 
@@ -135,6 +140,7 @@ namespace crombie {
 
 
     void Hist::doscale(const double scale) {
+      Debug::Debug(__PRETTY_FUNCTION__, "Scaling", scale);
       for (unsigned ibin = 0; ibin < contents.size(); ++ibin) {
         contents[ibin] *= scale;
         if (sumw2.size())
@@ -144,6 +150,7 @@ namespace crombie {
 
 
     void Hist::scale(const double scale) {
+      Debug::Debug(__PRETTY_FUNCTION__, "Scaling", scale);
       doscale(scale);
       for (auto& unc : uncs)
         unc.second.scale(scale);
@@ -151,6 +158,7 @@ namespace crombie {
 
 
     void Hist::scale(const double lumi, const double xs) {
+      Debug::Debug(__PRETTY_FUNCTION__, "Scaling", lumi, xs, total);
       doscale(lumi * xs / total);
       for (auto& unc : uncs)
         unc.second.scale(lumi, xs);
@@ -164,7 +172,6 @@ namespace crombie {
       histstore.emplace_back(std::to_string(plot++).data(), title.data(), static_cast<int>(nbins), min, max);
       auto& hist = histstore.back();
       for (unsigned ibin = 0; ibin < contents.size(); ++ibin) {
-        Debug::Debug(__PRETTY_FUNCTION__, "Bin:", ibin, "Content:", contents[ibin]);
         hist.SetBinContent(ibin, contents[ibin]);
         hist.SetBinError(ibin, get_unc(ibin));
       }
@@ -236,6 +243,7 @@ namespace crombie {
     void Hist::set_total (double newtotal) {
       if (total)
         throw std::logic_error{"Attempted to set total value for histogram twice. Probably a bug."};
+      Debug::Debug(__PRETTY_FUNCTION__, "Setting hist", this, "total to", newtotal);
       total = newtotal;
     }
 

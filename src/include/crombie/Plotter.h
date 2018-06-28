@@ -161,7 +161,7 @@ namespace crombie {
                                  hist);
           };
 
-          auto systematics = unc.systematics();
+          const auto& systematics = unc.full_systematic_infos();
 
           for (auto& sel : selections.selections) {
             for (auto& plot : plots) {
@@ -178,20 +178,21 @@ namespace crombie {
                 add_reader(selection, expr, weight, sub, lastplot);
                 // Map all the systematics to the systematics container in the Hist
                 for (auto& sys : systematics) {
-                  for (bool isup : {true, false}) {
-                    auto uncexpr = [&unc, &sys, isup] (const auto& expr) {
-                      return unc.expr(sys, expr, isup);
-                    };
-                    auto sysexpr =  uncexpr(expr);
-                    auto sysselection = uncexpr(selection);
-                    auto sysweight = uncexpr(weight);
-                    // Only make a systematics reader if one of these does not agree
-                    if (sysexpr != expr or
-                        sysselection != selection or
-                        sysweight != weight)
-                      add_reader(sysselection, sysexpr, sysweight, sub,
-                                 lastplot.get_unc_hist(sys + (isup ? "Up" : "Down")));
-                  }
+                  auto uncexpr = [&unc, &sys] (const auto& expr) {
+                    return unc.expr(sys.key, expr, sys.suff);
+                  };
+                  auto sysexpr =  uncexpr(expr);
+                  auto sysselection = uncexpr(selection);
+                  auto sysweight = uncexpr(weight);
+                  // Only make a systematics reader if one of these does not agree
+                  if (sysexpr != expr or
+                      sysselection != selection or
+                      sysweight != weight)
+                    add_reader(sysselection, sysexpr, sysweight, sub,
+                               (sys.suff == "Up" or sys.suff == "Down" ?
+                                lastplot.get_unc_hist(sys.key + sys.suff) :
+                                lastplot.get_env_hist(sys.key)),
+                               sys.bin);
                 }
               }
             }
@@ -297,7 +298,6 @@ namespace crombie {
               proc.second.hist.scale(lumi/currentlumi);
             else
               proc.second.hist.scale(lumi, proc.second.xsec);
-            currentlumi = lumi;
           }
         }
       }

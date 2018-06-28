@@ -8,6 +8,7 @@
 #include <istream>
 #include <regex>
 #include <string>
+#include <vector>
 
 #include "crombie/Types.h"
 #include "crombie/Debug.h"
@@ -86,8 +87,8 @@ namespace crombie {
       }
 
       /// Do the multi-line expansion
-      Types::strings multiline(const std::string& line) {
-        std::list<std::string> output;
+      std::vector<std::string> multiline(const std::string& line) {
+        std::vector<std::string> output;
         output.push_back(line);
         bool need_checked = true;
         // 1st group is the main line to keep
