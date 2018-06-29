@@ -88,9 +88,7 @@ namespace crombie {
       class CutReader {
       public:
       CutReader(double& cut, double& expr, double& weight, double& sub, Hist::Hist& hist)
-        : cut{cut}, expr{expr}, weight{weight}, sub{sub}, hist{hist} {
-          Debug::Debug(__PRETTY_FUNCTION__, "Reading for hist at", &hist);
-        }
+        : cut{cut}, expr{expr}, weight{weight}, sub{sub}, hist{hist} {}
 
         void eval () {
           if (cut and sub)

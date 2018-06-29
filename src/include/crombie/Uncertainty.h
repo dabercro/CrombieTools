@@ -23,7 +23,9 @@ namespace crombie {
     class SysInfo {
     public:
     SysInfo(const std::string& key, const std::string& suff, const unsigned bin = 1)
-      : key{key}, suff{suff}, bin{bin} {}
+      : key{key}, suff{suff}, bin{bin} {
+        Debug::Debug(__PRETTY_FUNCTION__, key, suff, bin);
+      }
       const std::string key {};
       const std::string suff {};
       const unsigned bin {};
@@ -150,9 +152,10 @@ namespace crombie {
     Types::strings UncertaintyInfo::exprs(const std::string& arg) const {
       Types::strings output{arg};
       for (auto& sys : full_systematic_infos()) {
+        Debug::Debug(__PRETTY_FUNCTION__, sys.bin, sys.key, sys.suff);
         auto check = expr(sys.key, arg, sys.suff);
         if (check == arg)
-          break;
+          continue;
         output.push_back(std::move(check));
       }
       return output;
