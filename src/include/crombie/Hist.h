@@ -9,6 +9,7 @@
 #include <vector>
 #include <list>
 #include <limits>
+#include <tuple>
 
 #include "crombie/Types.h"
 #include "crombie/Debug.h"
@@ -86,8 +87,9 @@ namespace crombie {
       void doscale(const double scale);    ///< Scales histogram without scaling uncertainties
       Types::map<Hist> uncs;               ///< Store of alternate histograms for uncertainties
 
-      using Envelope = std::list<Hist>;
-      Types::map<Envelope> envs;           ///< Envelope information
+      using Envelope = std::tuple<Hist, Hist, std::list<Hist>>;
+      mutable Types::map<Envelope> envs;   ///< Envelope information
+      void set_env_min_max () const;       ///< Sets the min and max histograms for each envelope
     };
 
 
@@ -116,7 +118,7 @@ namespace crombie {
 
 
     Hist& Hist::get_env_hist(const std::string& sys) {
-      auto& mysys = envs[sys];
+      auto& mysys = std::get<2>(envs[sys]);
       mysys.push_back({label, nbins, min, max, false});
       return mysys.back();
     }
@@ -256,11 +258,32 @@ namespace crombie {
 
     double Hist::get_unc(unsigned bin) const {
       double w2 = sumw2.size() ? sumw2.at(bin) : 0;
-      for (auto& unc : uncs) {
-        // Divide the uncertainty from each histogram by two to not double count Up and Down
+      // Divide the uncertainty from each histogram by two to not double count Up and Down
+      for (auto& unc : uncs)
         w2 += std::pow(contents.at(bin) - unc.second.contents.at(bin), 2)/2;
+
+      for (auto& env : envs) {
+        if (not std::get<0>(env.second).nbins)
+          set_env_min_max();
+        w2 += std::pow(contents.at(bin) - std::get<0>(env.second).contents.at(bin), 2)/2;
+        w2 += std::pow(contents.at(bin) - std::get<1>(env.second).contents.at(bin), 2)/2;
       }
+
       return std::sqrt(w2);
+    }
+
+    void Hist::set_env_min_max() const {
+      for (auto& env : envs) {
+        auto& min = std::get<0>(env.second) = *this;
+        auto& max = std::get<1>(env.second) = *this;
+        // Loop through all the histograms in the envelope
+        for (auto& part : std::get<2>(env.second)) {
+          for (unsigned ibin = 0; ibin != contents.size(); ++ibin) {
+            min.contents[ibin] = std::min(min.contents[ibin], part.contents[ibin]);
+            max.contents[ibin] = std::max(max.contents[ibin], part.contents[ibin]);
+          }
+        }
+      }
     }
 
   }
