@@ -50,16 +50,16 @@ namespace crombie {
 
       void add  (const Hist& other);
       /// Scale this histogram by a direct scale factor
-      void scale(const double scale);
+      void scale (const double scale);
       /**
          Scale this histogram to a luminosity and cross section. 
          The result will be invalid if this scale function is called
          after any other call to Hist::scale.
       */
-      void scale(const double lumi, const double xs);
+      void scale (const double lumi, const double xs);
 
       /// Returns a Hist that is a ratio between this and another Hist
-      Hist ratio(const Hist& other) const;
+      Hist ratio (const Hist& other) const;
 
       /// Returns a pointer to a histogram that is owned by global list. Not thread-safe.
       TH1D* roothist () const;
@@ -84,16 +84,20 @@ namespace crombie {
       std::vector<double> contents {};
       std::vector<double> sumw2 {};
 
-      double total {};                     ///< Stores the total weights of files filling this
+      double total {};                                           ///< Stores the total weights of files filling this
 
-      double get_unc (unsigned bin) const; ///< Find the full uncertainty from uncs hists and sumw2
-      void doscale(const double scale);    ///< Scales histogram without scaling uncertainties
-      Types::map<Hist> uncs;               ///< Store of alternate histograms for uncertainties
+      double get_unc (unsigned bin) const;                       ///< Find the full uncertainty from uncs hists and sumw2
+      void doscale (const double scale);                         ///< Scales histogram without scaling uncertainties
+      void doscale (const double lumi, const double xs);         ///< Scales histogram without scaling uncertainties
+      Types::map<Hist> uncs;                                     ///< Store of alternate histograms for uncertainties
+
+      /// Scales histogram with the uncertainties. implements public scale functions
+      template<typename Args...> void allscales (Args... args);
 
       using Envelope = std::tuple<Hist, Hist, std::list<Hist>>;
-      mutable Types::map<Envelope> envs;   ///< Envelope information
-      mutable bool envs_set{false};        ///< Determine whether envelope minmax has been set or not
-      void set_env_min_max () const;       ///< Sets the min and max histograms for each envelope
+      mutable Types::map<Envelope> envs;                         ///< Envelope information
+      mutable bool envs_set{false};                              ///< Determine whether envelope minmax has been set or not
+      void set_env_min_max () const;                             ///< Sets the min and max histograms for each envelope
     };
 
 
@@ -180,19 +184,30 @@ namespace crombie {
     }
 
 
-    void Hist::scale(const double scale) {
-      Debug::Debug(__PRETTY_FUNCTION__, "Scaling", scale);
-      doscale(scale);
+    void Hist::doscale(const double lumi, const double xs) {
+      Debug::Debug(__PRETTY_FUNCTION__, "Scaling", lumi, xs);
+      doscale(lumi * xs / total);
+    }
+
+
+    template<typename Args...> void allscales (Args... args) {
+      doscale(args...);
       for (auto& unc : uncs)
-        unc.second.scale(scale);
+        unc.second.allscales(args...);
+      for (auto& env : envs) {
+        for (auto& hist : std::get<2>(env.second))
+          hist.scale(args...);
+      }
+    }
+
+
+    void Hist::scale(const double scale) {
+      allscales(scale);
     }
 
 
     void Hist::scale(const double lumi, const double xs) {
-      Debug::Debug(__PRETTY_FUNCTION__, "Scaling", lumi, xs, total);
-      doscale(lumi * xs / total);
-      for (auto& unc : uncs)
-        unc.second.scale(lumi, xs);
+      allscales(lumi, xs);
     }
 
 
