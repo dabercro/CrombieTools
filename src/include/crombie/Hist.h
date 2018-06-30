@@ -91,8 +91,8 @@ namespace crombie {
       void doscale (const double lumi, const double xs);         ///< Scales histogram without scaling uncertainties
       Types::map<Hist> uncs;                                     ///< Store of alternate histograms for uncertainties
 
-      /// Scales histogram with the uncertainties. implements public scale functions
-      template<typename Args...> void allscales (Args... args);
+      /// Apply some function to this histogram and all its uncertainties
+      template<typename F> void doall (const F& func);
 
       using Envelope = std::tuple<Hist, Hist, std::list<Hist>>;
       mutable Types::map<Envelope> envs;                         ///< Envelope information
@@ -190,24 +190,24 @@ namespace crombie {
     }
 
 
-    template<typename Args...> void allscales (Args... args) {
-      doscale(args...);
+    template<typename F> void Hist::doall(const F& func) {
+      func(*this);
       for (auto& unc : uncs)
-        unc.second.allscales(args...);
+        func(unc.second);
       for (auto& env : envs) {
         for (auto& hist : std::get<2>(env.second))
-          hist.scale(args...);
+          func(hist);
       }
     }
 
 
     void Hist::scale(const double scale) {
-      allscales(scale);
+      doall([scale] (auto& hist) { hist.doscale(scale); });
     }
 
 
     void Hist::scale(const double lumi, const double xs) {
-      allscales(lumi, xs);
+      doall([lumi, xs] (auto& hist) { hist.doscale(lumi, xs); });
     }
 
 
@@ -277,9 +277,7 @@ namespace crombie {
         }
       };
 
-      change(output);
-      for (auto& unc : output.uncs)
-        change(unc.second);
+      output.doall(change);
 
       Debug::Debug(__PRETTY_FUNCTION__, "output", output.nbins, output.min, output.max);
       return output;
