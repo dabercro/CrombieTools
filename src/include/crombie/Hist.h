@@ -197,6 +197,10 @@ namespace crombie {
       for (auto& env : envs) {
         for (auto& hist : std::get<2>(env.second))
           func(hist);
+        if (envs_set) {
+          func(std::get<0>(env.second));
+          func(std::get<1>(env.second));
+        }
       }
     }
 
