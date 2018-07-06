@@ -24,9 +24,9 @@ int main(int argc, char* argv[]) {
   auto output = fileconfig.runfiles(Cutflow::SingleFile(cuts),
                                     Cutflow::Merge);
 
-  for (unsigned i = 0; i < cuts.size(); ++i)
-    std::cout << std::setw(30) << cuts[i]
-              << std::setw(30) << output[i]
+  for (unsigned icut = 0; icut < cuts.size(); ++icut)
+    std::cout << std::setw(30) << cuts[icut]
+              << std::setw(30) << output[icut]
               << std::endl;
 
   return 0;

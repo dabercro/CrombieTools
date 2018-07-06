@@ -119,13 +119,33 @@ namespace crombie {
       void fillfiles();
     };
 
+    // These types are used for runfiles
+
+    /**
+       The type that is used for the mapping function
+    */
+    template<typename M> using MapFunc = std::function<M(const FileInfo&)>;
+
+    /**
+       The parameter passed to the FileConfig::runfiles reduce function
+       @param M is the type given by a SingleOut mapping function
+    */
+    template<typename M> using ToMerge = Types::map<std::list<M>>;
+
+    /**
+       A functional type that is not necessary, but might be a useful shortcut
+       @param R The output of the reduction formula
+       @param M The output of the map formula
+     */
+    template<typename R, typename M> using MergeFunc = std::function<R(const ToMerge<M>&)>;
+
 
     class FileConfig {
     public:
       FileConfig(const std::string& inputdir, const bool onedir = true);
 
       template <typename M, typename R>
-        auto runfiles (std::function<M(const FileInfo&)> map, R reduce);
+        auto runfiles (MapFunc<M> map, R reduce);
 
       /// Read the directory infos
       const std::vector<DirectoryInfo>& get_dirs () const { return dirinfos; }
@@ -250,27 +270,6 @@ namespace crombie {
     bool operator<(const FileInfo& a, const FileInfo& b) {
       return a.size < b.size;
     }
-
-
-    // These types are used for runfiles
-
-    /**
-       The type that is used for the mapping function
-    */
-    template<typename M> using MapFunc = std::function<M(const FileInfo&)>;
-
-    /**
-       The parameter passed to the FileConfig::runfiles reduce function
-       @param M is the type given by a SingleOut mapping function
-    */
-    template<typename M> using ToMerge = Types::map<std::list<M>>;
-
-    /**
-       A functional type that is not necessary, but might be a useful shortcut
-       @param R The output of the reduction formula
-       @param M The output of the map formula
-     */
-    template<typename R, typename M> using MergeFunc = std::function<R(const ToMerge<M>&)>;
 
 
     template <typename M, typename R>

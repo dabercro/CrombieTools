@@ -33,10 +33,10 @@ namespace crombie {
             readers.push_back({loaded.result(cut)});
 
           while (loaded.next()) {
-            for (unsigned i = 0; i < readers.size(); ++i) {
-              if (not readers[i].res)
+            for (unsigned icut = 0; icut < readers.size(); ++icut) {
+              if (not readers[icut].res)
                 break;
-              ++output[i];
+              ++output[icut];
             }
           }
 
@@ -53,8 +53,8 @@ namespace crombie {
         // Add the LumiSelections in the vector
         for (auto& vec : info.second) {
           if (output.size()) {
-            for (unsigned i = 0; i < output.size(); ++i)
-              output[i] += vec[i];
+            for (unsigned icut = 0; icut < output.size(); ++icut)
+              output[icut] += vec[icut];
           }
           else
             output = vec;
