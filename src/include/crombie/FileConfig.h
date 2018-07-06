@@ -299,7 +299,7 @@ namespace crombie {
                   info = queue.top();
                   auto done = total - queue.size();
                   if (done % divisor == 0) {
-                    Misc::draw_progress(done/divisor, progress);
+                    Misc::draw_progress(std::min(done/divisor, progress - 1), progress);
                   }
                   queue.pop();
                 }

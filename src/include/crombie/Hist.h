@@ -320,13 +320,15 @@ namespace crombie {
       // First time we do this
       envs_set = true;
       for (auto& env : envs) {
-        auto& min = std::get<0>(env.second) = *this;
-        auto& max = std::get<1>(env.second) = *this;
+        // Only want a histogram without uncertianties
+        auto& hmin = std::get<0>(env.second) = Hist(label, nbins, min, max, false);
+        hmin.contents = contents;   // Start with current contents
+        auto& hmax = std::get<1>(env.second) = hmin;
         // Loop through all the histograms in the envelope
         for (auto& part : std::get<2>(env.second)) {
           for (unsigned ibin = 0; ibin != contents.size(); ++ibin) {
-            min.contents[ibin] = std::min(min.contents[ibin], part.contents[ibin]);
-            max.contents[ibin] = std::max(max.contents[ibin], part.contents[ibin]);
+            hmin.contents[ibin] = std::min(hmin.contents[ibin], part.contents[ibin]);
+            hmax.contents[ibin] = std::max(hmax.contents[ibin], part.contents[ibin]);
           }
         }
       }

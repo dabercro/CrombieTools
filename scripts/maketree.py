@@ -5,6 +5,7 @@ import sys
 import re
 import copy
 import subprocess
+import logging
 
 from collections import defaultdict
 
@@ -36,6 +37,9 @@ DEFINITIONS = {}
 PREF_HOLDER = '[]'
 
 IN_FUNCTION = None
+
+if os.environ.get('debug'):
+    logging.basicConfig(level=logging.DEBUG)
 
 class Prefix:
     prefs = {}
@@ -96,6 +100,11 @@ class Branch:
     branches = {}
     floats = set()
     def __init__(self, pref, name, data_type, default_val, is_saved):
+        logging.getLogger('Branch').debug(
+            'creating branch: %s %s %s %s %s',
+            pref, name, data_type, default_val, is_saved
+            )
+
         self.is_vector = name.endswith('[]')
         self.prefix = pref
         self.name = name.rstrip('[]')
@@ -138,6 +147,10 @@ class Uncertainty:
                 self.update(b)
         else:
             self.branches.append(branch.split('_%s' % self.name)[0])
+        logging.getLogger('Uncertainty.update').debug(
+            'Uncertainty: %s; branches: %s',
+            self.name, self.branches
+            )
 
 
 def check_uncertainties(input_line):
@@ -147,7 +160,7 @@ def check_uncertainties(input_line):
     for unc, val in Uncertainty.uncs.items():
         beginning = re.match(r'(^\w*)', input_line.lstrip('#')).group(1)
 
-        if beginning.endswith('Up') or beginning.endswith('Down') or '%s_%s' % (pref.val, beginning) in val.branches:
+        if beginning.endswith('Up') or beginning.endswith('Down') or '%s_%s' % (pref.val, beginning) in val.branches or not beginning:
             continue
 
         check_line = pref.replace(input_line)
@@ -176,6 +189,10 @@ def create_branches(var, data_type, val, is_saved):
         if match:
             for unc in Uncertainty.uncs:
                 if match.group(1).endswith('_%sUp' % unc):
+                    logging.getLogger('create_branches').debug(
+                        'Branch %s matched Uncertainty %s',
+                        b.name, unc
+                        )
                     Uncertainty.uncs[unc].update(b.name)
 
     return branches
@@ -292,6 +309,8 @@ class Parser:
         # Multi-line for expansion
         if '\\' in input_line:
             return [line for l in input_line.split('\\') for line in self.parse(l)]
+
+        logging.getLogger('Parser.parse').debug('output: %s', input_line)
 
         return [input_line]
 
@@ -737,6 +756,11 @@ if __name__ == '__main__':
                         data_type = match.group(4) or DEFAULT_TYPE
                         val = (match.group(6) or DEFAULT_VAL).strip()
                         is_saved = not bool(match.group(1))
+
+                        logging.getLogger('matched-branch').debug(
+                            'Branch line: %s %s %s %s',
+                            var, data_type, val, is_saved
+                            )
 
                         in_func = IN_FUNCTION is not None and match.group(7)
 

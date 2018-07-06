@@ -5,7 +5,19 @@ use strict;
 
 my $database = 'mysql -N -ht3serv015.mit.edu -usubmit -psubmitter -Dsubmit_queue';
 
-for (`echo 'select file_name, id from check_these;' | $database`) {
+my @inputs;
+if (@ARGV) {
+    while (@ARGV) {
+        my $file = shift @ARGV;
+        $file .= " " . shift @ARGV;
+        push @inputs, $file;
+    }
+}
+else {
+    @inputs = `echo 'select file_name, id from check_these;' | $database`;
+}
+
+for (@inputs) {
     my ($pandav, $dataset, $filename, $id) = m{/paus/([^/]+/\d{3})/([^/]+)/(\S+)\s+(\d+)};
 
     my $thisjob = `echo 'select total_events, input_files from queue where id = $id;' | $database`;
@@ -20,7 +32,7 @@ for (`echo 'select file_name, id from check_these;' | $database`) {
             my $numevents = $1;
             my $newevents = $total_evts - $numevents;
             say qq(update queue set input_files = '$infiles', total_events = $newevents where id = $id);
-            `echo "update queue set input_files = '$infiles', total_events = $newevents where id = $id;" | $database`;
+            `echo "update queue set input_files = '$infiles', total_events = $newevents where id = $id;" | $database` if (! $ENV{norun});
         }
     }
 }

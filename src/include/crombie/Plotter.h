@@ -453,8 +453,12 @@ namespace crombie {
 
         bhist->SetFillStyle(3001);
         bhist->SetFillColor(kGray);
-        bhist->SetMinimum(std::min(bkg_ratio.min_w_unc(), data_ratio.min_w_unc(false)));
-        bhist->SetMaximum(std::max(bkg_ratio.max_w_unc(), data_ratio.max_w_unc()));
+
+        static double minratio {std::stod(Misc::env("minratio", "0.0"))};
+        bhist->SetMinimum(std::max(std::min(bkg_ratio.min_w_unc(), data_ratio.min_w_unc(false)), minratio));
+
+        static double maxratio {std::stod(Misc::env("maxratio", "2.0"))};
+        bhist->SetMaximum(std::min(std::max(bkg_ratio.max_w_unc(), data_ratio.max_w_unc()), maxratio));
         bhist->Draw("e2");
 
         style(signal_hist.second.ratio(bkg_hist).roothist(), FileConfig::Type::Signal, signal_hist.first)->Draw("hist,same");
