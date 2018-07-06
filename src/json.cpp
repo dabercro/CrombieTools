@@ -1,5 +1,4 @@
 #include <iostream>
-#include <sstream>
 #include <fstream>
 
 #include "crombie/FileConfig.h"
@@ -15,9 +14,7 @@ int main(int argc, char* argv[]) {
   }
 
   // Input directory
-  std::stringstream input {std::string(argv[1]) + " {}"};
-  FileConfig::FileConfig fileconfig {""};
-  input >> fileconfig;
+  FileConfig::FileConfig fileconfig {argv[1]};
 
   auto output = fileconfig.runfiles(Lumi::SingleFile, Lumi::Merge);
 

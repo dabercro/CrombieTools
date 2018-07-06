@@ -14,7 +14,7 @@ int main(int argc, char* argv[]) {
   auto regions = Selection::read("", argv[1]);
 
   if (argc == 2) {
-    std::cout << std::endl << "OR of all:" << std::endl;
+    std::cout << std::endl << "OR of all:" << std::endl << std::endl;
     bool notfirst = false;
     for (auto& sel : regions.selections) {
       if (notfirst)
@@ -25,10 +25,12 @@ int main(int argc, char* argv[]) {
     std::cout << std::endl;
   }
   else {
-    for (int iarg = 2; iarg < argc; ++iarg)
-      std::cout << std::endl << argv[iarg] << ":" << std::endl
-                << Selection::nminus1(argv[iarg], regions.selections.at(argv[2]).cut)
+    for (int iarg = 2; iarg < argc; ++iarg) {
+      if (argc != 3)
+        std::cout << std::endl << argv[iarg] << ":" << std::endl << std::endl;
+      std::cout << Selection::nminus1(argv[iarg], regions.selections.at(argv[2]).cut)
                 << std::endl;
+    }
   }
 
   return 0;

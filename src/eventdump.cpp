@@ -1,11 +1,8 @@
 #include <iostream>
 #include <iomanip>
-#include <string>
-#include <sstream>
 #include <fstream>
 
 #include "crombie/Types.h"
-#include "crombie/LoadTree.h"
 #include "crombie/FileConfig.h"
 #include "crombie/EventDump.h"
 
@@ -31,9 +28,7 @@ int main(int argc, char* argv[]) {
   } ();
 
   // Input directory
-  std::stringstream input {std::string(argv[1]) + " {}"};
-  FileConfig::FileConfig fileconfig {""};
-  input >> fileconfig;
+  FileConfig::FileConfig fileconfig {argv[1], true};
 
   auto output = fileconfig.runfiles(EventDump::SingleFile(argv[3], vars), EventDump::Merge);
 

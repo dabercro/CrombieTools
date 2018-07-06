@@ -122,8 +122,7 @@ namespace crombie {
 
     class FileConfig {
     public:
-    FileConfig(const std::string& inputdir)
-      : inputdir{dirclean(inputdir)} {}
+      FileConfig(const std::string& inputdir, const bool onedir = true);
 
       template <typename M, typename R>
         auto runfiles (std::function<M(const FileInfo&)> map, R reduce);
@@ -148,7 +147,7 @@ namespace crombie {
 
     /// Reads a configuration file for file info
     FileConfig read(const char* indir, const char* config) {
-      FileConfig output {indir};
+      FileConfig output {indir, false};
       std::ifstream input {config};
       input >> output;
       return output;
@@ -157,12 +156,21 @@ namespace crombie {
 
     // IMPLEMENTATIONS BELOW HERE //
 
+    FileConfig::FileConfig(const std::string& inputdir, const bool onedir)
+      : inputdir{onedir ? "" : dirclean(inputdir)} {
+      if (onedir) {
+        std::stringstream input {inputdir + " {}"};
+        input >> *this;
+      }
+    }
+
 
     std::string DirectoryInfo::getname(const std::string line) {
       std::string dir {line.substr(0, line.find(' '))};
       // Just return the file name if a .root file.
       return (dir.substr(dir.size() - 5, 5) == ".root") ? dir : dirclean(dir);
     }
+
 
     void DirectoryInfo::fillfiles() {
       if (FileSystem::exists(name)) {
@@ -182,6 +190,7 @@ namespace crombie {
         throw std::runtime_error{"Path " + name + " does not exist"};
       }
     }
+
 
     std::istream& operator>>(std::istream& is, FileConfig& config) {
       Type current_type = Type::Data;
@@ -236,10 +245,12 @@ namespace crombie {
       return is;
     }
 
+
     /// Compares FileInfo objects based on the size of the files; used for queue priority
     bool operator<(const FileInfo& a, const FileInfo& b) {
       return a.size < b.size;
     }
+
 
     // These types are used for runfiles
 
@@ -260,6 +271,7 @@ namespace crombie {
        @param M The output of the map formula
      */
     template<typename R, typename M> using MergeFunc = std::function<R(const ToMerge<M>&)>;
+
 
     template <typename M, typename R>
       auto FileConfig::runfiles (MapFunc<M> map, R reduce) {
