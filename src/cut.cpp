@@ -28,7 +28,7 @@ int main(int argc, char* argv[]) {
     for (int iarg = 2; iarg < argc; ++iarg) {
       if (argc != 3)
         std::cout << std::endl << argv[iarg] << ":" << std::endl << std::endl;
-      std::cout << Selection::nminus1(argv[iarg], regions.selections.at(argv[2]).cut)
+      std::cout << Selection::nminus1(argv[iarg], regions.selections.at(argv[iarg]).cut)
                 << std::endl;
     }
   }
