@@ -315,11 +315,12 @@ namespace crombie {
       std::vector<std::thread> threads;
       nthreads = std::max(nthreads, 1u);
 
-      std::cout << "Using " << nthreads << " threads" << std::endl;
-
       auto total = queue.size();
       auto divisor = total/100 + 1;
       auto progress = total/divisor;
+
+      std::cout << "Using " << nthreads << " threads to run over " << total << " files" << std::endl;
+
       Misc::draw_progress(0, progress);
 
       std::chrono::steady_clock::time_point start = std::chrono::steady_clock::now();
