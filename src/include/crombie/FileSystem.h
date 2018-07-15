@@ -53,7 +53,7 @@ namespace crombie {
 
         // Set the cache to the split long listing of xrdfs and return it
         return xrd_dir_contents[path] = 
-          Misc::split(Misc::shell(std::string("xrdfs root://") + parts[1] + "/ ls -l /" + parts[2]));
+          Misc::split(Misc::shell(std::string("xrdfs root://") + parts[1] + "/ ls -l /" + parts[2] + " | sort -u"));
       }
 
       // Get the xrd_ls call and return the file portion of the line
