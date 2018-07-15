@@ -40,14 +40,35 @@ namespace crombie {
       std::flush(std::cout);
     }
 
-
-    /// Split the contents of a string into multiple strings
+    /**
+       Split the contents of a string into multiple strings.
+       This is different than crombie::Misc::split because it can split over multiple spaces,
+       while spilt_string only splits over one character at a time.
+     */
     Types::strings tokenize(const std::string& str) {
       std::istringstream ss {str};
       Types::strings output {
         std::istream_iterator<std::string>{ss},
         std::istream_iterator<std::string>{}
       };
+      return output;
+    }
+
+    /// Splits a string.
+    Types::strings split(const std::string& str, const std::string& delim = "\n") {
+      Types::strings output;
+      std::string::size_type prev = 0;
+      for(auto pos = str.find(delim);
+          pos != std::string::npos;
+          prev = pos + delim.size(), pos = str.find(delim, prev))
+        output.push_back(str.substr(prev, pos - prev));
+
+      auto last = str.substr(prev);
+      if (last.size())
+        output.push_back(last);
+
+      Debug::Debug(__PRETTY_FUNCTION__, output.size());
+
       return output;
     }
 

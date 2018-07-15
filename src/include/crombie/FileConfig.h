@@ -60,7 +60,7 @@ namespace crombie {
       Type type {};
       std::string dirname {};
       std::string name {};
-      unsigned size {};
+      unsigned long size {};
       Types::strings cuts {};
     };
 
@@ -166,7 +166,7 @@ namespace crombie {
     std::istream& operator>>(std::istream& is, FileConfig& config);
 
     /// Reads a configuration file for file info
-    FileConfig read(const char* indir, const char* config) {
+    FileConfig read(const std::string& indir, const std::string& config) {
       FileConfig output {indir, false};
       std::ifstream input {config};
       input >> output;

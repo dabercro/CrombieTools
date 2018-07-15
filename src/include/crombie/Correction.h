@@ -31,7 +31,7 @@ class Correction {
      Both histograms must have the same binning.
      If two histograms are given the corrector applies the first histogram divided by the second.
   */
-  Correction(std::string filename, const char* histname, const char* denom = 0);
+  Correction(std::string filename, const std::string& histname, const std::string& denom = "");
   ~Correction() { delete hist; }
 
   /// Get the correction value from the histogram
@@ -50,7 +50,7 @@ class Correction {
 };
 
 template<typename H>
-Correction<H>::Correction(std::string filename, const char* histname, const char* denom)
+Correction<H>::Correction(std::string filename, const std::string& histname, const std::string& denom)
 {
   if (files.find(filename) == files.end()) {
     std::unique_ptr<TFile> handle {TFile::Open(filename.data())};
@@ -58,9 +58,9 @@ Correction<H>::Correction(std::string filename, const char* histname, const char
   }
   auto& in = files[filename];
 
-  hist = static_cast<H*>(in->Get(histname)->Clone());
-  if (denom)
-    hist->Divide(static_cast<H*>(in->Get(denom)));
+  hist = static_cast<H*>(in->Get(histname.data())->Clone());
+  if (denom.size())
+    hist->Divide(static_cast<H*>(in->Get(denom.data())));
 
   auto* axis = hist->GetXaxis();
   xminmax.first = axis->GetBinCenter(axis->GetFirst());

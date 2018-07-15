@@ -36,13 +36,13 @@ namespace crombie {
     };
 
 
-    std::vector<Plot> read(const char* config);
+    std::vector<Plot> read(const std::string& config);
 
 
     // IMPLEMENTATIONS BELOW HERE //
 
 
-    std::vector<Plot> read(const char* config) {
+    std::vector<Plot> read(const std::string& config) {
       std::vector<Plot> output;
 
       std::regex expr {"'([^']+)',\\s*(\\d+),\\s*(-?[\\d\\.]+),\\s*(-?[\\d\\.]+),\\s*'([^']+)'(,\\s*'([^']+)',\\s*'([^']+)')?"};

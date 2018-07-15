@@ -71,6 +71,7 @@ namespace crombie {
          @param args is a variable number of arguments that can be of type ``std::string`` or ``crombie::Types::strings>``.
       */
       template<typename... Args> Tree(const std::string& infile, Args... args);
+      ~Tree () { file->Close(); delete file; }
 
       /// Loads the next event into memory and evaluates all of the formulas
       bool next();
@@ -86,7 +87,7 @@ namespace crombie {
       template<typename C> C* get(const std::string& name);
 
     private:
-      TFile file;          ///< The TFile that is being read
+      TFile* file;         ///< The TFile that is being read
       TTree* tree;         ///< Holds the pointer to the tree
       long long nentries;  ///< Total number of events in the tree
       long long ientry{0}; ///< Which entry are we on
@@ -129,7 +130,7 @@ namespace crombie {
     }
 
     template<typename... Args> Tree::Tree(const std::string& infile, Args... args)
-      : file{infile.data()}, tree{get<TTree>(Misc::env("tree", "events"))}, nentries{tree->GetEntries()}, forms{tree} {
+      : file{TFile::Open(infile.data())}, tree{get<TTree>(Misc::env("tree", "events"))}, nentries{tree->GetEntries()}, forms{tree} {
       tree->SetBranchStatus("*", 0);
       auto needed = needed_branches(*tree, args...);
       for (auto need : needed)
@@ -149,9 +150,9 @@ namespace crombie {
     }
 
     template<typename C> C* Tree::get(const std::string& name) {
-      auto* obj = dynamic_cast<C*>(file.Get(name.data()));
+      auto* obj = dynamic_cast<C*>(file->Get(name.data()));
       if (not obj)
-        throw std::runtime_error(std::string("Could not find object '") + name + "' in " + file.GetName());
+        throw std::runtime_error(std::string("Could not find object '") + name + "' in " + file->GetName());
       return obj;
     }
 

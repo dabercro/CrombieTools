@@ -51,7 +51,7 @@ namespace crombie {
 
     /// Reads a configuration file that maps regions to selections
     /// Reads a configuration file for file info
-    SelectionConfig read(const std::string& mchistname, const char* config) {
+    SelectionConfig read(const std::string& mchistname, const std::string& config) {
       SelectionConfig output {mchistname};
       std::ifstream input {config};
       input >> output;

@@ -4,31 +4,100 @@
 #include <cstdlib>
 #include <cstring>
 #include <vector>
+#include <string>
 #include <dirent.h>
 #include <sys/stat.h>
+#include <libgen.h>
 
 #include "crombie/Types.h"
+#include "crombie/Misc.h"
 
 namespace crombie {
   namespace FileSystem {
 
-    /// Check if path exists (either directory or file)
-    bool exists(const char* path) {
-      struct stat buffer;
-      return stat(path, &buffer) == 0;
+    std::string basename(const std::string& name) {
+      auto output = Misc::split(name, "/").back();
+      Debug::Debug(__PRETTY_FUNCTION__, name, output);
+      return output;
     }
-    bool exists(const std::string path) {
-      return exists(path.data());
+
+    std::string dirname(const std::string& name) {
+      std::string modname = name;
+      while (modname.back() == '/')
+        modname.pop_back();
+
+      auto output = modname.substr(0, modname.size() - basename(modname).size());
+      Debug::Debug(__PRETTY_FUNCTION__, name, output);
+      return output;
+    }
+
+    namespace {
+      // Is the path for xrd
+      bool is_xrd(const std::string& path) {
+        return path.find("root://") == 0;
+      }
+
+      // Do the xrdfs call
+      Types::strings xrd_ls(const std::string& path) {
+        // Cache for listed directories to prevent too many calls
+        static Types::map<Types::strings> xrd_dir_contents;
+
+        auto iter = xrd_dir_contents.find(path);
+        if (iter != xrd_dir_contents.end())
+          return iter->second;
+
+        // Door will be between two "//" sequences when user is sane
+        auto parts = Misc::split(path, "//");
+        if (parts.size() != 3)
+          throw std::runtime_error{std::string("xrd path (") + path + ") doesn't seem to have a good pattern"};
+
+        // Set the cache to the split long listing of xrdfs and return it
+        return xrd_dir_contents[path] = 
+          Misc::split(Misc::shell(std::string("xrdfs root://") + parts[1] + "/ ls -l /" + parts[2]));
+      }
+
+      // Get the xrd_ls call and return the file portion of the line
+      Types::strings xrd_list(const std::string& path) {
+        return Misc::comprehension<std::string>
+          (xrd_ls(path),
+           [] (auto& line) {
+            return basename(Misc::tokenize(line)[4]);
+          });
+      }
+
+      // Get the listing of the directory, and then extract the size
+      unsigned long xrd_get_size(const std::string& name) {
+        // There is some tricky business about the "//" in ls outputs, so just look for the file
+        std::string filename = basename(name);
+        for (auto& line : xrd_ls(dirname(name))) {
+          if (line.find(filename) != std::string::npos)
+            return std::stoul(Misc::tokenize(line)[3]);
+        }
+        return 0;
+      }
+
+      // Hacky way to see if path is there
+      bool xrd_exists(const std::string& path) {
+        return xrd_get_size(path);
+      }
+
+    }
+
+    /// Check if path exists (either directory or file)
+    bool exists(const std::string& path) {
+      if (is_xrd(path))
+        return xrd_exists(path);
+      struct stat buffer;
+      return stat(path.data(), &buffer) == 0;
     }
 
     /// Get the size of a file
-    unsigned get_size(const char* name) {
+    unsigned long get_size(const std::string name) {
+      if (is_xrd(name))
+        return xrd_get_size(name);
       struct stat file_stat;
-      stat(name, &file_stat);
+      stat(name.data(), &file_stat);
       return file_stat.st_size;
-    }
-    unsigned get_size(const std::string path) {
-      return get_size(path.data());
     }
 
     /// Create directories, recursively if needed
@@ -60,6 +129,9 @@ namespace crombie {
 
     /// The name of files inside of the directory
     Types::strings list(std::string directory) {
+      if (is_xrd(directory))
+        return xrd_list(directory);
+
       Types::strings output;
 
       auto* indir = opendir(directory.data());
