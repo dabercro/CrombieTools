@@ -52,21 +52,29 @@ namespace crombie {
        Hold the necessary information for running over a single file.
      */
     struct FileInfo {
+    /// Default constructor
     FileInfo() {}
+    /// Set values for everything in the structure
     FileInfo(const Type type, const std::string dirname, const std::string filename, const Types::strings& cuts = {"1.0"})
     : type{type}, dirname{dirname}, name{filename}, size{FileSystem::get_size(name.data())}, cuts{cuts} {
       Debug::Debug(__PRETTY_FUNCTION__, dirname, filename, size, cuts.size());
     }
-      Type type {};
-      std::string dirname {};
-      std::string name {};
-      unsigned long size {};
-      Types::strings cuts {};
+      Type type {};            ///< Type of process this file is
+      std::string dirname {};  ///< Directory this file is in
+      std::string name {};     ///< The full path to the file
+      unsigned long size {};   ///< The size of the file. Used for priority
+      Types::strings cuts {};  ///< Cuts that split this file into different processes or legend entries
     };
 
 
     /// The processes that a directory can be divided between
     struct Process {
+    /**
+       @param treename The name that this process will have in datacards
+       @param entry The entry in plot legends for this process. `"_"` is replaced with `" "`.
+       @param cut Is the cut applied to the file to create this process
+       @param style Some style number that is used to make plots
+     */
     Process(const std::string treename,
             const std::string entry,
             const std::string cut,
@@ -140,25 +148,40 @@ namespace crombie {
     template<typename R, typename M> using MergeFunc = std::function<R(const ToMerge<M>&)>;
 
 
+    /**
+       @class FileConfig
+       A single object that holds all of the information about the files to run on.
+       This is the result of reading a single file configuration file.
+     */
     class FileConfig {
     public:
       FileConfig(const std::string& inputdir, const bool onedir = true);
 
+      /**
+         This will perform a map-reduce operation on all of the files in this configuration.
+         Takes two functions. One to map files to outputs and one to reduce these outputs.
+         @param M The type of output of the map function
+         @param R The type of reduce
+         @param map Is a function that takes a FileInfo as input, and outputs some object of type M
+         @param reduce is fed ToMerge<M> as input. Whatever reduce returns is returned by runfiles.
+       */
       template <typename M, typename R>
         auto runfiles (MapFunc<M> map, R reduce);
 
       /// Read the directory infos
       const std::vector<DirectoryInfo>& get_dirs () const { return dirinfos; }
 
+      /// Say if this object has MC directories stored in it
       const bool has_mc () const { return _has_mc; }
+      /// Say if this object has data directories stored in it
       const bool has_data () const { return _has_data; }
 
     private:
-      std::vector<DirectoryInfo> dirinfos;
-      const std::string inputdir;   ///< The directory containing the files
+      std::vector<DirectoryInfo> dirinfos;   ///< Internal store of DirectoryInfo objects
+      const std::string inputdir;            ///< The directory containing the files
 
-      bool _has_mc {false};
-      bool _has_data {false};
+      bool _has_mc {false};                  ///< Tracks when MC files are stored
+      bool _has_data {false};                ///< Tracks when data files are stored
 
       friend std::istream& operator>>(std::istream& is, FileConfig& config);
     };
@@ -201,8 +224,11 @@ namespace crombie {
         if (name.back() != '/')  // If the directory info is actually a file, just push back one file
           files.push_back({type, name, name, cuts});
         else {                   // Otherwise, push back all of the files
-          for (auto& file : FileSystem::list(name))
-            files.push_back({type, name, name + file, cuts});
+          for (auto& file : FileSystem::list(name)) {
+            // Only loading .root files
+            if (file.find(".root") != std::string::npos)
+              files.push_back({type, name, name + file, cuts});
+          }
         }
 
       }
