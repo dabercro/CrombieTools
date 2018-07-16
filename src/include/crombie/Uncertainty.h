@@ -26,9 +26,9 @@ namespace crombie {
       : key{key}, suff{suff}, bin{bin} {
         Debug::Debug(__PRETTY_FUNCTION__, key, suff, bin);
       }
-      const std::string key {};
-      const std::string suff {};
-      const unsigned bin {};
+      std::string key {};
+      std::string suff {};
+      unsigned bin {};
     };
 
 
@@ -121,6 +121,14 @@ namespace crombie {
         }
       }
       return is;
+    }
+
+
+    /// Reads a configuration file and returns an UncertaintyInfo object
+    UncertaintyInfo read(const std::string& config) {
+      Uncertainty::UncertaintyInfo unc {};
+      std::ifstream{config} >> unc;
+      return unc;
     }
 
 

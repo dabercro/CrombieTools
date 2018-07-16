@@ -61,10 +61,24 @@ namespace crombie {
       /// Returns a Hist that is a ratio between this and another Hist
       Hist ratio (const Hist& other) const;
 
-      /// Returns a pointer to a histogram that is owned by global list. Not thread-safe.
-      TH1D* roothist () const;
+      /**
+         Returns a pointer to a histogram that is owned by global list.
+         This list will handle the deletion when the program is done running.
+         Not thread-safe.
+         @param allunc If this is false, only the stat uncertainties will be included in the histogram.
+      */
+      TH1D* roothist (bool allunc = true) const;
 
-      /// Get the maximum bin and the total number of bins
+      /**
+         Get all of the uncertainty histograms.
+         The keys are the name of the uncertainty including "Up" or "Down" at the end.
+      */
+      Types::map<TH1D*> unchists () const;
+
+      /**
+         Get the maximum bin and the total number of bins.
+         Does not include overflow bins.
+      */
       std::pair<unsigned, unsigned> get_maxbin_outof () const;
 
       /// Get the maximum value including uncertainties (for plotting)
@@ -86,7 +100,7 @@ namespace crombie {
 
       double total {};                                           ///< Stores the total weights of files filling this
 
-      double get_unc (unsigned bin) const;                       ///< Find the full uncertainty from uncs hists and sumw2
+      double get_unc (unsigned bin, bool allunc = true) const;   ///< Find the full uncertainty from uncs hists and sumw2
       void doscale (const double scale);                         ///< Scales histogram without scaling uncertainties
       void doscale (const double lumi, const double xs);         ///< Scales histogram without scaling uncertainties
       Types::map<Hist> uncs;                                     ///< Store of alternate histograms for uncertainties
@@ -127,8 +141,8 @@ namespace crombie {
 
     Hist& Hist::get_env_hist(const std::string& sys) {
       auto& mysys = std::get<2>(envs[sys]);
-      mysys.push_back({label, nbins, min, max, false});
-      return mysys.back();
+      mysys.push_front({label, nbins, min, max, false});
+      return mysys.front();
     }
 
 
@@ -156,18 +170,28 @@ namespace crombie {
         
         // Sum the envelope histograms together
         for (auto& env : envs) {
-          // Get the other list
-          const auto& otherenv = std::get<2>(other.envs.at(env.first));
-          auto& meenv = std::get<2>(env.second);
-          if (otherenv.size() != meenv.size()) {   // Error checking
-            std::cerr << "Num envs other: " << otherenv.size() << " me: " << meenv.size() << std::endl;
-            throw std::runtime_error{"Hists don't have same number of envelope histograms"};
+          // If envelopes evaluted, just do those
+          if (envs_set) {
+            if (not other.envs_set)
+              throw std::logic_error{"Trying to add one histogram with envelope set to another one without"};
+
+            std::get<0>(env.second).add(std::get<0>(other.envs.at(env.first)));
+            std::get<1>(env.second).add(std::get<1>(other.envs.at(env.first)));
           }
-          // Loop through both lists at the same time, and add them together
-          auto iother = otherenv.cbegin();
-          for (auto& me : meenv) {
-            me.add(*iother);
-            ++iother;
+          else {
+            // Get the other list
+            const auto& otherenv = std::get<2>(other.envs.at(env.first));
+            auto& meenv = std::get<2>(env.second);
+            if (otherenv.size() != meenv.size()) {   // Error checking
+              std::cerr << "Num envs other: " << otherenv.size() << " me: " << meenv.size() << std::endl;
+              throw std::runtime_error{"Hists don't have same number of envelope histograms"};
+            }
+            // Loop through both lists at the same time, and add them together
+            auto iother = otherenv.cbegin();
+            for (auto& me : meenv) {
+              me.add(*iother);
+              ++iother;
+            }
           }
         }
       }
@@ -194,6 +218,8 @@ namespace crombie {
       func(*this);
       for (auto& unc : uncs)
         func(unc.second);
+
+      set_env_min_max();
       for (auto& env : envs) {
         for (auto& hist : std::get<2>(env.second))
           func(hist);
@@ -215,7 +241,7 @@ namespace crombie {
     }
 
 
-    TH1D* Hist::roothist() const {
+    TH1D* Hist::roothist(bool allunc) const {
       static unsigned plot = 0;
       auto title = std::string(";") + label + ";Events";
       Debug::Debug(__PRETTY_FUNCTION__, "Generating root hist with", title, nbins, min, max, "from", this);
@@ -223,7 +249,7 @@ namespace crombie {
       auto& hist = histstore.back();
       for (unsigned ibin = 0; ibin < contents.size(); ++ibin) {
         hist.SetBinContent(ibin, contents[ibin]);
-        hist.SetBinError(ibin, get_unc(ibin));
+        hist.SetBinError(ibin, get_unc(ibin, allunc));
       }
       Debug::Debug(__PRETTY_FUNCTION__, "hist with", hist.Integral());
       return &hist;
@@ -295,17 +321,19 @@ namespace crombie {
     }
 
 
-    double Hist::get_unc(unsigned bin) const {
-      set_env_min_max();
+    double Hist::get_unc(unsigned bin, bool allunc) const {
       double w2 = sumw2.size() ? sumw2.at(bin) : 0;
-      // Divide the uncertainty from each histogram by two to not double count Up and Down
-      for (auto& unc : uncs)
-        w2 += std::pow(contents.at(bin) - unc.second.contents.at(bin), 2)/2;
+      if (allunc) {
+        // Divide the uncertainty from each histogram by two to not double count Up and Down
+        for (auto& unc : uncs)
+          w2 += std::pow(contents.at(bin) - unc.second.contents.at(bin), 2)/2;
 
-      // Do the same thing with the min/max envelope uncertainties
-      for (auto& env : envs) {
-        w2 += std::pow(contents.at(bin) - std::get<0>(env.second).contents.at(bin), 2)/2;
-        w2 += std::pow(contents.at(bin) - std::get<1>(env.second).contents.at(bin), 2)/2;
+        set_env_min_max();
+        // Do the same thing with the min/max envelope uncertainties
+        for (auto& env : envs) {
+          w2 += std::pow(contents.at(bin) - std::get<0>(env.second).contents.at(bin), 2)/2;
+          w2 += std::pow(contents.at(bin) - std::get<1>(env.second).contents.at(bin), 2)/2;
+        }
       }
 
       return std::sqrt(w2);
@@ -325,12 +353,14 @@ namespace crombie {
         hmin.contents = contents;   // Start with current contents
         auto& hmax = std::get<1>(env.second) = hmin;
         // Loop through all the histograms in the envelope
-        for (auto& part : std::get<2>(env.second)) {
+        auto& envs_list = std::get<2>(env.second);
+        for (auto& part : envs_list) {
           for (unsigned ibin = 0; ibin != contents.size(); ++ibin) {
             hmin.contents[ibin] = std::min(hmin.contents[ibin], part.contents[ibin]);
             hmax.contents[ibin] = std::max(hmax.contents[ibin], part.contents[ibin]);
           }
         }
+        envs_list.clear();
       }
     }
 
@@ -347,6 +377,19 @@ namespace crombie {
       }
       else
         return uncs.at(key + direction);
+    }
+
+
+    Types::map<TH1D*> Hist::unchists () const {
+      Types::map<TH1D*> output;
+      for (auto& unc : uncs)
+        output.insert({unc.first, unc.second.roothist(false)});
+      // Use the fetch_unc function to ensure that the min-max is correct
+      for (auto& env : envs) {
+        for (const std::string& dir : {"Up", "Down"})
+          output.insert({env.first + dir, fetch_unc(env.first, dir).roothist(false)});
+      }
+      return output;
     }
 
   }

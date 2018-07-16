@@ -22,6 +22,9 @@ int main(int argc, char* argv[]) {
     return 1;
   }
 
+  if (not FileSystem::confirm_overwrite(argv[2]))
+    return 1;
+
   // Read the configuration files
   auto files = FileConfig::read(argv[1], argv[3]);
   auto plots = PlotConfig::read(argv[4]);

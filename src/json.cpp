@@ -1,6 +1,7 @@
 #include <iostream>
 #include <fstream>
 
+#include "crombie/FileSystem.h"
 #include "crombie/FileConfig.h"
 #include "crombie/Lumi.h"
 
@@ -12,6 +13,9 @@ int main(int argc, char* argv[]) {
     std::cout << "Usage: " << argv[0] << " INDIR [OUTFILE]" << std::endl;
     return 1;
   }
+
+  if (argc >= 3 and not FileSystem::confirm_overwrite(argv[2]))
+    return 1;
 
   // Input directory
   FileConfig::FileConfig fileconfig {argv[1]};

@@ -143,6 +143,21 @@ namespace crombie {
 
       return output;
     }
+
+
+    /**
+       If this would overwrite a directory that exists, ask for confirmation.
+       This returns whether or not the user confirms the file to be removed.
+    */
+    bool confirm_overwrite(const std::string& path) {
+      if (exists(path)) {
+        std::string response;
+        std::cout << path << " already exists. Want to overwrite? (y/N)" << std::endl;
+        std::getline(std::cin, response);
+        return response == "y";
+      }
+      return true;
+    }
   }
 }
 

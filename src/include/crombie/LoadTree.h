@@ -22,7 +22,7 @@ namespace crombie {
     class Formulas {
     public:
       Formulas (TTree* tree) : tree{tree} {}
-      // I hate ROOT, but this causes things to crash
+      // I hate ROOT: this causes things to crash
       /* virtual ~Formulas () { */
       /*   for (auto& form : forms) */
       /*     delete form.second; */
@@ -46,7 +46,12 @@ namespace crombie {
       }
 
       /// Get a reference to the result for a given formula
-      double& result (const std::string& expr) { return forms[expr].first; }
+      double& result (const std::string& expr) {
+        auto i_form = forms.find(expr);
+        if (i_form != forms.end())
+          return i_form->second.first;
+        throw std::logic_error{expr + ": Asking for expression that wasn't loaded"};
+      }
 
       /// Evaluates all of the formulas and stores the results
       void eval () {

@@ -25,27 +25,11 @@
 namespace crombie {
   namespace Plotter {
 
-    /**
-       This is the output running over a single file.
-       The key corresponds to a "selection_plotname", and the different hists are different process cuts.
-    */
-    using SingleOut = Types::map<std::vector<Hist::Hist>>;
-
-
-    /// Constructs a function that runs over a single file and produces all the necessary histograms
-    FileConfig::MapFunc<SingleOut>
-      SingleFile (const std::vector<PlotConfig::Plot>& plots,
-                  const Selection::SelectionConfig& selections,
-                  const Uncertainty::UncertaintyInfo& unc,
-                  const bool unblind = true);
-
-
     /// This class has everything needed to draw a plot
     class Plot {
     public:
       /// One of the messier functions which draws the plot at the desired location
       void  draw  (const std::string& filebase);
-      void  dumpdatacard (const std::string& filename);
       /// Add a plot to the inner store. Processes are merged together
       void  add (unsigned isub, const FileConfig::DirectoryInfo& info, const Hist::Hist& hist);
       /// Scale the MC plots to match the given luminosity
@@ -69,20 +53,6 @@ namespace crombie {
     };
 
 
-    /// The key is a combination of "selection_plotname"
-    using MergeOut = Types::map<Plot>;
-
-
-    /// The FileConfig::MergeFunc instantiation for this namespace
-    using MergeFunc = FileConfig::MergeFunc<MergeOut, SingleOut>;
-
-
-    /**
-       Gets a function that merges the output of the SingleFile functional
-    */
-    MergeFunc Merge (const FileConfig::FileConfig& files);
-
-
     namespace {
 
       class CutReader {
@@ -104,22 +74,95 @@ namespace crombie {
 
     }
 
+    /**
+       This is the output running over a single file.
+       The key corresponds to a "selection_plotname", and the different hists are different process cuts.
+    */
+    using SingleOut = Types::map<std::vector<Hist::Hist>>;
 
+
+    /**
+       Constructs a function that runs over a single file and produces all the necessary histograms
+       @param plots A list of all the plots in a configuration file read by PlotConfig::read()
+       @param selections A global Selection::SelectonConfig object returned by Selection::read()
+       @param unc Uncertainty info that can be empty or filled by the >> operator from a config file
+       @param unblind If true, ignores the :b switch in the plots configuration
+       @param plotstodo If filled, can select a subset of plots to work through.
+              First element is selection key. Second is the plot name.
+    */
     FileConfig::MapFunc<SingleOut>
       SingleFile (const std::vector<PlotConfig::Plot>& plots,
                   const Selection::SelectionConfig& selections,
                   const Uncertainty::UncertaintyInfo& unc,
-                  const bool unblind) {
+                  const bool unblind = false,
+                  const std::vector<std::pair<std::string, std::string>>& plotstodo = {}) {
+
+      auto mchistname = selections.mchistname;
+
+      // The selections that plotstodo accesses
+      Selection::Selections filtered_sels;
+      // The plots that plotstodo enumerates. Key is expression name
+      using FilteredPlots = Types::map<std::pair<PlotConfig::Plot, Selection::Selections>>;
+      FilteredPlots filtered_plots;
+
+      // If limiting plotstodo
+      if (plotstodo.size()) {
+
+        // Quickly build a map to plot indices to pull out if needed
+        Types::map<unsigned> p_indices;
+        for (unsigned p_index = 0; p_index != plots.size(); ++p_index)
+          p_indices[plots[p_index].name] = p_index;
+
+        for (auto& todo : plotstodo) {
+          auto sel_pair = std::make_pair(todo.first, selections.selections.at(todo.first));
+          // Check if this is in our filtered selections
+          if (filtered_sels.find(todo.first) == filtered_sels.end())
+            filtered_sels.insert(sel_pair);
+
+          auto f_plot = filtered_plots.find(todo.second);
+          // If the plot is not in the existing list, insert new element into filtered_plots
+          if (f_plot == filtered_plots.end())
+            filtered_plots.insert(
+                {todo.second,
+                    {plots[p_indices.at(todo.second)],
+                     {sel_pair}
+                    }
+                });
+          // Otherwise, just insert element into selection
+          else
+            f_plot->second.second.insert(sel_pair);
+        }
+      }
+      // Otherise, just copy everything (yes, "expensive", but negligble compared to running plotter)
+      else {
+        filtered_sels = selections.selections;
+        for (auto& plot : plots)
+          filtered_plots.insert({plot.name, {plot, filtered_sels}});
+      }
+
+      // Now return this long functional for the FileConfig to run
+
       return FileConfig::MapFunc<SingleOut> {
-        [&plots, &selections, &unc, unblind] (const FileConfig::FileInfo& info) {
+        [plots{std::move(filtered_plots)},
+         sels{std::move(filtered_sels)},
+         mchistname, unblind, &unc] (const FileConfig::FileInfo& info) {
+          // Clear uncertainties for data
+          Uncertainty::UncertaintyInfo this_unc {};          
+          if (info.type != FileConfig::Type::Data)
+            this_unc = unc;
+
           // Build the formulas and plots to use
+          using ExprIter = FilteredPlots::value_type;
           auto get_expr = (info.type == FileConfig::Type::Data) ?
             [] (const PlotConfig::Plot& iter) { return iter.data_var; } :
             [] (const PlotConfig::Plot& iter) { return iter.mc_var; };
 
-          auto exprs = Misc::comprehension<std::string>(plots, get_expr);
+          auto exprs = Misc::comprehension<std::string>(plots, 
+                                                        [&get_expr] (const ExprIter& iter) {
+                                                          return get_expr(iter.second.first);
+                                                        });
 
-          using SelIter = Selection::SelectionConfig::Selections::value_type;
+          using SelIter = Selection::Selections::value_type;
           auto get_weight = (info.type == FileConfig::Type::Data) ?
             [] (const SelIter& iter) { return iter.second.data; } :
             [] (const SelIter& iter) { return iter.second.mc; };
@@ -131,8 +174,8 @@ namespace crombie {
                    std::string{"0"} : iter.second.cut;
           };
 
-          auto weights = Misc::comprehension<std::string>(selections.selections, get_weight);
-          auto cuts = Misc::comprehension<std::string>(selections.selections, get_cut);
+          auto weights = Misc::comprehension<std::string>(sels, get_weight);
+          auto cuts = Misc::comprehension<std::string>(sels, get_cut);
 
           // Cover bases here
           Types::strings nminus1;
@@ -143,9 +186,9 @@ namespace crombie {
             }
           }
 
-          LoadTree::Tree loaded{info.name, unc.exprs(exprs, weights, cuts, info.cuts, nminus1)};
+          LoadTree::Tree loaded{info.name, this_unc.exprs(exprs, weights, cuts, info.cuts, nminus1)};
 
-          auto* weighthist = loaded.get<TH1>(selections.mchistname);
+          auto* weighthist = loaded.get<TH1>(mchistname);
 
           SingleOut output {};
 
@@ -159,11 +202,12 @@ namespace crombie {
                                  hist);
           };
 
-          const auto& systematics = unc.full_systematic_infos();
+          const auto& systematics = this_unc.full_systematic_infos();
 
-          for (auto& sel : selections.selections) {
-            for (auto& plot : plots) {
-              auto& plotvec = output[sel.first + "_" + plot.name];
+          for (auto& p_iter : plots) {
+            auto& plot = p_iter.second.first;
+            for (auto& sel : p_iter.second.second) {
+              auto& plotvec = output[sel.first + "_" + p_iter.first];
               // We want to reserve the location for the vector because we want the references to stay valid
               plotvec.reserve(info.cuts.size());
               for (auto& sub : info.cuts) {
@@ -176,8 +220,8 @@ namespace crombie {
                 add_reader(selection, expr, weight, sub, lastplot);
                 // Map all the systematics to the systematics container in the Hist
                 for (auto& sys : systematics) {
-                  auto uncexpr = [&unc, &sys] (const auto& expr) {
-                    return unc.expr(sys.key, expr, sys.suff);
+                  auto uncexpr = [&this_unc, &sys] (const auto& expr) {
+                    return this_unc.expr(sys.key, expr, sys.suff);
                   };
                   auto sysexpr =  uncexpr(expr);
                   auto sysselection = uncexpr(selection);
@@ -208,6 +252,17 @@ namespace crombie {
     }
 
 
+    /// The key is a combination of "selection_plotname"
+    using MergeOut = Types::map<Plot>;
+
+
+    /// The FileConfig::MergeFunc instantiation for this namespace
+    using MergeFunc = FileConfig::MergeFunc<MergeOut, SingleOut>;
+
+
+    /**
+       Gets a function that merges the output of the SingleFile functional
+    */
     MergeFunc Merge(const FileConfig::FileConfig& files) {
       // Put lumi search here so that the "missing lumi" error is thrown early
       double lumi = files.has_mc() ? std::stod(Misc::env("lumi")) : 0.0;
@@ -504,10 +559,6 @@ namespace crombie {
         canv.SaveAs(output.data());
       }
 
-    }
-
-
-    void  Plot::dumpdatacard(const std::string& filename) {
     }
 
   }

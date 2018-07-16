@@ -28,6 +28,9 @@ namespace crombie {
     };
 
 
+    using Selections = Types::map<const Selection>;
+
+
     class SelectionConfig {
     public:
     SelectionConfig(const std::string& mchistname)
@@ -35,7 +38,6 @@ namespace crombie {
 
       const std::string mchistname;  ///< The mchist to normalize the weight to
 
-      using Selections = Types::map<const Selection>;
       Selections selections;
 
       friend std::istream& operator>>(std::istream& is, SelectionConfig& config);
