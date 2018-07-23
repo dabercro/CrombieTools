@@ -46,7 +46,7 @@ int main(int argc, char* argv[]) {
   auto outputs = files.runfiles(Plotter::SingleFile(plots, regions, unc, true, requested),
                                 Plotter::Merge(files));
 
-  Datacard::dumpplots(argv[2], selections, outputs);
+  Datacard::dumpplots(argv[2], selections, unc, outputs);
 
   return 0;
 }
