@@ -1,5 +1,7 @@
 <?php
 
+include 'include/ls.php';
+
 function rev_name($a, $b) {
 
   $exp_a = explode('/', $a);
@@ -32,18 +34,7 @@ $rev_name = isset($_GET['rev']) ? $_GET['rev'] : 'yes';
 
 $regs = '/' . str_replace(' ', '|', $exprs) . '/';
     
-$plotdir = '../plots/';
-
 $file_list = array();
-
-# List the directory in the reverse order
-$allDirs = scandir($plotdir, 1);
-
-# Remove the listings . and ..
-array_pop($allDirs);
-array_pop($allDirs);
-
-$passNum = 20;
 
 foreach ($dirs as $directory) {
 
@@ -74,8 +65,6 @@ if ($rev_name == 'yes')
 else
   uasort($file_list, 'no_rev_name');
 
-$firstDirs = array_slice($allDirs, 0, $passNum);
-$restDirs = array_slice($allDirs, $passNum);
 $checked = $dirs;
 $width = 100.0/floatval($raw_width);
 

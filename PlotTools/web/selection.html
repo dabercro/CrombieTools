@@ -19,6 +19,7 @@
         Per Row:
         <input type="text" name="width" value="<?php echo $raw_width;?>" size="4">
         <div id="dirs"<?php echo $style_dirs;?>>
+          <div id="firstdirs">
           <?php
           foreach ($firstDirs as $directory) {
              if (in_array($directory, $checked))
@@ -27,6 +28,7 @@
                echo '<input type="checkbox" name="dirs[]" value="' . $directory . '">' . $directory . ' <br>';
           }
           ?>
+          </div>
           <div id="allmessage">
             These are just the <?php echo $passNum;?> most recent directories
           </div>

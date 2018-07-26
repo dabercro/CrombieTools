@@ -491,6 +491,7 @@ class TFReader(object):
 
 class Function:
     def __init__(self, signature, prefixes):
+        logging.getLogger('Function').debug('%s %s', signature, prefixes)
         self.enum_name = re.match(r'(.*)\(.*\)', signature).group(1)
         self.prefixes = prefixes
         if prefixes:
@@ -644,6 +645,7 @@ if __name__ == '__main__':
                 # Get functions for setting values
                 match = re.match('^(\w+\(.*\))$', line)
                 if match:
+                    logging.getLogger('match-function').debug('%s', match.groups())
                     # Pass off previous function as quickly as possible to prevent prefix changing
                     if IN_FUNCTION:
                         functions.append(copy.deepcopy(IN_FUNCTION))
