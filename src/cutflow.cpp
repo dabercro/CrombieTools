@@ -1,3 +1,4 @@
+#include <cmath>
 #include <iostream>
 #include <iomanip>
 
@@ -18,15 +19,18 @@ int main(int argc, char* argv[]) {
   FileConfig::FileConfig fileconfig {std::string(argv[1])};
 
   Types::strings cuts {};
-  for (int iarg = 2; iarg < argc; ++iarg)
+  long unsigned maxwidth = 0;
+  for (int iarg = 2; iarg < argc; ++iarg) {
     cuts.push_back(argv[iarg]);
+    maxwidth = std::max(maxwidth, cuts.back().size());
+  }
 
   auto output = fileconfig.runfiles(Cutflow::SingleFile(cuts),
                                     Cutflow::Merge);
 
   for (unsigned icut = 0; icut < cuts.size(); ++icut)
-    std::cout << std::setw(30) << cuts[icut]
-              << std::setw(30) << output[icut]
+    std::cout << std::setw(maxwidth) << cuts[icut]
+              << std::setw(15) << output[icut]
               << std::endl;
 
   return 0;
