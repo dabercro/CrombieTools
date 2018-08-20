@@ -91,7 +91,8 @@ namespace crombie {
               First element is selection key. Second is the plot name.
     */
     FileConfig::MapFunc<SingleOut>
-      SingleFile (const std::vector<PlotConfig::Plot>& plots,
+      SingleFile (const FileConfig::FileConfig& files,
+                  const std::vector<PlotConfig::Plot>& plots,
                   const Selection::SelectionConfig& selections,
                   const Uncertainty::UncertaintyInfo& unc,
                   const bool unblind = false,

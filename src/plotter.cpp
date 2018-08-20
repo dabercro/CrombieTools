@@ -43,7 +43,7 @@ int main(int argc, char* argv[]) {
   // Output is a map of vectors of Plot objects
   // The map key is the selection, vector is parallel to the ``plots`` variable above
   // Plot objects can make each plot
-  auto outputs = files.runfiles(Plotter::SingleFile(plots, regions, unc, unblind),
+  auto outputs = files.runfiles(Plotter::SingleFile(files, plots, regions, unc, unblind),
                                 Plotter::Merge(files));
 
   // Write plots

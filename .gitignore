@@ -5,6 +5,13 @@
 *.d
 *~
 test/*/*
+SubmitTools/condor/test/*
+
+# Doxygen-generated stuff
 docs/*/*
-.idea/*
-include/*.h
+
+# Some executable
+bin/crombie?*
+
+# For quick tests. Need unit tests.
+src/test.cpp

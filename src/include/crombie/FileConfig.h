@@ -172,6 +172,9 @@ namespace crombie {
       /// Read the directory infos
       const std::vector<DirectoryInfo>& get_dirs () const { return dirinfos; }
 
+      /// Read a single directory info
+      const DirectoryInfo& get_dir (const std::string& dirname) const;
+
       /// Say if this object has MC directories stored in it
       const bool has_mc () const { return _has_mc; }
       /// Say if this object has data directories stored in it
@@ -206,6 +209,15 @@ namespace crombie {
         std::stringstream input {inputdir + " {}"};
         input >> *this;
       }
+    }
+
+
+    const DirectoryInfo& FileConfig::get_dir(const std::string& dirname) const {
+      for (auto& dir : dirinfos)
+        if (dir.name == dirname)
+          return dir;
+
+      throw std::logic_error{dirname + " does not seem to be a valid directory name"};
     }
 
 

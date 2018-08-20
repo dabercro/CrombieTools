@@ -43,7 +43,7 @@ int main(int argc, char* argv[]) {
     requested.push_back(std::make_pair(elems[0], elems[1]));
   }
 
-  auto outputs = files.runfiles(Plotter::SingleFile(plots, regions, unc, true, requested),
+  auto outputs = files.runfiles(Plotter::SingleFile(files, plots, regions, unc, true, requested),
                                 Plotter::Merge(files));
 
   Datacard::dumpplots(argv[2], selections, unc, outputs);

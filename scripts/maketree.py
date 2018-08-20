@@ -158,7 +158,7 @@ def check_uncertainties(input_line):
 
     pref = Prefix.get(prefixes[0] if prefixes else '')
     for unc, val in Uncertainty.uncs.items():
-        beginning = re.match(r'(^\w*)', input_line.lstrip('#')).group(1)
+        beginning = re.match(r'(^\w*)', input_line.lstrip('# ')).group(1)
 
         if beginning.endswith('Up') or beginning.endswith('Down') or '%s_%s' % (pref.val, beginning) in val.branches or not beginning:
             continue
@@ -275,7 +275,7 @@ class Parser:
         if match:
             input_line = input_line.replace(match.group(1), subprocess.check_output(match.group(2).split()).strip())
 
-        match = re.match(r'(\#?)\?\s*([\w\[\]]*)\s*;\s*(\w*)\s*(;\s*([\w\s,]*?)\s*)?\?(((.*(<-|->|=))\s*).*)', input_line) # Parse uncertainties
+        match = re.match(r'(\#?\s*)\?\s*([\w\[\]]*)\s*;\s*(\w*)\s*(;\s*([\w\s,]*?)\s*)?\?(((.*(<-|->|=))\s*).*)', input_line) # Parse uncertainties
         if match:
             unc_name = match.group(3)
             if unc_name not in Uncertainty.uncs:
