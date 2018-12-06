@@ -1,5 +1,5 @@
 LDFLAGS = `root-config --glibs`
-CFLAGS = `root-config --cflags` -std=c++14
+CFLAGS = `root-config --cflags`
 PRE = ${CROMBIEPATH}/bin/crombie
 SOURCES := $(wildcard *.cpp)
 OUTPUTS := $(foreach src, $(SOURCES:.cpp=), $(PRE)$(src))
