@@ -33,7 +33,7 @@ then
     exit 1
 fi
 
-here=$CROMBIEPATH/test
+here=$CROMBIEPATH/old/test
 
 echo "Testing package installed at $CROMBIEPATH"
 

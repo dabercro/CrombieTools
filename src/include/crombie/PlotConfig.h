@@ -15,8 +15,8 @@ namespace crombie {
     /// All of the information needed to make a plot
     class Plot {
     public:
-    Plot(const std::string name, const unsigned nbins, const double low, const double max,
-         const std::string label, const std::string data_var = "", const std::string mc_var = "")
+    Plot(const std::string& name, const unsigned nbins, const double low, const double max,
+         const std::string& label, const std::string& data_var = "", const std::string& mc_var = "")
       : name{name}, nbins{nbins}, low{low}, max{max}, label{label},
         data_var{data_var.size() ? data_var : name}, mc_var{mc_var.size() ? mc_var : name} {
           Debug::Debug(__PRETTY_FUNCTION__, "New plot", name, nbins, low, max, label, data_var, mc_var);

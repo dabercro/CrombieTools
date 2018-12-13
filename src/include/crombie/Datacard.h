@@ -50,6 +50,7 @@ namespace crombie {
         // store the information for this plot
         
       }
+      return output;
     }
 
   }

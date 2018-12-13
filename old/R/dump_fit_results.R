@@ -1,7 +1,7 @@
 library(DBI)
 
 if (!exists("read_sqlite3")) {
-  source(paste(Sys.getenv("CROMBIEPATH"), "/R/read_datacards.R", sep=""))
+  source(paste(Sys.getenv("CROMBIEPATH"), "/old/R/read_datacards.R", sep=""))
 }
 
 create_results_tables <- function (file_name) {

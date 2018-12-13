@@ -13,4 +13,4 @@ mkdir -p $workdir
 cp $CMSSW_BASE/condor.tgz $workdir
 
 echo "cd $workdir"
-echo "$CROMBIEPATH/SubmitTools/condor/run.sh $1"
+echo "$CROMBIEPATH/old/SubmitTools/condor/run.sh $1"

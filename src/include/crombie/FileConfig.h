@@ -56,7 +56,7 @@ namespace crombie {
     /// Default constructor
     FileInfo() {}
     /// Set values for everything in the structure
-    FileInfo(const Type type, const std::string dirname, const std::string filename, const Types::strings& cuts = {"1.0"})
+    FileInfo(const Type type, const std::string& dirname, const std::string& filename, const Types::strings& cuts = {"1.0"})
     : type{type}, dirname{dirname}, name{filename}, size{FileSystem::get_size(name.data())}, cuts{cuts} {
       Debug::Debug(__PRETTY_FUNCTION__, dirname, filename, size, cuts.size());
     }
@@ -76,16 +76,16 @@ namespace crombie {
        @param cut Is the cut applied to the file to create this process
        @param style Some style number that is used to make plots
      */
-    Process(const std::string treename,
-            const std::string entry,
-            const std::string cut,
+    Process(const std::string& treename,
+            const std::string& entry,
+            const std::string& cut,
             const short style)
     : treename{treename}, legendentry{entry}, cut{cut}, style{style} {
       std::replace(legendentry.begin(), legendentry.end(), '_', ' ');
     }
-      const std::string treename;
+      const std::string& treename;
       std::string legendentry;
-      const std::string cut;
+      const std::string& cut;
       const short style;
     };
 
@@ -97,7 +97,7 @@ namespace crombie {
     class DirectoryInfo {
     public:
 
-      DirectoryInfo (const std::string line, const Type type, const std::vector<Process>& processes)
+      DirectoryInfo (const std::string& line, const Type type, const std::vector<Process>& processes)
         : name{getname(line)}, xs{getxs(line)}, type{type}, processes{processes} {
         Debug::Debug(__PRETTY_FUNCTION__, line, name, xs, processes.size());
         fillfiles();
@@ -115,10 +115,10 @@ namespace crombie {
          Helper function to extract directory name from config line.
          If the config line is actually a file, then it returns the unchanged file name.
       */
-      static std::string getname(const std::string line);
+      static std::string getname(const std::string& line);
 
       /// Helper function to extract cross section
-      static double getxs(const std::string line) {
+      static double getxs(const std::string& line) {
         auto begin = line.find('{') + 1;
         auto val = line.substr(begin, line.find('}') - begin);
         return val.size() ? std::stod(val) : 0;
@@ -221,7 +221,7 @@ namespace crombie {
     }
 
 
-    std::string DirectoryInfo::getname(const std::string line) {
+    std::string DirectoryInfo::getname(const std::string& line) {
       std::string dir {line.substr(0, line.find(' '))};
       // Just return the file name if a .root file.
       return (dir.substr(dir.size() - 5, 5) == ".root") ? dir : dirclean(dir);

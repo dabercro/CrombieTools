@@ -3,6 +3,8 @@ export CrombieQueue=8nh
 
 export CrombieNLocalProcs=2
 
+CROMBIEPATH=$CROMBIEPATH/old
+
 export CrombieFileBase=test
 export CrombieEosDir=/store/user/dabercro/Nero/80X
 export CrombieRegDir=/afs/cern.ch/work/d/dabercro/eos/cms$CrombieEosDir

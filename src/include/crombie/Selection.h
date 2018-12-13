@@ -16,7 +16,7 @@ namespace crombie {
 
     class Selection {
     public:
-    Selection(const std::string cut, const std::string mc, const std::string data, const bool blinded)
+    Selection(const std::string& cut, const std::string& mc, const std::string& data, const bool blinded)
       : cut{cut}, data{data}, mc{mc}, blinded{blinded} {
         Debug::Debug(__PRETTY_FUNCTION__, "Selection:", cut, "---", mc, "---", data);
       }
@@ -81,7 +81,7 @@ namespace crombie {
         }
         catch(const std::out_of_range& e) {
           std::cerr << "Exception locating " << cut << std::endl;
-          throw e;
+          throw;
         }
       };
 

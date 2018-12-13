@@ -8,7 +8,7 @@ library(plyr)
 library(reshape2)
 
 load <- function(file_name, local=FALSE) {
-  source(paste(Sys.getenv("CROMBIEPATH"), "/R/", file_name, ".R", sep=""), local=local)
+  source(paste(Sys.getenv("CROMBIEPATH"), "/old/R/", file_name, ".R", sep=""), local=local)
 }
 
 input_file = args[1]
