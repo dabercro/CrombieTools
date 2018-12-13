@@ -3,14 +3,12 @@ export CrombieQueue=8nh
 
 export CrombieNLocalProcs=2
 
-CROMBIEPATH=$CROMBIEPATH/old
-
 export CrombieFileBase=test
 export CrombieEosDir=/store/user/dabercro/Nero/80X
 export CrombieRegDir=/afs/cern.ch/work/d/dabercro/eos/cms$CrombieEosDir
-export CrombieTempDir=$CROMBIEPATH/test/TempOut
-export CrombieFullDir=$CROMBIEPATH/test/FullOut
-export CrombieSkimDir=$CROMBIEPATH/test/SkimOut
+export CrombieTempDir=$CROMBIEPATH/old/test/TempOut
+export CrombieFullDir=$CROMBIEPATH/old/test/FullOut
+export CrombieSkimDir=$CROMBIEPATH/old/test/SkimOut
 export CrombieDirList=
 
 export CrombieSlimmerScript=runSlimmer.py
