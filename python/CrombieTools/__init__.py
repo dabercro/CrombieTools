@@ -1,5 +1,5 @@
 """ @package CrombieTools
-Base package module of everything used through python.
+1;95;0cBase package module of everything used through python.
 
 This contains a useful functions for compiling objects while loading
 them into ROOT and for creating directories from environment variables
@@ -24,7 +24,7 @@ if ROOT:
     ROOT.gROOT.SetBatch(True)
 
 """Location of CrombieTools package, based on environment."""
-CrombieDir = os.environ['CROMBIEPATH']
+CrombieDir = os.environ['CROMBIEPATH'] + '/old'
 
 if CrombieDir == '':
     print('#########################################################')

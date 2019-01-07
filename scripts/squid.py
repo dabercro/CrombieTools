@@ -131,7 +131,7 @@ def prepare_for_submit(jobs):
 
     # Copy the condor config template and update it
     shutil.copy2(os.path.join(os.environ['CROMBIEPATH'],
-                              'SubmitTools/condor/condor.cfg'),
+                              'old/SubmitTools/condor/condor.cfg'),
                  local_condor)
 
     condor_cfg_name = os.path.join(local_condor, 'condor.cfg')
@@ -141,7 +141,7 @@ def prepare_for_submit(jobs):
     with open(condor_cfg_name, 'a') as condor_cfg:
         condor_cfg.write('Executable = %s\n' % \
                              os.path.join(os.environ['CROMBIEPATH'],
-                                          'SubmitTools/condor/run.sh'))
+                                          'old/SubmitTools/condor/run.sh'))
         condor_cfg.write('transfer_input_files = %s\n' % tarball)
 
         # Set the output log locations and the file mapping

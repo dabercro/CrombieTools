@@ -23,21 +23,22 @@ namespace crombie {
 
       Debug::Debug(__PRETTY_FUNCTION__, "progress", progress, max);
 
-      if (not max)
-        throw std::runtime_error{"Nothing to run over."};
-
-      // Draw shitty progress bar
-      std::cout << '\r' << '[';
-      for (unsigned i = 0; i < max; i++) {
-        if (i < progress)
-          std::cout << '=';
-        else if (i == progress)
-          std::cout << '>';
-        else
-          std::cout << ' ';
+      if (max) {
+        // Draw shitty progress bar
+        std::cout << '\r' << '[';
+        for (unsigned i = 0; i < max; i++) {
+          if (i < progress)
+            std::cout << '=';
+          else if (i == progress)
+            std::cout << '>';
+          else
+            std::cout << ' ';
+        }
+        std::cout << "] " << progress * 100/max << '%';
+        std::flush(std::cout);
       }
-      std::cout << "] " << progress * 100/max << '%';
-      std::flush(std::cout);
+      else
+        throw std::runtime_error{"Nothing to run over."};
     }
 
     /**

@@ -4,7 +4,7 @@
 *.so
 *.d
 *~
-test/*/*
+old/test/*/*
 SubmitTools/condor/test/*
 
 # Doxygen-generated stuff

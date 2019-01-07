@@ -4,6 +4,9 @@ full=$1
 
 testDir="test"
 
+# Overwrite
+CROMBIEPATH=$CROMBIEPATH/old
+
 for dir in `ls $CROMBIEPATH/templates`
 do
 

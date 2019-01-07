@@ -89,7 +89,7 @@ _crombie_subs () {                                  # Function to fill COMPREPLY
     elif [ "${COMP_WORDS[1]}" = "compile" ]         # If "crombie compile" are the first two words,
     then                                            #   user can give an array of Crombie objects
 
-        fullobjects=($CROMBIEPATH/*/src/*.cc)       # Get the list of loadable objects
+        fullobjects=($CROMBIEPATH/old/*/src/*.cc)   # Get the list of loadable objects
         objects=()                                  # Initialize fill list
 
         for obj in ${fullobjects[@]}

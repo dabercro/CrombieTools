@@ -92,7 +92,7 @@ namespace crombie {
     }
 
     /// Get the size of a file
-    unsigned long get_size(const std::string name) {
+    unsigned long get_size(const std::string& name) {
       if (is_xrd(name))
         return xrd_get_size(name);
       struct stat file_stat;
@@ -101,7 +101,7 @@ namespace crombie {
     }
 
     /// Create directories, recursively if needed
-    void mkdirs(const std::string path) {
+    void mkdirs(const std::string& path) {
       char path_array[512];
       // Stick a slash on the end to trick our character flipping
       auto addslash = path;
