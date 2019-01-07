@@ -357,10 +357,16 @@ namespace crombie {
                 inlock.unlock();
                 if (not running)
                   break;
-                auto fileoutput = map(info);
-                outlock.lock();
-                outputs[info.dirname].push_back(std::move(fileoutput));
-                outlock.unlock();
+                try {
+                  auto fileoutput = map(info);
+                  outlock.lock();
+                  outputs[info.dirname].push_back(std::move(fileoutput));
+                  outlock.unlock();
+                }
+                catch (const std::exception& e) {
+                  std::cerr << "Cannot run over file " << info.name << std::endl;
+                  std::cerr << e.what() << std::endl;
+                }
               }
             })
           );

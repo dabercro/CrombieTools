@@ -135,7 +135,14 @@ namespace crombie {
     }
 
     template<typename... Args> Tree::Tree(const std::string& infile, Args... args)
-      : file{TFile::Open(infile.data())}, tree{get<TTree>(Misc::env("tree", "events"))}, nentries{tree->GetEntries()}, forms{tree} {
+      : file{TFile::Open(infile.data())} {
+      if (not file)
+        std::runtime_error(std::string("Error opening file ") + infile);
+
+      tree = get<TTree>(Misc::env("tree", "events"));
+      nentries = tree->GetEntries();
+      forms = Formulas(tree);
+
       tree->SetBranchStatus("*", 0);
       auto needed = needed_branches(*tree, args...);
       for (auto need : needed)

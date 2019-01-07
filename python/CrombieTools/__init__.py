@@ -9,15 +9,19 @@ the package.
 @author Daniel Abercrombie <dabercro@mit.edu>
 """
 
-import ROOT
-ROOT.PyConfig.IgnoreCommandLineOptions = True
+try:
+    import ROOT
+    ROOT.PyConfig.IgnoreCommandLineOptions = True
+except:
+    ROOT = None
 
 import os
 import re
 
 __all__ = ['AnalysisTools', 'CommonTools', 'PlotTools', 'SkimmingTools', 'Parallelization']
 
-ROOT.gROOT.SetBatch(True)
+if ROOT:
+    ROOT.gROOT.SetBatch(True)
 
 """Location of CrombieTools package, based on environment."""
 CrombieDir = os.environ['CROMBIEPATH']
@@ -33,11 +37,13 @@ if CrombieDir == '':
     print('#########################################################')
     exit(1)
 
-for package in __all__:
-    if os.path.exists(CrombieDir + '/' + package + '/interface'):
-        ROOT.gSystem.AddIncludePath('-I' + CrombieDir + '/' + package + '/interface/')
+if ROOT:
+    for package in __all__:
+        if os.path.exists(CrombieDir + '/' + package + '/interface'):
+            ROOT.gSystem.AddIncludePath('-I' + CrombieDir + '/' + package + '/interface/')
 
-ROOT.gROOT.LoadMacro(CrombieDir + '/PlotTools/interface/KinematicFunctions.h')
+if ROOT:
+    ROOT.gROOT.LoadMacro(CrombieDir + '/PlotTools/interface/KinematicFunctions.h')
 
 """Key -- Class to load : Value -- List of classes that must be loaded first."""
 dependencies = { 'FlatSkimmer' :         ['GoodLumiFilter'],
