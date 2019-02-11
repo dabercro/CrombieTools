@@ -244,7 +244,7 @@ class Parser:
             input_line = input_line.replace('->', pointer_holder)
             for matches in list(re.finditer(r'<([^<>{}]*){(.*?)}([^<>]*)>', input_line)) + list(re.finditer(r'<([^<>{}]*)\|([^\|]*?)\|([^<>\|]*)>', input_line)):
                 beg, end = ('<', '>') if '|' in matches.group(1) or '{' in matches.group(3) and '}' in matches.group(3) else ('', '')
-                for splitter in [', ', ' + ', ' - ', ' * ', ' / ']:
+                for splitter in [', ', ' + ', ' - ', ' * ', ' / ', ' : ']:
                     if splitter.strip() in matches.group(2):
                         input_line = input_line.replace(
                             matches.group(0),
