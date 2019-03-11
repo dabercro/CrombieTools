@@ -120,9 +120,16 @@ def prepare_for_submit(jobs):
 
     # Check that the tarball exists
     tarball = os.path.join(os.environ['CMSSW_BASE'], 'condor.tgz')
+
     if not os.path.exists(tarball):
         LOG.error('%s is missing. Make sure you make this.', tarball)
         exit(3)
+
+    target_tar = os.path.join(os.environ['CrombieBakDir'], 'condor.tgz')
+    if not os.path.exists(target_tar):
+        os.makedirs(os.environ['CrombieBakDir'])
+        shutil.copy(tarball, target_tar)
+        shutil.copy('CrombieSlimmingConfig.sh', os.environ['CrombieBakDir'])
 
     # Get locations of condor config, and html path
     local_condor = os.path.join(os.environ['PWD'], 'condor')

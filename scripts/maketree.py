@@ -794,8 +794,12 @@ if __name__ == '__main__':
         write("""#ifndef CROMBIE_{0}_H
 #define CROMBIE_{0}_H
 """.format(classname.upper()))
-        for inc in set(includes):
+        done = set()
+        for inc in includes:
+            if inc in done:
+                continue
             write('#include %s' % inc)
+            done.add(inc)
 
         # If using Tensorflow, write this error handling function
         if TFReader.readers:

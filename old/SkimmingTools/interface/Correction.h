@@ -31,7 +31,7 @@ class Correction {
      If two histograms are given the corrector applies the first histogram divided by the second.
   */
   Correction(std::string filename, const char* histname, const char* denom = 0);
-  ~Correction() { delete hist; }
+  ~Correction() { /* delete hist; */ }
 
   /// Get the correction value from the histogram
   double GetCorrection(const double xval, const double yval);
