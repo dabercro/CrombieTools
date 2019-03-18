@@ -119,14 +119,18 @@ def prepare_for_submit(jobs):
         return ''
 
     # Check that the tarball exists
+
+    # Where the Makefile puts the tarball
     tarball = os.path.join(os.environ['CMSSW_BASE'], 'condor.tgz')
-
-    if not os.path.exists(tarball):
-        LOG.error('%s is missing. Make sure you make this.', tarball)
-        exit(3)
-
+    # Where we want it
     target_tar = os.path.join(os.environ['CrombieBakDir'], 'condor.tgz')
+
     if not os.path.exists(target_tar):
+        # If not archived, save
+
+        # Make sure newest executable is installed
+        os.system('make install')
+
         os.makedirs(os.environ['CrombieBakDir'])
         shutil.copy(tarball, target_tar)
         shutil.copy('CrombieSlimmingConfig.sh', os.environ['CrombieBakDir'])
@@ -149,7 +153,7 @@ def prepare_for_submit(jobs):
         condor_cfg.write('Executable = %s\n' % \
                              os.path.join(os.environ['CROMBIEPATH'],
                                           'old/SubmitTools/condor/run.sh'))
-        condor_cfg.write('transfer_input_files = %s\n' % tarball)
+        condor_cfg.write('transfer_input_files = %s\n' % target_tar)
 
         # Set the output log locations and the file mapping
         for job, output_dir, output_name in jobs:
@@ -339,8 +343,6 @@ if __name__ == '__main__':
 
     # Submit new jobs
     if len(sys.argv) > 1:
-        # Make sure newest executable is installed
-        os.system('make install')
         # Proxy in case we need to copy files
         os.system('voms-proxy-init -voms cms --valid 140:00')
         submit(add_samples_to_database(sys.argv[1]))
