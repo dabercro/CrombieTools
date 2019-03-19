@@ -216,6 +216,7 @@ FileConfigReader::~FileConfigReader()
 void
 FileConfigReader::ResetConfig(FileType type)
 {
+  DisplayFunc(__func__);
   std::vector<FileInfo*>* fileInfo = GetFileInfo(type);
 
   for (UInt_t iInfo = 0; iInfo != fileInfo->size(); ++iInfo)
@@ -227,6 +228,7 @@ FileConfigReader::ResetConfig(FileType type)
 void
 FileConfigReader::ResetAllConfig()
 {
+  DisplayFunc(__func__);
   ResetConfig(kBackground);
   ResetConfig(kSignal);
   ResetConfig(kData);

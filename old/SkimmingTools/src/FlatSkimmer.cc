@@ -84,6 +84,12 @@ void FlatSkimmer::Skim(TString fileName)
     keepFile.close();
   }
 
+  for (auto* branch : *(inTree->GetListOfBranches())) {
+    auto name = branch->GetName();
+    if (fCut.Contains(name))
+      inTree->SetBranchStatus(name, 1);
+  }
+
   TTreeFormula *cutter = new TTreeFormula("cutter",fCut,inTree);
 
   UInt_t runNum  = 0;

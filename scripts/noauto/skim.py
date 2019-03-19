@@ -23,6 +23,7 @@ parser.add_argument('-f', '--freq', metavar='NUM', dest='reportFreq', type=int, 
 parser.add_argument('-d', '--duplicate', action='store_true', dest='doDuplicate', help='Turn on duplicate checking.')
 parser.add_argument('--filters', metavar='FILE', nargs='*', dest='filters', default=[], help='Set the filter files.')
 parser.add_argument('--disable', metavar='FILE', type=str, dest='disableFile', default='', help='File that will remove branches from the full tree')
+parser.add_argument('--keep', metavar='FILE', type=str, dest='keepFile', default='', help='File that will keep branches in the full tree')
 parser.add_argument('--map', metavar='FILE', type=str, dest='mapfile', default='', help='File that will map input file names to output files')
 
 args = parser.parse_args()
@@ -55,6 +56,7 @@ skimmer.SetCut(args.cut)
 skimmer.SetReportFrequency(args.reportFreq)
 skimmer.SetCheckDuplicates(args.doDuplicate)
 skimmer.SetDisableFile(args.disableFile)
+skimmer.SetKeepFile(args.keepFile)
 for copyObject in args.copyObjects:
     skimmer.AddCopyObject(copyObject)
 for eventFilter in args.filters:
