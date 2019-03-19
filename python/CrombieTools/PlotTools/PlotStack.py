@@ -55,12 +55,12 @@ class ParallelStackContainer:
     Makes the N minus 1 cuts on the object before calling PlotStack::MakeCanvas()
     """
 
-    def __init__(self, plotter, overwrite, showCutLines, limitHistsDir, systematics):
+    def __init__(self, plotter, overwrite, showCutLines, limitHistsDir, systematics=None):
         self.Plotter = plotter
         self.Overwrite = overwrite
         self.ShowCutLines = showCutLines
         self.LimitHistsDir = limitHistsDir
-        self.Systematics = systematics
+        self.Systematics = systematics or {}
 
     def Copy(self):
         return ParallelStackContainer(plotter.Copy(), self.Overwrite, self.ShowCutLines, self.LimitHistsDir)

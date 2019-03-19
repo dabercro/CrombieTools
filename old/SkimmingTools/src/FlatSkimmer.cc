@@ -72,6 +72,18 @@ void FlatSkimmer::Skim(TString fileName)
     disableFile.close();
   }
 
+  if (fKeepFile != "") {
+    inTree->SetBranchStatus("*", 0);
+    std::ifstream keepFile(fKeepFile.Data());
+    TString branchToKeep;
+    while (!keepFile.eof()) {
+      keepFile >> branchToKeep;
+      if (branchToKeep != "")
+        inTree->SetBranchStatus(branchToKeep, 1);
+    }
+    keepFile.close();
+  }
+
   TTreeFormula *cutter = new TTreeFormula("cutter",fCut,inTree);
 
   UInt_t runNum  = 0;

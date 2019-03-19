@@ -62,6 +62,9 @@ class FlatSkimmer : public InOutDirectoryHolder, public ProgressReporter
   /// Gives a file that contains names of branches to not activate
   void         SetDisableFile       ( TString name )             { fDisableFile = name;          }
 
+  /// Gives a file that contains names of branches to activate
+  void         SetKeepFile          ( TString name )             { fKeepFile = name;             }
+
  private:
   std::set<TString>    fEventFilter;             ///< Events to skim out
   GoodLumiFilter       fGoodLumiFilter;          ///< GoodLumiFilter for this FlatSkimmer
@@ -71,6 +74,7 @@ class FlatSkimmer : public InOutDirectoryHolder, public ProgressReporter
   TString              fLumiExpr = "lumiNumber";    ///< Branch for lumi number
   TString              fEventExpr = "eventNumber";  ///< Branch for event number
   TString              fDisableFile = "";        ///< File to look for branches to disable
+  TString              fKeepFile = "";           ///< File to look for branches to keep
   Int_t                fCheckDuplicates = false; ///< Flag to check duplicates
   std::vector<TString> fCopyObjects;             ///< List of TObject names to also copy from original file
 
