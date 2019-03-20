@@ -486,7 +486,7 @@ class TFReader(object):
                         session=self.session, pref=pref, target=target,
                         node_index=min(len(self.output_nodes) - 1, target_index),
                         target_index=target_index - min(len(self.output_nodes) - 1, target_index)
-                        ) for target_index, target in enumerate(self.targets)])
+                        ).lstrip('_') for target_index, target in enumerate(self.targets)])
 
 
 class Function:
