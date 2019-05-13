@@ -8,5 +8,14 @@ fi
 
 for f in "$@"
 do
-    cp -v $f $outdir
+
+    target=$outdir/$(basename $f)
+
+    if [ -f $target ]
+    then
+        echo "!!! $target already exists! Not overwriting. You have to delete !!!"
+    else
+        cp -v $f $outdir
+    fi
+
 done

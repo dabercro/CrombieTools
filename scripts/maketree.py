@@ -228,6 +228,10 @@ class Parser:
         if not input_line or self.in_comment:
             return []
 
+        match = re.match(r'.*(\`(.*)\`).*', input_line)   # Search for shell commands
+        if match:
+            input_line = input_line.replace(match.group(1), subprocess.check_output(['bash', '-c', match.group(2)]).strip())
+
         for word, meaning in DEFINITIONS.iteritems():
             input_line = input_line.replace(word, meaning)
 
@@ -270,10 +274,6 @@ class Parser:
                 lines[1] = lines[1].replace('+-', '-')
 
             return [line for l in lines for line in self.parse(l)]  # Recursively parse lines in case multiple expansions are present
-
-        match = re.match(r'.*(\`(.*)\`).*', input_line)   # Search for shell commands
-        if match:
-            input_line = input_line.replace(match.group(1), subprocess.check_output(match.group(2).split()).strip())
 
         match = re.match(r'(\#?\s*)\?\s*([\w\[\]]*)\s*;\s*(\w*)\s*(;\s*([\w\s,]*?)\s*)?\?(((.*(<-|->|=))\s*).*)', input_line) # Parse uncertainties
         if match:
@@ -464,9 +464,10 @@ class TFReader(object):
     def create(self):
         # Just load the graph when the object is created. Simple.
         return """  tensorflow::GraphDef {session}_graph_def;
-  check_tf(tensorflow::ReadBinaryProto(tensorflow::Env::Default(), "{weights}", &{session}_graph_def));
+  check_tf(tensorflow::Read{encoding}Proto(tensorflow::Env::Default(), "{weights}", &{session}_graph_def));
   check_tf({session}->Create({session}_graph_def));
-""".format(session=self.session, weights=self.weights)
+""".format(encoding='Text' if self.weights.endswith('.pbtxt') else 'Binary',
+           session=self.session, weights=self.weights)
 
     def eval(self, mod_fill):
         # Initialize input tensors
@@ -752,7 +753,7 @@ if __name__ == '__main__':
                 # Probably a branch line
                 for branch_line in check_uncertainties(line):
                     # Add branch names individually
-                    match = re.match(r'(\#\s*)?([\w\[\]]*)(/([\w\:]*))?(\s=\s(.*?))?(\s->\s(.*?))?(\s<-\s(.*?))?$', branch_line)
+                    match = re.match(r'(\#\s*)?([\w\[\]]*)(/([\w\:\<\>]*))?(\s=\s(.*?))?(\s->\s(.*?))?(\s<-\s(.*?))?$', branch_line)
                     if match:
                         var = match.group(2)
                         data_type = match.group(4) or DEFAULT_TYPE
