@@ -67,7 +67,8 @@ do
         if findtree.py $FULL_IN
         then
 
-            ln -s $FULL_IN $IN_FILE
+#            ln -s $FULL_IN $IN_FILE
+            cp -v $FULL_IN $IN_FILE
 
 #            if [ -f $NEW_INPUT_DIR/$IN_FILE ]
 #            then

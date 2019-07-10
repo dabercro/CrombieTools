@@ -62,7 +62,10 @@ def main(argv):
     for checkfile in args.files:
         print 'Searching', checkfile
 
-        if os.path.isfile(checkfile):
+        if not os.stat(checkfile).st_size:
+            print 'Error, file has zero size'
+            exitcode += 50
+        elif os.path.isfile(checkfile):
             NumberOfEvents = GetNumEntries(checkfile, args.classname, args.branches)
 
             if NumberOfEvents == -1:

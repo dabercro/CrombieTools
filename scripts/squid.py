@@ -1,6 +1,16 @@
 #! /usr/bin/python
 
 
+"""
+Environment variables used:
+
+maxjobs - The maximum number of jobs to submit
+skipfind - If set, does not verify the number of events, just checks for existence of tree
+noresub - If set, do not resubmit failed jobs
+sleeptime - If set, sleep for this many seconds between cycles
+"""
+
+
 import os
 import time
 import datetime
@@ -54,6 +64,8 @@ def add_samples_to_database(sample_file_name):
             files = [line.split()[1:3] for line in file_file if line.strip()]
 
         # Define a function that will separate the files and insert them into the submission queue
+        maxjobs = int(os.environ.get('maxjobs', 0))
+        added = 0
         input_files = ''
         total_events = 0
 
@@ -86,8 +98,11 @@ def add_samples_to_database(sample_file_name):
 
         # Split the files and add a job into the database when needed
         for index, file_name in enumerate(files):
+            if maxjobs and added == maxjobs:
+                break
             if index % int(os.environ['CrombieFilesPerJob']) == 0:
                 add_job()
+                added += 1
                 input_files = file_name[0]
                 total_events = int(file_name[1])
             else:
@@ -254,9 +269,13 @@ def check_jobs():
             num_events = curs.fetchone()[0]
 
             try:
-                LOG.debug('Checking %s has %s events', output_file, num_events)
-                subprocess.check_call(['crombie', 'findtree', '--class', 'TH1F', '--verify',
-                                       num_events, output_file])
+                if os.environ.get('skipfind') is None:
+                    LOG.debug('Checking %s has %s events', output_file, num_events)
+                    subprocess.check_call(['crombie', 'findtree', '--class', 'TH1F', '--verify',
+                                           num_events, output_file])
+                else:
+                    LOG.debug('Checking %s', output_file)
+                    subprocess.check_call(['crombie', 'findtree', output_file])
 
                 curs.execute("UPDATE queue SET status = 'finished' WHERE id = %s", job[0])
                 LOG.info('Job %s finished', job[0])
@@ -339,6 +358,10 @@ def check_bad_files():
 
 if __name__ == '__main__':
 
+    if '-h' in sys.argv or 'help' in sys.argv:
+        print __doc__
+        exit()
+
     jobs = 1
 
     # Submit new jobs
@@ -357,7 +380,7 @@ if __name__ == '__main__':
                  datetime.datetime.fromtimestamp(int(time.time())).strftime('%B %d, %Y %H:%M:%S'))
 
         if jobs:
-            time.sleep(300)
+            time.sleep(int(os.environ.get('sleeptime', 300)))
             # Remove held jobs
             os.system('condor_rm %s --constraint \'JobStatus == 5\'' % os.environ['USER'])
             # Check the panda files

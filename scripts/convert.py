@@ -10,7 +10,7 @@ import Queue
 parser = argparse.ArgumentParser()
 parser.add_argument('--input', dest='input', help='Input directory', required=True)
 parser.add_argument('--output', dest='output', help='Output directory', required=True)
-parser.add_argument('--cut', dest='cut', help='Cut to skim the files')
+parser.add_argument('--cut', dest='cut', help='Cut to skim the files', default='1')
 parser.add_argument('--nprocs', dest='nprocs', type=int, help='Number of processes to do the conversion', default=1)
 parser.add_argument('--branchfiles', dest='files', nargs='+', help='Files with branch names to convert', required=True)
 

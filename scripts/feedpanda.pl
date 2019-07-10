@@ -53,8 +53,8 @@ chomp(@source = grep { /\.|(->)/ } @source);
 
 for (@source) {
     # Don't match with function members of event
-    if (/\bevent\.(\w+)(?!\w*\()/) {
-        push @branches, $1;
+    if (/\be(vent)?\.(\w+)(?!\w*\()/) {
+        push @branches, $2;
     }
 }
 

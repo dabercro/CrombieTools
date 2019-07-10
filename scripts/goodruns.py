@@ -35,18 +35,18 @@ if __name__ == '__main__':
 #include <limits.h>
 #include <unordered_set>
 
-template <typename T>
-bool checkrun(T run, T lumi) {
+template <typename R, typename L>
+bool checkrun(R run, L lumi) {
   if (run == 1)
     return true;
 
-  using key_t = unsigned long;
-  static_assert(sizeof(key_t) >= sizeof(T)*2, "Key type is too small");
+  using key_t = unsigned long long;
+  static_assert(sizeof(key_t) >= sizeof(R) + sizeof(L), "Key type is too small");
 
   static key_t last_key = 0;
   static bool last_result = false;
 
-  key_t key = (static_cast<key_t>(run) << (sizeof(T) * CHAR_BIT)) + lumi;
+  key_t key = (static_cast<key_t>(run) << (sizeof(R) * CHAR_BIT)) + lumi;
   if (key == last_key)
     return last_result;
   last_key = key;
@@ -55,7 +55,7 @@ bool checkrun(T run, T lumi) {
 """)
 
         output.write('    ' + ',\n    '.join(
-            sum([['(%sl << (sizeof(T) * CHAR_BIT)) + %s' % (run, lumi) for lumi in goodlumis[run]] for run in goodlumis], [])
+            sum([['(%sl << (sizeof(R) * CHAR_BIT)) + %s' % (run, lumi) for lumi in goodlumis[run]] for run in goodlumis], [])
         ))
 
         output.write("""
