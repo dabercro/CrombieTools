@@ -105,7 +105,7 @@ class Branch:
             pref, name, data_type, default_val, is_saved
             )
 
-        self.is_vector = name.endswith('[]')
+        self.is_vector = name.endswith('[]') or 'vector' in data_type
         self.prefix = pref
         self.name = name.rstrip('[]')
         self.data_type = data_type
@@ -118,7 +118,7 @@ class Branch:
 
     def declare(self):
         store_type = TYPES.get(self.data_type, self.data_type)
-        if self.is_vector:
+        if self.is_vector and 'vector' not in self.data_type:
             store_type = 'std::vector<%s>' % store_type
         return '  %s %s;' % (store_type, self.name)
 
