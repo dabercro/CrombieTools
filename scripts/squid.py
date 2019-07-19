@@ -81,8 +81,8 @@ def add_samples_to_database(sample_file_name):
                 curs.execute(
                     """
                     INSERT IGNORE INTO queue
-                    (exe, input_dir, output_dir, input_files, output_file, cmssw, entered, scram_arch, base, total_events)
-                    VALUES (%s, %s, %s, %s, %s, %s, NOW(), %s, %s, %s)
+                    (exe, input_dir, output_dir, input_files, output_file, cmssw, entered, scram_arch, base, total_events, user)
+                    VALUES (%s, %s, %s, %s, %s, %s, NOW(), %s, %s, %s, %s)
                     """,
                     (os.environ['CrombieExe'],
                      os.path.join('/store/user/paus', os.environ['CrombieInSample'], sample),
@@ -92,7 +92,8 @@ def add_samples_to_database(sample_file_name):
                      os.environ['CMSSW_VERSION'],
                      os.environ['SCRAM_ARCH'],
                      os.environ['CMSSW_BASE'],
-                     total_events
+                     total_events,
+                     os.environ['USER']
                      )
                     )
 
@@ -112,7 +113,8 @@ def add_samples_to_database(sample_file_name):
         add_job()
 
     # Get all the new jobs and output directories from the database and return them
-    curs.execute("SELECT id, output_dir, output_file FROM queue WHERE status = 'new'")
+    curs.execute("SELECT id, output_dir, output_file FROM queue WHERE status = 'new' and user = %s",
+                 os.environ['USER'])
     jobs = [(int(row[0]), row[1], row[2]) for row in curs.fetchall()]
 
     conn.commit()
@@ -231,7 +233,8 @@ def check_jobs():
     conn, curs = connect()
 
     # Check if jobs finished
-    curs.execute("SELECT id, output_dir, output_file FROM queue WHERE status != 'finished'")
+    curs.execute("SELECT id, output_dir, output_file FROM queue WHERE status != 'finished' and user = %s",
+                 os.environ['USER'])
     jobs = [(int(row[0]), row[1], row[2]) for row in curs.fetchall()]
 
     condor_q = "condor_q " + os.environ['USER'] + " -format '%s\n' Args"
