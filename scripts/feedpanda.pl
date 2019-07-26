@@ -103,15 +103,17 @@ print $out <<HEAD;
 
 #include "PandaTree/Objects/interface/Event.h"
 
-void feedpanda(panda::Event& event, TTree* input) {
-  event.setStatus(*input, {"!*"});
-  event.setAddress(*input,
+namespace crombie {
+  void feedpanda(panda::Event& event, TTree* input) {
+    event.setStatus(*input, {"!*"});
+    event.setAddress(*input,
 HEAD
 
-print $out '    {"' . join("\",\n     \"", @branches) . '"';
+print $out '      {"' . join("\",\n       \"", @branches) . '"';
 
 print $out <<HEAD;
-});
+  });
+  }
 }
 
 #endif
