@@ -49,12 +49,16 @@ foreach my $infile (@ARGV) {
 }
 
 # Filter to get the members called
-chomp(@source = grep { /\.|(->)/ } @source);
+chomp(@source = grep { /\.|(->)|(::)/ } @source);
 
 for (@source) {
     # Don't match with function members of event
-    if (/\be(vent)?\.(\w+)(?!\w*\()/) {
+    while (/\be(vent)?\.(\w+)(?!\w*\()/g) {
         push @branches, $2;
+    }
+    # Also match offsets
+    while (/\&panda::Event::(\w+)/g) {
+        push @branches, $1;
     }
 }
 

@@ -210,6 +210,8 @@ class Parser:
     def parse(self, raw_line):
         input_line = raw_line.split(self.comment)[0].strip()
 
+        logging.getLogger('Input line').debug(input_line)
+
         if self.prev_line:
             input_line = self.prev_line + input_line
 
@@ -228,12 +230,23 @@ class Parser:
         if not input_line or self.in_comment:
             return []
 
+        match = re.match(r'DEFINE\s+(\w+)\s+(.*)', input_line)
+        if match:
+            logging.getLogger('Define').debug('Adding definition for %s: %s', match.group(1), match.group(2))
+            DEFINITIONS[match.group(1)] = match.group(2)
+            return []
+
         match = re.match(r'.*(\`(.*)\`).*', input_line)   # Search for shell commands
         if match:
             input_line = input_line.replace(match.group(1), subprocess.check_output(['bash', '-c', match.group(2)]).strip())
 
         for word, meaning in DEFINITIONS.iteritems():
             input_line = input_line.replace(word, meaning)
+
+        match = re.match(r'\s*(\#?)\s*INCLUDE\s*(\S+)', input_line)   # Search for substitutions
+        if match:
+            with open(match.group(2), 'r') as subfile:
+                return [line for l in subfile for line in self.parse(l)]
 
         # Expand range operators '..'
         expand = re.search(r'(\d+)\.\.(\d+)', input_line)
@@ -246,7 +259,8 @@ class Parser:
         while input_line != start:
             start = input_line
             input_line = input_line.replace('->', pointer_holder)
-            for matches in list(re.finditer(r'<([^<>{}]*){(.*?)}([^<>]*)>', input_line)) + list(re.finditer(r'<([^<>{}]*)\|([^\|]*?)\|([^<>\|]*)>', input_line)):
+            for matches in list(re.finditer(r'<(?!-)([^<>{}]*){(.*?)}([^<>]*)>', input_line)) + list(re.finditer(r'<([^<>{}]*)\|([^\|]*?)\|([^<>\|]*)>', input_line)):
+                logging.getLogger('expanding').debug(matches.groups() if matches else 'No match')
                 beg, end = ('<', '>') if '|' in matches.group(1) or '{' in matches.group(3) and '}' in matches.group(3) else ('', '')
                 for splitter in [', ', ' + ', ' - ', ' * ', ' / ', ' : ']:
                     if splitter.strip() in matches.group(2):
@@ -542,13 +556,14 @@ class Function:
         incr = ['++', '--']
         indent = ' ' * (4 if self.prefixes else 2)
         if val in incr:
-            return '%s%s%s%s;' % (indent,val, pref, var)
+            return '%s%s%s%s;' % (indent, val, pref, var)
         elif '~' in val:
             return '%sif (!(%s))\n  %s%s;' % (indent, Prefix.get(pref).replace(var),
                                               indent, 'return' if len(val) == 2 else 'throw')
         elif var.endswith('[]'):
             return '{indent}{pref}{var}.push_back({val});'.format(
-                indent=indent, pref=pref, var=var.rstrip('[]'), val=Prefix.get(pref).replace(val))
+                indent=indent, pref=pref, var=var.rstrip('[]'),
+                val=Prefix.get(pref).replace(val))
 
         op = '='
         if val[0] in '+-*/':
@@ -607,9 +622,6 @@ if __name__ == '__main__':
                     continue
 
                 # Define a "macro" for the config file
-                match = re.match(r'DEFINE\s+(\w+)\s+(.*)', line)
-                if match:
-                    DEFINITIONS[match.group(1)] = match.group(2)
                     continue
 
                 # Check for default values or reset function signature
@@ -755,6 +767,7 @@ if __name__ == '__main__':
                     # Add branch names individually
                     match = re.match(r'(\#\s*)?([\w\[\]]*)(/([\w\:\<\>]*))?(\s=\s(.*?))?(\s->\s(.*?))?(\s<-\s(.*?))?$', branch_line)
                     if match:
+                        logging.getLogger('branch-line').debug(match.groups())
                         var = match.group(2)
                         data_type = match.group(4) or DEFAULT_TYPE
                         val = (match.group(6) or DEFAULT_VAL).strip()

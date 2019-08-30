@@ -62,66 +62,14 @@ do
 
         FULL_IN=/mnt/hadoop/cms$INPUT_DIR/$IN_FILE
 
-        echo findtree.py $FULL_IN
-
-        if findtree.py $FULL_IN
+        if [ -f $FULL_IN ]
         then
 
-#            ln -s $FULL_IN $IN_FILE
             cp -v $FULL_IN $IN_FILE
-
-#            if [ -f $NEW_INPUT_DIR/$IN_FILE ]
-#            then
-#                rm $NEW_INPUT_DIR/$IN_FILE    # Clear up downloaded files no longer needed
-#            fi
 
         else
 
-            if [ ! -f $FULL_IN ]
-            then
-                STATUS="missing"
-            else
-                STATUS="corrupt"
-            fi
-
-            if [ ! -d $(dirname `dirname $FULL_IN`) ]
-            then
-
-                xrdcp root://xrootd.cmsaf.mit.edu//$INPUT_DIR/$IN_FILE .
-
-            elif [ -d $SCRATCH ]
-            then
-
-                echo ""
-                echo "xrdcp root://xrootd.cmsaf.mit.edu//$INPUT_DIR/$IN_FILE $NEW_INPUT_DIR/$IN_FILE"
-                echo "ln -s $NEW_INPUT_DIR/$IN_FILE $IN_FILE"
-                echo ""
-
-                test -d $NEW_INPUT_DIR || mkdir -p $NEW_INPUT_DIR
-
-                if ! findtree.py $NEW_INPUT_DIR/$IN_FILE
-                then
-                    test ! -f $NEW_INPUT_DIR/$IN_FILE || rm $NEW_INPUT_DIR/$IN_FILE
-                    xrdcp root://xrootd.cmsaf.mit.edu//$INPUT_DIR/$IN_FILE $NEW_INPUT_DIR/$IN_FILE
-                fi
-
-                ln -s $NEW_INPUT_DIR/$IN_FILE $IN_FILE
-
-                sleep 60
-
-                if ! findtree.py $IN_FILE
-                then
-                    STATUS="not_downloading"
-                fi
-
-            fi
-
-            wget -O $IN_FILE.report "http://t3serv001.mit.edu/~dabercro/squid/?report=$FULL_IN&status=$STATUS&me=$ID"
-
-            if [ "$STATUS" = "not_downloading" ]
-            then
-                exit 0     # Gracefully retreat
-            fi
+            xrdcp root://xrootd.cmsaf.mit.edu//$INPUT_DIR/$IN_FILE .
 
         fi
 
