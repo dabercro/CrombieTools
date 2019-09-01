@@ -243,10 +243,11 @@ class Parser:
         for word, meaning in DEFINITIONS.iteritems():
             input_line = input_line.replace(word, meaning)
 
-        match = re.match(r'\s*(\#?)\s*INCLUDE\s*(\S+)', input_line)   # Search for substitutions
+        match = re.match(r'\s*(\#?)\s*INCLUDE\s*(\S+)', input_line)   # Search for files to include
         if match:
             with open(match.group(2), 'r') as subfile:
-                return [line for l in subfile for line in self.parse(l)]
+                return [line for l in subfile
+                        for line in self.parse(l.lstrip(' #') if not match.group(1) else l)]
 
         # Expand range operators '..'
         expand = re.search(r'(\d+)\.\.(\d+)', input_line)
