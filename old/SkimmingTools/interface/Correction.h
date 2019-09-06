@@ -3,14 +3,25 @@
 
 #include <map>
 #include <string>
-#include <memory>
 
 #include "TFile.h"
+#include "TH2.h"
 
 // ROOT won't let us open files, load histograms, and close files peacefully,
 // but at least we can avoid opening files multiple times
 namespace {
-  std::map<std::string, std::unique_ptr<TFile>> files;
+
+  class Files : public std::map<std::string, TFile*> {
+  public:
+    ~Files () {
+      // Fuck ROOT
+      /* for (auto& file : *this) */
+      /*   file.second->Close(); */
+    }
+  };
+
+  Files files {};
+
 }
 
 /**
@@ -51,10 +62,9 @@ class Correction {
 template<typename H>
 Correction<H>::Correction(std::string filename, const char* histname, const char* denom)
 {
-  if (files.find(filename) == files.end()) {
-    std::unique_ptr<TFile> handle {TFile::Open(filename.data())};
-    files[filename] = std::move(handle);
-  }
+  if (files.find(filename) == files.end())
+    files[filename] = TFile::Open(filename.data());
+
   auto& in = files[filename];
 
   hist = static_cast<H*>(in->Get(histname)->Clone());
