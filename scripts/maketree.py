@@ -64,7 +64,7 @@ class Prefix:
     def go_back(self, line):
         if not self.val:
             return line
-        fix = lambda pref, l, ins: re.sub(r'(.+?)(?!\.)\b' + re.escape(pref) + r'(\w)',
+        fix = lambda pref, l, ins: re.sub(r'(.+?)(?!\.)\b' + re.escape(pref) + r'(\w|\b)',
                                           r'\1' + ins + r'\2', l)
 
         line = fix(self.val, line, '[]')
@@ -169,6 +169,9 @@ def check_uncertainties(input_line):
 
         check_line = pref.go_back(check_line)
 
+        logging.getLogger('Check Uncertainty').debug('Input: %s', input_line)
+        logging.getLogger('Check Uncertainty').debug('Check: %s', check_line)
+
         if check_line != input_line:
             if prefixes:
                 val.update(['%s_%s_%s' % (p, beginning, unc) for p in prefixes])
@@ -177,6 +180,9 @@ def check_uncertainties(input_line):
             new_line = check_line.replace(beginning, '%s_%s%s' % (beginning, unc, 'Up'), 1)
             output.append(new_line)
             output.append(new_line.replace('Up', 'Down'))
+
+    logging.getLogger('Uncertainties').debug('INPUT: %s', input_line)
+    logging.getLogger('Uncertainties').debug('OUTPUT: \n%s', '\n'.join(output))
 
     return output
 
@@ -714,7 +720,7 @@ if __name__ == '__main__':
                     continue
 
                 # Event filter
-                match = re.match(r'(\+\+|--)(.*)(\+\+|--)', line)
+                match = re.match(r'(\+\+|\-\-)(.*)(\+\+|\-\-)', line)
                 if match:
                     FILTER[match.group(1)] = ['if (!(%s))' % match.group(2).strip(),       # Filter at front (--) or back (++) of fill
                                               '  return;']

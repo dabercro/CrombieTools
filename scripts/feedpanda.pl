@@ -53,8 +53,8 @@ chomp(@source = grep { /\.|(->)|(::)/ } @source);
 
 for (@source) {
     # Don't match with function members of event
-    while (/\be(vent)?\.(\w+)(?!\w*\()/g) {
-        push @branches, $2;
+    while (/\be(vent)?(\.|->)(\w+)(?!\w*\()/g) {
+        push @branches, $3;
     }
     # Also match offsets
     while (/\&panda::Event::(\w+)/g) {

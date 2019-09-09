@@ -58,12 +58,19 @@ class CrombieDiffDoer:
                 if self.checkbranch:
                     from ROOT import TFile
                     file0 = TFile(self.dir0 + '/' + filename0)
+                    file1 = TFile(self.dir1 + '/' + filename1)
                     tree0 = getattr(file0, self.treeName)
+                    tree1 = getattr(file1, self.treeName)
 
                     tree0.AddFriend('tree1_thefriend=' + self.treeName, self.dir1 + '/' + filename1)
 
+                    otherbranches = [b.GetName() for b in tree1.GetListOfBranches()]
                     for branch in tree0.GetListOfBranches():
                         if branch.GetName() in self.skipBranches:
+                            continue
+
+                        if branch.GetName() not in otherbranches:
+                            print branch.GetName(), 'not in other tree'
                             continue
 
                         if self.doBranches and branch.GetName() not in self.doBranches:

@@ -7,7 +7,7 @@
 #include "TMath.h"
 #include "TVector2.h"
 
-#include "PlotTools/interface/KinematicFunctions.h"
+#include "crombie/KinematicFunctions.h"
 
 template<typename T>
 class EtaPhiMap {
@@ -28,7 +28,7 @@ class EtaPhiMap {
   template<typename C> void AddParticles (C& collection);
 
   /// Get particles within dr of a given eta, phi
-  std::vector<const T*> GetParticles(double eta, double phi, double dr);
+  std::vector<const T*> GetParticles(double eta, double phi, double dr) const;
 
  private:
 
@@ -50,12 +50,12 @@ class EtaPhiMap {
   /// Reset the particles in each grid point
   void clear();
   /// Get the bin number
-  unsigned bin(double eta, double phi);
-  unsigned bin(unsigned eta_bin, unsigned phi_bin);
+  unsigned bin(double eta, double phi) const;
+  unsigned bin(unsigned eta_bin, unsigned phi_bin) const;
   /// Get eta bin
-  unsigned etabin(double eta);
+  unsigned etabin(double eta) const;
   /// Get phi bin
-  unsigned phibin(double phi);
+  unsigned phibin(double phi) const;
 
 };
 
@@ -76,7 +76,7 @@ void EtaPhiMap<T>::AddParticles (C& collection) {
 
 
 template<typename T>
-std::vector<const T*> EtaPhiMap<T>::GetParticles(double eta, double phi, double dr) {
+std::vector<const T*> EtaPhiMap<T>::GetParticles(double eta, double phi, double dr) const {
   double dr2 = std::pow(dr, 2);
 
   std::vector<const T*> output;
@@ -108,22 +108,22 @@ std::vector<const T*> EtaPhiMap<T>::GetParticles(double eta, double phi, double 
 
 
 template<typename T>
-unsigned EtaPhiMap<T>::bin(double eta, double phi) {
+unsigned EtaPhiMap<T>::bin(double eta, double phi) const {
   return bin(etabin(eta), phibin(phi));
 }
 
 template<typename T>
-unsigned EtaPhiMap<T>::bin(unsigned eta_bin, unsigned phi_bin) {
+unsigned EtaPhiMap<T>::bin(unsigned eta_bin, unsigned phi_bin) const {
   return n_etabins * phi_bin + eta_bin;
 }
 
 template<typename T>
-unsigned EtaPhiMap<T>::etabin(double eta) {
+unsigned EtaPhiMap<T>::etabin(double eta) const {
   return std::max(0u, std::min(n_etabins - 1, n_etabins/2 + static_cast<unsigned>(eta/_spacing)));
 }
 
 template<typename T>
-unsigned EtaPhiMap<T>::phibin(double phi) {
+unsigned EtaPhiMap<T>::phibin(double phi) const {
   return TVector2::Phi_0_2pi(phi)/_spacing;
 }
 
