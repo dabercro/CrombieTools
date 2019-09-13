@@ -237,7 +237,7 @@ def check_jobs():
                  os.environ['USER'])
     jobs = [(int(row[0]), row[1], row[2]) for row in curs.fetchall()]
 
-    condor_q = "condor_q " + os.environ['USER'] + " -format '%s\n' Args"
+    condor_q = "condor_q " + os.environ['USER'] + " -format '%s\n' Args -constraint 'JobStatus == 2'"
     proc = subprocess.Popen([condor_q],
                             stdout=subprocess.PIPE,
                             shell=True)
