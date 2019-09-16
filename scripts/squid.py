@@ -7,6 +7,7 @@ Environment variables used:
 maxjobs - The maximum number of jobs to submit
 skipfind - If set, does not verify the number of events, just checks for existence of tree
 noresub - If set, do not resubmit failed jobs
+nosub - If set, do not even submit new jobs
 sleeptime - If set, sleep for this many seconds between cycles
 """
 
@@ -170,7 +171,6 @@ def prepare_for_submit(jobs):
         condor_cfg.write('Executable = %s\n' % \
                              os.path.join(os.environ['CROMBIEPATH'],
                                           'old/SubmitTools/condor/run.sh'))
-        condor_cfg.write('transfer_input_files = %s\n' % target_tar)
 
         # Set the output log locations and the file mapping
         for job, output_dir, output_name in jobs:
@@ -192,6 +192,11 @@ def prepare_for_submit(jobs):
 
             condor_cfg.write('Output = %s.out\n' % log_basename)
             condor_cfg.write('Error = %s.err\n' % log_basename)
+
+            oldtar = os.path.join(os.path.dirname(output_dir).replace('/%s/' % os.environ['USER'], '/%s/tars/' % os.environ['USER']),
+                                  'condor.tgz')
+            condor_cfg.write('transfer_input_files = %s\n' % (oldtar if os.path.exists(oldtar) else target_tar))
+
             condor_cfg.write('transfer_output_files = %s\n' % output_name)
             condor_cfg.write('transfer_output_remaps = "%s = %s"\n' % \
                                  (output_name, os.path.join(output_dir, output_name)))
@@ -221,7 +226,8 @@ def submit(jobs):
     # Check that the configuration file exists first.
     if os.path.exists(config_file):
         report_submission(jobs)
-        os.system('condor_submit %s' % config_file)
+        if (not os.environ.get('nosub')):
+            os.system('condor_submit %s' % config_file)
         LOG.info('Submitted jobs, sleeping')
         time.sleep(1200)
 
@@ -237,7 +243,7 @@ def check_jobs():
                  os.environ['USER'])
     jobs = [(int(row[0]), row[1], row[2]) for row in curs.fetchall()]
 
-    condor_q = "condor_q " + os.environ['USER'] + " -format '%s\n' Args -constraint 'JobStatus == 2'"
+    condor_q = "condor_q " + os.environ['USER'] + " -format '%s\n' Args -constraint 'JobStatus == 1 || JobStatus == 2'"
     proc = subprocess.Popen([condor_q],
                             stdout=subprocess.PIPE,
                             shell=True)
