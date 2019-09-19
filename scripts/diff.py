@@ -81,7 +81,7 @@ class CrombieDiffDoer:
 
                         numDiff = tree0.GetEntries(branch.GetName() + ' != tree1_thefriend.' + branch.GetName())
                         if numDiff != 0:
-                            print(filename0 + ' has different values in: ' + branch.GetName() + ' (' + str(numDiff) + '/' + str(tree1) + ')')
+                            print(filename0 + ' has different values in: ' + branch.GetName() + ' (' + str(numDiff) + '/' + str(tree1.GetEntries()) + ')')
 
                     file0.Close()
         else:
