@@ -272,6 +272,10 @@ def check_jobs():
             LOG.debug('Job is running')
             continue
 
+        if os.path.exists(output_file) and not os.stat(output_file).st_size:
+            LOG.warning('Empty file %s, removing', output_file)
+            os.remove(output_file)
+
         if os.path.exists(output_file):
 
             curs.execute("SELECT total_events FROM queue WHERE id = %s", job[0])

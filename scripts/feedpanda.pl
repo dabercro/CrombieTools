@@ -3,6 +3,8 @@
 use strict;
 use warnings;
 
+use Data::Dumper;
+
 # Check arguments and print help function if needed
 sub print_use {
     print "Usage: $0 PANDADEF SOURCE SOURCE ... OUTPUTHEAD\n\n";
@@ -41,11 +43,36 @@ if (-e $out_file) {
 my $def_file = shift @ARGV;
 my @source;
 my @branches = ('triggers');
+my $include_dir = '';
+my %read_files;
 
-foreach my $infile (@ARGV) {
-    open (my $handle, '<', $infile);
-    push @source, <$handle>;
+sub open_src {
+    my @output;
+    open(my $handle, '<', shift);
+    for (<$handle>) {
+        if (/#include .([\w\/]+\.h)/) {
+            if (-f "${include_dir}/$1") {
+                if (1 < ($read_files{$1} += 1)) {
+                    next;
+                }
+                push @output, open_src("${include_dir}/$1");
+            }
+        }
+        else {
+            push @output, $_;
+        }
+    }
     close $handle;
+    return @output;
+}
+
+for (@ARGV) {
+    if (-d $_) {
+        $include_dir = $_;
+        next;
+    }
+
+    push @source, open_src($_);
 }
 
 # Filter to get the members called

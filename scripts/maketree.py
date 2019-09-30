@@ -204,6 +204,13 @@ def create_branches(var, data_type, val, is_saved):
     return branches
 
 
+def include_comment(line):
+    logging.getLogger('Include comment').debug(line.strip())
+    if line.startswith('%'):
+        logging.getLogger('Include comment').debug('Replacing')
+        return line.replace('%', '#')
+    return line
+
 class Parser:
     def __init__(self, comment='! ', block='*'):
         self.defs = {}
@@ -253,7 +260,7 @@ class Parser:
         if match:
             with open(match.group(2), 'r') as subfile:
                 return [line for l in subfile
-                        for line in self.parse(l.lstrip(' #') if not match.group(1) else l)]
+                        for line in self.parse(include_comment(l.lstrip(' #') if not match.group(1) else l.lstrip(' ')))]
 
         # Expand range operators '..'
         expand = re.search(r'(\d+)\.\.(\d+)', input_line)
@@ -772,11 +779,11 @@ if __name__ == '__main__':
                 # Probably a branch line
                 for branch_line in check_uncertainties(line):
                     # Add branch names individually
-                    match = re.match(r'(\#\s*)?([\w\[\]]*)(/([\w\:\<\>]*))?(\s=\s(.*?))?(\s->\s(.*?))?(\s<-\s(.*?))?$', branch_line)
+                    match = re.match(r'(\#\s*)?([\w\[\]]*)(/([\w\:\<\>]*\*?))?(\s=\s(.*?))?(\s->\s(.*?))?(\s<-\s(.*?))?$', branch_line)
                     if match:
                         logging.getLogger('branch-line').debug(match.groups())
                         var = match.group(2)
-                        data_type = match.group(4) or DEFAULT_TYPE
+                        data_type = match.group(4).replace('CONST', 'const ') if match.group(4) else DEFAULT_TYPE
                         val = (match.group(6) or DEFAULT_VAL).strip()
                         is_saved = not bool(match.group(1))
 
