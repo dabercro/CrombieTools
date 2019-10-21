@@ -123,7 +123,7 @@ if __name__ == '__main__':
     logging.warning('Cut is %s', args.cut)
 
     if not os.path.exists(args.output):
-        os.mkdir(args.output)
+        os.makedirs(args.output)
 
     branches = [line.strip() for branches_file in args.files
                 for line in open(branches_file, 'r') if line.strip()]

@@ -86,7 +86,7 @@ else {
       $stmt->bind_param('s', $match);
     }
     else {
-      $stmt = $conn->prepare('SELECT SUBSTRING(output_dir, 1, LOCATE(SUBSTRING_INDEX(output_dir, "/", -1), output_dir) - 1) AS out_dir, SUM(status != "finished") AS not_fin, SUM(status = "finished") AS finished FROM queue GROUP BY out_dir ORDER BY entered DESC;');
+      $stmt = $conn->prepare('SELECT SUBSTRING(output_dir, 1, LOCATE(CONCAT("/", SUBSTRING_INDEX(output_dir, "/", -1)), output_dir)) AS out_dir, SUM(status != "finished") AS not_fin, SUM(status = "finished") AS finished FROM queue GROUP BY out_dir ORDER BY entered DESC;');
       $link = 'dir=';
     }
     $stmt->execute();
