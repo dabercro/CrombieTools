@@ -10,10 +10,10 @@ my @infiles;
 push @infiles, shift;
 my @included;
 
-
 while (scalar @infiles) {
 
     my $infile = pop @infiles;
+    push @included, $infile;
 
     my @lines;
     open (my $handle, '<', $infile) or die "Can't open $infile";
@@ -24,7 +24,6 @@ while (scalar @infiles) {
         my ($checkfile) = /(\w+\.h)/;
 
         if (-f "include/$checkfile" && ! grep {/include\/$checkfile/} @included) {
-            push @included, "include/$checkfile";
             push @infiles, "include/$checkfile";
         }
 
