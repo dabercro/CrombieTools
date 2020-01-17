@@ -7,13 +7,15 @@ use v5.10;
 use Data::Dumper;
 
 my @infiles;
-push @infiles, shift;
+my $firstfile = shift;
+
+push @infiles, $firstfile;
 my @included;
+push @included, $firstfile;
 
 while (scalar @infiles) {
 
     my $infile = pop @infiles;
-    push @included, $infile;
 
     my @lines;
     open (my $handle, '<', $infile) or die "Can't open $infile";
@@ -25,6 +27,16 @@ while (scalar @infiles) {
 
         if (-f "include/$checkfile" && ! grep {/include\/$checkfile/} @included) {
             push @infiles, "include/$checkfile";
+            push @included, "include/$checkfile";
+        }
+
+    }
+
+    for (grep {/INCLUDE\s(treedefs\/\w+\.txt)/} @lines) {
+        my ($checkfile) = /(treedefs\/\w+\.txt)/;
+
+        if (-f $checkfile && ! grep {/$checkfile/} @included) {
+            push @infiles, $checkfile;
         }
 
     }
