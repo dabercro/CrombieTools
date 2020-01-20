@@ -37,6 +37,7 @@ while (scalar @infiles) {
 
         if (-f $checkfile && ! grep {/$checkfile/} @included) {
             push @infiles, $checkfile;
+            push @included, $checkfile;
         }
 
     }
