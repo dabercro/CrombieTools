@@ -34,6 +34,3 @@ mkdir $target/figs
 cp $docs/download.sh $target/figs/.
 
 cd $target
-
-echo "All done!"
-echo "Don't forget to tag the repository after the presentation is complete..."
