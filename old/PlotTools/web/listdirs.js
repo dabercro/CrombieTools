@@ -19,6 +19,12 @@ function listdirs () {
                 if (checked.indexOf(dir) >= 0)
                     input.checked = true;
                 var div = ((--show >= 0) ? first : all);
+
+                var link = document.createElement('a');
+                link.href = '../plots/' + dir + '/models.cnf';
+                link.innerHTML = 'models';
+
+                div.appendChild(link);
                 div.appendChild(input);
                 div.appendChild(document.createTextNode(dir));
                 div.appendChild(document.createElement('br'));

@@ -16,9 +16,10 @@
     </style>
     <title>View Crombie Plots</title>
     <?php
-    if ($share == 'Nope')
+    if ($share == 'Nope') {
       echo '<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>';
       echo '<script src="listdirs.js"></script>';
+    }
     ?>
   </head>
 
@@ -36,9 +37,12 @@
 
     <?php
     foreach ($file_list as $filename) {
+       $split = explode("/", $filename);
        echo '<div class="plot">';
        echo '<div style="height: 2.5em;">';
-       echo '<p> <a href="' . $plotdir . $filename . '.C">' . $filename . '</a></p>';
+       echo '<p> <a href="' . $plotdir . $filename . '.C">' . $filename . '</a>';
+       if ($share == 'Nope')
+          echo ' <a href="' . $plotdir . $split[0] . '/models.cnf"> models </a></p>';
        echo '</div>';
        echo '<a href="' . $plotdir . $filename . '.pdf"><img src="' . $plotdir . $filename . '.png" alt="A picture of ' . $filename . '" width="100%"></a>';
        echo '</div>';

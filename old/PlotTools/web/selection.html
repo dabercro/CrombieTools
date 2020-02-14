@@ -22,6 +22,7 @@
           <div id="firstdirs">
           <?php
           foreach ($firstDirs as $directory) {
+             echo '<a href="../plots/' . $directory . '/models.cnf">models</a> ';
              if (in_array($directory, $checked))
                echo '<input type="checkbox" name="dirs[]" value="' . $directory . '" checked>' . $directory . ' <br>';
              else
@@ -36,6 +37,7 @@
           <div id="alldirs" style="display:none;">
           <?php
           foreach ($restDirs as $directory) {
+             echo '<a href="../plots/' . $directory . '/models.cnf">models</a> ';
              if (in_array($directory, $checked))
                echo '<input type="checkbox" name="dirs[]" value="' . $directory . '" checked>' . $directory . ' <br>';
              else
