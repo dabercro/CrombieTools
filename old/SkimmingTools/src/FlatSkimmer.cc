@@ -142,8 +142,15 @@ void FlatSkimmer::Skim(TString fileName)
 
   outFile->WriteTObject(outTree,fTreeName,"Overwrite");
   for (UInt_t iObj = 0; iObj != fCopyObjects.size(); ++iObj) {
-    if (inFile->Get(fCopyObjects[iObj]))
-      outFile->WriteTObject(inFile->Get(fCopyObjects[iObj])->Clone());
+    if (inFile->Get(fCopyObjects[iObj])) {
+      auto* tree = dynamic_cast<TTree*>(inFile->Get(fCopyObjects[iObj]));
+      if (tree) {
+        TTree* outtree = tree->CloneTree();
+        outFile->Write();
+      }
+      else
+        outFile->WriteTObject(inFile->Get(fCopyObjects[iObj])->Clone());
+    }
     else
       std::cout << "Could not find " << fCopyObjects[iObj] << " in " << fileName << std::endl;
   }

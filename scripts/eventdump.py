@@ -13,7 +13,7 @@ import logging
 logging.basicConfig(level=logging.INFO)
 
 def main(in_file, out_file, cut, *args, **kwargs):
-    dump = args or ['runNumber', 'lumiNumber', 'eventNumber']
+    dump = args or ['run', 'luminosityBlock', 'event']
     to_scan = ':'.join(dump)
 
     logging.info('Input file %s', in_file)
@@ -33,7 +33,7 @@ def main(in_file, out_file, cut, *args, **kwargs):
 
 
 if __name__ == '__main__':
-    if len(argv) == 1:
+    if len(argv) < 4:
         print 'USAGE %s INFILE OUTFILE CUT [BRANCH [BRANCH ...]]' % argv[0]
         exit(0)
 
