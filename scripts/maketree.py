@@ -742,7 +742,7 @@ if __name__ == '__main__':
                     line = match.group(1)
 
                 # Corrector applicator
-                match = re.match(r'(#|\?)?~([^;]*);([^;]*);([^;]*);([^;]*)(;(.*?)(TH\d.)?)?~', line)
+                match = re.match(r'(#|\?)?~([^;]*);([^;]*);([^;]*);([^;]*)(;([^;]*))?(;\s*(TH\d.))?\s*~', line)
                 if match:
                     includes.append('"SkimmingTools/interface/Correction.h"')
                     branch = match.group(2).strip()
@@ -751,7 +751,7 @@ if __name__ == '__main__':
                               match.group(4).strip(), # File name
                               match.group(5).strip(), # Histogram name(s)
                               (match.group(7) or '').strip(), # Cut to pass
-                              match.group(8)          # Type of histogram to expect
+                              match.group(9)          # Type of histogram to expect
                               ).eval(mod_fill)
 
                     if (branch not in Branch.branches):
